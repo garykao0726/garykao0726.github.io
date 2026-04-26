@@ -4,143 +4,67 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ORINGO Operations Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --card: #12121a;
-    --border: #1e1e2e;
-    --accent: #7c6af7;
-    --accent2: #22d3ee;
-    --text: #e2e8f0;
-    --text-muted: #64748b;
-    --green: #4ade80;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Noto Sans TC', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-  }
-  .logo {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 4px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-  h1 {
-    font-family: 'Space Mono', monospace;
-    font-size: clamp(24px, 5vw, 40px);
-    font-weight: 700;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 8px;
-    text-align: center;
-  }
-  .subtitle {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin-bottom: 60px;
-    font-family: 'Space Mono', monospace;
-    letter-spacing: 1px;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    max-width: 900px;
-    width: 100%;
-  }
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px;
-    text-decoration: none;
-    color: inherit;
-    transition: border-color .2s, transform .2s, box-shadow .2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    opacity: 0;
-    transition: opacity .2s;
-  }
-  .card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(124,106,247,.15); }
-  .card:hover::before { opacity: 1; }
-  .card-icon { font-size: 32px; margin-bottom: 16px; }
-  .card-title {
-    font-family: 'Space Mono', monospace;
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: var(--text);
-  }
-  .card-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
-  .badge {
-    display: inline-block;
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 1px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-top: 16px;
-    background: rgba(74,222,128,.1);
-    color: var(--green);
-    border: 1px solid rgba(74,222,128,.2);
-  }
-  .footer {
-    margin-top: 60px;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-  }
+:root{--green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;--rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;--border:rgba(40,66,52,0.12);--border2:rgba(40,66,52,0.25);--text-muted:#8D5531}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#fff;color:var(--green);font-family:"Noto Sans TC",sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 24px}
+.logo{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:5px;color:var(--gray-pink);text-transform:uppercase;margin-bottom:16px}
+.brand-mark{display:inline-flex;align-items:center;gap:12px;margin-bottom:20px}
+.brand-line{width:40px;height:1px;background:var(--sand)}
+.brand-name{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:4px;color:var(--brown)}
+h1{font-family:"Space Mono",monospace;font-size:clamp(26px,5vw,44px);font-weight:700;color:var(--green);letter-spacing:-.01em;text-align:center;margin-bottom:6px}
+.subtitle{font-size:12px;color:var(--gray-pink);margin-bottom:56px;font-family:"Space Mono",monospace;letter-spacing:2px;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;max-width:980px;width:100%}
+.card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:28px;text-decoration:none;color:inherit;transition:border-color .2s,transform .18s,box-shadow .2s;position:relative;overflow:hidden;display:block}
+.card::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--green);transform:scaleX(0);transform-origin:left;transition:transform .2s}
+.card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 8px 32px rgba(40,66,52,.10)}
+.card:hover::after{transform:scaleX(1)}
+.card-icon{width:44px;height:44px;border-radius:10px;background:var(--sand-light);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px;border:1px solid var(--border)}
+.card-title{font-family:"Space Mono",monospace;font-size:14px;font-weight:700;margin-bottom:8px;color:var(--green)}
+.card-desc{font-size:12px;color:var(--text-muted);line-height:1.7;font-family:"Noto Sans TC",sans-serif}
+.badge{display:inline-flex;align-items:center;gap:5px;font-family:"Space Mono",monospace;font-size:9px;letter-spacing:1px;padding:3px 10px;border-radius:20px;margin-top:16px;font-weight:700}
+.badge.live{background:rgba(26,122,74,.08);color:#1a7a4a;border:1px solid rgba(26,122,74,.18)}
+.badge.live::before{content:"";width:6px;height:6px;border-radius:50%;background:#1a7a4a;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.divider{width:100%;max-width:980px;height:1px;background:linear-gradient(90deg,transparent,var(--sand),transparent);margin:40px 0 0}
+.footer{margin-top:32px;font-family:"Space Mono",monospace;font-size:10px;color:var(--gray-pink);letter-spacing:1.5px;text-align:center}
 </style>
 </head>
 <body>
-  <div class="logo">ORINGO · 犀角品牌集團</div>
-  <h1>Operations Hub</h1>
-  <div class="subtitle">INTERNAL TOOLS &amp; DASHBOARDS</div>
+<div class="brand-mark">
+  <div class="brand-line"></div>
+  <div class="brand-name">ORINGO · 林果良品</div>
+  <div class="brand-line"></div>
+</div>
+<div class="logo">Internal Operations</div>
+<h1>Operations Hub</h1>
+<div class="subtitle">INTERNAL TOOLS &amp; DASHBOARDS</div>
 
-  <div class="grid">
-    <a class="card" href="https://garykao0726.github.io/oringo-dashboard/" target="_blank">
-      <div class="card-icon">📊</div>
-      <div class="card-title">週報儀表板</div>
-      <div class="card-desc">每週業績追蹤、月達成率、各通路數據總覽。整合官網、實體門市、電商平台即時數據。</div>
-      <div class="badge">LIVE</div>
-    </a>
+<div class="grid">
+  <a class="card" href="https://garykao0726.github.io/oringo-dashboard/" target="_blank">
+    <div class="card-icon">📊</div>
+    <div class="card-title">營運績效儀表板</div>
+    <div class="card-desc">週報快覽、月度達成率、年度總覽。整合四間實體門市與官網電商的即時數據。</div>
+    <div class="badge live">● LIVE</div>
+  </a>
 
-    <div class="card" style="opacity:.5;cursor:default">
-      <div class="card-icon">🛍️</div>
-      <div class="card-title">訂單管理</div>
-      <div class="card-desc">Shopline 訂單查詢、退換貨追蹤（即將推出）</div>
-      <div class="badge" style="background:rgba(100,116,139,.1);color:var(--text-muted);border-color:rgba(100,116,139,.2)">COMING SOON</div>
-    </div>
+  <a class="card" href="https://garykao0726.github.io/oringo-dashboard/gbp.html" target="_blank">
+    <div class="card-icon">📍</div>
+    <div class="card-title">GBP 門市流量</div>
+    <div class="card-desc">各實體門市在 Google 商家的搜尋曝光、地圖曝光、導航請求與電話 / 網站點擊趨勢分析。</div>
+    <div class="badge live">● LIVE</div>
+  </a>
 
-    <div class="card" style="opacity:.5;cursor:default">
-      <div class="card-icon">📦</div>
-      <div class="card-title">庫存追蹤</div>
-      <div class="card-desc">商品庫存水位、補貨提醒（即將推出）</div>
-      <div class="badge" style="background:rgba(100,116,139,.1);color:var(--text-muted);border-color:rgba(100,116,139,.2)">COMING SOON</div>
-    </div>
-  </div>
+  <a class="card" href="https://garykao0726.github.io/oringo-dashboard/seo.html" target="_blank">
+    <div class="card-icon">🔍</div>
+    <div class="card-title">SEO 監控</div>
+    <div class="card-desc">品牌與門市關鍵字排名追蹤、競品廣告偵測、外部文章導流分析。</div>
+    <div class="badge live">● LIVE</div>
+  </a>
+</div>
 
-  <div class="footer">© 2026 ORINGO SHOES CO., LTD. · INTERNAL USE ONLY</div>
+<div class="divider"></div>
+<div class="footer">© 2026 ORINGO SHOES CO., LTD. · INTERNAL USE ONLY</div>
 </body>
 </html>
