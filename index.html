@@ -20,14 +20,18 @@ h1{font-family:"Space Mono",monospace;font-size:clamp(26px,5vw,44px);font-weight
 .card::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--green);transform:scaleX(0);transform-origin:left;transition:transform .2s}
 .card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 8px 32px rgba(40,66,52,.10)}
 .card:hover::after{transform:scaleX(1)}
+.card.wip{opacity:.6;cursor:default;pointer-events:none}
 .card-icon{width:44px;height:44px;border-radius:10px;background:var(--sand-light);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px;border:1px solid var(--border)}
 .card-title{font-family:"Space Mono",monospace;font-size:14px;font-weight:700;margin-bottom:8px;color:var(--green)}
 .card-desc{font-size:12px;color:var(--text-muted);line-height:1.7;font-family:"Noto Sans TC",sans-serif}
 .badge{display:inline-flex;align-items:center;gap:5px;font-family:"Space Mono",monospace;font-size:9px;letter-spacing:1px;padding:3px 10px;border-radius:20px;margin-top:16px;font-weight:700}
 .badge.live{background:rgba(26,122,74,.08);color:#1a7a4a;border:1px solid rgba(26,122,74,.18)}
 .badge.live::before{content:"";width:6px;height:6px;border-radius:50%;background:#1a7a4a;display:inline-block;animation:pulse 2s infinite}
+.badge.soon{background:rgba(40,66,52,.06);color:var(--brown);border:1px solid rgba(40,66,52,.15)}
+.badge.restricted{background:rgba(165,74,26,.08);color:var(--rust);border:1px solid rgba(165,74,26,.22)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-.divider{width:100%;max-width:980px;height:1px;background:linear-gradient(90deg,transparent,var(--sand),transparent);margin:40px 0 0}
+.section-label{width:100%;max-width:980px;font-family:"Space Mono",monospace;font-size:10px;letter-spacing:3px;color:var(--gray-pink);margin-bottom:12px;text-transform:uppercase}
+.divider{width:100%;max-width:980px;height:1px;background:linear-gradient(90deg,transparent,var(--sand),transparent);margin:36px 0}
 .footer{margin-top:32px;font-family:"Space Mono",monospace;font-size:10px;color:var(--gray-pink);letter-spacing:1.5px;text-align:center}
 </style>
 </head>
@@ -41,18 +45,19 @@ h1{font-family:"Space Mono",monospace;font-size:clamp(26px,5vw,44px);font-weight
 <h1>Operations Hub</h1>
 <div class="subtitle">INTERNAL TOOLS &amp; DASHBOARDS</div>
 
+<div class="section-label">即時儀表板</div>
 <div class="grid">
   <a class="card" href="https://garykao0726.github.io/oringo-dashboard/" target="_blank">
     <div class="card-icon">📊</div>
     <div class="card-title">營運績效儀表板</div>
-    <div class="card-desc">週報快覽、月度達成率、年度總覽。整合四間實體門市與官網電商的即時數據。</div>
+    <div class="card-desc">週報快覽、月度達成率、年度總覽、GBP 門市流量。整合四間實體門市與官網電商的即時數據。</div>
     <div class="badge live">● LIVE</div>
   </a>
 
-  <a class="card" href="https://garykao0726.github.io/oringo-dashboard/gbp.html" target="_blank">
-    <div class="card-icon">📍</div>
-    <div class="card-title">GBP 門市流量</div>
-    <div class="card-desc">各實體門市在 Google 商家的搜尋曝光、地圖曝光、導航請求與電話 / 網站點擊趨勢分析。</div>
+  <a class="card" href="https://garykao0726.github.io/oringo-dashboard/marketing.html" target="_blank">
+    <div class="card-icon">📣</div>
+    <div class="card-title">行銷儀表板</div>
+    <div class="card-desc">官網流量、各渠道 CVR 與 ROAS、Meta / Google 廣告成效、社群導流分析。</div>
     <div class="badge live">● LIVE</div>
   </a>
 
@@ -62,6 +67,38 @@ h1{font-family:"Space Mono",monospace;font-size:clamp(26px,5vw,44px);font-weight
     <div class="card-desc">品牌與門市關鍵字排名追蹤、競品廣告偵測、外部文章導流分析。</div>
     <div class="badge live">● LIVE</div>
   </a>
+
+  <a class="card" href="https://garykao0726.github.io/oringo-dashboard/finance.html" target="_blank">
+    <div class="card-icon">🔒</div>
+    <div class="card-title">財務報表</div>
+    <div class="card-desc">月度淨利、費用結構、年度財務摘要。需以授權主管帳號登入後方可檢視。</div>
+    <div class="badge restricted">🔒 RESTRICTED</div>
+  </a>
+</div>
+
+<div class="divider"></div>
+<div class="section-label">開發中</div>
+<div class="grid">
+  <div class="card wip">
+    <div class="card-icon">📦</div>
+    <div class="card-title">商品銷售分析</div>
+    <div class="card-desc">各品項銷售排行、庫存週轉率、退貨分析、季節性趨勢。</div>
+    <div class="badge soon">COMING SOON</div>
+  </div>
+
+  <div class="card wip">
+    <div class="card-icon">📚</div>
+    <div class="card-title">林果知識庫</div>
+    <div class="card-desc">品牌故事、產品知識、門市 SOP、教育訓練資料集中管理。</div>
+    <div class="badge soon">COMING SOON</div>
+  </div>
+
+  <div class="card wip">
+    <div class="card-icon">👥</div>
+    <div class="card-title">會員分析</div>
+    <div class="card-desc">會員成長趨勢、RFM 分群、回購率與 LTV 分析、VIP 客群洞察。</div>
+    <div class="badge soon">COMING SOON</div>
+  </div>
 </div>
 
 <div class="divider"></div>
