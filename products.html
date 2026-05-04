@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜商品銷售分析</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;--rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;--bg:#F5EDE3;--surface:#fff;--surface2:#FAF5EF;--border:rgba(40,66,52,.10);--border2:rgba(40,66,52,.22);--text:#284234;--text-sub:#8D5531;--text-muted:#b09a88;--pos:#1a7a4a;--neg:#c0392b;--warn:#b07d12}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100vh}
+
+/* ── Header ── */
+.hdr{position:sticky;top:0;z-index:100;background:var(--green);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--sand)}
+.brand-sep{width:1px;height:16px;background:rgba(226,206,185,.3)}
+.brand-sub{font-size:10px;color:var(--gray-pink);font-family:'Space Mono',monospace}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#5be8a0;box-shadow:0 0 8px #5be8a0;animation:blink 2.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hdr-tag{font-family:'Space Mono',monospace;font-size:11px;color:var(--gray-pink);border:1px solid rgba(226,206,185,.25);padding:3px 10px;border-radius:20px}
+.back-link{font-family:'Space Mono',monospace;font-size:11px;color:var(--gray-pink);text-decoration:none;border:1px solid rgba(226,206,185,.25);padding:3px 10px;border-radius:20px;transition:all .15s}
+.back-link:hover{color:var(--sand);border-color:var(--sand)}
+
+/* ── Banner ── */
+.banner{padding:7px 2rem;font-size:11px;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:8px}
+.banner.loading{background:rgba(40,66,52,.06);color:var(--text-muted)}
+.banner.live{background:rgba(26,122,74,.07);color:var(--pos)}
+.banner.warn{background:rgba(165,74,26,.07);color:var(--rust)}
+
+/* ── Layout ── */
+.container{max-width:1380px;margin:0 auto;padding:1.75rem 2rem}
+.sec{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);margin:1.5rem 0 .75rem;font-family:'Space Mono',monospace}
+
+/* ── KPI grid ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.25rem}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--green)}
+.kpi-label{font-size:10px;color:var(--text-muted);margin-bottom:6px;font-family:'Space Mono',monospace;letter-spacing:.05em}
+.kpi-val{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.kpi-sub{font-size:11px;color:var(--text-muted);margin-top:5px}
+.kpi-delta{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-family:'Space Mono',monospace;padding:2px 7px;border-radius:3px;margin-top:5px}
+.kpi-delta.pos{background:rgba(26,122,74,.08);color:var(--pos)}
+.kpi-delta.neg{background:rgba(192,57,43,.08);color:var(--neg)}
+.kpi-delta.neu{background:var(--surface2);color:var(--text-muted)}
+
+/* ── Tab switcher ── */
+.tab-bar{display:flex;gap:6px;margin-bottom:.875rem;flex-wrap:wrap}
+.tab-btn{font-family:'Space Mono',monospace;font-size:11px;padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all .15s}
+.tab-btn.active{background:var(--green);color:var(--sand);border-color:var(--green)}
+
+/* ── Ranking table ── */
+.rank-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.25rem}
+.rank-hd{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.rank-hd-title{font-size:13px;font-weight:700;color:var(--green)}
+.rank-hd-sub{font-size:11px;color:var(--text-muted);font-family:'Space Mono',monospace}
+.rank-table{width:100%;border-collapse:collapse}
+.rank-table th{padding:8px 16px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--text-muted);text-align:left;border-bottom:1px solid var(--border2);background:var(--surface2)}
+.rank-table th.num{text-align:right}
+.rank-table td{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px}
+.rank-table tr:last-child td{border-bottom:none}
+.rank-table td.num{text-align:right;font-family:'Space Mono',monospace}
+.rank-table tr:hover td{background:var(--surface2)}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700}
+.badge-1{background:#fdf0d5;color:#9a6500}
+.badge-2{background:#f0f0f0;color:#555}
+.badge-3{background:#fde8de;color:#8a3b10}
+.badge-n{background:var(--surface2);color:var(--text-muted)}
+.product-name{font-weight:500}
+.product-var{font-size:11px;color:var(--text-muted);margin-top:2px}
+.bar-bg{height:6px;background:#e8e2d8;border-radius:3px;margin-top:4px}
+.bar-fg{height:6px;border-radius:3px;background:var(--green);transition:width .4s}
+.bar-fg.gold{background:#d4972c}
+.bar-fg.rust{background:var(--rust)}
+.no-data{text-align:center;padding:40px;color:var(--text-muted);font-size:13px}
+.trend-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-family:'Space Mono',monospace;padding:1px 6px;border-radius:3px}
+.trend-chip.up{background:rgba(26,122,74,.08);color:var(--pos)}
+.trend-chip.dn{background:rgba(192,57,43,.08);color:var(--neg)}
+.trend-chip.fl{background:var(--surface2);color:var(--text-muted)}
+
+/* ── Dual columns ── */
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+.cols3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+
+/* ── Store cards ── */
+.store-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.875rem;margin-bottom:1.25rem}
+.store-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.store-hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+.store-name{font-family:'Space Mono',monospace;font-size:13px;font-weight:700}
+.store-ach{font-size:16px;font-weight:700;font-family:'Space Mono',monospace}
+.bar-track{height:4px;background:#e8e2d8;border-radius:2px;margin-bottom:6px}
+.bar-fill{height:4px;border-radius:2px}
+.store-meta{font-size:11px;color:var(--text-muted);margin-bottom:8px}
+.store-rates{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.rate-row{display:flex;justify-content:space-between;font-size:11px}
+.rate-lbl{color:var(--text-muted)}
+.pos{color:var(--pos)}.neg{color:var(--neg)}.warn{color:var(--warn)}
+
+/* ── Chart card ── */
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:1.25rem}
+.chart-title{font-size:13px;font-weight:700;color:var(--green);margin-bottom:10px}
+.chart-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted)}
+.leg-dot{width:10px;height:10px;border-radius:2px}
+.chart-wrap{position:relative;height:240px}
+.chart-wrap.sm{height:200px}
+.chart-wrap.lg{height:300px}
+
+/* ── Horizontal bar ── */
+.hbar-list{display:flex;flex-direction:column;gap:8px;padding:4px 0}
+.hbar-row{display:grid;align-items:center;gap:10px}
+.hbar-row.w2{grid-template-columns:80px 1fr 60px}
+.hbar-row.w3{grid-template-columns:120px 1fr 70px 70px}
+.hbar-label{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar-track{height:10px;background:#e8e2d8;border-radius:5px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:5px;transition:width .5s}
+.hbar-val{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);text-align:right}
+.hbar-val2{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);text-align:right}
+
+/* ── Loading skeleton ── */
+.skel{background:linear-gradient(90deg,#e8e2d8 25%,#f0ece4 50%,#e8e2d8 75%);background-size:200% 100%;animation:skel .9s infinite;border-radius:6px;height:18px;margin-bottom:8px}
+@keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+@media(max-width:1100px){
+  .kpi-grid{grid-template-columns:repeat(3,1fr)}
+  .store-grid{grid-template-columns:repeat(3,1fr)}
+  .cols2,.cols3{grid-template-columns:1fr}
+}
+@media(max-width:900px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .store-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:560px){
+  .container{padding:1rem}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .store-grid{grid-template-columns:1fr 1fr}
+  .hbar-row.w3{grid-template-columns:90px 1fr 55px}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="brand">
+    <div class="brand-name">ORINGO</div>
+    <div class="brand-sep"></div>
+    <div class="brand-sub">商品銷售分析</div>
+  </div>
+  <div class="hdr-r">
+    <div class="live-dot"></div>
+    <span class="hdr-tag" id="hdr-week">讀取中…</span>
+    <a class="back-link" href="https://dashboard.oringo.tw/">← 中控中心</a>
+  </div>
+</div>
+
+<div class="banner loading" id="banner">⏳ 讀取銷售資料…</div>
+
+<div class="container">
+
+  <!-- KPI -->
+  <div class="sec">本週線上銷售摘要（Shopline）</div>
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi"><div class="skel" style="width:60%;height:12px"></div><div class="skel" style="width:80%;height:28px;margin-top:8px"></div></div>
+    <div class="kpi"><div class="skel" style="width:60%;height:12px"></div><div class="skel" style="width:80%;height:28px;margin-top:8px"></div></div>
+    <div class="kpi"><div class="skel" style="width:60%;height:12px"></div><div class="skel" style="width:80%;height:28px;margin-top:8px"></div></div>
+    <div class="kpi"><div class="skel" style="width:60%;height:12px"></div><div class="skel" style="width:80%;height:28px;margin-top:8px"></div></div>
+    <div class="kpi"><div class="skel" style="width:60%;height:12px"></div><div class="skel" style="width:80%;height:28px;margin-top:8px"></div></div>
+  </div>
+
+  <!-- Ranking tabs -->
+  <div class="sec">商品銷售排行 Top 20</div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchRank('rev',this)">本週・依金額</button>
+    <button class="tab-btn" onclick="switchRank('month',this)">本月累積・依金額</button>
+  </div>
+
+  <div id="rank-by-rev">
+    <div class="rank-card">
+      <div class="rank-hd">
+        <span class="rank-hd-title">💰 本週銷售金額排行</span>
+        <span class="rank-hd-sub" id="rank-period-2">—</span>
+      </div>
+      <table class="rank-table">
+        <thead><tr>
+          <th style="width:40px">排名</th>
+          <th>商品</th>
+          <th class="num">金額</th>
+          <th class="num">件數</th>
+          <th class="num">均價</th>
+          <th class="num">WoW</th>
+          <th style="width:100px">佔比</th>
+        </tr></thead>
+        <tbody id="rank-rev-body"><tr><td colspan="7" class="no-data">讀取中…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="rank-by-month" style="display:none">
+    <div class="rank-card">
+      <div class="rank-hd">
+        <span class="rank-hd-title">📅 本月累積銷售排行</span>
+        <span class="rank-hd-sub" id="rank-period-mo">—</span>
+      </div>
+      <table class="rank-table">
+        <thead><tr>
+          <th style="width:40px">排名</th>
+          <th>商品</th>
+          <th class="num">金額</th>
+          <th class="num">件數</th>
+          <th class="num">均價</th>
+          <th class="num">較上月</th>
+          <th style="width:100px">營業額佔比</th>
+        </tr></thead>
+        <tbody id="rank-mo-body"><tr><td colspan="7" class="no-data">讀取中…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="cols2">
+    <!-- Trend chart -->
+    <div class="chart-card">
+      <div class="chart-title">熱銷 Top 5・週趨勢（件數）</div>
+      <div class="chart-legend" id="trend-legend"></div>
+      <div class="chart-wrap"><canvas id="trend-chart"></canvas></div>
+    </div>
+
+    <!-- Color distribution (shoes only) -->
+    <div class="chart-card">
+      <div class="chart-title">鞋款顏色銷售分佈（本週）</div>
+      <div id="spec-list" class="hbar-list">
+        <div class="skel"></div><div class="skel" style="width:80%"></div><div class="skel" style="width:70%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue trend + Category chart -->
+  <div class="cols2">
+    <!-- Weekly revenue trend bar chart -->
+    <div class="chart-card">
+      <div class="chart-title">每週銷售金額趨勢</div>
+      <div class="chart-wrap sm"><canvas id="rev-trend-chart"></canvas></div>
+    </div>
+
+    <!-- Top products monthly contribution -->
+    <div class="chart-card">
+      <div class="chart-title">本月 Top 10 商品銷售貢獻</div>
+      <div class="chart-wrap sm"><canvas id="mo-contrib-chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Category analysis: shoes only bar charts -->
+  <div class="sec">鞋款分類分析（本週・僅鞋類）</div>
+  <div class="cols2" id="cat-section">
+    <div class="chart-card">
+      <div class="chart-title">鞋款類型・件數</div>
+      <div class="chart-wrap"><canvas id="cat-type-chart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">系列分類・件數（鞋類）</div>
+      <div class="chart-wrap"><canvas id="cat-series-chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Shoe structure: donut charts -->
+  <div class="sec">鞋款結構分析（本週）</div>
+  <div class="cols2">
+    <div class="chart-card">
+      <div class="chart-title">紳士鞋 vs 休閒鞋</div>
+      <div class="chart-legend" id="style-legend"></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="style-donut-chart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">紳士鞋細分（牛津 / 德比 / 孟克 / 樂福）</div>
+      <div class="chart-legend" id="formal-legend"></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="formal-donut-chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Non-shoe ranking -->
+  <div class="sec">配件 / 襪子 / 保養品 熱銷 Top 10（本週．依金額）</div>
+  <div class="rank-card">
+    <div class="rank-hd">
+      <span class="rank-hd-title">🧦 非鞋類商品排行</span>
+      <span class="rank-hd-sub" id="non-shoe-period">—</span>
+    </div>
+    <table class="rank-table">
+      <thead><tr>
+        <th style="width:40px">排名</th>
+        <th>商品</th>
+        <th>類型</th>
+        <th class="num">金額</th>
+        <th class="num">件數</th>
+        <th class="num">均價</th>
+        <th style="width:110px">營業額佔比</th>
+      </tr></thead>
+      <tbody id="non-shoe-body"><tr><td colspan="7" class="no-data">讀取中…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Per-store / online product rankings -->
+  <div class="sec">各門市 / 網路 熱銷商品 Top 10</div>
+  <div id="pos-store-tabs">
+    <div class="tab-bar" id="pos-tab-bar">
+      <button class="tab-btn active" onclick="switchStore('電商',this)">網路（Shopline）</button>
+      <button class="tab-btn" onclick="switchStore('中山店',this)">中山店</button>
+      <button class="tab-btn" onclick="switchStore('松菸店',this)">松菸店</button>
+      <button class="tab-btn" onclick="switchStore('台中店',this)">台中店</button>
+      <button class="tab-btn" onclick="switchStore('東門店',this)">東門店</button>
+    </div>
+    <div class="tab-bar" id="pos-period-bar" style="margin-top:6px">
+      <button class="tab-btn active" onclick="switchPosPeriod('week',this)">本週</button>
+      <button class="tab-btn" onclick="switchPosPeriod('m4',this)">近 4 週累積</button>
+      <button class="tab-btn" onclick="switchPosPeriod('all',this)">全部歷史累積</button>
+    </div>
+    <div id="pos-store-content"></div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+/* ════════════════════════════════════════
+   設定
+   ════════════════════════════════════════ */
+const SHEET_ID = '17hTgCpF0mBTHf3RcnDmRFrJMeLBn3nRdTMuG8l58QjY';
+
+/* 商品週報 columns (0-indexed) */
+const P_TIME=0, P_PERIOD=1, P_NAME=2, P_VAR=3, P_QTY=4, P_REV=5, P_ORD=6, P_AVG=7;
+
+/* 商品彙整表 columns (POS data) */
+const POS_PERIOD=0, POS_STORE=1, POS_NAME=2, POS_CODE=3, POS_SERIES=4, POS_QTY=5, POS_AMT=6;
+
+/* 週報數據 columns */
+const S_PERIOD=1, S_STORE=2, S_WREV=3, S_WTGT=4, S_WACH=5, S_VISITORS=6,
+      S_TXN=12, S_AVG=13, S_CVR=14, S_MTD=15, S_MTGT=16, S_MACH=17;
+
+const STORE_COLORS = {
+  '中山店':'#378ADD','松菸店':'#1D9E75','東門店':'#D4537E',
+  '台中店':'#EF9F27','官網':'#284234'
+};
+
+const CHART_COLORS = ['#284234','#A54A1A','#1D9E75','#D4537E','#EF9F27','#378ADD','#8D5531','#CFA294'];
+
+/* ── 商品分類規則（依真實商品名稱） ── */
+const TYPE_RULES = [
+  /* 1. 林果襪 */
+  { label:'林果襪',   test: n => /紳士襪|林果襪|無束縛.*襪/.test(n) },
+  /* 2. 保養品 */
+  { label:'保養品',   test: n => /保養|清潔乳|鞋蠟|亮光蠟|滋養乳|防水噴霧|SAPHIR|COLUMBUS/i.test(n) },
+  /* 3. 鞋護工具 */
+  { label:'鞋護工具', test: n => /鞋撐|鞋油刷|擦拭布|鞋拔/.test(n) },
+  /* 4. 室內拖鞋 */
+  { label:'室內拖鞋', test: n => /拖鞋|室內/.test(n) },
+  /* 5. 皮件・配件（非鞋） */
+  { label:'皮件配件', test: n => /皮帶|公事包|名片夾|郵差包|手拿包|筆袋|酒壺|面紙套|證件套|BearaBeara|Structure/.test(n) },
+  /* 6. 靴子（含短靴、沙漠靴、軍靴） */
+  { label:'靴子',     test: n => /靴/.test(n) },
+  /* 7. 女鞋 */
+  { label:'女鞋',     test: n => /女鞋|瑪莉珍|馬銜扣.*樂福/.test(n) },
+  /* 8. 休閒鞋（小白鞋、Combo、LibreSole/XV、Lug） */
+  { label:'休閒皮鞋', test: n => /Combo|LibreSole|XV|Lug.?sole|小白|休閒.*鞋|休閒.*德比/i.test(n) },
+  /* 9. 樂福鞋 */
+  { label:'樂福鞋',   test: n => /樂福/.test(n) },
+  /* 10. 牛津鞋 */
+  { label:'牛津鞋',   test: n => /牛津/.test(n) },
+  /* 11. 德比鞋 */
+  { label:'德比鞋',   test: n => /德比/.test(n) },
+  /* 12. 孟克鞋 */
+  { label:'孟克鞋',   test: n => /孟克/.test(n) },
+  /* 13. 其他 */
+  { label:'其他',     test: () => true },
+];
+
+/* ── 商品名稱 → 系列 對照表（從「商品對照表.xlsx」自動產生，共 201 筆） ── */
+const SERIES_MAP = {
+  "全翼紋雕花牛津鞋-經典黑":"ORINGO W","全翼紋雕花牛津鞋-可可咖":"ORINGO W",
+  "鞍片流蘇樂福鞋 蜜糖棕":"ORINGO W","鞍片流蘇樂福鞋-酒紅":"ORINGO W","鞍片流蘇樂福鞋-經典黑":"ORINGO W","鞍片流蘇樂福鞋-深海藍":"ORINGO W",
+  "側邊手縫素面德比鞋-藏青":"ORINGO W","側邊手縫素面德比鞋-可可咖":"ORINGO W",
+  "橫飾鋸齒雙扣孟克鞋-棗紅":"ORINGO W","橫飾鋸齒雙扣孟克鞋-經典黑":"ORINGO W","橫飾鋸齒雙扣孟克鞋-可可咖":"ORINGO W",
+  "反毛皮雕孔皮革大底卻爾喜女靴-深焙咖":"ORINGO W","雕孔皮革大底卻爾喜女靴-經典黑":"ORINGO W","雕孔皮革大底卻爾喜女靴":"ORINGO W",
+  "流蘇飾片德比女鞋-酒紅":"ORINGO W","流蘇飾片德比女鞋-蜜糖棕":"ORINGO W",
+  "素面德比踝靴-黑":"ORINGO W","素面德比踝靴-白":"ORINGO W","素面德比踝靴-米白":"ORINGO W","素面德比踝靴-焦糖咖":"ORINGO W","素面德比踝靴":"ORINGO W",
+  "皮革大底便士樂福鞋女鞋-勃根地酒紅":"ORINGO W","皮革大底便士樂福鞋女鞋-經典黑":"ORINGO W","皮革大底便士樂福鞋女鞋-栗棕色":"ORINGO W","皮革大底便士樂福鞋女鞋-燕麥白":"ORINGO W",
+  "簡約全素面皮革大底牛津鞋-栗棕色":"ORINGO W","簡約全素面皮革大底牛津鞋-經典黑":"ORINGO W","簡約全素面皮革大底牛津女鞋-牛奶白":"ORINGO W",
+  "東門限定-皮革大底流蘇樂福穆勒鞋-經典黑":"ORINGO W","皮革大底流蘇樂福穆勒鞋- 燕麥白":"ORINGO W","皮革大底流蘇樂福穆勒鞋-奶茶棕":"ORINGO W",
+  "經典皮革大底瑪莉珍鞋-經典黑":"ORINGO W","經典皮革大底瑪莉珍鞋-燕麥白":"ORINGO W","經典皮革大底瑪莉珍鞋-栗棕色":"ORINGO W",
+  "馬銜扣中跟樂福女鞋 經典黑":"ORINGO W","馬銜扣中跟樂福女鞋 奶白色":"ORINGO W","馬銜扣中跟樂福女鞋 軍綠色":"ORINGO W",
+  "T-Bar雕花皮革大底中跟瑪莉珍鞋 濃粹咖":"ORINGO W","T-Bar雕花皮革大底中跟瑪莉珍鞋 勃根地酒紅":"ORINGO W",
+  "LibreSole升級大底XV1反毛皮休閒女鞋-卡其":"Xtra Value One","LibreSole升級大底XV1反毛皮休閒女鞋-淺灰":"Xtra Value One","LibreSole升級大底-XV1皮革小白鞋女鞋":"Xtra Value One",
+  "蠟感牛皮皮底室內拖鞋-暖灰":"ORINGO Life","蠟感牛皮皮底室內拖鞋-橄欖綠":"ORINGO Life","蠟感牛皮皮底室內拖鞋-可可棕":"ORINGO Life","蠟感牛皮皮底室內拖鞋-海洋藍":"ORINGO Life","蠟感牛皮皮底室內拖鞋-奶茶棕":"ORINGO Life",
+  "EVERYDAY OBJECT聯名．蠟感牛皮皮底室內拖鞋-清晨白":"ORINGO Life","EVERYDAY OBJECT聯名．蠟感牛皮皮底室內拖鞋-夜幕黑":"ORINGO Life",
+  "蠟感牛皮皮底室內開口拖鞋-暖灰":"ORINGO Life","蠟感牛皮皮底室內開口拖鞋-橄欖綠":"ORINGO Life","蠟感牛皮皮底室內開口拖鞋-可可咖":"ORINGO Life","蠟感牛皮皮底室內開口拖鞋-奶茶棕":"ORINGO Life","蠟感牛皮皮底室內開口拖鞋-清晨白":"ORINGO Life","蠟感牛皮皮底室內開口拖鞋-靛藍色":"ORINGO Life",
+  "牛皮閉口膠底室內拖鞋-可可咖":"ORINGO Life","牛皮閉口膠底室內拖鞋-暖灰":"ORINGO Life","牛皮開口膠底室內拖鞋-可可咖":"ORINGO Life","牛皮開口膠底室內拖鞋-暖灰":"ORINGO Life",
+  "鋸齒橫飾雕孔德比鞋 經典黑":"日式職男J","鋸齒橫飾雕孔德比鞋 可可咖":"日式職男J","經典流線德比鞋-經典黑":"日式職男J","經典流線德比鞋-可可咖":"日式職男J",
+  "牛津鞋基本款 栗紅棕":"日式職男J","牛津鞋基本款 經典黑":"日式職男J","牛津鞋基本款 蜜糖棕":"日式職男J",
+  "橫飾雕孔雙扣孟克鞋-經典黑":"都會雅仕M","橫飾雕孔雙扣孟克鞋 深咖啡":"都會雅仕M","橫飾雕孔雙扣孟克鞋 勃根地酒紅":"都會雅仕M",
+  "基本價位 基本德比鞋-咖啡色":"都會雅仕M","基本價位 基本德比鞋-經典黑":"都會雅仕M","基本價位 基本德比鞋-濃淬咖":"都會雅仕M",
+  "雕孔翼紋牛津鞋-咖啡色":"都會雅仕M","雕孔翼紋牛津鞋-經典黑":"都會雅仕M",
+  "側鬆緊商務橫飾牛津鞋-藏青":"都會雅仕M","側鬆緊商務橫飾牛津鞋-巧克力咖":"都會雅仕M","側鬆緊商務橫飾牛津鞋-經典黑":"都會雅仕M","側鬆緊商務橫飾牛津鞋-咖啡":"都會雅仕M",
+  "U-tip素面商務樂福鞋 經典黑":"都會雅仕M","U-tip素面商務樂福鞋-栗棕色":"都會雅仕M","U-tip素面商務樂福鞋-巧克力咖":"都會雅仕M",
+  "Essential 經典素面牛津鞋 - 紅棕色":"都會雅仕M","Essential 經典素面牛津鞋 - 經典黑":"都會雅仕M",
+  "新義式小方頭鵝頸皮革大底牛津鞋-經典黑":"義式方頭E+","新義式小方頭鵝頸皮革大底牛津鞋-可可咖":"義式方頭E+",
+  "皮革大底V-Front雕花小方頭德比鞋-經典黑":"義式方頭E+","皮革大底V-Front雕花小方頭德比鞋-栗棕色":"義式方頭E+",
+  "雙扣孟克皮革大底短靴 經典黑":"皮底靴",
+  "馬克縫雙孔帆船鞋-藏青":"Light","馬克縫雙孔帆船鞋-可可咖":"Light","馬克縫雙孔帆船鞋-卡其灰":"Light",
+  "馬克縫反毛皮樂福鞋-極簡灰":"Light","馬克縫反毛皮樂福鞋-深海藍":"Light","馬克縫反毛皮樂福鞋-駱駝棕":"Light",
+  "UH系列．Dr.Sole翼紋雕花德比休閒鞋-經典黑":"Urban Hybrid","UH系列．Dr.Sole翼紋雕花德比休閒鞋-可可咖":"Urban Hybrid",
+  "限定款｜UH系列．Dr.Sole U型馬克縫麂皮袋鼠鞋-極簡灰":"Urban Hybrid","UH系列．Dr.Sole U型馬克縫袋鼠鞋-經典黑":"Urban Hybrid","UH系列．Dr.Sole U型馬克縫袋鼠鞋-可可咖":"Urban Hybrid",
+  "UH系列．Dr.Sole麂皮沙漠靴-深焙咖":"Urban Hybrid","UH系列．Dr.Sole麂皮沙漠靴-淺卡其":"Urban Hybrid","UH系列．Dr.Sole麂皮沙漠靴-深灰":"Urban Hybrid",
+  "UH系列．Dr.Sole Logger 工作靴-經典黑":"Urban Hybrid","UH系列．Dr.Sole Logger 麂皮工作靴-駱駝棕":"Urban Hybrid",
+  "Combo手作皮革休閒鞋-酒紅":"Combo","Combo手作皮革休閒鞋-經典黑":"Combo","Combo手作皮革小白鞋":"Combo","Combo手作皮革休閒鞋 闇夜藍":"Combo",
+  "Combo雙縫線反毛皮休閒德比鞋-極簡灰":"Combo","Combo雙縫線反毛皮休閒德比鞋-駱駝棕":"Combo","Combo雙縫線休閒德比鞋-經典黑":"Combo",
+  "Combo雙縫線橫飾休閒德比鞋-蜜棕色":"Combo","Combo雙縫線橫飾休閒德比鞋-經典黑":"Combo",
+  "Bookbinder 便士樂福鞋-經典黑":"Combo","Bookbinder 便士樂福鞋-勃根地酒紅":"Combo",
+  "Blucher布呂歇爾雷根底德比鞋-勃根地酒紅":"Lug sole","Blucher布呂歇爾雷根底德比鞋-經典黑":"Lug sole",
+  "U-Tip馬克縫雷根底德比鞋-栗棕色":"Lug sole","U-Tip馬克縫雷根底德比鞋-經典黑":"Lug sole",
+  "虎骨扣雷根底軍靴-經典黑":"Lug sole","虎骨扣雷根底軍靴-可可咖":"Lug sole",
+  "輕量Lug sole雷根底便士樂福鞋-黑":"Lug sole","輕量Lug sole雷根底便士樂福鞋-可可咖":"Lug sole",
+  "輕量Lug sole雷根底流蘇樂福鞋-黑":"Lug sole","輕量Lug sole雷根底流蘇樂福鞋-濃粹咖":"Lug sole",
+  "XV1經典皮革小白鞋":"Xtra Value One","XV1經典皮革休閒鞋-栗棕色":"Xtra Value One",
+  "LibreSole升級大底XV1經典皮革休閒鞋-經典黑":"Xtra Value One","LibreSole升級大底XV1經典皮革休閒鞋-勃根地酒紅":"Xtra Value One","LibreSole升級大底-XV1經典皮革小白鞋":"Xtra Value One",
+  "LibreSole升級大底XV1反毛皮休閒鞋-卡其":"Xtra Value One","LibreSole升級大底XV1反毛皮休閒鞋-淺灰":"Xtra Value One",
+  "XV-S 馬克縫單線休閒鞋 經典黑":"Xtra Value Stripe","XV-S 馬克縫單線小白鞋":"Xtra Value Stripe",
+  "XVL 麂皮威尼斯樂福鞋 卡其":"Xtra Value Loafer","XVL 麂皮威尼斯樂福鞋 軍綠":"Xtra Value Loafer","XVL 麂皮威尼斯樂福鞋 淺灰":"Xtra Value Loafer",
+  "Vibram全裁片反毛皮卻爾喜靴-深咖啡":"Symbol","Vibram 全裁片卻爾喜靴-勃根地酒紅":"Symbol","Vibram 全裁片卻爾喜靴-經典黑":"Symbol",
+  "Flap Crest 義大利Vibram大底查卡靴-經典黑":"Symbol","Flap Crest 義大利Vibram大底查卡靴-可可咖":"Symbol",
+  "裙飾皮革大底比利時樂福鞋-咖啡色":"經典樂福L","裙飾皮革大底比利時樂福鞋-藏青色":"經典樂福L","裙飾皮革大底比利時樂福鞋-灰褐色":"經典樂福L","裙飾皮革大底比利時樂福鞋":"經典樂福L",
+  "皮革大底雙扣孟克比利時樂福鞋-經典黑":"經典樂福L","皮革大底雙扣孟克比利時樂福鞋-藏青色":"經典樂福L","皮革大底雙扣孟克比利時樂福鞋-蜜棕色-官網/東門限定":"經典樂福L",
+  "皮革大底反毛皮便士樂福鞋-深海藍":"經典樂福L","皮革大底反毛皮便士樂福鞋-淺卡其":"經典樂福L","皮革大底反毛皮便士樂福鞋-深焙咖":"經典樂福L",
+  "皮革大底便士樂福鞋-栗棕色":"經典樂福L","皮革大底便士樂福鞋-經典黑":"經典樂福L",
+  "手工馬克縫馬銜扣皮革大底樂福鞋 經典黑":"經典樂福L","手工馬克縫馬銜扣皮革大底樂福鞋 藏青-官網 中山 東門限定":"經典樂福L","手工馬克縫馬銜扣皮革大底樂福鞋 栗棕色":"經典樂福L",
+  "13週年限定 Wholecut 翼紋縫線牛津鞋 酒紅":"典雅圓頭C","Wholecut翼紋縫線皮革大底牛津鞋-蜜棕色":"典雅圓頭C","Wholecut 翼紋縫線牛津鞋 經典黑":"典雅圓頭C","Wholecut 翼紋縫線牛津鞋 咖啡":"典雅圓頭C","13週年限定 Wholecut 翼紋縫線牛津鞋 藏青":"典雅圓頭C",
+  "Ghillie翼紋雕花鞋-經典黑":"典雅圓頭C","Ghillie翼紋雕花鞋-海軍藍":"典雅圓頭C","Ghillie翼紋雕花鞋-蜜棕色":"典雅圓頭C",
+  "鑲邊飾線皮革大底德比鞋-渲染咖":"典雅圓頭C","鑲邊飾線皮革大底德比鞋-焦糖棕":"典雅圓頭C","鑲邊飾線皮革大底德比鞋-經典黑":"典雅圓頭C",
+  "1/4雕花橫飾皮革大底牛津鞋-經典黑":"典雅圓頭C","1/4雕花橫飾皮革大底牛津鞋-濃粹咖":"典雅圓頭C","1/4雕花橫飾皮革大底牛津鞋-栗棕色":"典雅圓頭C",
+  "皮革大底鞍部牛津鞋-咖啡色":"典雅圓頭C","鞍部牛津鞋 Saddle shoes 經典黑":"典雅圓頭C","皮革大底鞍部牛津鞋-酒紅色":"典雅圓頭C",
+  "3/4雕花鋸齒翼紋牛津鞋 焦咖啡":"典雅圓頭C","3/4雕花鋸齒翼紋牛津鞋 經典黑":"典雅圓頭C","3/4雕花鋸齒翼紋牛津鞋 可可咖":"典雅圓頭C",
+  "雙釦孟克皮底紳士鞋 深焙咖":"英式丹迪小圓頭D","雙釦孟克皮底紳士鞋 咖啡":"英式丹迪小圓頭D","雙釦孟克皮底紳士鞋 經典黑":"英式丹迪小圓頭D",
+  "鵝頸橫飾皮底牛津鞋 蜜糖棕":"英式丹迪小圓頭D","鵝頸橫飾皮革大底牛津鞋-渲染咖":"英式丹迪小圓頭D","鵝頸橫飾皮底牛津鞋 經典黑":"英式丹迪小圓頭D",
+  "翼紋雕花皮革大底德比鞋-焦糖棕":"英式丹迪小圓頭D","翼紋雕花皮革大底德比鞋-勃根地酒紅":"英式丹迪小圓頭D","翼紋雕花皮革大底德比鞋-經典黑":"英式丹迪小圓頭D",
+  "基本橫飾皮革大底德比鞋-深焙咖":"英式丹迪小圓頭D","基本橫飾皮革大底德比鞋-經典黑":"英式丹迪小圓頭D","基本橫飾皮革大底德比鞋-可可咖":"英式丹迪小圓頭D",
+  "側彈性1/2雕花皮底牛津鞋-經典黑":"英式丹迪小圓頭D","側彈性1/2雕花皮底牛津鞋-濃粹咖":"英式丹迪小圓頭D",
+  "布呂歇爾皮革大底德比鞋 經典黑":"英式丹迪小圓頭D","布呂歇爾皮革大底德比鞋 濃粹咖":"英式丹迪小圓頭D","布呂歇爾皮革大底德比鞋 深海藍-官網限定":"英式丹迪小圓頭D",
+  "鞍部牛津鞋 Saddle Shoes":"Premium (Z)","Patina 鞍部牛津鞋 Saddle Shoes":"Premium (Z)","翼紋牛津鞋 Austerity Brogues":"Premium (Z)",
+  "橫飾德比鞋 Cap-toe Derby":"Premium (Z)","Patina 橫飾德比鞋 Cap-toe Derby":"Premium (Z)","單釦孟克鞋 Plain-toe Monk":"Premium (Z)","Wholecut牛津鞋 Wholecut Oxford":"Premium (Z)"
+};
+
+/* normalize 用：去全部空白、半全形 dash 統一 */
+function normName(s) {
+  return String(s || '').trim().replace(/[—–－]/g, '-').replace(/\s+/g, '');
+}
+const SERIES_MAP_NORM = Object.fromEntries(
+  Object.entries(SERIES_MAP).map(([k, v]) => [normName(k), v])
+);
+
+/* alias：Shopline 名稱跟對照表寫法不一致時補正 */
+const SERIES_ALIAS = [
+  [/鑲邊飾線.*德比鞋/,           '典雅圓頭C'],
+  [/皮革大底德比踝靴/,           'ORINGO W'],
+  [/雙[扣釦]孟克皮底紳士鞋/,     '英式丹迪小圓頭D'],
+  [/雙[扣釦]孟克皮革大底短靴/,   '皮底靴'],
+  [/輕量\s*Lug.?sole.*樂福鞋/i,  'Lug sole'],
+  [/馬銜扣中跟樂福女鞋/,         'ORINGO W'],
+  [/^Basic\s*基本德比鞋/i,       '都會雅仕M'],
+  [/ONE\s*CUT.*卻爾喜.*皮底靴/i, '皮底靴'],
+  [/低筒卻爾喜膠底靴/,           '皮底靴'],
+];
+
+function classifyType(name) { for (const r of TYPE_RULES) if (r.test(name)) return r.label; return '其他'; }
+function classifySeries(name) {
+  if (!name) return null;
+  if (SERIES_MAP[name]) return SERIES_MAP[name];
+  const k = normName(name);
+  if (SERIES_MAP_NORM[k]) return SERIES_MAP_NORM[k];
+  for (const [pat, ser] of SERIES_ALIAS) if (pat.test(name)) return ser;
+  return null;
+}
+
+/* 鞋類類別集合（排除襪子/保養品/配件） */
+const SHOE_TYPES   = new Set(['靴子','女鞋','休閒皮鞋','樂福鞋','牛津鞋','德比鞋','孟克鞋']);
+const FORMAL_TYPES = new Set(['牛津鞋','德比鞋','孟克鞋','樂福鞋']);
+const CASUAL_TYPES = new Set(['休閒皮鞋','靴子','女鞋']);
+
+function aggregateByCategory(rows, classifyFn) {
+  const map = new Map();
+  rows.forEach(r => {
+    const name = String(r[P_NAME] || '').trim();
+    if (!name) return;
+    const cat = classifyFn(name) || '未分類';
+    if (!map.has(cat)) map.set(cat, { cat, qty:0, rev:0, samples:[] });
+    const e = map.get(cat);
+    e.qty += n(r[P_QTY]);
+    e.rev += n(r[P_REV]);
+    if (cat === '未分類' && !e.samples.includes(name)) e.samples.push(name);
+  });
+  return [...map.values()].filter(e => e.qty > 0).sort((a,b) => b.qty - a.qty);
+}
+
+/* ════════════════════════════════════════
+   gviz loader
+   ════════════════════════════════════════ */
+let _seq = 0;
+function loadGviz(tabName) {
+  return new Promise((resolve, reject) => {
+    const cb = '_gviz' + (++_seq);
+    window[cb] = data => {
+      delete window[cb];
+      document.head.removeChild(el);
+      if (!data?.table) { reject(new Error('no table')); return; }
+      resolve(data.table.rows.map(r => r.c.map(c => c?.v ?? null)));
+    };
+    const el = document.createElement('script');
+    el.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&sheet=${encodeURIComponent(tabName)}`;
+    el.onerror = () => { delete window[cb]; document.head.removeChild(el); reject(new Error('load failed')); };
+    document.head.appendChild(el);
+  });
+}
+
+/* 正規化 period 字串：把 2026/4/20 補零為 2026/04/20，統一格式避免重複週期 */
+function normPeriod(p) {
+  return String(p).replace(/(\d{4})\/(\d{1,2})\/(\d{1,2})/g, (_, y, m, d) =>
+    `${y}/${m.padStart(2,'0')}/${d.padStart(2,'0')}`);
+}
+
+function n(v)  { return parseFloat(v) || 0; }
+function fmt(v){ return Math.round(v).toLocaleString('zh-TW'); }
+function fmtW(v){ return (Math.round(v/1000)/10).toFixed(1) + '萬'; }
+function pct(v){ return (n(v)*100).toFixed(1) + '%'; }
+function achColor(v){ return v >= 1 ? 'pos' : v >= .85 ? 'warn' : 'neg'; }
+
+/* ════════════════════════════════════════
+   月份偵測：從 period 字串中取出月份
+   支援格式：2026/04/07-04/13、04/07-04/13、W15 等
+   ════════════════════════════════════════ */
+function guessMonth(periodStr) {
+  if (!periodStr) return null;
+  const s = String(periodStr);
+  // 嘗試 2026/MM 或 /MM/ 格式
+  const m1 = s.match(/(?:^|\/)(\d{2})(?:\/|-)/);
+  if (m1) return parseInt(m1[1], 10);
+  // 嘗試直接含月份數字
+  const m2 = s.match(/(\d{4})\/(\d{2})/);
+  if (m2) return parseInt(m2[2], 10);
+  return null;
+}
+
+function currentMonth() { return new Date().getMonth() + 1; }
+
+/* ════════════════════════════════════════
+   Rank tab switcher
+   ════════════════════════════════════════ */
+function switchRank(mode, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('rank-by-rev').style.display   = mode === 'rev'   ? 'block' : 'none';
+  document.getElementById('rank-by-month').style.display = mode === 'month' ? 'block' : 'none';
+}
+
+/* ════════════════════════════════════════
+   Rank badge helper
+   ════════════════════════════════════════ */
+function badge(rank) {
+  if (rank === 1) return '<span class="rank-badge badge-1">🥇</span>';
+  if (rank === 2) return '<span class="rank-badge badge-2">🥈</span>';
+  if (rank === 3) return '<span class="rank-badge badge-3">🥉</span>';
+  return `<span class="rank-badge badge-n">${rank}</span>`;
+}
+
+/* WoW chip */
+function wowChip(cur, prev) {
+  if (prev === null || prev === 0) return '<span class="trend-chip fl">—</span>';
+  const d = cur - prev;
+  const pctStr = ((Math.abs(d)/prev)*100).toFixed(0) + '%';
+  if (d > 0) return `<span class="trend-chip up">▲ ${pctStr}</span>`;
+  if (d < 0) return `<span class="trend-chip dn">▼ ${pctStr}</span>`;
+  return '<span class="trend-chip fl">→</span>';
+}
+
+/* ════════════════════════════════════════
+   Aggregate helpers
+   ════════════════════════════════════════ */
+// 排除非銷售商品（維修服務 / Shopline 客製化下標頁）
+const NON_SALES_RE = /維修|修鞋|專屬下標頁|下標頁/;
+function aggregateByName(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    const name = String(r[P_NAME] || '').trim();
+    if (!name || NON_SALES_RE.test(name)) return;
+    if (!map.has(name)) map.set(name, { name, qty:0, rev:0, ord:0 });
+    const e = map.get(name);
+    e.qty += n(r[P_QTY]);
+    e.rev += n(r[P_REV]);
+    e.ord += n(r[P_ORD]);
+  });
+  return [...map.values()].map(e => ({ ...e, avg: e.qty > 0 ? e.rev/e.qty : 0 }));
+}
+
+/* 從商品名稱抽顏色（取最後一個 dash 或空格後的詞，去掉「大尺碼」「東門限定」等後綴） */
+function extractColor(name) {
+  let s = String(name||'').trim();
+  s = s.replace(/[\-\s]+(大尺碼|官網[\s\/]*中山[\s\/]*東門[\s]*限定|官網[\s\/]*東門限定|東門限定|官網限定|限定)\s*$/g, '').trim();
+  const m = s.match(/[\-\s]([^\-\s]+)$/);
+  if (!m) return null;
+  const c = m[1].trim();
+  if (!c || /^\d/.test(c) || c.length > 8) return null;
+  return c;
+}
+
+function aggregateByColor(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    const name = String(r[P_NAME]||'').trim();
+    if (!name || NON_SALES_RE.test(name)) return;
+    // 只看鞋類
+    if (!SHOE_TYPES.has(classifyType(name))) return;
+    const color = extractColor(name);
+    if (!color) return;
+    if (!map.has(color)) map.set(color, { color, qty:0, rev:0 });
+    const e = map.get(color);
+    e.qty += n(r[P_QTY]);
+    e.rev += n(r[P_REV]);
+  });
+  return [...map.values()].sort((a,b) => b.qty - a.qty);
+}
+
+/* ════════════════════════════════════════
+   Main
+   ════════════════════════════════════════ */
+/* 目前顯示的門市 */
+let _posData = [], _productsData = [], _posCurrentStore = '電商', _posPeriodMode = 'week';
+const TOP_STORE = 10;
+
+function switchStore(storeName, btn) {
+  _posCurrentStore = storeName;
+  document.querySelectorAll('#pos-tab-bar .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderStoreProducts(_posData, _productsData, storeName, _posPeriodMode);
+}
+
+function switchPosPeriod(mode, btn) {
+  _posPeriodMode = mode;
+  document.querySelectorAll('#pos-period-bar .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderStoreProducts(_posData, _productsData, _posCurrentStore, mode);
+}
+
+async function init() {
+  let products = [], stores = [], posRows = [];
+
+  try {
+    [products, stores, posRows] = await Promise.all([
+      loadGviz('商品週報').catch(() => []),
+      loadGviz('週報數據').catch(() => []),
+      loadGviz('商品彙整表').catch(() => []),
+    ]);
+  } catch(e) {
+    setBanner('warn', '⚠ 資料讀取失敗，請確認試算表已共用「知道連結的人可以檢視」');
+    return;
+  }
+
+  /* ── Products data ── */
+  /* 過濾掉可能被 gviz 當作資料列的標題行（件數欄位為非數字字串） */
+  const validProducts = products.filter(r => r[P_NAME] && r[P_NAME] !== '商品名稱' && !isNaN(parseFloat(r[P_QTY])));
+
+  if (!validProducts.length) {
+    setBanner('warn', '⏳ 尚無商品資料，等待 GAS 執行 sendWeeklyProductReport() 後自動更新');
+    renderNoProductData();
+    if (stores.length) renderStores(stores);
+    return;
+  }
+
+  /* 後面統一用 validProducts 取代 products */
+  products = validProducts;
+
+  /* 正規化 period 欄位（補零），避免同一週有兩種格式 */
+  products = products.map(r => { const c = [...r]; c[P_PERIOD] = normPeriod(c[P_PERIOD]); return c; });
+
+  /* 取得所有週期並排序 */
+  const allPeriods = [...new Set(products.map(r => String(r[P_PERIOD] || '')).filter(Boolean))].sort();
+  const latestPeriod = allPeriods[allPeriods.length - 1];
+  const prevPeriod   = allPeriods.length >= 2 ? allPeriods[allPeriods.length - 2] : null;
+
+  /* 本週 / 上週 / 本月資料 */
+  const curProducts  = products.filter(r => String(r[P_PERIOD]) === latestPeriod);
+  const prevProducts = prevPeriod ? products.filter(r => String(r[P_PERIOD]) === prevPeriod) : [];
+
+  /* 本月 / 上月累積 */
+  const curMo  = currentMonth();
+  const prevMo = curMo === 1 ? 12 : curMo - 1;
+
+  const moPeriods = allPeriods.filter(p => { const m = guessMonth(p); return m === curMo || m === null; });
+  const moRows = moPeriods.length > 0 && moPeriods.some(p => guessMonth(p) !== null)
+    ? products.filter(r => moPeriods.includes(String(r[P_PERIOD])))
+    : products.filter(r => allPeriods.slice(-4).includes(String(r[P_PERIOD])));
+
+  /* 上月資料（用於名次比較） */
+  const prevMoPeriods = allPeriods.filter(p => guessMonth(p) === prevMo);
+  const prevMoRows    = products.filter(r => prevMoPeriods.includes(String(r[P_PERIOD])));
+  const prevMoByMonth = aggregateByName(prevMoRows).sort((a,b) => (b.rev - a.rev) || (b.qty - a.qty));
+  const prevMoRankMap = new Map(prevMoByMonth.map((e,i) => [e.name, i+1]));
+
+  document.getElementById('hdr-week').textContent = latestPeriod;
+  document.getElementById('rank-period-2').textContent = latestPeriod;
+  document.getElementById('rank-period-mo').textContent = `${moPeriods.length} 週累積`;
+  setBanner('live', `✅ 即時資料 · 本週：${latestPeriod}${prevPeriod ? ' · 上週：'+prevPeriod : ''}`);
+
+  /* 本週聚合 */
+  const byQty   = aggregateByName(curProducts).sort((a,b) => b.qty - a.qty);
+  const byRev   = aggregateByName(curProducts).sort((a,b) => (b.rev - a.rev) || (b.qty - a.qty));
+  const byMonth = aggregateByName(moRows).sort((a,b) => (b.rev - a.rev) || (b.qty - a.qty));
+
+  /* 上週 map */
+  const prevMap = new Map(aggregateByName(prevProducts).map(e => [e.name, e]));
+
+  const totalQty = byQty.reduce((s,e) => s+e.qty, 0);
+  const totalRev = byQty.reduce((s,e) => s+e.rev, 0);
+  const totalOrd = byQty.reduce((s,e) => s+e.ord, 0);
+  const avgTicket = totalOrd > 0 ? totalRev/totalOrd : 0;
+  const totalMoQty = byMonth.reduce((s,e) => s+e.qty, 0);
+  const totalMoRev = byMonth.reduce((s,e) => s+e.rev, 0);
+
+  /* 上週總計 */
+  const prevTotalQty = prevProducts.reduce((s,r) => s+n(r[P_QTY]), 0);
+  const prevTotalRev = prevProducts.reduce((s,r) => s+n(r[P_REV]), 0);
+
+  /* KPI（5 張） */
+  const top1 = byQty[0];
+  const deltaQty = prevTotalQty > 0 ? (totalQty - prevTotalQty)/prevTotalQty : null;
+  const deltaRev = prevTotalRev > 0 ? (totalRev - prevTotalRev)/prevTotalRev : null;
+
+  function deltaChip(d) {
+    if (d === null) return '<span class="kpi-delta neu">—</span>';
+    const sign = d >= 0 ? '+' : '';
+    const cls  = d >= 0 ? 'pos' : 'neg';
+    return `<span class="kpi-delta ${cls}">${sign}${(d*100).toFixed(1)}% WoW</span>`;
+  }
+
+  document.getElementById('kpi-grid').innerHTML = [
+    { label:'本週最熱銷',  val: top1 ? String(top1.name).slice(0,12) : '—', sub: top1 ? `${fmt(top1.qty)} 件` : '', delta: '' },
+    { label:'線上銷售件數', val: fmt(totalQty) + ' 件', sub: `${curProducts.length} 個 SKU`, delta: deltaChip(deltaQty) },
+    { label:'線上銷售金額', val: '$ ' + fmt(totalRev), sub: `訂單 ${fmt(totalOrd)} 筆`, delta: deltaChip(deltaRev) },
+    { label:'線上平均客單', val: '$ ' + fmt(avgTicket), sub: top1 ? `Top1 佔 ${(top1.qty/totalQty*100).toFixed(1)}%` : '—', delta: '' },
+    { label:'本月累積金額', val: '$ ' + fmt(totalMoRev), sub: `共 ${fmt(totalMoQty)} 件 · ${moPeriods.length}週`, delta: '' },
+  ].map((k,i) => `
+    <div class="kpi" style="--green:${i===4?'var(--rust)':'var(--green)'}">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-val">${k.val}</div>
+      <div class="kpi-sub">${k.sub}</div>
+      ${k.delta}
+    </div>`).join('');
+
+  const TOP = 20;
+
+  /* ── 排行表：本週金額 ── */
+  const maxRev = byRev[0]?.rev || 1;
+  document.getElementById('rank-rev-body').innerHTML = byRev.slice(0, TOP).map((e,i) => {
+    const prev = prevMap.get(e.name);
+    const pctBar = (e.rev/maxRev*100).toFixed(1);
+    return `<tr>
+      <td>${badge(i+1)}</td>
+      <td><div class="product-name">${e.name}</div></td>
+      <td class="num"><strong>$ ${fmt(e.rev)}</strong></td>
+      <td class="num">${fmt(e.qty)} 件</td>
+      <td class="num">$ ${fmt(e.avg)}</td>
+      <td class="num">${wowChip(e.rev, prev?.rev ?? null)}</td>
+      <td>
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:2px">${(e.rev/totalRev*100).toFixed(1)}%</div>
+        <div class="bar-bg"><div class="bar-fg${i===0?' gold':''}" style="width:${pctBar}%"></div></div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  /* ── 排行表：本月累積（依金額；含較上月名次變化） ── */
+  const maxMoRev = byMonth[0]?.rev || 1;
+  const hasPrevMo = prevMoByMonth.length > 0;
+  document.getElementById('rank-mo-body').innerHTML = byMonth.slice(0, TOP).map((e,i) => {
+    const pctBar   = (e.rev/maxMoRev*100).toFixed(1);
+    const curRank  = i + 1;
+    const prevRank = prevMoRankMap.get(e.name) ?? null;
+    let rankChip;
+    if (!hasPrevMo || prevRank === null) {
+      rankChip = '<span class="trend-chip fl" title="上月無此商品">NEW</span>';
+    } else {
+      const diff = prevRank - curRank; // 正數 = 上升
+      if (diff > 0)      rankChip = `<span class="trend-chip up">▲ ${diff}</span>`;
+      else if (diff < 0) rankChip = `<span class="trend-chip dn">▼ ${Math.abs(diff)}</span>`;
+      else               rankChip = '<span class="trend-chip fl">─</span>';
+    }
+    return `<tr>
+      <td>${badge(curRank)}</td>
+      <td><div class="product-name">${e.name}</div></td>
+      <td class="num"><strong>$ ${fmt(e.rev)}</strong></td>
+      <td class="num">${fmt(e.qty)}</td>
+      <td class="num">$ ${fmt(Math.round(e.avg))}</td>
+      <td class="num">${rankChip}</td>
+      <td>
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:2px">${totalMoRev>0?(e.rev/totalMoRev*100).toFixed(1):0}%</div>
+        <div class="bar-bg"><div class="bar-fg${i===0?' gold':''}" style="width:${pctBar}%"></div></div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  /* ── 趨勢圖：Top 5 ── */
+  renderTrendChart(products, byQty.slice(0, 5).map(e => e.name), allPeriods.slice(-8));
+
+  /* ── 鞋款顏色分佈（本週．鞋類） ── */
+  renderColorList(aggregateByColor(curProducts));
+
+  /* ── 週銷售金額趨勢 ── */
+  renderRevTrend(products, allPeriods.slice(-10));
+
+  /* ── 本月 Top 10 貢獻橫條 ── */
+  renderMoContrib(byMonth.slice(0, 10), totalMoRev);
+
+  /* ── 商品分類圖（鞋類限定） ── */
+  const catByType   = aggregateByCategory(curProducts, classifyType).filter(e => SHOE_TYPES.has(e.cat));
+  const shoeQty     = catByType.reduce((s,e) => s+e.qty, 0);
+  // 系列分類：只取被 SERIES_MAP 認得的鞋類商品（避免拖鞋等被歸到「未分類」）
+  const shoeProducts = curProducts.filter(r => SHOE_TYPES.has(classifyType(String(r[P_NAME]||'').trim())));
+  const catBySeries = aggregateByCategory(shoeProducts, classifySeries);
+  renderCatChart('cat-type-chart',   catByType,   shoeQty);
+  renderCatChart('cat-series-chart', catBySeries, shoeQty);
+
+  // 顯示未分類商品提示（讓你知道哪些商品需要補進對照表）
+  const unclassified = catBySeries.find(e => e.cat === '未分類');
+  if (unclassified && unclassified.samples.length) {
+    console.log('[系列未分類]', unclassified.qty, '件，商品：', unclassified.samples);
+  }
+
+  /* ── 鞋款結構甜甜圈 ── */
+  const formalQty = catByType.filter(e => FORMAL_TYPES.has(e.cat)).reduce((s,e) => s+e.qty, 0);
+  const casualQty = catByType.filter(e => CASUAL_TYPES.has(e.cat)).reduce((s,e) => s+e.qty, 0);
+  renderDonut('style-donut-chart', 'style-legend',
+    [{ label:'紳士鞋', qty: formalQty }, { label:'休閒鞋', qty: casualQty }]);
+
+  const formalBreakdown = catByType.filter(e => FORMAL_TYPES.has(e.cat));
+  renderDonut('formal-donut-chart', 'formal-legend', formalBreakdown.map(e => ({ label: e.cat, qty: e.qty })));
+
+  /* ── 配件 / 襪子 / 保養品 熱銷 Top 10（本週．依金額） ── */
+  renderNonShoeRanking(curProducts, latestPeriod);
+
+  /* ── 各門市 / 網路 熱銷商品 Top 10 ── */
+  const validPos = posRows.filter(r => r[POS_NAME] && r[POS_NAME] !== '商品名稱' && !isNaN(parseFloat(r[POS_QTY])));
+  _posData = validPos;
+  _productsData = products;
+  renderStoreProducts(validPos, products, _posCurrentStore, _posPeriodMode);
+}
+
+/* ════════════════════════════════════════
+   No product data fallback
+   ════════════════════════════════════════ */
+function renderNoProductData() {
+  const msg = `<tr><td colspan="7" class="no-data">⏳ GAS 尚未推送商品資料，請先執行 <code>sendWeeklyProductReport()</code></td></tr>`;
+  document.getElementById('rank-rev-body').innerHTML = msg;
+  document.getElementById('rank-mo-body').innerHTML  = msg;
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi"><div class="kpi-label">狀態</div><div class="kpi-val" style="font-size:16px">等待 GAS</div><div class="kpi-sub">首次執行後自動顯示</div></div>`;
+  document.getElementById('spec-list').innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:16px">無資料</div>';
+}
+
+/* ════════════════════════════════════════
+   趨勢折線：Top 5 商品週走勢
+   ════════════════════════════════════════ */
+function renderTrendChart(products, top5names, periods) {
+  const datasets = top5names.map((name, i) => ({
+    label: name,
+    data: periods.map(p => {
+      const rows = products.filter(r => String(r[P_PERIOD]) === p && String(r[P_NAME]) === name);
+      return rows.length ? rows.reduce((s,r) => s+n(r[P_QTY]), 0) : null;
+    }),
+    borderColor: CHART_COLORS[i],
+    backgroundColor: 'transparent',
+    borderWidth: 2, pointRadius: 3, tension: 0.3, spanGaps: false,
+  }));
+
+  document.getElementById('trend-legend').innerHTML = top5names.map((nm,i) =>
+    `<div class="leg-item"><div class="leg-dot" style="background:${CHART_COLORS[i]}"></div>${nm.slice(0,14)}</div>`
+  ).join('');
+
+  new Chart(document.getElementById('trend-chart'), {
+    type: 'line',
+    data: { labels: periods.map(p => p.slice(-5)), datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { mode:'index', intersect:false } },
+      scales: {
+        x: { grid:{display:false}, ticks:{color:'#b09a88',font:{size:11}} },
+        y: { grid:{color:'rgba(40,66,52,.06)'}, ticks:{color:'#b09a88',font:{size:11},callback:v=>v+' 件'} }
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════
+   鞋款顏色分佈橫條（只看鞋類）
+   ════════════════════════════════════════ */
+function renderColorList(colors) {
+  const top = colors.slice(0, 12);
+  const totalQty = colors.reduce((s,e) => s+e.qty, 0);
+  const maxQ = top[0]?.qty || 1;
+  if (!top.length) {
+    document.getElementById('spec-list').innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:16px">本週無鞋款資料</div>';
+    return;
+  }
+  document.getElementById('spec-list').innerHTML = top.map((s,i) => {
+    const barW = (s.qty/maxQ*100).toFixed(1);
+    const share = totalQty > 0 ? (s.qty/totalQty*100).toFixed(1) : 0;
+    const color = CHART_COLORS[i % CHART_COLORS.length];
+    return `<div class="hbar-row w3">
+      <div class="hbar-label" title="${s.color}">${s.color}</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${barW}%;background:${color}"></div></div>
+      <div class="hbar-val">${fmt(s.qty)} 件</div>
+      <div class="hbar-val2" style="color:var(--text-muted)">${share}%</div>
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════
+   週銷售金額趨勢（bar chart）
+   ════════════════════════════════════════ */
+function renderRevTrend(products, periods) {
+  const data = periods.map(p => {
+    const rows = products.filter(r => String(r[P_PERIOD]) === p);
+    return rows.reduce((s,r) => s+n(r[P_REV]), 0);
+  });
+
+  new Chart(document.getElementById('rev-trend-chart'), {
+    type: 'bar',
+    data: {
+      labels: periods.map(p => p.slice(-5)),
+      datasets: [{
+        data,
+        backgroundColor: periods.map((_,i) =>
+          i === periods.length-1 ? '#284234' : 'rgba(40,66,52,.35)'
+        ),
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{
+        callbacks:{ label: ctx => ' $ ' + fmt(ctx.raw) }
+      }},
+      scales: {
+        x: { grid:{display:false}, ticks:{color:'#b09a88',font:{size:11}} },
+        y: { grid:{color:'rgba(40,66,52,.06)'}, ticks:{color:'#b09a88',font:{size:11},callback:v=>'$'+fmt(v/10000)+'萬'} }
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════
+   本月 Top 10 橫條圖（doughnut 換成 bar）
+   ════════════════════════════════════════ */
+function renderMoContrib(top10, totalRev) {
+  if (!top10.length) return;
+  new Chart(document.getElementById('mo-contrib-chart'), {
+    type: 'bar',
+    data: {
+      labels: top10.map(e => e.name.slice(0,10)),
+      datasets: [{
+        data: top10.map(e => e.rev),
+        backgroundColor: top10.map((_,i) => CHART_COLORS[i % CHART_COLORS.length]),
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {display:false},
+        tooltip: {
+          callbacks: {
+            label: ctx => ` $${fmt(ctx.raw)} (${(ctx.raw/totalRev*100).toFixed(1)}%)`
+          }
+        }
+      },
+      scales: {
+        x: { grid:{color:'rgba(40,66,52,.06)'}, ticks:{color:'#b09a88',font:{size:10},callback:v=>'$'+fmt(v/10000)+'萬'} },
+        y: { grid:{display:false}, ticks:{color:'#284234',font:{size:11}} }
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════
+   分類橫條圖
+   ════════════════════════════════════════ */
+function renderCatChart(canvasId, cats, totalQty) {
+  if (!cats.length) return;
+  const colors = cats.map((_,i) => CHART_COLORS[i % CHART_COLORS.length]);
+  new Chart(document.getElementById(canvasId), {
+    type: 'bar',
+    data: {
+      labels: cats.map(c => c.cat),
+      datasets: [{
+        data: cats.map(c => c.qty),
+        backgroundColor: colors,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${fmt(ctx.raw)} 件 (${(ctx.raw/totalQty*100).toFixed(1)}%)`
+          }
+        }
+      },
+      scales: {
+        x: { grid:{color:'rgba(40,66,52,.06)'}, ticks:{color:'#b09a88',font:{size:11},callback:v=>v+' 件'} },
+        y: { grid:{display:false}, ticks:{color:'#284234',font:{size:11}} }
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════
+   甜甜圈圖（鞋款結構）
+   ════════════════════════════════════════ */
+function renderDonut(canvasId, legendId, items) {
+  const el = document.getElementById(canvasId);
+  if (!el) return;
+  const valid = items.filter(e => e.qty > 0);
+  if (!valid.length) {
+    el.closest('.chart-card').style.display = 'none';
+    return;
+  }
+  const total  = valid.reduce((s,e) => s+e.qty, 0);
+  const colors = ['#284234','#A54A1A','#CFA294','#1D9E75','#D4537E','#EF9F27','#8D5531'];
+
+  document.getElementById(legendId).innerHTML = valid.map((e,i) =>
+    `<div class="leg-item">
+      <div class="leg-dot" style="background:${colors[i%colors.length]}"></div>
+      ${e.label} <span style="font-family:'Space Mono',monospace;margin-left:4px">${e.qty} 件・${(e.qty/total*100).toFixed(1)}%</span>
+    </div>`
+  ).join('');
+
+  new Chart(el, {
+    type: 'doughnut',
+    data: {
+      labels: valid.map(e => e.label),
+      datasets: [{ data: valid.map(e => e.qty), backgroundColor: colors, borderWidth: 2, borderColor: '#FAF5EF' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '62%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}：${ctx.raw} 件 (${(ctx.raw/total*100).toFixed(1)}%)` } }
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════
+   配件 / 襪子 / 保養品 熱銷 Top 10（非鞋類）
+   ════════════════════════════════════════ */
+function renderNonShoeRanking(rows, period) {
+  const nonShoe = rows.filter(r => {
+    const name = String(r[P_NAME]||'').trim();
+    if (!name || NON_SALES_RE.test(name)) return false;
+    return !SHOE_TYPES.has(classifyType(name));
+  });
+  const sorted = aggregateByName(nonShoe).sort((a,b) => (b.rev - a.rev) || (b.qty - a.qty));
+  const TOP = 10;
+  const totalRev = sorted.reduce((s,e) => s+e.rev, 0);
+  const totalQty = sorted.reduce((s,e) => s+e.qty, 0);
+  const maxR = sorted[0]?.rev || 1;
+
+  document.getElementById('non-shoe-period').textContent = `${period}｜合計 $${fmt(Math.round(totalRev))}・${fmt(totalQty)} 件`;
+
+  const tbody = document.getElementById('non-shoe-body');
+  if (!sorted.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="no-data">本週無非鞋類商品銷售</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = sorted.slice(0, TOP).map((e,i) => {
+    const barW = (e.rev/maxR*100).toFixed(1);
+    const type = classifyType(e.name);
+    return `<tr>
+      <td>${badge(i+1)}</td>
+      <td><div class="product-name">${e.name}</div></td>
+      <td><span style="font-size:11px;color:var(--text-muted)">${type}</span></td>
+      <td class="num"><strong>$ ${fmt(e.rev)}</strong></td>
+      <td class="num">${fmt(e.qty)}</td>
+      <td class="num">$ ${fmt(Math.round(e.avg))}</td>
+      <td>
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:2px">${totalRev>0?(e.rev/totalRev*100).toFixed(1):0}%</div>
+        <div class="bar-bg"><div class="bar-fg${i===0?' gold':''}" style="width:${barW}%"></div></div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════
+   各門市 / 網路 熱銷商品 Top 10
+   - storeName='電商' → 用 商品週報（products）
+   - 其他門市     → 用 商品彙整表（posRows）
+   - mode='week'/'m4'/'all'：本週 / 近 4 週累積 / 全部歷史累積
+   ════════════════════════════════════════ */
+function renderStoreProducts(posRows, products, storeName, mode) {
+  const el = document.getElementById('pos-store-content');
+  const isOnline = storeName === '電商';
+
+  /* 統一抽出來的「彙總邏輯」：給定 rows, accessors, 期間 → sorted list（依營業額排序） */
+  function aggregate(rows, accessor) {
+    const map = new Map();
+    rows.forEach(r => {
+      const name = String(accessor.name(r)||'').trim();
+      if (!name || NON_SALES_RE.test(name)) return;
+      if (!map.has(name)) map.set(name, { name, series: accessor.series(r) || '', qty:0, amt:0 });
+      const e = map.get(name);
+      e.qty += n(accessor.qty(r));
+      e.amt += n(accessor.amt(r));
+    });
+    return [...map.values()].filter(e => e.amt > 0).sort((a,b) => b.amt - a.amt);
+  }
+
+  function pickPeriods(allPeriods, mode) {
+    if (mode === 'all') return allPeriods;
+    if (mode === 'm4')  return allPeriods.slice(-4);
+    return allPeriods.slice(-1); // week
+  }
+
+  let allPeriods, periods, filtered, sorted, periodLabel;
+
+  if (isOnline) {
+    /* 商品週報資料 */
+    allPeriods = [...new Set(products.map(r => String(r[P_PERIOD]||'')).filter(Boolean))].sort();
+    periods = pickPeriods(allPeriods, mode);
+    filtered = products.filter(r => periods.includes(String(r[P_PERIOD])));
+    sorted = aggregate(filtered, {
+      name:   r => r[P_NAME],
+      series: r => classifySeries(String(r[P_NAME]||'').trim()),
+      qty:    r => r[P_QTY],
+      amt:    r => r[P_REV],
+    });
+  } else {
+    /* 商品彙整表資料 */
+    allPeriods = [...new Set(posRows.filter(r => String(r[POS_STORE])===storeName).map(r => String(r[POS_PERIOD]||'')).filter(Boolean))].sort();
+    periods = pickPeriods(allPeriods, mode);
+    filtered = posRows.filter(r => String(r[POS_STORE])===storeName && periods.includes(String(r[POS_PERIOD])));
+    sorted = aggregate(filtered, {
+      name:   r => r[POS_NAME],
+      series: r => r[POS_SERIES],
+      qty:    r => r[POS_QTY],
+      amt:    r => r[POS_AMT],
+    });
+  }
+
+  if (!periods.length) {
+    el.innerHTML = `<div class="rank-card"><div class="no-data" style="padding:32px">
+      ${isOnline ? '網路（Shopline）' : storeName} 尚無資料${!isOnline ? '（等待 GAS 執行 backfillPosFromSheet）' : ''}
+    </div></div>`;
+    return;
+  }
+
+  // periods 字串可能是「YYYY/M/D ~ YYYY/M/D」範圍格式，要取頭尾單日避免重複
+  const headDate = String(periods[0]).split('~')[0].trim();
+  const tailDate = String(periods[periods.length-1]).split('~').pop().trim();
+  if (mode === 'week')      periodLabel = periods[0] || '—';
+  else if (periods.length === 1) periodLabel = `${periods.length} 週｜${periods[0]}`;
+  else if (mode === 'm4')   periodLabel = `近 ${periods.length} 週｜${headDate} ~ ${tailDate}`;
+  else                      periodLabel = `全部 ${periods.length} 週｜${headDate} ~ ${tailDate}`;
+
+  if (!sorted.length) {
+    el.innerHTML = `<div class="rank-card"><div class="no-data" style="padding:32px">${isOnline ? '網路' : storeName} 此期間無資料</div></div>`;
+    return;
+  }
+
+  const totalQty = sorted.reduce((s,e) => s+e.qty, 0);
+  const totalAmt = sorted.reduce((s,e) => s+e.amt, 0);
+  const maxA = sorted[0]?.amt || 1;
+  const TOP = TOP_STORE;
+  const icon = isOnline ? '🌐' : '🏪';
+  const display = isOnline ? '網路（Shopline）' : storeName;
+
+  el.innerHTML = `
+    <div class="rank-card">
+      <div class="rank-hd">
+        <span class="rank-hd-title">${icon} ${display}・Top ${Math.min(sorted.length, TOP)} 熱銷商品</span>
+        <span class="rank-hd-sub">${periodLabel}｜合計 $${fmt(Math.round(totalAmt))}・${fmt(totalQty)} 件</span>
+      </div>
+      <table class="rank-table">
+        <thead><tr>
+          <th style="width:40px">排名</th>
+          <th>商品</th>
+          <th>系列</th>
+          <th class="num">金額</th>
+          <th class="num">件數</th>
+          <th class="num">均價</th>
+          <th style="width:110px">營業額佔比</th>
+        </tr></thead>
+        <tbody>
+          ${sorted.slice(0, TOP).map((e,i) => {
+            const barW = (e.amt/maxA*100).toFixed(1);
+            const avg = e.qty > 0 ? e.amt/e.qty : 0;
+            return `<tr>
+              <td>${badge(i+1)}</td>
+              <td><div class="product-name">${e.name}</div></td>
+              <td><span style="font-size:11px;color:var(--text-muted)">${e.series||'—'}</span></td>
+              <td class="num"><strong>$${fmt(Math.round(e.amt))}</strong></td>
+              <td class="num">${fmt(e.qty)}</td>
+              <td class="num">$${fmt(Math.round(avg))}</td>
+              <td>
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:2px">${totalAmt>0?(e.amt/totalAmt*100).toFixed(1):0}%</div>
+                <div class="bar-bg"><div class="bar-fg${i===0?' gold':''}" style="width:${barW}%"></div></div>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function setBanner(type, msg) {
+  const el = document.getElementById('banner');
+  el.className = 'banner ' + type;
+  el.textContent = msg;
+}
+
+init();
+</script>
+<footer class="footer">
+  <a href="https://dashboard.oringo.tw/" style="color:var(--gray-pink);text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;border:1px solid rgba(226,206,185,.25);padding:3px 12px;border-radius:20px;display:inline-block;margin-bottom:8px;transition:all .15s" onmouseover="this.style.color='#E2CEB9'" onmouseout="this.style.color=''">← 中控中心</a><br>
+  林果良品 ORINGO｜商品銷售分析 
+  <span style="opacity:.4;font-size:10px;display:block;margin-top:3px">INTERNAL USE ONLY · ©2026 ORINGO</span>
+</footer>
+</body>
+</html>
