@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜維修工單追蹤</title>
+<link rel="icon" href="/favicon.png" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;
+  --rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;--bg:#F5EDE3;
+  --surface:#ffffff;--surface2:#FAF5EF;--border:rgba(40,66,52,0.10);
+  --border2:rgba(40,66,52,0.22);--text:#284234;--text-sub:#8D5531;
+  --text-muted:#b09a88;--positive:#1a7a4a;--negative:#c0392b;
+  --status-quote-bg:#FEF3C7;--status-quote-c:#92400E;
+  --status-sent-bg:#DBEAFE;--status-sent-c:#1E40AF;
+  --status-done-bg:#D1FAE5;--status-done-c:#065F46;
+  --status-picked-bg:#F3F4F6;--status-picked-c:#6B7280;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100vh}
+
+/* Header */
+.hdr{position:sticky;top:0;z-index:100;background:var(--green);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--sand)}
+.brand-sep{width:1px;height:16px;background:rgba(226,206,185,.3)}
+.brand-sub{font-size:10px;color:var(--gray-pink);font-family:'Space Mono',monospace;white-space:nowrap}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.back-link{font-family:'Space Mono',monospace;font-size:11px;color:var(--gray-pink);text-decoration:none;border:1px solid rgba(226,206,185,.25);padding:3px 10px;border-radius:20px;transition:all .15s;white-space:nowrap}
+.back-link:hover{color:var(--sand);border-color:var(--sand)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#5be8a0;box-shadow:0 0 8px #5be8a0;animation:blink 2.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Layout */
+.container{max-width:900px;margin:0 auto;padding:1.5rem 1.25rem}
+
+/* Views */
+.view{display:none}
+.view.active{display:block}
+
+/* Top bar */
+.top-bar{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap}
+.top-bar-title{font-size:16px;font-weight:700;color:var(--text);flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .18s;font-family:'Noto Sans TC',sans-serif}
+.btn-primary{background:var(--green);color:var(--sand);padding:10px 20px}
+.btn-primary:hover{background:var(--dark)}
+.btn-ghost{background:transparent;color:var(--text-sub);border:1px solid var(--border2)}
+.btn-ghost:hover{background:var(--surface2)}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-danger{background:#FEE2E2;color:var(--negative);border:1px solid #FECACA}
+.btn-danger:hover{background:#FECACA}
+
+/* Search + filter */
+.filter-row{display:flex;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap}
+.search-wrap{flex:1;min-width:200px;position:relative}
+.search-wrap input{width:100%;padding:9px 12px 9px 36px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);font-size:13px;color:var(--text);outline:none;font-family:'Noto Sans TC',sans-serif}
+.search-wrap input:focus{border-color:var(--green)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px}
+select.filter-sel{padding:9px 12px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);font-size:13px;color:var(--text);outline:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif}
+select.filter-sel:focus{border-color:var(--green)}
+
+/* Status badge */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-quote{background:var(--status-quote-bg);color:var(--status-quote-c)}
+.badge-sent{background:var(--status-sent-bg);color:var(--status-sent-c)}
+.badge-done{background:var(--status-done-bg);color:var(--status-done-c)}
+.badge-picked{background:var(--status-picked-bg);color:var(--status-picked-c)}
+
+/* Order cards */
+.order-list{display:flex;flex-direction:column;gap:10px}
+.order-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;cursor:pointer;transition:all .18s;position:relative}
+.order-card:hover{border-color:var(--border2);box-shadow:0 2px 12px rgba(40,66,52,.08)}
+.order-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.order-id{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--green)}
+.order-name{font-size:14px;font-weight:700;color:var(--text)}
+.order-store{font-size:11px;color:var(--text-muted);margin-top:2px}
+.order-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.order-price{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--rust)}
+.order-date{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)}
+.order-desc{font-size:12px;color:var(--text-sub);margin-top:6px;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text-muted)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-text{font-size:14px}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
+@media(max-width:640px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--sc-color,var(--green))}
+.stat-l{font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.stat-v{font-size:20px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text)}
+
+/* Detail view */
+.detail-back{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem}
+.detail-back button{background:none;border:none;cursor:pointer;font-size:13px;color:var(--text-sub);font-family:'Noto Sans TC',sans-serif;display:flex;align-items:center;gap:6px;padding:4px 0}
+.detail-back button:hover{color:var(--green)}
+
+.detail-header{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.detail-id{font-family:'Space Mono',monospace;font-size:12px;color:var(--text-muted);margin-bottom:4px}
+.detail-name{font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px}
+.detail-meta-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+
+/* Progress steps */
+.steps{display:flex;align-items:center;margin:1.25rem 0}
+.step{flex:1;text-align:center;position:relative}
+.step:not(:last-child)::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--sand);z-index:0}
+.step.done:not(:last-child)::after{background:var(--green)}
+.step-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--sand);background:var(--bg);margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative;z-index:1;transition:all .25s}
+.step.done .step-dot{background:var(--green);border-color:var(--green);color:#fff}
+.step.current .step-dot{background:var(--rust);border-color:var(--rust);color:#fff;box-shadow:0 0 0 4px rgba(165,74,26,.15)}
+.step-lbl{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace}
+.step.done .step-lbl,.step.current .step-lbl{color:var(--text)}
+
+/* Detail sections */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+@media(max-width:640px){.detail-grid{grid-template-columns:1fr}}
+.detail-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem}
+.section-title{font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;margin-bottom:1rem}
+.section-title::before{content:'';display:block;width:3px;height:12px;background:var(--rust);border-radius:2px}
+.field-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+.field-row:last-child{border-bottom:none}
+.field-label{font-size:11px;color:var(--text-muted)}
+.field-value{font-size:12px;font-weight:600;color:var(--text);font-family:'Space Mono',monospace;text-align:right}
+
+/* Photo section */
+.photo-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:1rem}
+.photo-cols{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:500px){.photo-cols{grid-template-columns:1fr}}
+.photo-col-title{font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;font-family:'Space Mono',monospace}
+.photo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px}
+.photo-thumb{width:100%;aspect-ratio:1;border-radius:7px;object-fit:cover;border:1px solid var(--border);cursor:pointer;transition:opacity .15s}
+.photo-thumb:hover{opacity:.85}
+.photo-add{width:100%;aspect-ratio:1;border-radius:7px;border:2px dashed var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:12px;gap:4px;transition:all .18s;background:var(--surface2)}
+.photo-add:hover{border-color:var(--green);color:var(--green);background:rgba(40,66,52,.04)}
+.photo-add-icon{font-size:24px}
+input[type=file].hidden{display:none}
+
+/* Actions */
+.action-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:1rem}
+.status-select-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.status-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.status-btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:2px solid transparent;transition:all .18s;font-family:'Noto Sans TC',sans-serif}
+.status-btn.active{border-color:var(--green)}
+.status-btn-quote{background:var(--status-quote-bg);color:var(--status-quote-c)}
+.status-btn-sent{background:var(--status-sent-bg);color:var(--status-sent-c)}
+.status-btn-done{background:var(--status-done-bg);color:var(--status-done-c)}
+.status-btn-picked{background:var(--status-picked-bg);color:var(--status-picked-c)}
+
+/* Form view */
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem}
+.form-group{margin-bottom:1.1rem}
+.form-label{display:block;font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:5px}
+.form-label span{color:var(--rust)}
+.form-input{width:100%;padding:10px 13px;border:1px solid var(--border2);border-radius:8px;font-size:14px;color:var(--text);background:var(--surface);outline:none;font-family:'Noto Sans TC',sans-serif;transition:border .15s}
+.form-input:focus{border-color:var(--green)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:500px){.form-grid{grid-template-columns:1fr}}
+textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
+.form-input.mono{font-family:'Space Mono',monospace}
+.photo-upload-area{border:2px dashed var(--border2);border-radius:8px;padding:1.5rem;text-align:center;cursor:pointer;color:var(--text-muted);transition:all .18s;background:var(--surface2)}
+.photo-upload-area:hover{border-color:var(--green);color:var(--green)}
+.photo-upload-icon{font-size:32px;margin-bottom:6px}
+.photo-upload-text{font-size:13px}
+.photo-upload-sub{font-size:11px;margin-top:3px;color:var(--text-muted)}
+.photo-preview-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.photo-preview-item{position:relative;width:72px;height:72px}
+.photo-preview-item img{width:100%;height:100%;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
+.photo-preview-remove{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:var(--negative);color:#fff;border-radius:50%;border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:1}
+.form-id-preview{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--green);padding:10px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;letter-spacing:.05em}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:var(--sand);padding:10px 22px;border-radius:8px;font-size:13px;opacity:0;transition:all .3s;z-index:9999;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Loading */
+.loading{text-align:center;padding:2rem;color:var(--text-muted);font-family:'Space Mono',monospace;font-size:12px}
+
+/* Lightbox */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9000;align-items:center;justify-content:center}
+.lightbox.open{display:flex}
+.lightbox img{max-width:90vw;max-height:88vh;border-radius:8px;object-fit:contain}
+.lightbox-close{position:absolute;top:16px;right:20px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* Uploading overlay */
+.upload-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8000;align-items:center;justify-content:center}
+.upload-overlay.open{display:flex}
+.upload-box{background:var(--surface);border-radius:12px;padding:2rem 2.5rem;text-align:center;min-width:200px}
+.upload-spinner{width:36px;height:36px;border:3px solid var(--sand);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.upload-box p{font-size:13px;color:var(--text-sub)}
+
+@media(max-width:640px){
+  .container{padding:1rem .9rem}
+  .top-bar{gap:8px}
+  .filter-row{flex-direction:column}
+  .search-wrap{min-width:unset}
+  .order-card-top{flex-direction:column;gap:6px}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="brand">
+    <span class="brand-name">ORINGO</span>
+    <div class="brand-sep"></div>
+    <span class="brand-sub">REPAIR ORDERS</span>
+  </div>
+  <div class="hdr-r">
+    <a href="https://garykao0726.github.io/" class="back-link">← 中控中心</a>
+    <div class="live-dot"></div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ===== LIST VIEW ===== -->
+  <div class="view active" id="view-list">
+    <div class="top-bar">
+      <div class="top-bar-title">維修工單追蹤</div>
+      <button class="btn btn-primary" onclick="showView('create')">＋ 新增工單</button>
+    </div>
+
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card" style="--sc-color:var(--status-quote-c)"><div class="stat-l">報價中</div><div class="stat-v" id="stat-quote">—</div></div>
+      <div class="stat-card" style="--sc-color:var(--status-sent-c)"><div class="stat-l">已送修</div><div class="stat-v" id="stat-sent">—</div></div>
+      <div class="stat-card" style="--sc-color:var(--status-done-c)"><div class="stat-l">已完成</div><div class="stat-v" id="stat-done">—</div></div>
+      <div class="stat-card" style="--sc-color:var(--green)"><div class="stat-l">本月工單</div><div class="stat-v" id="stat-month">—</div></div>
+    </div>
+
+    <div class="filter-row">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="搜尋單號、姓名、電話…" oninput="renderList()">
+      </div>
+      <select class="filter-sel" id="filter-status" onchange="renderList()">
+        <option value="">全部狀態</option>
+        <option value="報價中">報價中</option>
+        <option value="已送修">已送修</option>
+        <option value="已完成">已完成</option>
+        <option value="已取件">已取件</option>
+      </select>
+      <select class="filter-sel" id="filter-store" onchange="renderList()">
+        <option value="">全部門市</option>
+        <option value="松菸">松菸</option>
+        <option value="東門">東門</option>
+        <option value="中山">中山</option>
+        <option value="台中">台中</option>
+      </select>
+    </div>
+
+    <div id="list-container"><div class="loading">載入工單中…</div></div>
+  </div>
+
+  <!-- ===== DETAIL VIEW ===== -->
+  <div class="view" id="view-detail">
+    <div class="detail-back">
+      <button onclick="showView('list')">← 返回列表</button>
+    </div>
+
+    <div class="detail-header" id="detail-header">
+      <div class="detail-id" id="d-id"></div>
+      <div class="detail-name" id="d-name"></div>
+      <div class="detail-meta-row">
+        <span class="badge" id="d-badge"></span>
+        <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text-muted)" id="d-store"></span>
+        <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--rust);font-weight:700" id="d-price"></span>
+      </div>
+      <div id="d-steps" class="steps"></div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-section">
+        <div class="section-title">客戶資料</div>
+        <div class="field-row"><span class="field-label">姓名</span><span class="field-value" id="d-customer-name">—</span></div>
+        <div class="field-row"><span class="field-label">電話</span><span class="field-value" id="d-phone">—</span></div>
+        <div class="field-row"><span class="field-label">門市</span><span class="field-value" id="d-store2">—</span></div>
+        <div class="field-row"><span class="field-label">建立時間</span><span class="field-value" id="d-created">—</span></div>
+      </div>
+      <div class="detail-section">
+        <div class="section-title">維修資訊</div>
+        <div class="field-row"><span class="field-label">維修項目</span><span class="field-value" id="d-desc" style="text-align:right;max-width:180px;word-break:break-all;white-space:normal">—</span></div>
+        <div class="field-row"><span class="field-label">報價金額</span><span class="field-value" id="d-price2">—</span></div>
+        <div class="field-row"><span class="field-label">預計完成日</span><span class="field-value" id="d-date">—</span></div>
+        <div class="field-row"><span class="field-label">最後更新</span><span class="field-value" id="d-updated">—</span></div>
+      </div>
+    </div>
+
+    <!-- Photos -->
+    <div class="photo-section">
+      <div class="section-title">維修照片</div>
+      <div class="photo-cols">
+        <div>
+          <div class="photo-col-title">收件前</div>
+          <div class="photo-grid" id="photos-before"></div>
+          <label style="cursor:pointer">
+            <div class="photo-add">
+              <span class="photo-add-icon">📷</span>
+              <span>新增收件照</span>
+            </div>
+            <input type="file" class="hidden" id="upload-before" accept="image/*" capture="environment" multiple onchange="handlePhotoUpload('before',this)">
+          </label>
+        </div>
+        <div>
+          <div class="photo-col-title">修後</div>
+          <div class="photo-grid" id="photos-after"></div>
+          <label style="cursor:pointer">
+            <div class="photo-add">
+              <span class="photo-add-icon">📷</span>
+              <span>新增修後照</span>
+            </div>
+            <input type="file" class="hidden" id="upload-after" accept="image/*" capture="environment" multiple onchange="handlePhotoUpload('after',this)">
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action bar -->
+    <div class="action-bar">
+      <div class="section-title" style="margin-bottom:.75rem">更新狀態</div>
+      <div class="status-buttons" id="status-buttons"></div>
+      <div style="display:flex;gap:10px;margin-top:1rem;flex-wrap:wrap">
+        <input type="text" class="form-input mono" id="d-price-input" placeholder="報價金額 NT$" style="max-width:160px">
+        <button class="btn btn-primary btn-sm" onclick="saveDetailUpdate()">儲存更新</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CREATE VIEW ===== -->
+  <div class="view" id="view-create">
+    <div class="detail-back">
+      <button onclick="showView('list')">← 返回列表</button>
+    </div>
+
+    <div class="form-card">
+      <div class="section-title" style="font-size:15px;margin-bottom:1.25rem">新增維修工單</div>
+
+      <div style="margin-bottom:1.1rem">
+        <div class="form-label">工單單號（自動產生）</div>
+        <div class="form-id-preview" id="new-order-id">RP-YYMM-???</div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">門市 <span>*</span></label>
+          <select class="form-input" id="f-store">
+            <option value="">請選擇門市</option>
+            <option value="松菸">松菸</option>
+            <option value="東門">東門</option>
+            <option value="中山">中山</option>
+            <option value="台中">台中</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">狀態</label>
+          <select class="form-input" id="f-status">
+            <option value="報價中">報價中</option>
+            <option value="已送修">已送修</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">客人姓名 <span>*</span></label>
+          <input type="text" class="form-input" id="f-name" placeholder="例：陳先生">
+        </div>
+        <div class="form-group">
+          <label class="form-label">電話</label>
+          <input type="tel" class="form-input mono" id="f-phone" placeholder="0912-345-678">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">維修項目 <span>*</span></label>
+        <textarea class="form-input" id="f-desc" placeholder="例：鞋跟磨損換底、縫線修補…"></textarea>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">報價金額（NT$）</label>
+          <input type="number" class="form-input mono" id="f-price" placeholder="待確認可留空">
+        </div>
+        <div class="form-group">
+          <label class="form-label">預計完成日</label>
+          <input type="date" class="form-input mono" id="f-date">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">收件照片</label>
+        <label style="cursor:pointer;display:block">
+          <div class="photo-upload-area" id="create-photo-area">
+            <div class="photo-upload-icon">📷</div>
+            <div class="photo-upload-text">點擊拍照或選取相簿</div>
+            <div class="photo-upload-sub">支援 JPG、PNG，可多選</div>
+          </div>
+          <input type="file" class="hidden" id="f-photos" accept="image/*" capture="environment" multiple onchange="handleCreatePhotoPick(this)">
+        </label>
+        <div class="photo-preview-list" id="create-photo-preview"></div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:.5rem">
+        <button class="btn btn-ghost" onclick="showView('list')">取消</button>
+        <button class="btn btn-primary" onclick="submitOrder()">建立工單</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<!-- Upload overlay -->
+<div class="upload-overlay" id="upload-overlay">
+  <div class="upload-box">
+    <div class="upload-spinner"></div>
+    <p>上傳中，請稍候…</p>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+// CONFIG — 部署後請填入 Apps Script Web App URL
+// =============================================
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwkzl1yFmVlXhDax4cPHPA1lNlifu4pNGjWFJk5vRXo/exec';
+
+// =============================================
+// STATE
+// =============================================
+let allOrders = [];
+let currentOrder = null;
+let currentStatus = '';
+let createPhotos = []; // {file, dataUrl}
+
+// =============================================
+// INIT
+// =============================================
+window.addEventListener('DOMContentLoaded', () => {
+  setDefaultDate();
+  loadOrders();
+});
+
+function setDefaultDate() {
+  const d = new Date();
+  d.setDate(d.getDate() + 14);
+  document.getElementById('f-date').value = d.toISOString().split('T')[0];
+}
+
+// =============================================
+// VIEWS
+// =============================================
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'list') renderList();
+  if (name === 'create') generateOrderId();
+}
+
+// =============================================
+// LOAD ORDERS
+// =============================================
+async function loadOrders() {
+  try {
+    const resp = await fetch(`${GAS_URL}?action=getOrders`, { cache: 'no-store' });
+    const data = await resp.json();
+    if (data.success) {
+      allOrders = data.orders || [];
+    } else {
+      allOrders = [];
+    }
+  } catch (e) {
+    console.error('載入失敗', e);
+    allOrders = [];
+  }
+  renderList();
+  renderStats();
+}
+
+// =============================================
+// RENDER STATS
+// =============================================
+function renderStats() {
+  const now = new Date();
+  const ym = `${String(now.getFullYear()).slice(2)}${String(now.getMonth()+1).padStart(2,'0')}`;
+  let quote=0, sent=0, done=0, month=0;
+  allOrders.forEach(o => {
+    if (o.status === '報價中') quote++;
+    if (o.status === '已送修') sent++;
+    if (o.status === '已完成') done++;
+    if (o.id && o.id.includes(`RP-${ym}`)) month++;
+  });
+  document.getElementById('stat-quote').textContent = quote;
+  document.getElementById('stat-sent').textContent = sent;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-month').textContent = month;
+}
+
+// =============================================
+// RENDER LIST
+// =============================================
+function renderList() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const fs = document.getElementById('filter-status').value;
+  const fst = document.getElementById('filter-store').value;
+
+  let filtered = allOrders.filter(o => {
+    const matchQ = !q || (o.id||'').toLowerCase().includes(q) ||
+      (o.name||'').toLowerCase().includes(q) || (o.phone||'').includes(q);
+    const matchS = !fs || o.status === fs;
+    const matchSt = !fst || o.store === fst;
+    return matchQ && matchS && matchSt;
+  });
+
+  // Sort: non-picked first, then by created desc
+  filtered.sort((a,b) => {
+    const ord = ['報價中','已送修','已完成','已取件'];
+    const ai = ord.indexOf(a.status), bi = ord.indexOf(b.status);
+    if (ai !== bi) return ai - bi;
+    return (b.created||'').localeCompare(a.created||'');
+  });
+
+  const container = document.getElementById('list-container');
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔧</div><div class="empty-text">${allOrders.length ? '找不到符合的工單' : '尚無工單資料'}</div></div>`;
+    return;
+  }
+
+  container.innerHTML = '<div class="order-list">' + filtered.map(o => `
+    <div class="order-card" onclick="openDetail('${o.id}')">
+      <div class="order-card-top">
+        <div>
+          <div class="order-id">${o.id}</div>
+          <div class="order-name">${esc(o.name)}</div>
+          <div class="order-store">${esc(o.store)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <span class="badge ${badgeClass(o.status)}">${esc(o.status)}</span>
+          ${o.price ? `<span class="order-price">NT$${numFmt(o.price)}</span>` : '<span style="font-size:11px;color:var(--text-muted)">待報價</span>'}
+        </div>
+      </div>
+      <div class="order-meta">
+        ${o.date ? `<span class="order-date">預計 ${o.date}</span>` : ''}
+        ${photoBadge(o)}
+      </div>
+      ${o.desc ? `<div class="order-desc">${esc(o.desc)}</div>` : ''}
+    </div>
+  `).join('') + '</div>';
+}
+
+function photoBadge(o) {
+  const b = countPhotos(o.photoBefore), a = countPhotos(o.photoAfter);
+  if (!b && !a) return '';
+  return `<span style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace">📷 前${b} 後${a}</span>`;
+}
+
+function countPhotos(str) {
+  if (!str) return 0;
+  return str.split(',').filter(s => s.trim()).length;
+}
+
+// =============================================
+// DETAIL
+// =============================================
+function openDetail(id) {
+  const o = allOrders.find(x => x.id === id);
+  if (!o) return;
+  currentOrder = o;
+  currentStatus = o.status;
+
+  document.getElementById('d-id').textContent = o.id;
+  document.getElementById('d-name').textContent = o.name;
+  document.getElementById('d-badge').className = 'badge ' + badgeClass(o.status);
+  document.getElementById('d-badge').textContent = o.status;
+  document.getElementById('d-store').textContent = o.store;
+  document.getElementById('d-price').textContent = o.price ? `NT$${numFmt(o.price)}` : '待報價';
+  document.getElementById('d-customer-name').textContent = o.name || '—';
+  document.getElementById('d-phone').textContent = o.phone || '—';
+  document.getElementById('d-store2').textContent = o.store || '—';
+  document.getElementById('d-created').textContent = fmtTs(o.created);
+  document.getElementById('d-desc').textContent = o.desc || '—';
+  document.getElementById('d-price2').textContent = o.price ? `NT$${numFmt(o.price)}` : '—';
+  document.getElementById('d-date').textContent = o.date || '—';
+  document.getElementById('d-updated').textContent = fmtTs(o.updated);
+  document.getElementById('d-price-input').value = o.price || '';
+
+  renderSteps(o.status);
+  renderStatusButtons(o.status);
+  renderPhotos('before', o.photoBefore);
+  renderPhotos('after', o.photoAfter);
+
+  showView('detail');
+}
+
+function renderSteps(status) {
+  const steps = ['報價中','已送修','已完成','已取件'];
+  const idx = steps.indexOf(status);
+  document.getElementById('d-steps').innerHTML = steps.map((s, i) => {
+    const cls = i < idx ? 'done' : i === idx ? 'current' : '';
+    const icon = i < idx ? '✓' : i + 1;
+    return `<div class="step ${cls}"><div class="step-dot">${icon}</div><div class="step-lbl">${s}</div></div>`;
+  }).join('');
+}
+
+function renderStatusButtons(status) {
+  const statuses = [
+    {v:'報價中', cls:'status-btn-quote'},
+    {v:'已送修', cls:'status-btn-sent'},
+    {v:'已完成', cls:'status-btn-done'},
+    {v:'已取件', cls:'status-btn-picked'},
+  ];
+  document.getElementById('status-buttons').innerHTML = statuses.map(s =>
+    `<button class="status-btn ${s.cls} ${currentStatus===s.v?'active':''}" onclick="selectStatus('${s.v}')">${s.v}</button>`
+  ).join('');
+}
+
+function selectStatus(s) {
+  currentStatus = s;
+  renderStatusButtons(s);
+  renderSteps(s);
+}
+
+async function saveDetailUpdate() {
+  if (!currentOrder) return;
+  const price = document.getElementById('d-price-input').value;
+  showUploadOverlay(true);
+  try {
+    const resp = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action:'updateOrder', id:currentOrder.id, status:currentStatus, price:price||null })
+    });
+    const data = await resp.json();
+    if (data.success) {
+      currentOrder.status = currentStatus;
+      currentOrder.price = price;
+      // Update allOrders
+      const idx = allOrders.findIndex(o => o.id === currentOrder.id);
+      if (idx >= 0) allOrders[idx] = {...allOrders[idx], status:currentStatus, price};
+      renderSteps(currentStatus);
+      document.getElementById('d-badge').className = 'badge ' + badgeClass(currentStatus);
+      document.getElementById('d-badge').textContent = currentStatus;
+      document.getElementById('d-price').textContent = price ? `NT$${numFmt(price)}` : '待報價';
+      document.getElementById('d-price2').textContent = price ? `NT$${numFmt(price)}` : '—';
+      renderStats();
+      toast('✓ 已更新');
+    } else {
+      toast('更新失敗，請重試');
+    }
+  } catch(e) {
+    toast('連線失敗');
+  }
+  showUploadOverlay(false);
+}
+
+// =============================================
+// PHOTOS
+// =============================================
+function renderPhotos(type, urlStr) {
+  const container = document.getElementById(`photos-${type}`);
+  const urls = (urlStr||'').split(',').map(s=>s.trim()).filter(Boolean);
+  container.innerHTML = urls.map(url =>
+    `<img class="photo-thumb" src="${url.replace('open?id=','uc?id=')}" onclick="openLightbox('${url.replace('open?id=','uc?id=')}')">` // Drive直連
+  ).join('');
+}
+
+async function handlePhotoUpload(type, input) {
+  if (!input.files.length || !currentOrder) return;
+  showUploadOverlay(true);
+  const urls = [];
+  for (const file of input.files) {
+    try {
+      const b64 = await toBase64(file);
+      const resp = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'uploadPhoto',
+          orderId: currentOrder.id,
+          type,
+          fileName: file.name || `${type}_${Date.now()}.jpg`,
+          fileData: b64,
+          mimeType: file.type || 'image/jpeg'
+        })
+      });
+      const data = await resp.json();
+      if (data.success && data.url) urls.push(data.url);
+    } catch(e) { console.error(e); }
+  }
+  if (urls.length) {
+    // Update in Sheets via updateOrder
+    const field = type === 'before' ? 'photoBefore' : 'photoAfter';
+    const existing = (currentOrder[field]||'').split(',').filter(Boolean);
+    const merged = [...existing, ...urls].join(',');
+    await fetch(GAS_URL, {
+      method:'POST',
+      body: JSON.stringify({ action:'updateOrder', id:currentOrder.id, [field]: merged })
+    });
+    currentOrder[field] = merged;
+    const idx = allOrders.findIndex(o => o.id === currentOrder.id);
+    if (idx >= 0) allOrders[idx][field] = merged;
+    renderPhotos(type, merged);
+    toast(`✓ 已上傳 ${urls.length} 張照片`);
+  } else {
+    toast('上傳失敗，請重試');
+  }
+  showUploadOverlay(false);
+  input.value = '';
+}
+
+// =============================================
+// CREATE
+// =============================================
+function generateOrderId() {
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(2);
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('new-order-id').textContent = `RP-${yy}${mm}-???`;
+}
+
+function handleCreatePhotoPick(input) {
+  if (!input.files.length) return;
+  for (const f of input.files) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      createPhotos.push({ file: f, dataUrl: e.target.result });
+      renderCreatePhotoPreview();
+    };
+    reader.readAsDataURL(f);
+  }
+  input.value = '';
+}
+
+function renderCreatePhotoPreview() {
+  document.getElementById('create-photo-preview').innerHTML = createPhotos.map((p, i) =>
+    `<div class="photo-preview-item"><img src="${p.dataUrl}"><button class="photo-preview-remove" onclick="removeCreatePhoto(${i})">✕</button></div>`
+  ).join('');
+}
+
+function removeCreatePhoto(i) {
+  createPhotos.splice(i, 1);
+  renderCreatePhotoPreview();
+}
+
+async function submitOrder() {
+  const store = document.getElementById('f-store').value;
+  const name = document.getElementById('f-name').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const desc = document.getElementById('f-desc').value.trim();
+  const price = document.getElementById('f-price').value;
+  const date = document.getElementById('f-date').value;
+  const status = document.getElementById('f-status').value;
+
+  if (!store || !name || !desc) {
+    toast('請填寫門市、姓名與維修項目');
+    return;
+  }
+
+  showUploadOverlay(true);
+
+  try {
+    // 1. Create order
+    const createResp = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action:'createOrder', store, name, phone, desc, price:price||null, date, status })
+    });
+    const createData = await createResp.json();
+    if (!createData.success) { toast('建立工單失敗'); showUploadOverlay(false); return; }
+
+    const orderId = createData.id;
+    document.getElementById('new-order-id').textContent = orderId;
+
+    // 2. Upload photos
+    const photoUrls = [];
+    for (const p of createPhotos) {
+      try {
+        const b64 = p.dataUrl.split(',')[1];
+        const resp = await fetch(GAS_URL, {
+          method:'POST',
+          body: JSON.stringify({
+            action:'uploadPhoto', orderId,
+            type:'before',
+            fileName: p.file.name || 'before.jpg',
+            fileData: b64,
+            mimeType: p.file.type || 'image/jpeg'
+          })
+        });
+        const d = await resp.json();
+        if (d.success && d.url) photoUrls.push(d.url);
+      } catch(e) { console.error(e); }
+    }
+
+    // 3. If photos, update order with links
+    if (photoUrls.length) {
+      await fetch(GAS_URL, {
+        method:'POST',
+        body: JSON.stringify({ action:'updateOrder', id:orderId, photoBefore: photoUrls.join(',') })
+      });
+    }
+
+    toast(`✓ 工單 ${orderId} 已建立`);
+    createPhotos = [];
+    renderCreatePhotoPreview();
+    document.getElementById('f-store').value = '';
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-phone').value = '';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-price').value = '';
+    setDefaultDate();
+
+    await loadOrders();
+    showView('list');
+  } catch(e) {
+    console.error(e);
+    toast('送出失敗，請重試');
+  }
+  showUploadOverlay(false);
+}
+
+// =============================================
+// HELPERS
+// =============================================
+function badgeClass(s) {
+  return {
+    '報價中':'badge-quote',
+    '已送修':'badge-sent',
+    '已完成':'badge-done',
+    '已取件':'badge-picked'
+  }[s] || 'badge-picked';
+}
+
+function numFmt(n) {
+  return Number(n).toLocaleString('zh-TW');
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function fmtTs(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  if (isNaN(d)) return ts;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function openLightbox(url) {
+  document.getElementById('lightbox-img').src = url;
+  document.getElementById('lightbox').classList.add('open');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightbox-img').src = '';
+}
+
+function showUploadOverlay(show) {
+  document.getElementById('upload-overlay').classList.toggle('open', show);
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
