@@ -2,11 +2,12 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>林果良品｜營運績效儀表板</title>
+<link rel="icon" href="/favicon.png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="data.js"></script>
 <style>
 :root{--green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;--rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;--bg:#F5EDE3;--surface:#ffffff;--surface2:#FAF5EF;--border:rgba(40,66,52,0.10);--border2:rgba(40,66,52,0.22);--text:#284234;--text-sub:#8D5531;--text-muted:#b09a88;--positive:#1a7a4a;--negative:#c0392b}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -172,7 +173,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <span class="brand-sub">OPERATIONS DASHBOARD</span>
   </div>
   <div class="hdr-r">
-    <a href="https://dashboard.oringo.tw/" class="back-link">← 中控中心</a>
+    <a href="https://garykao0726.github.io/" class="back-link">← 中控中心</a>
     <div class="live-dot"></div>
     <div class="hclock" id="clock">--:--:--</div>
     <div class="data-tag" id="data-tag">LOADING...</div>
@@ -183,6 +184,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <button class="tab" onclick="switchTab('monthly',this)">月度達成</button>
   <button class="tab" onclick="switchTab('annual',this)">年度總覽</button>
   <button class="tab" onclick="switchTab('gbp',this)">📍 GBP 門市流量</button>
+  <button class="tab" onclick="switchTab('mgmt',this)">📋 月會管理報表</button>
 </nav>
 <div class="container">
 
@@ -250,6 +252,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <div class="sec-hdr"><div class="sec-title">月度達成狀況</div></div>
   <div class="m-pills" id="m-pills"></div>
   <div class="kpi5" id="monthly-kpi"></div>
+  <!-- 選定月份時顯示大型各店達成卡片 -->
+  <div id="monthly-store-cards" style="display:none;margin-bottom:1.25rem"></div>
   <div class="g2">
     <div class="card">
       <div class="card-hdr">
@@ -283,6 +287,15 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     </div>
   </div>
   <div id="monthly-detail" style="display:none;margin-top:.75rem"><div class="drawer open" id="monthly-detail-inner"></div></div>
+  <!-- Weekly breakdown within selected month -->
+  <div id="monthly-wk-section" style="display:none;margin-top:1.25rem">
+    <div class="sec-hdr" style="margin-bottom:.75rem"><div class="sec-title" id="monthly-wk-title">各週業績明細</div><div class="sec-date">來自週報數據 · 歷史可查</div></div>
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-hdr"><span class="card-lbl">各週詳細 KPI</span><span class="card-badge">來客 × 轉換率 × 達成率</span></div>
+      <div style="overflow-x:auto"><table class="ctbl" id="monthly-wk-tbl"></table></div>
+    </div>
+    <div id="monthly-store-kpis"></div>
+  </div>
 </div>
 
 <!-- ANNUAL -->
@@ -350,11 +363,16 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
 </div>
 
+<!-- MGMT REPORT -->
+<div class="tab-panel" id="panel-mgmt">
+  <div id="mgmt-content"></div>
+</div>
+
 </div>
 
 
 <!-- 延伸分析入口 -->
-<div style="max-width:1400px;margin:0 auto;padding:0 2rem 1.75rem">
+<div id="ext-links" style="max-width:1400px;margin:0 auto;padding:0 2rem 1.75rem">
   <div class="sec-hdr" style="margin-bottom:1rem">
     <div class="sec-title">延伸分析</div>
     <div class="sec-date">獨立分析頁面</div>
@@ -383,9 +401,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
 </div>
 
-
 <footer class="footer">
-  <a href="https://dashboard.oringo.tw/" style="color:var(--gray-pink);text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;border:1px solid rgba(226,206,185,.25);padding:3px 12px;border-radius:20px;display:inline-block;margin-bottom:8px;transition:all .15s" onmouseover="this.style.color='#E2CEB9'" onmouseout="this.style.color=''">← 中控中心</a><br>
+  <a href="https://garykao0726.github.io/" style="color:var(--gray-pink);text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;border:1px solid rgba(226,206,185,.25);padding:3px 12px;border-radius:20px;display:inline-block;margin-bottom:8px;transition:all .15s" onmouseover="this.style.color='#E2CEB9'" onmouseout="this.style.color=''">← 中控中心</a><br>
   林果良品 ORINGO｜營運績效儀表板 
   <span style="opacity:.4;font-size:10px;display:block;margin-top:3px">INTERNAL USE ONLY · ©2026 ORINGO</span>
 </footer>
@@ -411,8 +428,9 @@ const SHEET_ID='17hTgCpF0mBTHf3RcnDmRFrJMeLBn3nRdTMuG8l58QjY';
 const D25={'中山店':[148,141,131,103,131,98,121,112,117,138,161,160],'松菸店':[136,119,138,119,108,89,87,91,122,139,174,160],'台中店':[110,98,75,59,64,78,60,88,76,100,113,126],'東門店':[117,105,96,75,84,90,66,89,81,111,130,172],'官網':[128,79,97,70,70,60,74,77,67,100,101,105]};
 let D26={'中山店':[185,0,0,0,0,0,0,0,0,0,0,0],'松菸店':[163,0,0,0,0,0,0,0,0,0,0,0],'台中店':[133,0,0,0,0,0,0,0,0,0,0,0],'東門店':[145,0,0,0,0,0,0,0,0,0,0,0],'官網':[130,0,0,0,0,0,0,0,0,0,0,0]};
 let WK={};STORES.forEach(s=>WK[s]={rev:0,tgt:0,vis:0,conv:0,ticket:0,newTxn:0,oldTxn:0,repVis:0,repConv:0,weekOrders:0,mtdRev:0,monthTarget:0,monthAch:0,newMembers:0,wkSessions:0,wkUsers:0,wkGaConv:0,moSessions:0,moUsers:0});
+let allWk={};STORES.forEach(s=>allWk[s]=[]);
 let _gvizSeq=0;function loadGviz(sheetName){return new Promise((resolve,reject)=>{const cb='_gvizCb'+(++_gvizSeq);window[cb]=function(resp){delete window[cb];const rows=(resp.table.rows||[]).map(r=>(r.c||[]).map(cell=>cell?cell.v:null));resolve(rows);};const s=document.createElement('script');s.onerror=()=>reject(new Error('Load failed: '+sheetName));s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}`;document.head.appendChild(s);});}
-async function loadData(){try{const [wkRows,moRows]=await Promise.all([loadGviz('週報數據'),loadGviz('月度數據')]);const _now=new Date();const _daysInMo=new Date(_now.getFullYear(),_now.getMonth()+1,0).getDate();const _weeksInMo=_daysInMo/7;wkRows.forEach(r=>{const s=r[2];if(!s||!WK[s])return;const sb=STORE_BENCHMARKS[s];const tk=sb?sb.ticket:TARGET_TICKET;const cv=sb?sb.conv:TARGET_CONV;WK[s].rev=r[3]||0;WK[s].tgt=r[4]||0;WK[s].vis=r[6]||0;WK[s].repVis=r[9]||0;WK[s].newTxn=r[10]||0;WK[s].oldTxn=r[11]||0;WK[s].ticket=r[13]||0;WK[s].conv=r[14]||0;WK[s].mtdRev=r[15]||0;WK[s].monthTarget=r[16]||0;WK[s].monthAch=r[17]||0;WK[s].weekOrders=r[18]||0;WK[s].repConv=r[19]||0;WK[s].newMembers=r[20]||0;WK[s].wkSessions=r[21]||0;WK[s].wkUsers=r[22]||0;WK[s].wkGaConv=r[23]||0;WK[s].moSessions=r[24]||0;WK[s].moUsers=r[25]||0;WK[s].visTgt=WK[s].monthTarget>0?Math.round(WK[s].monthTarget/tk/cv/_weeksInMo):0;});moRows.forEach(r=>{const yr=Number(r[0]),mo=Number(r[1]),s=r[2],rev=r[3];if(yr===2026&&mo>=1&&mo<=12&&D26[s])D26[s][mo-1]=Math.round((rev||0)/10000);});const wkLabel=wkRows[0]?wkRows[0][1]||'':'';if(wkLabel)document.getElementById('wk-date').textContent=wkLabel;const updTime=wkRows[0]?wkRows[0][0]||'':'';document.getElementById('data-tag').textContent=updTime?'更新 '+updTime:'LIVE DATA';}catch(e){console.error('Dashboard data load error',e);document.getElementById('data-tag').textContent='載入失敗';}renderWeekly();}
+async function loadData(){try{const [wkRows,moRows]=await Promise.all([loadGviz('週報數據'),loadGviz('月度數據')]);const _now=new Date();const _daysInMo=new Date(_now.getFullYear(),_now.getMonth()+1,0).getDate();const _weeksInMo=_daysInMo/7;wkRows.forEach(r=>{const s=r[2];if(!s||!WK[s])return;const sb=STORE_BENCHMARKS[s];const tk=sb?sb.ticket:TARGET_TICKET;const cv=sb?sb.conv:TARGET_CONV;WK[s].rev=r[3]||0;WK[s].tgt=r[4]||0;WK[s].vis=r[6]||0;WK[s].repVis=r[9]||0;WK[s].newTxn=r[10]||0;WK[s].oldTxn=r[11]||0;WK[s].ticket=r[13]||0;WK[s].conv=r[14]||0;WK[s].mtdRev=r[15]||0;WK[s].monthTarget=r[16]||0;WK[s].monthAch=r[17]||0;WK[s].weekOrders=r[18]||0;WK[s].repConv=r[19]||0;WK[s].newMembers=r[20]||0;WK[s].wkSessions=r[21]||0;WK[s].wkUsers=r[22]||0;WK[s].wkGaConv=r[23]||0;WK[s].moSessions=r[24]||0;WK[s].moUsers=r[25]||0;WK[s].visTgt=WK[s].monthTarget>0?Math.round(WK[s].monthTarget/tk/cv/_weeksInMo):0;const _p=String(r[1]||'');const _sp=_p.split('~')[0].trim().split('/');const _mo=_sp.length>=2?parseInt(_sp[1]):0;const _he={period:_p,month:_mo,rev:r[3]||0,tgt:r[4]||0,vis:r[6]||0,repVis:r[9]||0,newTxn:r[10]||0,oldTxn:r[11]||0,ticket:r[13]||0,conv:r[14]||0,weekOrders:r[18]||0,repConv:r[19]||0,mtdRev:r[15]||0,monthTarget:r[16]||0};const _ei=allWk[s].findIndex(e=>e.period===_p);if(_ei>=0)allWk[s][_ei]=_he;else allWk[s].push(_he);});moRows.forEach(r=>{const yr=Number(r[0]),mo=Number(r[1]),s=r[2],rev=r[3];if(yr===2026&&mo>=1&&mo<=12&&D26[s])D26[s][mo-1]=Math.round((rev||0)/10000);});const wkLabel=wkRows[0]?wkRows[0][1]||'':'';if(wkLabel)document.getElementById('wk-date').textContent=wkLabel;const updTime=wkRows[0]?wkRows[0][0]||'':'';document.getElementById('data-tag').textContent=updTime?'更新 '+updTime:'LIVE DATA';}catch(e){console.error('Dashboard data load error',e);document.getElementById('data-tag').textContent='載入失敗';}renderWeekly();}
 const HEATMAP={'週一':[18,22,31,28,42,55,60,48,35,20],'週二':[15,20,28,35,48,58,65,50,38,22],'週三':[20,25,33,30,45,52,58,45,32,18],'週四':[22,28,36,40,55,65,70,60,42,25],'週五':[28,35,45,55,72,88,95,80,58,35],'週六':[42,58,72,85,95,105,110,98,75,48],'週日':[38,55,68,78,88,98,100,90,68,42]};
 const WK8=[1388,1412,1395,1440,1455,1460,1478,1459];
 const WK8L=['W9','W10','W11','W12','W13','W14','W15','W16'];
@@ -460,21 +478,438 @@ function renderNewOld(){if(CH.no)CH.no.destroy();CH.no=new Chart(document.getEle
 function renderRepair(){document.getElementById('repair-sec').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">${STORES4.map(s=>{const w=WK[s];const rr=w.repVis>0?Math.round(w.repConv/w.repVis*100):0;const occ=w.vis>0?Math.round(w.repVis/w.vis*100):0;const hasData=w.repVis>0;return`<div style="padding:9px;background:var(--surface2);border:1px solid var(--border);border-radius:7px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font-size:12px;font-weight:600">${s}</span><span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--rust)">${hasData?rr+'%':'—'}</span></div><div style="display:flex;gap:10px;font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted)"><span>來客 <b style="color:var(--text-sub)">${w.repVis}</b></span><span>成交 <b style="color:var(--text-sub)">${w.repConv}</b></span><span>佔比 <b style="color:var(--text-sub)">${occ}%</b></span></div>${hasData?`<div class="prog" style="margin-top:5px"><div class="prog-bar" style="width:${rr}%;background:var(--rust)"></div></div>`:'<div style="font-size:9px;color:var(--text-muted);margin-top:4px;font-family:Space Mono,monospace">維修成交數據需重新執行 Apps Script</div>'}</div>`;}).join('')}</div>`;}
 function renderWkTrend(){if(CH.wkt)CH.wkt.destroy();CH.wkt=new Chart(document.getElementById('wk-trend'),{type:'line',data:{labels:WK8L,datasets:[{data:WK8,borderColor:'#284234',backgroundColor:'rgba(40,66,52,.07)',borderWidth:2,fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#284234'}]},options:cOpts()});}
 function renderHeatmap(){const days=Object.keys(HEATMAP);const hours=['12','13','14','15','16','17','18','19','20','21'];const all=days.flatMap(d=>HEATMAP[d]);const maxV=Math.max(...all);const el=document.getElementById('heatmap');el.innerHTML='';el.appendChild(Object.assign(document.createElement('div'),{className:'hm-h'}));hours.forEach(h=>{el.appendChild(Object.assign(document.createElement('div'),{className:'hm-h',textContent:h+':00'}));});days.forEach(day=>{el.appendChild(Object.assign(document.createElement('div'),{className:'hm-d',textContent:day}));HEATMAP[day].forEach(v=>{const ratio=v/maxV,alpha=0.05+ratio*.80;const c=document.createElement('div');c.className='hm-c';c.style.background=`rgba(40,66,52,${alpha.toFixed(2)})`;c.style.color=ratio>.5?'#F5EDE3':'#284234';c.textContent=v;el.appendChild(c);});});}
-function renderMonthly(){if(!document.getElementById('m-pills').children.length){const pills=document.getElementById('m-pills');const all=document.createElement('button');all.className='mp active';all.textContent='全年 YTD';all.onclick=()=>selectMonth(0,all);pills.appendChild(all);for(let m=1;m<=12;m++){const b=document.createElement('button');b.className='mp';b.textContent=m+'月';b.onclick=function(){selectMonth(m,this)};pills.appendChild(b);}}renderMonthlyKPI();renderTrendChart();renderCompanyDonut();renderSrMonthly();renderChDonut();}
+function renderMonthlyStoreCards(m){
+  const el=document.getElementById('monthly-store-cards');
+  if(m===0){el.style.display='none';return;}
+  el.style.display='block';
+  const curMo=new Date().getMonth()+1;
+  const label=m+'月 各店達成快覽';
+  el.innerHTML=`<div class="sec-hdr" style="margin-bottom:.75rem"><div class="sec-title">${label}</div><div class="sec-date">${m<curMo?'月結完成':'本月進行中'}</div></div>`+
+  `<div class="wk5">`+
+  STORES.map((s,i)=>{
+    const rev=getD(s,2026,m),tgt=getTgt(s,m),rev25=getD(s,2025,m);
+    const p=tgt>0?Math.round(rev/tgt*100):0,c=achColor(p);
+    const yoy=rev25>0?((rev-rev25)/rev25*100).toFixed(1):null;
+    const revFmt=rev>=100?rev+'萬':'NT$'+fw(rev*10000);
+    return`<div class="wkc" style="--wkc-col:${S_COL[i]}">
+      <div class="wkc-name">${S_EMO[i]} ${s}</div>
+      <div class="wkc-pct" style="color:${c}">${p}%</div>
+      <div class="wkc-rev">NT$${fw(rev)}萬 / ${fw(tgt)}萬</div>
+      <div class="wkc-bar"><div class="wkc-fill" style="width:${Math.min(p,100)}%;background:${S_COL[i]}"></div></div>
+      ${yoy!==null?`<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:6px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted)">vs 去年 ${fw(rev25)}萬</span>
+        <span style="font-size:12px;font-family:'Space Mono',monospace;font-weight:700;color:${parseFloat(yoy)>=0?'var(--positive)':'var(--negative)'}">${parseFloat(yoy)>=0?'▲ +':'▼ '}${Math.abs(yoy)}%</span>
+      </div>`:''}
+    </div>`;
+  }).join('')+`</div>`;
+}
+function renderMonthly(){if(!document.getElementById('m-pills').children.length){const pills=document.getElementById('m-pills');const all=document.createElement('button');all.className='mp active';all.textContent='全年 YTD';all.onclick=()=>selectMonth(0,all);pills.appendChild(all);for(let m=1;m<=12;m++){const b=document.createElement('button');b.className='mp';b.textContent=m+'月';b.onclick=function(){selectMonth(m,this)};pills.appendChild(b);}}renderMonthlyKPI();renderMonthlyStoreCards(selMonth);renderTrendChart();renderCompanyDonut();renderSrMonthly();renderChDonut();renderMonthlyWkDetail(selMonth);}
 function renderMonthlyKPI(){const m=selMonth;let t26=0,t25=0,tgt=0;if(m===0){const y=ytdStats();t26=Math.round(y.rev/10000);t25=Math.round(y.rev25/10000);tgt=Math.round(y.tgt/10000);}else{STORES.forEach(s=>{t26+=getD(s,2026,m);t25+=getD(s,2025,m);tgt+=getTgt(s,m);});}const ach=(t26/tgt*100).toFixed(1),yoy=parseFloat(yd(t26,t25));const wTot=STORES4.reduce((s,n)=>s+WK[n].rev,0),wTgt=STORES4.reduce((s,n)=>s+WK[n].tgt,0);const wAch=(wTot/wTgt*100).toFixed(1);const avgT=Math.round(STORES4.reduce((s,n)=>s+WK[n].ticket,0)/4);const tgtAvgT=Math.round(STORES4.reduce((s,n)=>s+(STORE_BENCHMARKS[n]?STORE_BENCHMARKS[n].ticket:TARGET_TICKET),0)/STORES4.length);const kpis=[{l:'全通路累計',v:'NT$'+t26+'萬',d:yoy,vs:'vs 2025 YoY',c:'var(--green)'},{l:'目標達成率',v:ach+'%',d:parseFloat(ach)-75,vs:'vs 75% 階段目標',c:'var(--rust)'},{l:'上週四店達成',v:wAch+'%',d:parseFloat(wAch)-100,vs:'vs 週目標',c:'#5a8a6e'},{l:'四店平均客單',v:'$'+fw(avgT),d:tgtAvgT>0?((avgT-tgtAvgT)/tgtAvgT*100).toFixed(1):'0',vs:'vs 各店平均目標 $'+fw(tgtAvgT),c:'var(--brown)'},{l:'年度目標',v:'NT$'+tgt+'萬',d:null,vs:'全年總目標',c:'var(--gray-pink)'}];document.getElementById('monthly-kpi').innerHTML=kpis.map(k=>{const dv=parseFloat(k.d),cls=dv>0?'pos':dv<0?'neg':'neu',arr=dv>0?'▲ +':'▼ ';return`<div class="kc" style="--kc-color:${k.c}"><div class="kc-l">${k.l}</div><div class="kc-v">${k.v}</div><div class="kc-d">${k.d!==null?`<span class="delta ${cls}">${arr}${Math.abs(dv).toFixed(1)}%</span>`:''}<span class="kc-vs">${k.vs}</span></div></div>`;}).join('');}
 function renderTrendChart(){const lbs=['1','2','3','4','5','6','7','8','9','10','11','12'];const curMo=new Date().getMonth()+1;const t26=lbs.map((_,i)=>(i+1)>curMo?null:STORES.reduce((s,st)=>s+(D26[st]||[])[i],0));const t25=lbs.map((_,i)=>STORES.reduce((s,st)=>s+(D25[st]||[])[i],0));const tg=lbs.map((_,i)=>STORES.reduce((s,st)=>s+(TARGETS[st]||[])[i],0));if(CH.tr)CH.tr.destroy();CH.tr=new Chart(document.getElementById('trend-chart'),{data:{labels:lbs.map(m=>m+'月'),datasets:[{type:'bar',label:'2026',data:t26,backgroundColor:'rgba(40,66,52,.2)',borderColor:'#284234',borderWidth:1.5,borderRadius:4},{type:'bar',label:'2025',data:t25,backgroundColor:'rgba(226,206,185,.5)',borderColor:'#E2CEB9',borderWidth:1,borderRadius:4},{type:'line',label:'目標',data:tg,borderColor:'#A54A1A',borderWidth:2,pointRadius:0,fill:false,tension:.3,borderDash:[5,4]}]},options:cOpts()});}
 function renderCompanyDonut(){const m=selMonth;let t26=0,tgt=0,t25=0;STORES.forEach(s=>{t26+=getD(s,2026,m);tgt+=getTgt(s,m);t25+=getD(s,2025,m);});const p=Math.round(t26/tgt*100),yoy=parseFloat(yd(t26,t25));document.getElementById('company-pct').textContent=p+'%';document.getElementById('company-stats').innerHTML=`<div style="display:flex;justify-content:space-between;font-size:11px;font-family:'Space Mono',monospace;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:6px"><span style="color:var(--text-muted)">累計營收</span><span style="font-weight:700">NT$${fw(t26)}萬</span></div><div style="display:flex;justify-content:space-between;font-size:11px;font-family:'Space Mono',monospace;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:6px"><span style="color:var(--text-muted)">年度目標</span><span style="color:var(--text-muted)">NT$${fw(tgt)}萬</span></div><div style="display:flex;justify-content:space-between;font-size:11px;font-family:'Space Mono',monospace"><span style="color:var(--text-muted)">vs 2025 同期</span><span style="font-weight:700;color:${yoy>=0?'var(--positive)':'var(--negative)'}">${yoy>=0?'▲ +':'▼ '}${Math.abs(yoy)}%</span></div>`;if(CH.cd)CH.cd.destroy();CH.cd=new Chart(document.getElementById('company-donut'),{type:'doughnut',data:{datasets:[{data:[p,Math.max(0,100-p)],backgroundColor:['#A54A1A','#E2CEB9'],borderWidth:0}]},options:{cutout:'72%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});}
 function renderSrMonthly(){const el=document.getElementById('sr-monthly');el.innerHTML='';STORES.forEach((s,i)=>{const m=selMonth;let rev,tgt=getTgt(s,m),rev25;if(m===0){const curMo=new Date().getMonth()+1;rev=0;rev25=0;for(let i=1;i<curMo;i++){rev+=(D26[s]||[])[i-1]||0;rev25+=(D25[s]||[])[i-1]||0;}const d26cur=(D26[s]||[])[curMo-1]||0;rev+=(d26cur||Math.round((WK[s].mtdRev||0)/10000));rev25+=(D25[s]||[])[curMo-1]||0;}else{rev=getD(s,2026,m);rev25=getD(s,2025,m);}const p=tgt>0?(rev/tgt*100):0,yoy=parseFloat(yd(rev,rev25)),c=ac(p);const wrap=document.createElement('div'),row=document.createElement('div');row.className='sr'+(selStoreM===s?' active':'');row.innerHTML=`<div class="sr-top"><div class="sr-name">${S_EMO[i]} ${s}</div><div><div class="sr-pct" style="color:${c}">${p.toFixed(1)}%</div><div class="sr-rev">NT$${fw(rev)}萬 / ${fw(tgt)}萬</div></div></div><div class="prog"><div class="prog-bar" style="width:${Math.min(p,100)}%;background:${S_COL[i]}"></div></div><div class="sr-stats"><div class="sr-stat">YoY <b style="color:${yoy>=0?'var(--positive)':'var(--negative)'}">${yoy>=0?'+':''}${yoy}%</b></div></div>`;row.onclick=()=>{selStoreM=selStoreM===s?null:s;renderSrMonthly();toggleMonthlyDetail();};wrap.appendChild(row);el.appendChild(wrap);});toggleMonthlyDetail();}
 function toggleMonthlyDetail(){const panel=document.getElementById('monthly-detail');if(!selStoreM){panel.style.display='none';return;}panel.style.display='block';const s=selStoreM,i=STORES.indexOf(s),color=S_COL[i];const m=selMonth;let rev,tgt=getTgt(s,m),rev25;if(m===0){const curMo=new Date().getMonth()+1;rev=0;rev25=0;for(let i=1;i<curMo;i++){rev+=(D26[s]||[])[i-1]||0;rev25+=(D25[s]||[])[i-1]||0;}const d26cur=(D26[s]||[])[curMo-1]||0;rev+=(d26cur||Math.round((WK[s].mtdRev||0)/10000));rev25+=(D25[s]||[])[curMo-1]||0;}else{rev=getD(s,2026,m);rev25=getD(s,2025,m);}const ach=(tgt>0?(rev/tgt*100):0).toFixed(1),yoy=parseFloat(yd(rev,rev25));const inner=document.getElementById('monthly-detail-inner');inner.innerHTML=`<div style="font-size:13px;font-weight:700;color:${color};margin-bottom:10px">${S_EMO[i]} ${s} 詳細分析</div><div class="dd4"><div class="dd-kpi"><div class="dd-l">累計營收</div><div class="dd-v" style="color:${color}">NT$${fw(rev)}萬</div></div><div class="dd-kpi"><div class="dd-l">達成率</div><div class="dd-v" style="color:${color}">${ach}%</div></div><div class="dd-kpi"><div class="dd-l">YoY</div><div class="dd-v" style="color:${yoy>=0?'var(--positive)':'var(--negative)'}">${yoy>=0?'+':''}${yoy}%</div></div><div class="dd-kpi"><div class="dd-l">年度目標</div><div class="dd-v" style="color:var(--text-muted)">NT$${fw(tgt)}萬</div></div></div><div style="position:relative;height:150px"><canvas id="sd-chart"></canvas></div>`;setTimeout(()=>{if(CH.sd)CH.sd.destroy();const curMo=new Date().getMonth()+1;const d26Series=(D26[s]||[]).map((v,mi)=>(mi+1)>curMo?null:v);CH.sd=new Chart(document.getElementById('sd-chart'),{data:{labels:['1','2','3','4','5','6','7','8','9','10','11','12'].map(m=>m+'月'),datasets:[{type:'bar',label:'2026',data:d26Series,backgroundColor:color+'30',borderColor:color,borderWidth:1.5,borderRadius:3},{type:'bar',label:'2025',data:D25[s],backgroundColor:'rgba(226,206,185,.5)',borderColor:'#CFA294',borderWidth:1,borderRadius:3},{type:'line',label:'目標',data:TARGETS[s],borderColor:'#A54A1A55',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[4,4]}]},options:cOpts()});},50);}
 function renderChDonut(){const m=selMonth,vals=STORES.map(s=>getD(s,2026,m));const total=vals.reduce((a,b)=>a+b,0);if(CH.chd)CH.chd.destroy();CH.chd=new Chart(document.getElementById('ch-donut'),{type:'doughnut',data:{labels:STORES,datasets:[{data:vals,backgroundColor:S_COL.map(c=>c+'cc'),borderWidth:3,borderColor:'#fff',hoverBorderWidth:0}]},options:{cutout:'58%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'rgba(40,66,52,.15)',borderWidth:1,titleColor:'#284234',bodyColor:'#8D5531',callbacks:{label:ctx=>` ${ctx.label}: ${fw(ctx.parsed)}萬 (${(ctx.parsed/total*100).toFixed(1)}%)`}}}}});document.getElementById('ch-legend').innerHTML=STORES.map((s,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:${S_COL[i]}"></div><span style="font-size:11px;color:var(--text-sub)">${s}</span></div><span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)">${(vals[i]/total*100).toFixed(1)}%</span></div>`).join('');}
-function selectMonth(m,btn){selMonth=m;document.querySelectorAll('.mp').forEach(el=>el.classList.remove('active'));btn.classList.add('active');document.getElementById('ch-badge').textContent=m===0?'2026 YTD':'2026 '+m+'月';renderMonthlyKPI();renderCompanyDonut();renderSrMonthly();renderChDonut();}
+function selectMonth(m,btn){selMonth=m;document.querySelectorAll('.mp').forEach(el=>el.classList.remove('active'));btn.classList.add('active');document.getElementById('ch-badge').textContent=m===0?'2026 YTD':'2026 '+m+'月';renderMonthlyKPI();renderMonthlyStoreCards(m);renderCompanyDonut();renderSrMonthly();renderChDonut();renderMonthlyWkDetail(m);}
+function renderMonthlyWkDetail(m){
+  const sec=document.getElementById('monthly-wk-section');
+  if(m===0){sec.style.display='none';return;}
+  // Collect all weeks that have at least one store in this month
+  const wksMap={};
+  STORES.forEach(s=>{
+    (allWk[s]||[]).filter(e=>e.month===m).forEach(e=>{
+      if(!wksMap[e.period])wksMap[e.period]={};
+      wksMap[e.period][s]=e;
+    });
+  });
+  const periods=Object.keys(wksMap).sort();
+  if(!periods.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  document.getElementById('monthly-wk-title').textContent=m+'月 各週業績明細';
+  // Build table
+  const tbl=document.getElementById('monthly-wk-tbl');
+  const storeHdrs=STORES.map((s,i)=>`<th style="color:${S_COL[i]}">${S_EMO[i]} ${s}</th>`).join('');
+  const rows=periods.map(p=>{
+    const shortP=p.replace(/^\d{4}\//,'').replace('~','～');
+    let totRev=0,totTgt=0;
+    const cells=STORES.map((s,i)=>{
+      const e=wksMap[p][s];
+      if(!e)return`<td style="color:var(--text-muted);font-size:10px">—</td>`;
+      const pct=e.tgt>0?Math.round(e.rev/e.tgt*100):0;
+      const col=achColor(pct);
+      totRev+=e.rev;totTgt+=e.tgt;
+      const isWeb=s==='官網';
+      const sub1=isWeb?(e.weekOrders>0?`<div style="font-size:9px;color:var(--text-muted)">${e.weekOrders}筆訂單</div>`:''):(e.vis>0?`<div style="font-size:9px;color:var(--text-muted)">來客 ${e.vis}人</div>`:'');
+      const sub2=isWeb?'':(e.conv>0?`<div style="font-size:9px;color:var(--text-muted)">轉換 ${(e.conv*100).toFixed(0)}%</div>`:'');
+      const sub3=e.ticket>0?`<div style="font-size:9px;color:var(--text-muted)">客單 $${fw(e.ticket)}</div>`:'';
+      return`<td><div style="font-weight:700;color:${col};font-family:'Space Mono',monospace">${pct}%</div><div style="font-size:10px;font-family:'Space Mono',monospace">$${fw(e.rev)}</div>${sub1}${sub2}${sub3}</td>`;
+    }).join('');
+    const totPct=totTgt>0?Math.round(totRev/totTgt*100):0;
+    const totCol=achColor(totPct);
+    return`<tr><td style="color:var(--text-muted);font-size:10px;font-family:'Space Mono',monospace;white-space:nowrap">${shortP}</td>${cells}<td style="font-weight:700"><div style="color:${totCol};font-family:'Space Mono',monospace">${totPct}%</div><div style="font-size:10px;font-family:'Space Mono',monospace">$${fw(totRev)}</div></td></tr>`;
+  }).join('');
+  tbl.innerHTML=`<thead><tr><th>週次</th>${storeHdrs}<th>全通路</th></tr></thead><tbody>${rows}</tbody>`;
+  renderMonthlyStoreKpis(m,wksMap,periods);
+}
+function renderMonthlyStoreKpis(m,wksMap,periods){
+  const el=document.getElementById('monthly-store-kpis');
+  // Aggregate per physical store
+  const agg={};
+  STORES4.forEach(s=>{
+    agg[s]={vis:0,newTxn:0,oldTxn:0,repVis:0,repConv:0,wConv:0,wVis:0,ticketSum:0,ticketWks:0};
+    periods.forEach(p=>{
+      const e=wksMap[p]&&wksMap[p][s];
+      if(!e)return;
+      agg[s].vis+=e.vis;
+      agg[s].newTxn+=e.newTxn;
+      agg[s].oldTxn+=e.oldTxn;
+      agg[s].repVis+=e.repVis;
+      agg[s].repConv+=e.repConv;
+      if(e.conv>0&&e.vis>0){agg[s].wConv+=e.conv*e.vis;agg[s].wVis+=e.vis;}
+      if(e.ticket>0){agg[s].ticketSum+=e.ticket;agg[s].ticketWks++;}
+    });
+  });
+  const hasAny=STORES4.some(s=>agg[s].vis>0);
+  if(!hasAny){el.innerHTML='';return;}
+  el.innerHTML=`<div class="sec-hdr" style="margin-bottom:.75rem"><div class="sec-title">${m}月 各店累計 KPI</div><div class="sec-date">週報數據加總（${periods.length}週）</div></div>`+
+  `<div class="g-half" style="margin-bottom:1.25rem">`+
+  STORES4.map((s,i)=>{
+    const a=agg[s];
+    if(!a.vis)return`<div class="card"><div class="card-hdr"><span class="card-lbl" style="color:${S_COL[i]}">${S_EMO[i]} ${s}</span></div><div style="font-size:11px;color:var(--text-muted);font-family:'Space Mono',monospace;padding:.5rem 0">本月尚無週報數據</div></div>`;
+    const avgConv=a.wVis>0?a.wConv/a.wVis:0;
+    const avgTicket=a.ticketWks>0?Math.round(a.ticketSum/a.ticketWks):0;
+    const tot=a.newTxn+a.oldTxn;
+    const newPct=tot>0?Math.round(a.newTxn/tot*100):0;
+    const repRate=a.repVis>0?Math.round(a.repConv/a.repVis*100):0;
+    const convSt=convStatus(avgConv,s);
+    const convCol=convSt==='good'?'var(--positive)':convSt==='warn'?'#b8860b':'var(--negative)';
+    const tickSt=ticketStatus(avgTicket,s);
+    const tickCol=tickSt==='good'?'var(--positive)':tickSt==='warn'?'#b8860b':'var(--negative)';
+    return`<div class="card">
+      <div class="card-hdr"><span class="card-lbl" style="color:${S_COL[i]}">${S_EMO[i]} ${s}</span><span class="card-badge">${periods.length}週累計</span></div>
+      <div class="dd4">
+        <div class="dd-kpi"><div class="dd-l">月累計來客</div><div class="dd-v">${a.vis}人</div></div>
+        <div class="dd-kpi"><div class="dd-l">月均轉換率</div><div class="dd-v" style="color:${convCol}">${avgConv>0?(avgConv*100).toFixed(0)+'%':'—'}</div><div class="dd-d">目標 ${((STORE_BENCHMARKS[s]||{conv:.58}).conv*100).toFixed(0)}%</div></div>
+        <div class="dd-kpi"><div class="dd-l">新客筆數</div><div class="dd-v">${a.newTxn}筆</div><div class="dd-d">${tot>0?newPct+'% 佔比':'—'}</div></div>
+        <div class="dd-kpi"><div class="dd-l">舊客回購</div><div class="dd-v">${a.oldTxn}筆</div><div class="dd-d">${tot>0?(100-newPct)+'% 佔比':'—'}</div></div>
+        ${avgTicket>0?`<div class="dd-kpi"><div class="dd-l">月均客單</div><div class="dd-v" style="color:${tickCol}">$${fw(avgTicket)}</div><div class="dd-d">目標 $${fw((STORE_BENCHMARKS[s]||{ticket:6800}).ticket)}</div></div>`:''}
+        ${a.repVis>0?`<div class="dd-kpi"><div class="dd-l">維修來客</div><div class="dd-v">${a.repVis}人</div></div><div class="dd-kpi"><div class="dd-l">維修轉換率</div><div class="dd-v" style="color:var(--rust)">${repRate}%</div><div class="dd-d">${a.repConv}/${a.repVis}</div></div>`:''}
+      </div>
+      ${tot>0?`<div style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;margin:8px 0 4px">新舊客比例</div><div class="ratio-bar"><div class="rn" style="width:${newPct}%"></div><div class="ro" style="width:${100-newPct}%"></div></div><div style="display:flex;gap:14px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted)"><span><span style="color:var(--green)">■</span> 新客 ${newPct}%</span><span><span style="color:var(--sand)">■</span> 舊客 ${100-newPct}%</span></div>`:''}
+    </div>`;
+  }).join('')+`</div>`;
+}
 function renderAnnual(){renderAnnualKPI();renderYoyChart();renderSdGrid();renderYoyTable();}
 function renderAnnualKPI(){const d=annualYr===2026?D26:D25,opp=annualYr===2026?D25:D26;let tot=0,topp=0,tgt=0;STORES.forEach(s=>{tot+=(d[s]||[]).reduce((a,b)=>a+b,0);topp+=(opp[s]||[]).reduce((a,b)=>a+b,0);tgt+=getTgt(s,0);});const ach=(tot/tgt*100).toFixed(1),yoy=parseFloat(yd(tot,topp));const bs=STORES.reduce((best,s)=>{const p=getTgt(s,0)>0?(d[s]||[]).reduce((a,b)=>a+b,0)/getTgt(s,0):0;const bp=getTgt(best,0)>0?(d[best]||[]).reduce((a,b)=>a+b,0)/getTgt(best,0):0;return p>bp?s:best;},STORES[0]);document.getElementById('annual-kpi').innerHTML=[{l:'全通路年度累計',v:'NT$'+fw(tot)+'萬',d:yoy,vs:'vs '+(annualYr===2026?2025:2024),c:'var(--green)'},{l:'年度達成率',v:ach+'%',d:parseFloat(ach)-100,vs:'vs 年度目標',c:'var(--rust)'},{l:'年度目標',v:'NT$'+fw(tgt)+'萬',d:null,vs:'全年目標',c:'var(--brown)'},{l:'達成最高門市',v:bs,d:null,vs:'本年度',c:'#5a8a6e'}].map(k=>{const dv=parseFloat(k.d),cls=dv>0?'pos':dv<0?'neg':'neu';return`<div class="kc" style="--kc-color:${k.c}"><div class="kc-l">${k.l}</div><div class="kc-v">${k.v}</div><div class="kc-d">${k.d!==null?`<span class="delta ${cls}">${dv>0?'▲ +':'▼ '}${Math.abs(dv).toFixed(1)}%</span>`:''}<span class="kc-vs">${k.vs}</span></div></div>`;}).join('');}
 function renderYoyChart(){const lbs=['1','2','3','4','5','6','7','8','9','10','11','12'];const curMo=new Date().getMonth()+1;const ds=STORES4.map((s,i)=>({label:s,data:lbs.map((_,mi)=>{if((mi+1)>curMo)return null;const a=D26[s][mi],b=D25[s][mi];return b>0?parseFloat(((a-b)/b*100).toFixed(1)):null;}),borderColor:S_COL[i],backgroundColor:S_COL[i]+'18',borderWidth:2,pointRadius:4,pointBackgroundColor:S_COL[i],fill:false,tension:.3,spanGaps:false}));if(CH.yoy)CH.yoy.destroy();CH.yoy=new Chart(document.getElementById('yoy-chart'),{type:'line',data:{labels:lbs.map(m=>m+'月'),datasets:ds},options:{...cOpts(),scales:{x:{grid:{color:'rgba(40,66,52,.05)'},ticks:{color:'#b09a88',font:{family:'Space Mono',size:10}}},y:{grid:{color:'rgba(40,66,52,.05)'},ticks:{color:'#b09a88',font:{family:'Space Mono',size:10},callback:v=>v+'%'}}}}});document.getElementById('yoy-legend').innerHTML=STORES4.map((s,i)=>`<div class="leg-i"><div class="leg-dot" style="background:${S_COL[i]}"></div>${s}</div>`).join('');}
 function renderSdGrid(){const d=annualYr===2026?D26:D25,opp=annualYr===2026?D25:D26;document.getElementById('sd-grid').innerHTML=STORES.map((s,i)=>`<div class="card"><div class="card-hdr"><span class="card-lbl" style="color:${S_COL[i]}">${S_EMO[i]} ${s}</span><span class="card-badge" style="color:${S_COL[i]};border-color:${S_COL[i]}33">${(getTgt(s,0)>0?((d[s]||[]).reduce((a,b)=>a+b,0)/getTgt(s,0)*100).toFixed(1):0)}%</span></div><div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:10px">NT$${fw((d[s]||[]).reduce((a,b)=>a+b,0))}萬 / 目標 ${fw(getTgt(s,0))}萬</div><div style="position:relative;height:130px"><canvas id="sc${i}"></canvas></div></div>`).join('');setTimeout(()=>{const curMo=new Date().getMonth()+1;STORES.forEach((s,i)=>{const c=document.getElementById('sc'+i);if(!c)return;if(CH['sc'+i])CH['sc'+i].destroy();const d2=annualYr===2026?D26:D25,d3=annualYr===2026?D25:D26;const d2Series=annualYr===2026?(d2[s]||[]).map((v,mi)=>(mi+1)>curMo?null:v):d2[s];CH['sc'+i]=new Chart(c,{data:{labels:['1','2','3','4','5','6','7','8','9','10','11','12'].map(m=>m+'月'),datasets:[{type:'bar',label:String(annualYr),data:d2Series,backgroundColor:S_COL[i]+'30',borderColor:S_COL[i],borderWidth:1.5,borderRadius:3},{type:'bar',label:String(annualYr===2026?2025:2024),data:d3[s],backgroundColor:'rgba(226,206,185,.4)',borderColor:'#CFA294',borderWidth:1,borderRadius:3},{type:'line',label:'目標',data:TARGETS[s],borderColor:'#A54A1A55',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[4,4]}]},options:{...cOpts(),scales:{x:{grid:{display:false},ticks:{color:'#b09a88',font:{family:'Space Mono',size:9}}},y:{grid:{color:'rgba(40,66,52,.04)'},ticks:{color:'#b09a88',font:{family:'Space Mono',size:9}}}}}});});},100);}
 function renderYoyTable(){const lbs=['1','2','3','4','5','6','7','8','9','10','11','12'];const curMo=new Date().getMonth()+1;document.getElementById('yoy-tbl').innerHTML=`<thead><tr><th>月份</th>${STORES4.map((s,i)=>`<th style="color:${S_COL[i]}">${s} 2025</th><th style="color:${S_COL[i]}">2026</th><th>YoY</th>`).join('')}</tr></thead><tbody>`+lbs.map((_,mi)=>`<tr><td style="color:var(--text-muted)">${mi+1}月</td>${STORES4.map(s=>{const future=(mi+1)>curMo;const a=future?null:D26[s][mi];const b=D25[s][mi];const yoy=(!future&&b>0&&a!==null)?parseFloat(((a-b)/b*100).toFixed(1)):null;return`<td style="color:var(--text-muted)">${b||'—'}</td><td style="font-weight:700">${(a===null||!a)?'—':a}</td><td class="${yoy!==null?(yoy>=0?'tp':'tn'):''}">${yoy!==null?(yoy>=0?'▲ +':'▼ ')+Math.abs(yoy)+'%':'—'}</td>`;}).join('')}</tr>`).join('')+'</tbody>';}
 function selectAnnualYear(y,btn){annualYr=y;document.querySelectorAll('.yr-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnnual();}
-function switchTab(tab,btn){document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.tab-panel').forEach(el=>el.classList.remove('active'));document.getElementById('panel-'+tab).classList.add('active');if(tab==='monthly')renderMonthly();if(tab==='annual')renderAnnual();if(tab==='gbp')loadGbpData();}
+function switchTab(tab,btn){document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.tab-panel').forEach(el=>el.classList.remove('active'));document.getElementById('panel-'+tab).classList.add('active');const extLinks=document.getElementById('ext-links');if(extLinks)extLinks.style.display=tab==='mgmt'?'none':'';if(tab==='monthly')renderMonthly();if(tab==='annual')renderAnnual();if(tab==='gbp')loadGbpData();if(tab==='mgmt')renderMgmt();}
+
+function renderMgmt(){
+  const d=FIN_DATA.MR;
+  const el=document.getElementById('mgmt-content');
+  if(!el||!d)return;
+
+  const fW=n=>{const sign=n<0?'-':'';return sign+(Math.abs(n)/10000).toFixed(1)+'萬';};
+  const fW2=n=>{const sign=n<0?'-':'';return sign+(Math.abs(n)/10000).toFixed(2)+'萬';};
+  const pctChg=(cur,prev)=>prev!==0?(cur-prev)/Math.abs(prev)*100:null;
+  const chgSp=(pct,lowerBetter=false)=>{
+    if(pct===null)return'<span style="font-size:10px;color:var(--text-muted)">—</span>';
+    const good=lowerBetter?pct<=0:pct>=0;
+    const col=good?'var(--positive)':'var(--negative)';
+    return`<span style="font-size:10px;font-family:'Space Mono',monospace;color:${col}">${pct>=0?'▲':'▼'} ${Math.abs(pct).toFixed(1)}%</span>`;
+  };
+  const achCls=p=>p>=100?'tp':p>=80?'':'tn';
+  const niCls=n=>n>=0?'tp':'tn';
+  const achCol=p=>p>=100?'var(--positive)':p>=85?'#b8860b':'var(--negative)';
+
+  const stores=FIN_DATA.STORES;
+  const sc=FIN_DATA.STORE_COLORS;
+
+  const revAch=d.rev/d.revTarget*100;
+  const revMoM=pctChg(d.rev,d.prevMoRev);
+  const revYoY=pctChg(d.rev,d.prevYrRev);
+  const niMoM=pctChg(d.ni,d.prevMoNI);
+  const niYoY=d.prevYrNI!==0?pctChg(d.ni,d.prevYrNI):null;
+  const mktAch=d.mktTotal/d.mktBudget*100;
+  const niAch=d.ni/d.niTarget*100;
+
+  const storeTotRev=stores.reduce((s,st)=>s+(d.storeData[st]?.rev||0),0);
+  const storeTotTgt=stores.reduce((s,st)=>s+(d.storeData[st]?.target||0),0);
+  const storeTotNi=stores.reduce((s,st)=>s+(d.storeData[st]?.ni||0),0);
+  const totAch=storeTotRev/storeTotTgt*100;
+
+  /* store table rows */
+  const storeRows=stores.map(st=>{
+    const s=d.storeData[st];
+    if(!s)return'';
+    const ach=s.rev/s.target*100;
+    const rMoM=pctChg(s.rev,s.prevMoRev);
+    const rYoY=pctChg(s.rev,s.prevYrRev);
+    const nMoM=pctChg(s.ni,s.prevMoNI);
+    const nYoY=s.prevYrNI!==0?pctChg(s.ni,s.prevYrNI):null;
+    return`<tr>
+      <td class="td-s"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${sc[st]};margin-right:6px;vertical-align:middle"></span>${st}</td>
+      <td style="font-weight:700">${fW(s.rev)}</td>
+      <td style="color:var(--text-muted)">${fW(s.target)}</td>
+      <td class="${achCls(ach)}" style="font-weight:700">${ach.toFixed(1)}%</td>
+      <td>${chgSp(rMoM)}</td>
+      <td>${chgSp(rYoY)}</td>
+      <td class="${niCls(s.ni)}" style="font-weight:700">${fW(s.ni)}</td>
+      <td class="${niCls(s.ni)}">${s.niPct.toFixed(1)}%</td>
+      <td>${chgSp(nMoM)}</td>
+      <td>${nYoY!==null?chgSp(nYoY):'<span style="font-size:10px;color:var(--text-muted)">去年虧損</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML=`
+  <div style="max-width:1400px;margin:0 auto;padding:1.75rem 2rem">
+
+  <!-- Banner -->
+  <div style="background:#fffbe6;border:1px solid #d4a72c;border-radius:8px;padding:10px 16px;margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;font-family:'Space Mono',monospace;color:#b8860b">
+    <span style="font-weight:700">⚠ ${d.ym} ${d.dataType}　·　財務報表預計隔月 20–25 日確認</span>
+    <span style="opacity:.75">${d.note}</span>
+  </div>
+
+  <!-- KPI row -->
+  <div class="kpi4" style="margin-bottom:1.5rem">
+    <div class="kc" style="--kc-color:var(--green)">
+      <div class="kc-l">全通路營收</div>
+      <div class="kc-v">${fW(d.rev)}</div>
+      <div class="kc-d">
+        <span class="delta ${achCls(revAch)}" style="font-size:11px">達成 ${revAch.toFixed(1)}%</span>
+        <span class="kc-vs">目標 ${fW(d.revTarget)}</span>
+      </div>
+      <div style="height:4px;background:var(--sand);border-radius:2px;margin-top:8px;overflow:hidden">
+        <div style="height:100%;width:${Math.min(revAch,100).toFixed(1)}%;background:${achCol(revAch)};border-radius:2px"></div>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:12px;font-size:10px;font-family:'Space Mono',monospace">
+        <span>MoM ${chgSp(revMoM)}</span><span>YoY ${chgSp(revYoY)}</span>
+      </div>
+    </div>
+    <div class="kc" style="--kc-color:var(--rust)">
+      <div class="kc-l">全公司淨利</div>
+      <div class="kc-v ${niCls(d.ni)}">${fW(d.ni)}</div>
+      <div class="kc-d">
+        <span class="delta ${d.niPct>=8?'pos':d.niPct>=4?'neu':'neg'}" style="font-size:11px">淨利率 ${d.niPct.toFixed(2)}%</span>
+        <span class="kc-vs">目標 8%</span>
+      </div>
+      <div style="height:4px;background:var(--sand);border-radius:2px;margin-top:8px;overflow:hidden">
+        <div style="height:100%;width:${Math.min(niAch>0?niAch:0,100).toFixed(1)}%;background:${achCol(niAch)};border-radius:2px"></div>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:12px;font-size:10px;font-family:'Space Mono',monospace">
+        <span>MoM ${chgSp(niMoM)}</span>
+        <span>YoY ${niYoY!==null?chgSp(niYoY):'<span style="color:var(--text-muted)">去年虧損</span>'}</span>
+      </div>
+      <div style="margin-top:6px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted)">月KPI目標 ${fW(d.niTarget)}</div>
+    </div>
+    <div class="kc" style="--kc-color:#5a8a6e">
+      <div class="kc-l">廣告費（行銷＋媒體）</div>
+      <div class="kc-v">${fW(d.mktTotal)}</div>
+      <div class="kc-d">
+        <span class="delta ${mktAch<=100?'pos':'neg'}" style="font-size:11px">預算 ${mktAch.toFixed(1)}%</span>
+        <span class="kc-vs">月預算 ${fW(d.mktBudget)}</span>
+      </div>
+      <div style="height:4px;background:var(--sand);border-radius:2px;margin-top:8px;overflow:hidden">
+        <div style="height:100%;width:${Math.min(mktAch,100).toFixed(1)}%;background:${mktAch<=100?'var(--positive)':'var(--negative)'};border-radius:2px"></div>
+      </div>
+      <div style="margin-top:8px;font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted)">
+        拍攝/KOL ${fW2(d.mktShoot)}　＋　媒體 ${fW2(d.mktMedia)}
+      </div>
+    </div>
+    <div class="kc" style="--kc-color:var(--brown)">
+      <div class="kc-l">費用合計（推銷＋管理）</div>
+      <div class="kc-v">${fW(d.opExTotal)}</div>
+      <div class="kc-d"><span class="kc-vs">推銷 ${fW(d.opEx)}　＋　管理 ${fW(d.mgmtEx)}</span></div>
+      <div style="margin-top:8px;font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted)">
+        歷史均值參考 ${fW(d.opExRef)}（非目標）
+      </div>
+    </div>
+  </div>
+
+  <!-- Store charts + table -->
+  <div class="g2" style="margin-bottom:1.5rem">
+    <!-- Revenue vs Target bar -->
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-lbl">各門市業績達成率</span>
+        <span class="card-badge">${d.ym}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${stores.map(st=>{
+          const s=d.storeData[st];if(!s)return'';
+          const ach=s.rev/s.target*100;
+          const col=achCol(ach);
+          const barW=Math.min(ach,120);
+          const overBar=ach>100?`<div style="position:absolute;left:${(100/1.2).toFixed(1)}%;top:0;bottom:0;width:1.5px;background:var(--border2)"></div>`:'';
+          return`<div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+              <span style="font-size:12px;font-weight:700;color:${sc[st]}">${st}</span>
+              <span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:${col}">${ach.toFixed(1)}%</span>
+            </div>
+            <div style="position:relative;height:22px;background:var(--surface2);border-radius:4px;overflow:hidden">
+              ${overBar}
+              <div style="height:100%;width:${(barW/1.2).toFixed(1)}%;background:${col};border-radius:4px;display:flex;align-items:center;padding-left:8px;min-width:2px;transition:width .6s">
+                ${ach>=50?`<span style="font-family:'Space Mono',monospace;font-size:10px;color:#fff;white-space:nowrap">${fW(s.rev)}</span>`:''}
+              </div>
+              ${ach<50?`<span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)">${fW(s.rev)}</span>`:''}
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:2px">
+              <span>目標 ${fW(s.target)}</span>
+              <span>MoM ${chgSp(pctChg(s.rev,s.prevMoRev))}　YoY ${chgSp(pctChg(s.rev,s.prevYrRev))}</span>
+            </div>
+          </div>`;
+        }).join('')}
+        <div style="border-top:2px solid var(--border2);padding-top:8px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <span style="font-size:12px;font-weight:700;color:var(--text)">五通路合計</span>
+            <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:${achCol(totAch)}">${totAch.toFixed(1)}%</span>
+          </div>
+          <div style="position:relative;height:22px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:4px">
+            <div style="height:100%;width:${Math.min(totAch,100).toFixed(1)}%;background:${achCol(totAch)};border-radius:4px;display:flex;align-items:center;padding-left:8px">
+              <span style="font-family:'Space Mono',monospace;font-size:10px;color:#fff">${fW(storeTotRev)}</span>
+            </div>
+          </div>
+          <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:2px">目標 ${fW(storeTotTgt)}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NI bar chart -->
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-lbl">各門市淨利</span>
+        <span class="card-badge">${d.ym}</span>
+      </div>
+      ${(()=>{
+        const vals=stores.map(st=>d.storeData[st]?.ni||0);
+        const maxAbs=Math.max(...vals.map(v=>Math.abs(v)),1);
+        return stores.map((st,i)=>{
+          const s=d.storeData[st];if(!s)return'';
+          const v=s.ni;
+          const barPct=Math.abs(v)/maxAbs*45;
+          const isPos=v>=0;
+          const col=isPos?'var(--positive)':'var(--negative)';
+          return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-size:11px;font-weight:700;width:36px;color:${sc[st]};flex-shrink:0">${st}</span>
+            <div style="flex:1;position:relative;height:24px;display:flex;align-items:center">
+              <div style="position:absolute;left:50%;top:0;bottom:0;width:1.5px;background:var(--border2)"></div>
+              ${isPos
+                ?`<div style="position:absolute;left:50%;height:18px;width:${barPct}%;background:${col};border-radius:0 3px 3px 0;display:flex;align-items:center;padding-left:4px">
+                    <span style="font-family:'Space Mono',monospace;font-size:10px;color:#fff;white-space:nowrap">${fW(v)}</span>
+                  </div>`
+                :`<div style="position:absolute;right:50%;height:18px;width:${barPct}%;background:${col};border-radius:3px 0 0 3px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px">
+                    <span style="font-family:'Space Mono',monospace;font-size:10px;color:#fff;white-space:nowrap">${fW(v)}</span>
+                  </div>`
+              }
+            </div>
+            <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:${col};width:52px;text-align:right;flex-shrink:0">${s.niPct.toFixed(1)}%</span>
+          </div>`;
+        }).join('');
+      })()}
+      <div style="border-top:2px solid var(--border2);padding-top:10px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;font-weight:700">各店合計</span>
+        <span style="font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:${niCls(storeTotNi)==='tp'?'var(--positive)':'var(--negative)'}">${fW(storeTotNi)}</span>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted)">
+        <span>vs 上月各店合計 ${fW(d.storeNiPrevMo)}</span>
+        <span style="color:var(--border2)">|</span>
+        <span>去年同月各店 ${d.storeNiPrevYr<0?'<span style="color:var(--negative)">'+fW(d.storeNiPrevYr)+'</span>':fW(d.storeNiPrevYr)}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full detail table -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-hdr"><span class="card-lbl">各門市業績與損益明細</span><span class="card-badge">${d.ym} 管理帳估算（未稅）</span></div>
+    <div style="overflow-x:auto">
+      <table class="ctbl">
+        <thead><tr>
+          <th>門市</th><th>營收</th><th>月目標</th><th>達成率</th><th>MoM</th><th>YoY</th><th>淨利</th><th>淨利率</th><th>NI MoM</th><th>NI YoY</th>
+        </tr></thead>
+        <tbody>
+          ${storeRows}
+          <tr style="background:var(--surface2);font-weight:700">
+            <td class="td-s">合計</td>
+            <td>${fW(storeTotRev)}</td>
+            <td style="color:var(--text-muted)">${fW(storeTotTgt)}</td>
+            <td class="${achCls(totAch)}">${totAch.toFixed(1)}%</td>
+            <td colspan="2"></td>
+            <td class="${niCls(storeTotNi)}">${fW(storeTotNi)}</td>
+            <td colspan="3"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Cost / Mkt / Expense cards -->
+  <div class="g3" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-lbl" style="margin-bottom:14px">成本占比（COGS %）</div>
+      <div style="font-size:36px;font-family:'Space Mono',monospace;font-weight:700;color:${d.cogsPct<=d.cogsPctTarget?'var(--positive)':'var(--negative)'}">${d.cogsPct.toFixed(1)}%</div>
+      <div style="margin-top:4px;font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted)">目標 ≤${d.cogsPctTarget}%</div>
+      <div style="height:4px;background:var(--sand);border-radius:2px;margin:10px 0;overflow:hidden">
+        <div style="height:100%;width:${Math.min(d.cogsPct/d.cogsPctTarget*100,120).toFixed(0)}%;background:${d.cogsPct<=d.cogsPctTarget?'var(--positive)':'var(--negative)'};border-radius:2px"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;font-size:10px;font-family:'Space Mono',monospace">
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--text-muted)">上月 ${d.cogsPctPrevMo}%</span>
+          <span style="${d.cogsPct>d.cogsPctPrevMo?'color:var(--negative)':'color:var(--positive)'}">${d.cogsPct>d.cogsPctPrevMo?'+':''}${(d.cogsPct-d.cogsPctPrevMo).toFixed(2)} pp</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--text-muted)">去年同月 ${d.cogsPctPrevYr}%</span>
+          <span style="color:var(--positive)">${(d.cogsPct-d.cogsPctPrevYr).toFixed(2)} pp</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-lbl" style="margin-bottom:14px">廣告費明細</div>
+      ${[{l:'拍攝／KOL',v:d.mktShoot},{l:'媒體採買',v:d.mktMedia},{l:'合計',v:d.mktTotal,bold:true}].map(r=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;font-family:'Space Mono',monospace${r.bold?';font-weight:700;color:var(--rust)':''}">
+          <span>${r.l}</span><span>${fW2(r.v)}</span>
+        </div>`).join('')}
+      <div style="margin-top:10px;padding:8px;background:${mktAch<=100?'rgba(26,122,74,.06)':'rgba(192,57,43,.06)'};border-radius:6px;font-size:10px;font-family:'Space Mono',monospace">
+        <div style="display:flex;justify-content:space-between">
+          <span>月預算</span><span style="font-weight:700">${fW2(d.mktBudget)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:3px">
+          <span>使用率</span><span style="font-weight:700;color:${mktAch<=100?'var(--positive)':'var(--negative)'}">${mktAch.toFixed(1)}% ${mktAch<=100?'✓':''}</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-lbl" style="margin-bottom:14px">費用結構</div>
+      ${[{l:'門市推銷費',v:d.opEx},{l:'管理費用',v:d.mgmtEx},{l:'費用合計',v:d.opExTotal,bold:true}].map(r=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;font-family:'Space Mono',monospace${r.bold?';font-weight:700;color:var(--rust)':''}">
+          <span>${r.l}</span><span>${fW(r.v)}</span>
+        </div>`).join('')}
+      <div style="margin-top:10px;font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted)">
+        歷史均值參考 ${fW(d.opExRef)}（非目標）
+      </div>
+    </div>
+  </div>
+
+  <!-- 月會備注 -->
+  ${d.notes?`
+  <div class="card">
+    <div class="card-hdr"><span class="card-lbl">月會備注</span><span class="card-badge">${d.ym}</span></div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${Object.entries(d.notes).map(([k,v])=>{
+        const labels={rev:'營收',cogs:'成本',mkt:'廣告費',opEx:'推銷費用',mgmt:'管理費用',ni:'淨利'};
+        const colors={rev:'var(--green)',cogs:'var(--brown)',mkt:'#5a8a6e',opEx:'var(--text-muted)',mgmt:'var(--text-muted)',ni:'var(--rust)'};
+        return`<div style="display:flex;gap:12px;padding:9px 12px;background:var(--surface2);border-radius:7px;border-left:3px solid ${colors[k]||'var(--border2)'}">
+          <span style="font-size:11px;font-weight:700;color:${colors[k]||'var(--text-sub)'};min-width:48px;flex-shrink:0">${labels[k]||k}</span>
+          <span style="font-size:11px;color:var(--text);line-height:1.55">${v}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`:''}
+
+  </div>`;
+}
 
 const GBP_STORES=['台北松菸店','台北東門店','台北中山店','台中園道店'];
 const GBP_EMO=['🌿','🚪','🏙️','🏔️'];
