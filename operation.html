@@ -490,7 +490,8 @@ function renderMonthlyStoreCards(m){
     const rev=getD(s,2026,m),tgt=getTgt(s,m),rev25=getD(s,2025,m);
     const p=tgt>0?Math.round(rev/tgt*100):0,c=achColor(p);
     const yoy=rev25>0?((rev-rev25)/rev25*100).toFixed(1):null;
-    const revFmt=rev>=100?rev+'萬':'NT$'+fw(rev*10000);
+    const revPrevMo=m>1?getD(s,2026,m-1):0;
+    const mom=revPrevMo>0?((rev-revPrevMo)/revPrevMo*100).toFixed(1):null;
     return`<div class="wkc" style="--wkc-col:${S_COL[i]}">
       <div class="wkc-name">${S_EMO[i]} ${s}</div>
       <div class="wkc-pct" style="color:${c}">${p}%</div>
@@ -498,7 +499,11 @@ function renderMonthlyStoreCards(m){
       <div class="wkc-bar"><div class="wkc-fill" style="width:${Math.min(p,100)}%;background:${S_COL[i]}"></div></div>
       ${yoy!==null?`<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:6px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted)">vs 去年 ${fw(rev25)}萬</span>
-        <span style="font-size:12px;font-family:'Space Mono',monospace;font-weight:700;color:${parseFloat(yoy)>=0?'var(--positive)':'var(--negative)'}">${parseFloat(yoy)>=0?'▲ +':'▼ '}${Math.abs(yoy)}%</span>
+        <span style="font-size:12px;font-family:'Space Mono',monospace;font-weight:700;color:${parseFloat(yoy)>=0?'var(--positive)':'var(--negative)'}">${parseFloat(yoy)>=0?'▲ +':'▼ '}${Math.abs(yoy)}% YoY</span>
+      </div>`:''}
+      ${mom!==null?`<div style="margin-top:4px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted)">vs 上月 ${fw(revPrevMo)}萬</span>
+        <span style="font-size:12px;font-family:'Space Mono',monospace;font-weight:700;color:${parseFloat(mom)>=0?'var(--positive)':'var(--negative)'}">${parseFloat(mom)>=0?'▲ +':'▼ '}${Math.abs(mom)}% MoM</span>
       </div>`:''}
     </div>`;
   }).join('')+`</div>`;
