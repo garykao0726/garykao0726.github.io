@@ -2,11 +2,12 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>林果良品｜財務報表</title>
+<link rel="icon" href="/favicon.png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="data.js"></script>
 
 <script>
 /* ════ 設定區 ════ */
@@ -15,96 +16,50 @@ const ALLOWED_EMAILS   = ['gary@oringoshoes.com','gill.tu@oringoshoes.com','ray.
 const MASTER_SHEET_ID  = '1mpguyk-fRFQtD3JSs5MmVzEdtHHFm5SxO77N8lk3mr4';
 const DATA_TAB         = '財務彙整';
 
-const STORES = ['中山','松菸','東門','台中','電商'];
-const STORE_COLORS = {'中山':'#378ADD','松菸':'#1D9E75','東門':'#D4537E','台中':'#EF9F27','電商':'#888780'};
-const MONTHLY_TARGETS = {
-  '中山':[180,170,170,150,140,125,125,125,140,170,170,180],
-  '松菸':[160,150,150,140,120,110,110,110,120,140,150,160],
-  '東門':[140,130,130,120,110,100,100,100,120,130,130,140],
-  '台中':[130,120,120,120,110, 95, 95, 95,110,120,120,130],
-  '電商':[125,115,115,100,100, 90, 90, 90,100,115,115,125],
-};
-const ANNUAL_REV_TARGETS = {'中山':18450000,'松菸':16200000,'東門':14500000,'台中':13650000,'電商':12800000};
-const ANNUAL_NI_TARGETS  = {'中山':18450000*.08,'松菸':16200000*.08,'東門':14500000*.08,'台中':13650000*.08,'電商':12800000*.08};
-const COMPANY_REV_TARGET = 80000000;  // 全公司年度目標（含B2B）：8,000萬
-const STORES_REV_TARGET  = 75000000;  // 五通路年度目標：7,500萬
-const COMPANY_NI_TARGET  = 6400000;
-const ANNUAL_MKT_BASE    = 65000000;  // 廣告費預算基準收入：6,500萬
-const COMPANY_MKT_BUDGET = 3900000;   // 年度廣告費預算：6,500萬 × 6% = 390萬
+const STORES             = FIN_DATA.STORES;
+const STORE_COLORS       = FIN_DATA.STORE_COLORS;
+const MONTHLY_TARGETS    = FIN_DATA.MONTHLY_TARGETS;
+const ANNUAL_REV_TARGETS = FIN_DATA.ANNUAL_REV_TARGETS;
+const ANNUAL_NI_TARGETS  = FIN_DATA.ANNUAL_NI_TARGETS;
+const COMPANY_REV_TARGET = FIN_DATA.COMPANY_REV_TARGET;
+const STORES_REV_TARGET  = FIN_DATA.STORES_REV_TARGET;
+const COMPANY_NI_TARGET  = FIN_DATA.COMPANY_NI_TARGET;
+const ANNUAL_MKT_BASE    = FIN_DATA.ANNUAL_MKT_BASE;
+const COMPANY_MKT_BUDGET = FIN_DATA.COMPANY_MKT_BUDGET;
+const TARGET_TAX_RATE    = FIN_DATA.TARGET_TAX_RATE;
+const OTHER_REV_ANNUAL_TGT = FIN_DATA.OTHER_REV_ANNUAL_TGT;
 
-/* ════ 2026/03 靜態財報資料（來源：ERP 財務月報 2026-05-02）════ */
-const S = {
-  ym: '2026/03',
-  /* ── 全公司損益 ── */
-  rev: 6775630, cogs: 2248408, gp: 4527222, gpPct: 66.82,
-  sell: 2312592, sellPct: 34.13,
-    w6100: 780594,  wPct6100: 11.52,
-    r6114: 452794,  rPct6114: 6.68,
-    mkt:   590117,  mktPct:   8.71,
-      mktPhoto: 58675, mktMedia: 309925, mktPrint: 0, mktEvent: 8535, mktPR: 212982,
-    freight: 54508, sys: 137281, cardFee: 124356, sample: 56697,
-  mgmt: 1140879, mgmtPct: 16.84,
-    w6201: 771262, wPct6201: 11.38,
-    r6202: 176000, depr: 55618,
-  opProfit: 1073751, opPct: 15.85,
-  nonOpIn: 82271, nonOpOut: 41880,
-  pretax:  1114142, tax: 176000,
-  ni: 938142, niPct: 13.85,
-  /* ── YTD Q1 2026 ── */
-  ytdRev: 19056297, ytdNI: 2890382, ytdNIPct: 15.17,
-  /* ── YOY 2025/03 ── */
-  prevRev: 5697649, prevNI: 55790,
-  yoyRevPct: 18.92, yoyNIPct: 1581.56,
-  /* ── 月目標合計（各店 March 加總）── */
-  totalTarget: 6850000,
+const HIST_2025_YMS = FIN_DATA.HIST_2025_YMS;
+const HIST_2025_RAW = FIN_DATA.HIST_2025_RAW;
 
-  /* ── 各店（部門比較表 202603）── */
-  storeData: {
-    '電商': {
-      rev: 1078725, cogs: 322218, gp: 756507, gpPct: 70.13,
-      wPct: 5.67, rPct: 0, mktPct: 16.51,
-      opProfit: 82159, pretax: 82159, pretaxPct: 7.62,
-      target: 1150000,
-    },
-    '中山': {
-      rev: 1696854, cogs: 543632, gp: 1153222, gpPct: 67.96,
-      wPct: 9.89, rPct: 7.66, mktPct: 1.74,
-      opProfit: 445074, nonOpIn: 60000, pretax: 505074, pretaxPct: 29.77,
-      target: 1700000,
-    },
-    '松菸': {
-      rev: 1523289, cogs: 501018, gp: 1022271, gpPct: 67.11,
-      wPct: 14.56, rPct: 8.33, mktPct: 1.94,
-      opProfit: 262033, pretax: 262033, pretaxPct: 17.20,
-      target: 1500000,
-    },
-    '台中': {
-      rev: 995748, cogs: 333476, gp: 662272, gpPct: 66.51,
-      wPct: 14.22, rPct: 6.86, mktPct: 2.97,
-      opProfit: 60536, pretax: 60536, pretaxPct: 6.08,
-      target: 1200000,
-    },
-    '東門': {
-      rev: 1305843, cogs: 449112, gp: 856731, gpPct: 65.61,
-      wPct: 13.93, rPct: 9.77, mktPct: 2.26,
-      opProfit: 147740, pretax: 147740, pretaxPct: 11.31,
-      target: 1300000,
-    },
-  },
+function getHist2025Rows() {
+  const rows = [];
+  HIST_2025_YMS.forEach((ym, i) => {
+    STORES.forEach(st => {
+      const d = HIST_2025_RAW[st];
+      if (!d) return;
+      const rev = d.rev[i] || 0;
+      const gp  = d.gp[i]  || 0;
+      const ni  = d.ni[i]  || 0;
+      rows.push({
+        ym, store: st,
+        rev,
+        gpPct:   rev ? gp / rev * 100 : 0,
+        wagePct: rev ? (d.wage[i]||0) / rev * 100 : 0,
+        rentPct: rev ? (d.rent[i]||0) / rev * 100 : 0,
+        mktPct:  rev ? (d.mkt[i]||0)  / rev * 100 : 0,
+        ni,
+        niPct:   rev ? ni / rev * 100 : 0,
+        tgt: null, achPct: null,
+        yoyRev: null, momRev: null,
+        isStatic: true,
+      });
+    });
+  });
+  return rows;
+}
 
-  /* ── Q1 月份比較（1–3月 2026）── */
-  q1: [
-    { label:'1月', rev:6935368, cogs:2427825, gp:4507543, gpPct:64.99,
-      mkt:275761, mktPct:3.98, sell:1934610, sellPct:27.89,
-      mgmt:1169677, opProfit:1403256, opPct:20.23 },
-    { label:'2月', rev:5345299, cogs:1718154, gp:3627145, gpPct:67.86,
-      mkt:249337, mktPct:4.66, sell:1956223, sellPct:36.60,
-      mgmt:1169676, opProfit:501246, opPct:9.38 },
-    { label:'3月', rev:6775630, cogs:2248408, gp:4527222, gpPct:66.82,
-      mkt:590117, mktPct:8.71, sell:2312592, sellPct:34.13,
-      mgmt:1140879, opProfit:1073751, opPct:15.85 },
-  ],
-};
+const S = FIN_DATA.S;
 </script>
 
 <style>
@@ -197,7 +152,14 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
 /* ── Two column layout ── */
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
-.three-col{display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:1.25rem}
+.three-col{display:grid;grid-template-columns:1.6fr 1fr;gap:1rem;margin-bottom:1.25rem}
+.mkt-donut-inline{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
+.mkt-donut-wrap{position:relative;width:64px;height:64px;flex-shrink:0}
+.mkt-donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.mkt-donut-pct{font-size:13px;font-weight:700;font-family:'Space Mono',monospace;color:var(--rust)}
+.mkt-donut-sub{font-size:9px;color:var(--text-muted);margin-top:1px}
+.store-ach-donut-wrap{position:relative;width:50px;height:50px;flex-shrink:0}
+.store-ach-donut-lbl{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8.5px;font-weight:700;font-family:'Space Mono',monospace;text-align:center;pointer-events:none;white-space:nowrap;line-height:1.1}
 
 /* ── Chart card ── */
 .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:1.25rem}
@@ -288,11 +250,11 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .ach-primary .ach-donut-wrap{height:170px}
 .ach-secondary{flex:1.3;background:rgba(40,66,52,.06);border-radius:8px;padding:.7rem .6rem;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:140px}
 .ach-sec-label{font-size:9px;font-weight:700;color:var(--text-muted);letter-spacing:.06em;margin-bottom:.5rem;text-align:center;font-family:'Space Mono',monospace}
-.ach-sec-pct{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;line-height:1;text-align:center}
+.ach-sec-pct{font-family:'Space Mono',monospace;font-size:26px;font-weight:700;line-height:1;text-align:center}
 .ach-sec-delta{font-size:9px;margin-top:3px;font-family:'Space Mono',monospace;text-align:center}
 .ach-sec-detail{font-size:8.5px;color:var(--text-muted);text-align:center;margin-top:.4rem;line-height:1.55}
 .ach-donut-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;text-align:center;padding:0 8px}
-.ach-donut-main{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;line-height:1}
+.ach-donut-main{font-family:'Space Mono',monospace;font-size:28px;font-weight:700;line-height:1}
 .ach-donut-sub{font-size:10px;margin-top:3px;font-family:'Space Mono',monospace}
 .ach-donut-name{font-size:11px;font-weight:600;color:var(--text);text-align:center;margin-top:.35rem}
 .ach-donut-detail{font-size:9px;color:var(--text-muted);text-align:center;margin-top:.15rem;line-height:1.55}
@@ -330,6 +292,17 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .report-link:hover{border-color:var(--border2);transform:translateY(-1px)}
 .report-link .latest-tag{font-size:9px;background:rgba(26,122,74,.1);color:var(--pos);padding:2px 7px;border-radius:3px}
 
+/* ── CFO Insights ── */
+.cfo-summary{font-size:13px;line-height:1.85;color:var(--text);background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 20px;margin-bottom:12px;border-left:4px solid var(--green)}
+.cfo-insight{display:flex;flex-direction:column;gap:5px;padding:12px 16px;border-radius:10px;border:1px solid;margin-bottom:8px}
+.cfo-green{background:rgba(26,122,74,.04);border-color:rgba(26,122,74,.2)}
+.cfo-yellow{background:rgba(186,117,23,.05);border-color:rgba(186,117,23,.22)}
+.cfo-red{background:rgba(163,45,45,.05);border-color:rgba(163,45,45,.22)}
+.cfo-insight-hd{display:flex;align-items:center;gap:8px}
+.cfo-insight-title{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--text)}
+.cfo-insight-body{font-size:12px;color:var(--text-sub);line-height:1.7}
+.cfo-action-box{font-size:11px;color:var(--text-muted);background:var(--surface2);border-radius:5px;padding:6px 10px;border-left:3px solid var(--border2)}
+
 /* ── Loading ── */
 .loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:60px;color:var(--text-muted);font-size:13px}
 .spin{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
@@ -357,7 +330,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       <img id="user-avatar" class="user-avatar" src="" alt="">
       <span id="user-name" class="user-name"></span>
     </div>
-    <a class="back-link" href="https://dashboard.oringo.tw/">← 中控中心</a>
+    <a class="back-link" href="https://garykao0726.github.io/">← 中控中心</a>
   </div>
 </div>
 
@@ -440,6 +413,16 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <!-- Store cards -->
     <div class="sec">各門市當月績效</div>
     <div class="store-grid" id="store-grid"></div>
+    <div class="two-col" style="margin-bottom:1.25rem">
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">各店當月營收占比</div>
+        <div style="position:relative;height:220px"><canvas id="store-pie-chart"></canvas></div>
+      </div>
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">其他收入（B2B／業外） — 年度目標 500萬</div>
+        <div id="other-rev-content"></div>
+      </div>
+    </div>
 
     <!-- Mkt Breakdown -->
     <div class="sec">廣告費用分析（本月 8.71% — 超出上限 6%）</div>
@@ -448,11 +431,21 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
         <div class="chart-card-title">廣告費用明細（本月 59.0萬 vs 月上限 40.7萬）</div>
         <div class="chart-wrap-sm"><canvas id="mkt-bar-chart"></canvas></div>
         <div class="mkt-compare-grid" id="mkt-compare-grid"></div>
+        <div class="mkt-donut-inline">
+          <div class="mkt-donut-wrap">
+            <canvas id="mkt-budget-donut"></canvas>
+            <div class="mkt-donut-center">
+              <div class="mkt-donut-pct" id="mkt-donut-pct">—</div>
+              <div class="mkt-donut-sub" id="mkt-donut-sub">已使用</div>
+            </div>
+          </div>
+          <div id="mkt-budget-detail" style="font-size:11px;color:var(--text-sub);line-height:1.8"></div>
+        </div>
       </div>
       <div>
         <div class="mkt-alert" id="mkt-alert"></div>
         <div class="chart-card" style="margin-bottom:0">
-          <div class="chart-card-title">Q1 廣告費率月趨勢</div>
+          <div class="chart-card-title">全年廣告費走勢 2025 vs 2026（萬元）</div>
           <div class="chart-wrap-sm"><canvas id="mkt-trend-chart"></canvas></div>
         </div>
       </div>
@@ -492,7 +485,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
           </div>
         </div>
 
-        <div class="ach-donut-row-label">淨利額達成率（目標 = 月目標營收 × 8%）</div>
+        <div class="ach-donut-row-label">營業淨利達成率（目標 = 月目標營收 × 8%）</div>
         <div class="ach-metric-row">
           <div class="ach-primary">
             <div class="ach-donut-wrap"><canvas id="d-m-ni-st"></canvas><div class="ach-donut-center" id="dc-m-ni-st"></div></div>
@@ -546,7 +539,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
         <thead><tr>
           <th>通路</th>
           <th>本月營收</th>
-          <th>月目標</th>
+          <th>月目標（未稅）</th>
           <th>達成率</th>
           <th>差額</th>
           <th>本月淨利　淨利率</th>
@@ -559,6 +552,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <!-- Anomaly alerts -->
     <div class="sec">異常警示</div>
     <div class="anomaly-list" id="anomaly-list"></div>
+
+    <!-- CFO Insights -->
+    <div class="sec">財務主管建議</div>
+    <div id="cfo-section"></div>
 
     <!-- Historical trend (loads from Sheet) -->
     <div id="hist-section">
@@ -586,7 +583,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
           <div class="chart-wrap"><canvas id="rev-chart"></canvas></div>
         </div>
         <div class="chart-card">
-          <div class="chart-card-title">門市月別淨利詳細（金額 萬元 + 損益率 %）</div>
+          <div class="chart-card-title">門市月別營業淨利詳細（金額 萬元 + 損益率 %）</div>
           <div class="store-btns" id="store-btns" style="margin-bottom:.75rem"></div>
           <div style="height:240px;position:relative"><canvas id="store-detail-chart"></canvas></div>
         </div>
@@ -679,6 +676,15 @@ function grantAccess(user) {
   document.getElementById('logged-email').textContent = user.email;
 }
 
+/* ── localhost dev bypass（僅限本機預覽，線上環境不受影響）── */
+if (['localhost','127.0.0.1'].includes(location.hostname)) {
+  window.addEventListener('DOMContentLoaded', () => {
+    grantAccess({name:'DEV MODE', picture:'', email:'dev@localhost'});
+    renderStaticSections();
+    loadHistoricalData();
+  });
+}
+
 function signOut() {
   google.accounts.oauth2.revoke(accessToken, () => {});
   accessToken = null;
@@ -708,16 +714,185 @@ function tagClass(cls) {
   return cls==='pos' ? 'tag-ok' : cls==='neg' ? 'tag-bad' : 'tag-warn';
 }
 
+/* ════════════════ CFO INSIGHTS ════════════════ */
+function renderCFOInsights(histRows) {
+  const el = document.getElementById('cfo-section');
+  if (!el) return;
+
+  const [, mStr] = S.ym.split('/');
+  const mIdx = parseInt(mStr) - 1;
+  const storesMthTgt  = STORES.reduce((s, st) => s + (MONTHLY_TARGETS[st][mIdx]||0)*10000/TARGET_TAX_RATE, 0);
+  const b2bMthTgtEx   = (OTHER_REV_ANNUAL_TGT / 12) / TARGET_TAX_RATE;
+  const companyMthTgt = storesMthTgt + b2bMthTgtEx;
+  const ach           = pct(S.rev, companyMthTgt);
+  const totalWageRate = (S.w6100 + S.w6201) / S.rev * 100;
+
+  /* ── 歷史統計（以店別加總各 ym 的公司層級指標）── */
+  const ymAggs = {};
+  histRows.forEach(r => {
+    if (!STORES.includes(r.store)) return;
+    if (!ymAggs[r.ym]) ymAggs[r.ym] = { rev:0, gp:0, ni:0, mkt:0, wage:0 };
+    ymAggs[r.ym].rev  += r.rev;
+    ymAggs[r.ym].gp   += r.rev * r.gpPct  / 100;
+    ymAggs[r.ym].ni   += r.ni;
+    ymAggs[r.ym].mkt  += r.rev * r.mktPct / 100;
+    ymAggs[r.ym].wage += r.rev * r.wagePct / 100;
+  });
+  const aggArr = Object.values(ymAggs).filter(v => v.rev > 100000);
+  const _avg = arr => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : null;
+  const _std = (arr, m) => arr.length > 1 ? Math.sqrt(arr.reduce((s,v)=>s+(v-m)**2,0)/arr.length) : 0;
+
+  const gpPcts  = aggArr.map(v => v.gp  / v.rev * 100);
+  const niPcts  = aggArr.map(v => v.ni  / v.rev * 100);
+  const mktPcts = aggArr.map(v => v.mkt / v.rev * 100);
+  const wgPcts  = aggArr.map(v => v.wage / v.rev * 100);
+
+  const avgGP  = _avg(gpPcts);  const stdGP  = avgGP  != null ? _std(gpPcts,  avgGP)  : 0;
+  const avgNI  = _avg(niPcts);  const stdNI  = avgNI  != null ? _std(niPcts,  avgNI)  : 0;
+  const avgMkt = _avg(mktPcts); const stdMkt = avgMkt != null ? _std(mktPcts, avgMkt) : 0;
+  const avgWg  = _avg(wgPcts);  const stdWg  = avgWg  != null ? _std(wgPcts,  avgWg)  : 0;
+  const hasHist = aggArr.length >= 3;
+  const histNote = (avg, std, cur, unit='%') => {
+    if (!hasHist || avg == null) return '';
+    const dev = cur - avg;
+    const sigma = std > 0 ? Math.abs(dev)/std : 0;
+    const flag = sigma >= 1.5 ? `（偏離歷史均值 ${dev>=0?'+':''}${dev.toFixed(1)}${unit}，超過 1.5σ）` : `（歷史均值 ${avg.toFixed(1)}${unit}）`;
+    return `<span style="font-size:10px;color:var(--text-muted)"> ${flag}</span>`;
+  };
+
+  const insights = [];
+
+  /* 1. 達成率 */
+  if (ach >= 103) {
+    insights.push({ level:'green', icon:'✅', title:`全公司達成率 ${ach.toFixed(1)}%，超標`,
+      body:`本月營收 ${fmtW(S.rev)}，超出目標 ${fmtW(S.rev - companyMthTgt)}（目標含 B2B 月均 ${fmtW(b2bMthTgtEx)}）。YOY 成長 +${fmtPct(S.yoyRevPct)}，業績動能持續。`,
+      action:'持續追蹤各通路毛利結構，確保營收成長不以毛利率為代價。' });
+  } else if (ach >= 95) {
+    insights.push({ level:'green', icon:'✅', title:`全公司達成率 ${ach.toFixed(1)}%，接近達標`,
+      body:`本月營收 ${fmtW(S.rev)}，距目標 ${fmtW(Math.abs(S.rev - companyMthTgt))}。`,
+      action:'' });
+  } else {
+    insights.push({ level:'red', icon:'🔴', title:`全公司達成率 ${ach.toFixed(1)}%，未達標`,
+      body:`本月營收缺口 ${fmtW(companyMthTgt - S.rev)}，建議追查落後通路根本原因。`,
+      action:'召開業績檢討會，優先評估客流、客單、轉換率三項指標。' });
+  }
+
+  /* 2. 弱勢通路 */
+  STORES.forEach(st => {
+    const d = S.storeData[st];
+    if (!d) return;
+    const stAch = pct(d.rev, (MONTHLY_TARGETS[st][mIdx]||0)*10000/TARGET_TAX_RATE);
+    if (stAch < 88) {
+      insights.push({ level: stAch < 75 ? 'red' : 'yellow',
+        icon: stAch < 75 ? '🔴' : '⚠️',
+        title: `${st} 達成率偏低（${stAch.toFixed(1)}%）`,
+        body: `本月 ${st} 營收 ${fmtW(d.rev)}，未稅目標 ${fmtW((MONTHLY_TARGETS[st][mIdx]||0)*10000/TARGET_TAX_RATE)}，缺口 ${fmtW((MONTHLY_TARGETS[st][mIdx]||0)*10000/TARGET_TAX_RATE - d.rev)}。`,
+        action: `建議分析 ${st} 客流與客單價變化，評估是否需調整陳列或促銷策略。` });
+    }
+  });
+
+  /* 3. 廣告費 */
+  if (S.mktPct >= 8) {
+    insights.push({ level:'red', icon:'🔴',
+      title:`廣告費率 ${fmtPct(S.mktPct)} 嚴重超標${histNote(avgMkt, stdMkt, S.mktPct)}`,
+      body:`本月廣告費 ${fmtW(S.mkt)}，超出 6% 上限約 ${fmtW(S.mkt - S.rev * 0.06)}。主因：公關宣傳 ${fmtW(S.mktPR)}（佔廣告費 ${(S.mktPR/S.mkt*100).toFixed(0)}%），相較前兩月平均大幅增加。`,
+      action:'建議 Q2 廣告預算提前審核，公關宣傳費應設立單月上限，並要求事前簽核。' });
+  } else if (S.mktPct >= 6) {
+    insights.push({ level:'yellow', icon:'⚠️',
+      title:`廣告費率 ${fmtPct(S.mktPct)} 接近上限`,
+      body:`本月廣告費 ${fmtW(S.mkt)}，略超 6% 上限。`,
+      action:'密切觀察下月廣告費使用情況，避免全年超標。' });
+  }
+
+  /* 4. 毛利率 */
+  if (S.gpPct < 64) {
+    insights.push({ level:'red', icon:'🔴',
+      title:`毛利率 ${fmtPct(S.gpPct)} 低於目標 65%${histNote(avgGP, stdGP, S.gpPct)}`,
+      body:`毛利率不足可能來自折扣過深或商品結構改變，建議審查高貢獻商品的銷售佔比。`,
+      action:'檢視各通路折扣政策，評估是否有商品結構問題影響整體毛利。' });
+  } else if (S.gpPct < 65) {
+    insights.push({ level:'yellow', icon:'⚠️',
+      title:`毛利率 ${fmtPct(S.gpPct)} 接近目標下限${histNote(avgGP, stdGP, S.gpPct)}`,
+      body:`毛利率 65% 是底線目標，建議確認是否有特殊折扣或高成本商品拉低整體。`,
+      action:'' });
+  } else {
+    insights.push({ level:'green', icon:'✅',
+      title:`毛利率 ${fmtPct(S.gpPct)} 維持健康水位${histNote(avgGP, stdGP, S.gpPct)}`,
+      body:`高於 65% 目標，商品成本控制良好。留意電商通路折扣政策對整體毛利的拉低效應。`,
+      action:'' });
+  }
+
+  /* 5. 本期損益率 */
+  if (S.niPct >= 12) {
+    insights.push({ level:'green', icon:'✅',
+      title:`本期損益率 ${fmtPct(S.niPct)}，大幅超越目標${histNote(avgNI, stdNI, S.niPct)}`,
+      body:`本月本期損益 ${fmtW(S.ni)}，損益率遠超 8% 目標。受惠於營收達標且費用結構健康。YOY 損益大幅改善（去年同期損益率估計偏低）。`,
+      action:'持續維持費用控制紀律，同時評估是否有增加戰略性投資（品牌、人才）的空間。' });
+  } else if (S.niPct < 5) {
+    insights.push({ level:'red', icon:'🔴',
+      title:`本期損益率 ${fmtPct(S.niPct)}，嚴重低於 8% 目標${histNote(avgNI, stdNI, S.niPct)}`,
+      body:`本月本期損益 ${fmtW(S.ni)}，損益率不足建議從費用結構著手分析。`,
+      action:'逐行審查損益表費用科目，找出超支項目並設定改善期限。' });
+  } else if (S.niPct < 8) {
+    insights.push({ level:'yellow', icon:'⚠️',
+      title:`本期損益率 ${fmtPct(S.niPct)}，低於 8% 目標${histNote(avgNI, stdNI, S.niPct)}`,
+      body:`本月本期損益 ${fmtW(S.ni)}。`,
+      action:'分析費用超標科目，下月啟動費用控制。' });
+  }
+
+  /* 6. 總人事率 */
+  if (totalWageRate >= 28) {
+    insights.push({ level:'red', icon:'🔴',
+      title:`總人事率 ${fmtPct(totalWageRate)} 超標${histNote(avgWg, stdWg, totalWageRate)}`,
+      body:`推銷薪資 ${fmtPct(S.wPct6100)} + 管理薪資 ${fmtPct(S.wPct6201)}，合計超過 28% 警戒線。`,
+      action:'審查各通路人力配置效率，評估是否有人員閒置或管銷結構過重問題。' });
+  } else if (totalWageRate >= 25) {
+    insights.push({ level:'yellow', icon:'⚠️',
+      title:`總人事率 ${fmtPct(totalWageRate)} 偏高${histNote(avgWg, stdWg, totalWageRate)}`,
+      body:`推銷薪資 ${fmtPct(S.wPct6100)} + 管理薪資 ${fmtPct(S.wPct6201)}。`,
+      action:'評估各通路人力產值，若營收持續成長則屬正常。' });
+  }
+
+  /* 7. YOY 成長亮點 */
+  if (S.yoyRevPct >= 15) {
+    insights.push({ level:'green', icon:'✅',
+      title:`YOY 營收成長 +${fmtPct(S.yoyRevPct)}，表現強勁`,
+      body:`去年同期 ${fmtW(S.prevRev)}，今年 ${fmtW(S.rev)}。成長幅度顯示品牌動能持續，但需留意下半年基期效應。`,
+      action:'追蹤各通路 YOY 分佈，確認成長是否均衡或集中在特定通路。' });
+  }
+
+  /* 排序：紅 > 黃 > 綠 */
+  const ord = { red:0, yellow:1, green:2 };
+  insights.sort((a,b) => ord[a.level] - ord[b.level]);
+
+  const redN = insights.filter(i=>i.level==='red').length;
+  const summary = redN === 0
+    ? `本月整體財務表現優異。全公司達成率 ${ach.toFixed(1)}%，本期損益率 ${fmtPct(S.niPct)}，均超越目標。主要關注點為廣告費管控及弱勢通路輔導。`
+    : `本月有 <strong>${redN}</strong> 項需立即關注的財務議題，請主管優先處理。整體達成率 ${ach.toFixed(1)}%，本期損益率 ${fmtPct(S.niPct)}。`;
+
+  el.innerHTML = `
+    <div class="cfo-summary">${summary}${hasHist ? `<span style="display:block;margin-top:6px;font-size:10px;color:var(--text-muted)">▲ 標有「歷史均值」的項目已與 ${aggArr.length} 個月歷史資料比較，偏離 1.5σ 以上視為異常。</span>` : ''}</div>
+    ${insights.map(ins => `
+      <div class="cfo-insight cfo-${ins.level}">
+        <div class="cfo-insight-hd">${ins.icon}&ensp;<span class="cfo-insight-title">${ins.title}</span></div>
+        <div class="cfo-insight-body">${ins.body}</div>
+        ${ins.action ? `<div class="cfo-action-box">→ ${ins.action}</div>` : ''}
+      </div>`).join('')}`;
+}
+
 /* ════════════════ STATIC RENDER (202603) ════════════════ */
 function renderStaticSections() {
   renderKPIs();
   renderWaterfall();
   renderStoreCards();
+  renderStorePie();
+  renderOtherRevenue();
   renderMktBreakdown();
   renderQ1Chart();
   renderExpenseCards();
   renderAchievementCharts();
   renderAnomalies();
+  renderCFOInsights([]);
 }
 
 /* ── Achievement donut (unified): pct = actual / target × 100 ── */
@@ -754,16 +929,16 @@ function renderAchievementCharts() {
   const mIdx = parseInt(mStr) - 1;
   const NI_TGT_RATE = 0.08;
 
-  /* ── 月目標 ── */
-  const storesMthTgt    = STORES.reduce((s, st) => s + (MONTHLY_TARGETS[st][mIdx] || 0) * 10000, 0);
-  const b2bMthTgt       = Math.round((COMPANY_REV_TARGET - STORES_REV_TARGET) / 12);
+  /* ── 月目標（÷1.05 換算未稅）── */
+  const storesMthTgt    = STORES.reduce((s, st) => s + (MONTHLY_TARGETS[st][mIdx] || 0) * 10000 / TARGET_TAX_RATE, 0);
+  const b2bMthTgt       = Math.round((COMPANY_REV_TARGET - STORES_REV_TARGET) / 12 / TARGET_TAX_RATE);
   const companyMthTgt   = storesMthTgt + b2bMthTgt;
   const companyMthNITgt = companyMthTgt * NI_TGT_RATE;
   const storesMthNITgt  = storesMthTgt  * NI_TGT_RATE;
 
-  /* ── Q1 目標 ── */
+  /* ── Q1 目標（÷1.05 換算未稅）── */
   const q1StoresTgt    = STORES.reduce((s, st) =>
-    s + [0,1,2].reduce((ss, i) => ss + (MONTHLY_TARGETS[st][i] || 0) * 10000, 0), 0);
+    s + [0,1,2].reduce((ss, i) => ss + (MONTHLY_TARGETS[st][i] || 0) * 10000 / TARGET_TAX_RATE, 0), 0);
   const q1CompanyTgt   = q1StoresTgt + b2bMthTgt * 3;
   const q1CompanyNITgt = q1CompanyTgt * NI_TGT_RATE;
   const q1StoresNITgt  = q1StoresTgt  * NI_TGT_RATE;
@@ -799,32 +974,34 @@ function renderAchievementCharts() {
     storesNI, storesMthNITgt,
     `淨利 ${fmtW(storesNI)}<br>目標 ${fmtW(storesMthNITgt)}（${fmtW(storesMthTgt)} × 8%）`);
 
-  /* ── 年度 4 donut（分母 = 全年目標）── */
-  const annualCompanyNITgt = COMPANY_REV_TARGET * NI_TGT_RATE;
-  const annualStoresNITgt  = STORES_REV_TARGET  * NI_TGT_RATE;
+  /* ── 年度 4 donut（分母 = 全年目標，÷1.05 換算未稅）── */
+  const coRevTgtEx        = COMPANY_REV_TARGET / TARGET_TAX_RATE;
+  const stRevTgtEx        = STORES_REV_TARGET  / TARGET_TAX_RATE;
+  const annualCompanyNITgt = coRevTgtEx * NI_TGT_RATE;
+  const annualStoresNITgt  = stRevTgtEx * NI_TGT_RATE;
 
   drawAchText('dc-y-rev-co', 'dd-y-rev-co',
-    S.ytdRev, COMPANY_REV_TARGET,
-    `Q1累計 ${fmtW(S.ytdRev)}<br>全年目標 ${fmtW(COMPANY_REV_TARGET)}`);
+    S.ytdRev, coRevTgtEx,
+    `Q1累計 ${fmtW(S.ytdRev)}<br>全年目標 ${fmtW(coRevTgtEx)}`);
 
   drawAchDonut('d-y-rev-st', 'dc-y-rev-st', 'dd-y-rev-st',
-    storesYtdRev, STORES_REV_TARGET,
-    `Q1累計 ${fmtW(storesYtdRev)}　／　全年目標 ${fmtW(STORES_REV_TARGET)}`);
+    storesYtdRev, stRevTgtEx,
+    `Q1累計 ${fmtW(storesYtdRev)}　／　全年目標 ${fmtW(stRevTgtEx)}`);
 
   drawAchText('dc-y-ni-co', 'dd-y-ni-co',
     S.ytdNI, annualCompanyNITgt,
-    `YTD淨利 ${fmtW(S.ytdNI)}<br>年度目標 ${fmtW(annualCompanyNITgt)}（${fmtW(COMPANY_REV_TARGET)} × 8%）`);
+    `YTD淨利 ${fmtW(S.ytdNI)}<br>年度目標 ${fmtW(annualCompanyNITgt)}（${fmtW(coRevTgtEx)} × 8%）`);
 
   drawAchDonut('d-y-ni-st', 'dc-y-ni-st', 'dd-y-ni-st',
     storesYtdNI, annualStoresNITgt,
-    `YTD淨利 ${fmtW(storesYtdNI)}<br>年度淨利目標 ${fmtW(annualStoresNITgt)}（${fmtW(STORES_REV_TARGET)} × 8%）`);
+    `YTD淨利 ${fmtW(storesYtdNI)}<br>年度淨利目標 ${fmtW(annualStoresNITgt)}（${fmtW(stRevTgtEx)} × 8%）`);
 
   /* ── Layer 2: Store snapshot table ── */
   const snapRows = [
     { name: '全公司', color: '#284234', rev: S.rev, tgt: companyMthTgt, ni: S.ni, niPct: S.niPct, co: true },
     ...STORES.map(st => {
       const d = S.storeData[st];
-      return { name: st, color: STORE_COLORS[st], rev: d.rev, tgt: (MONTHLY_TARGETS[st][mIdx]||0)*10000, ni: d.pretax, niPct: d.pretaxPct, co: false };
+      return { name: st, color: STORE_COLORS[st], rev: d.rev, tgt: (MONTHLY_TARGETS[st][mIdx]||0)*10000/TARGET_TAX_RATE, ni: d.pretax, niPct: d.pretaxPct, co: false };
     })
   ];
 
@@ -848,15 +1025,20 @@ function renderAchievementCharts() {
 
 /* ── KPIs ── */
 function renderKPIs() {
-  const ach = pct(S.rev, S.totalTarget);
+  const [, mStr] = S.ym.split('/');
+  const mIdx = parseInt(mStr) - 1;
+  const storesMthTgt  = STORES.reduce((s, st) => s + (MONTHLY_TARGETS[st][mIdx]||0)*10000/TARGET_TAX_RATE, 0);
+  const b2bMthTgt     = (OTHER_REV_ANNUAL_TGT / 12) / TARGET_TAX_RATE;
+  const companyMthTgt = storesMthTgt + b2bMthTgt;
+  const ach = pct(S.rev, companyMthTgt);
   const yoyNI = S.prevNI > 0 ? pct(S.ni - S.prevNI, S.prevNI) : 999;
   const prev2025Q1 = 1026655; // from YOY comparison file (Q1 2025 NI)
   const yoyQ1NI = pct(S.ytdNI - prev2025Q1, prev2025Q1);
 
   const kpis = [
-    { label:'五通路當月營收',
+    { label:'全公司當月營收',
       val: fmtW(S.rev),
-      sub: `目標 ${fmtW(S.totalTarget)}`,
+      sub: `目標 ${fmtW(companyMthTgt)}（未稅，五店+B2B）`,
       delta: `YOY ${chg(S.yoyRevPct)}`, dCls: 'pos',
       accent: '#284234' },
     { label:'全通路目標達成率',
@@ -958,7 +1140,8 @@ function renderStoreCards() {
   document.getElementById('store-grid').innerHTML = order.map(st => {
     const d = S.storeData[st];
     if (!d) return '';
-    const ach = pct(d.rev, d.target);
+    const tgtEx = d.target / TARGET_TAX_RATE;
+    const ach = pct(d.rev, tgtEx);
     const barW = Math.min(ach, 115).toFixed(1);
     const ac  = achColor(ach);
     const ptPct = d.pretaxPct;
@@ -974,21 +1157,24 @@ function renderStoreCards() {
     <div class="store-card">
       <div class="store-hd">
         <span class="store-name" style="color:${STORE_COLORS[st]}">${st}</span>
-        <span class="store-ach ${ac}">${ach.toFixed(1)}%</span>
+        <div class="store-ach-donut-wrap">
+          <canvas id="store-donut-${st}"></canvas>
+          <div class="store-ach-donut-lbl ${ac}">${ach.toFixed(1)}%</div>
+        </div>
       </div>
       <div class="bar-track"><div class="bar-fill" style="width:${barW}%;background:${cSSColor(ac)}"></div></div>
-      <div class="store-rev">${fmtW(d.rev)} / 目標 ${fmtW(d.target)}</div>
+      <div class="store-rev">${fmtW(d.rev)} / 目標 ${fmtW(tgtEx)}（未稅）</div>
       <div class="store-divider"></div>
       <div class="store-pl-row" style="margin-top:6px">
         <span class="store-pl-label">毛利率</span>
         <span class="store-pl-val">${fmtPct(d.gpPct)}</span>
       </div>
       <div class="store-pl-row">
-        <span class="store-pl-label">稅前損益</span>
+        <span class="store-pl-label">本期損益</span>
         <span class="store-pl-val ${nc}">${fmtW(d.pretax)}</span>
       </div>
       <div class="store-pl-row">
-        <span class="store-pl-label">稅前損益率</span>
+        <span class="store-pl-label">損益率</span>
         <span class="store-pl-val ${nc}">${fmtPct(ptPct)}</span>
       </div>
       ${nonOpBadge}
@@ -1001,6 +1187,77 @@ function renderStoreCards() {
       </div>
     </div>`;
   }).join('');
+  renderStoreDonuts();
+}
+
+function renderStoreDonuts() {
+  STORES.forEach(st => {
+    const d = S.storeData[st];
+    if (!d) return;
+    const tgtEx = d.target / TARGET_TAX_RATE;
+    const ach = pct(d.rev, tgtEx);
+    const filled = Math.min(Math.max(ach, 0), 100);
+    const ac = achColor(ach);
+    const fillClr = ac === 'pos' ? '#1D9E75' : ac === 'warn' ? '#B8860B' : '#A54A1A';
+    const canvas = document.getElementById(`store-donut-${st}`);
+    if (!canvas) return;
+    new Chart(canvas, {
+      type: 'doughnut',
+      data: { datasets: [{ data: [filled, Math.max(0, 100 - filled)],
+        backgroundColor: [fillClr, 'rgba(40,66,52,.1)'], borderWidth: 0 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend:{display:false}, tooltip:{enabled:false} },
+        cutout: '66%', animation: { duration: 500 },
+      }
+    });
+  });
+}
+
+/* ── Store Revenue Pie ── */
+function renderStorePie() {
+  const order = ['中山','松菸','東門','台中','電商'];
+  const colors = ['#284234','#A54A1A','#8D5531','#CFA294','#1D9E75'];
+  const vals = order.map(st => S.storeData[st]?.rev || 0);
+  new Chart(document.getElementById('store-pie-chart'), {
+    type: 'doughnut',
+    data: {
+      labels: order,
+      datasets: [{ data: vals.map(v => Math.round(v/1000)/10), backgroundColor: colors, borderWidth: 2, borderColor: '#FAF5EF', cutout: '60%' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { color:'#8D5531', font:{ size:11 }, boxWidth:12, padding:10 } },
+        tooltip: { callbacks: { label: ctx => `${ctx.label}：${ctx.raw.toFixed(1)}千元（${(ctx.raw*1000/S.rev*100).toFixed(1)}%）` } }
+      }
+    }
+  });
+}
+
+/* ── Other Revenue Card ── */
+function renderOtherRevenue() {
+  const storesRev = STORES.reduce((s, st) => s + (S.storeData[st]?.rev || 0), 0);
+  const otherRev  = S.rev - storesRev;
+  const mthTgt    = OTHER_REV_ANNUAL_TGT / 12;
+  const achPct    = pct(otherRev, mthTgt);
+  const clr       = achPct >= 100 ? 'var(--pos)' : achPct >= 70 ? 'var(--warn)' : 'var(--neg)';
+  const fill      = Math.min(achPct, 100).toFixed(1);
+  document.getElementById('other-rev-content').innerHTML = `
+    <div style="margin-top:1rem">
+      <div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:${clr}">${fmtW(otherRev)}</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">本月實績（未稅）</div>
+      <div style="margin-top:1rem;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${fill}%;background:${clr};border-radius:4px;transition:width .6s ease"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:5px;font-family:'Space Mono',monospace">
+        <span>月均目標 ${fmtW(mthTgt)}（年標 ${fmtW(OTHER_REV_ANNUAL_TGT)}）</span>
+        <span style="color:${clr};font-weight:700">${achPct.toFixed(1)}%</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:12px;line-height:1.7">
+        全公司 ${fmtW(S.rev)} − 五店合計 ${fmtW(storesRev)} = <strong style="color:${clr}">${fmtW(otherRev)}</strong>（B2B 批發 / 其他業外）
+      </div>
+    </div>`;
 }
 
 /* ── Marketing Breakdown ── */
@@ -1066,36 +1323,82 @@ function renderMktBreakdown() {
       剩餘預算 ${fmtW(COMPANY_MKT_BUDGET - 1115215)}，需控管後續月份。
     </div>`;
 
-  /* Q1 mkt trend line */
+  /* Full-year mkt trend line: 2025 vs 2026 */
+  const months12 = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const mkt2025All = [0,1,2,3,4,5,6,7,8,9,10,11].map(i =>
+    +(STORES.reduce((s, st) => s + (HIST_2025_RAW[st].mkt[i]||0), 0) / 10000).toFixed(1));
+  const mkt2026All = months12.map((_, i) => {
+    const m = S.q1[i];
+    return m ? +(m.mkt / 10000).toFixed(1) : null;
+  });
+  const mthBudget = +(COMPANY_MKT_BUDGET / 12 / 10000).toFixed(1);
   new Chart(document.getElementById('mkt-trend-chart'), {
     type: 'line',
     data: {
-      labels: S.q1.map(m => m.label),
+      labels: months12,
       datasets: [
         {
-          label: '廣告費率 %',
-          data: S.q1.map(m => m.mktPct),
-          borderColor: '#A54A1A',
-          backgroundColor: 'rgba(165,74,26,.1)',
-          fill: true,
-          borderWidth: 2, pointRadius: 5, tension: 0.3,
+          label: '2025',
+          data: mkt2025All,
+          borderColor: 'rgba(165,74,26,.4)',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5, pointRadius: 3, tension: 0.4,
+          borderDash: [4,3],
         },
         {
-          label: '上限 6%',
-          data: S.q1.map(() => 6),
-          borderColor: 'rgba(165,74,26,.4)',
-          borderDash: [5,4], borderWidth: 1.5, pointRadius: 0,
+          label: '2026',
+          data: mkt2026All,
+          borderColor: '#A54A1A',
+          backgroundColor: 'rgba(165,74,26,.08)',
+          fill: true,
+          borderWidth: 2.5, pointRadius: 4, tension: 0.4,
+          spanGaps: false,
+        },
+        {
+          label: `月預算 ${mthBudget}萬`,
+          data: months12.map(() => mthBudget),
+          borderColor: 'rgba(165,74,26,.3)',
+          borderDash: [5,4], borderWidth: 1, pointRadius: 0,
           backgroundColor: 'transparent',
         }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.raw.toFixed(2) + '%' } } },
+      plugins: {
+        legend: { display: true, labels: { color:'#b09a88', font:{size:10}, boxWidth:10, padding:8 } },
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.raw ?? '—') + '萬' } }
+      },
       scales: {
-        x: { grid:{ display:false }, ticks:{ color:'#b09a88', font:{ size:11 } } },
-        y: { grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{ size:11 }, callback: v => v + '%' }, min: 0, max: 12 }
+        x: { grid:{display:false}, ticks:{color:'#b09a88', font:{size:10}} },
+        y: { grid:{color:'rgba(40,66,52,.06)'}, ticks:{color:'#b09a88', font:{size:11}, callback: v => v+'萬'}, min: 0 }
       }
+    }
+  });
+
+  /* Cumulative mkt budget donut */
+  const ytdMktAmt = S.q1.reduce((s, m) => s + m.mkt, 0);
+  const remainMktAmt = COMPANY_MKT_BUDGET - ytdMktAmt;
+  const ytdMktPct = ytdMktAmt / COMPANY_MKT_BUDGET * 100;
+  document.getElementById('mkt-donut-pct').textContent = fmtPct(ytdMktPct);
+  document.getElementById('mkt-donut-sub').textContent = `Q1已使用 / 414萬`;
+  document.getElementById('mkt-budget-detail').innerHTML =
+    `已用 ${fmtW(ytdMktAmt)}　剩餘 ${fmtW(remainMktAmt)}<br>後 9 個月均攤 ${fmtW(remainMktAmt/9)}/月`;
+  new Chart(document.getElementById('mkt-budget-donut'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Q1已使用', '剩餘預算'],
+      datasets: [{ data: [ytdMktAmt, remainMktAmt],
+        backgroundColor: ['#A54A1A','rgba(165,74,26,.15)'],
+        borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.label + ': ' + fmtW(ctx.raw) } }
+      },
+      cutout: '72%',
     }
   });
 }
@@ -1192,7 +1495,7 @@ function renderExpenseCards() {
     <div class="exp-card">
       <div class="exp-label">廣告費年度使用率</div>
       <div class="exp-val ${yc}">${fmtPct(ytdMktRate)}</div>
-      <span class="tag ${tagClass(yc)}">預算 ${fmtW(COMPANY_MKT_BUDGET)}（6,500萬×6%）</span>
+      <span class="tag ${tagClass(yc)}">預算 ${fmtW(COMPANY_MKT_BUDGET)}（6,900萬×6%）</span>
       <div class="exp-sub" style="margin-top:8px">剩餘 ${fmtW(remainMkt)}，後9個月均攤 ${fmtW(remainMkt/9)}/月</div>
     </div>`;
 }
@@ -1215,7 +1518,7 @@ function renderAnomalies() {
   STORES.forEach(st => {
     const d = S.storeData[st];
     if (!d) return;
-    const ach = pct(d.rev, d.target);
+    const ach = pct(d.rev, d.target / TARGET_TAX_RATE);
     if (salColor(d.wPct) === 'neg')
       anomalies.push({ cls:'red', msg:`${st} 薪資率 ${fmtPct(d.wPct)}，嚴重超標（上限15%）` });
     else if (salColor(d.wPct) === 'warn')
@@ -1270,18 +1573,23 @@ async function loadHistoricalData() {
 }
 
 function mergeWithStatic(sheetRows) {
-  const filtered = sheetRows.filter(r => r.ym !== '2026/03');
+  const hist2025 = getHist2025Rows();
+  const sheetYMs = new Set(sheetRows.map(r => r.ym));
+  const hist2025Filtered = hist2025.filter(r => !sheetYMs.has(r.ym));
+  const filtered = [...hist2025Filtered, ...sheetRows.filter(r => r.ym !== '2026/03')];
   STORES.forEach(st => {
     const d = S.storeData[st];
     if (!d) return;
+    const sheetMar = sheetRows.find(r => r.ym === '2026/03' && r.store === st);
     filtered.push({
       ym: '2026/03', store: st,
       rev: d.rev, gpPct: d.gpPct,
       wagePct: d.wPct || 0, rentPct: d.rPct || 0,
       mktPct: d.mktPct || 0,
       ni: d.pretax || 0, niPct: d.pretaxPct || 0,
-      tgt: d.target, achPct: pct(d.rev, d.target),
-      yoyRev: null, momRev: null,
+      tgt: d.target / TARGET_TAX_RATE, achPct: pct(d.rev, d.target / TARGET_TAX_RATE),
+      yoyRev: sheetMar?.yoyRev ?? null,
+      momRev: null,
       isStatic: true,
     });
   });
@@ -1330,12 +1638,14 @@ function renderHistoricalCharts(raw) {
   renderTrendTab(trendYMs, trendLabels, mkLeg);
   renderYoyMomTab(allYM, mkLeg);
   renderHeatmapTab(allYM);
+  renderCFOInsights(rows);
 
   /* Report archive */
   const reportYMs = allYM.slice().reverse();
   document.getElementById('report-grid').innerHTML = reportYMs.map((ym, i) => {
     const [y, m] = ym.split('/');
-    return `<a class="report-link" href="/report/${y+m}/" target="_blank">
+    const url = `report.html?ym=${encodeURIComponent(ym)}`;
+    return `<a class="report-link" href="${url}">
       <span>${y}年${parseInt(m)}月${i===0?' <span class="latest-tag">最新</span>':''}</span><span>→</span>
     </a>`;
   }).join('');
@@ -1439,7 +1749,7 @@ function renderStoreDetail(st, trendYMs, trendLabels) {
       labels: trendLabels,
       datasets: [
         {
-          type: 'bar', label: '月淨利（萬）',
+          type: 'bar', label: '月營業淨利（萬）',
           data: vals.map(r => r ? W(r.ni) : null),
           backgroundColor: vals.map(r => r ? (r.niPct>=8?'rgba(40,66,52,.7)':r.niPct>=5?'rgba(139,174,85,.7)':'rgba(165,74,26,.7)') : 'transparent'),
           yAxisID: 'yL',
@@ -1558,7 +1868,7 @@ function renderHeatmapTab(allYM) {
 </script>
 
 <footer class="footer">
-  <a href="https://dashboard.oringo.tw/" style="color:var(--gray-pink);text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;border:1px solid rgba(226,206,185,.25);padding:3px 12px;border-radius:20px;display:inline-block;margin-bottom:8px;transition:all .15s" onmouseover="this.style.color='#E2CEB9'" onmouseout="this.style.color=''">← 中控中心</a><br>
+  <a href="https://garykao0726.github.io/" style="color:var(--gray-pink);text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;border:1px solid rgba(226,206,185,.25);padding:3px 12px;border-radius:20px;display:inline-block;margin-bottom:8px;transition:all .15s" onmouseover="this.style.color='#E2CEB9'" onmouseout="this.style.color=''">← 中控中心</a><br>
   林果良品 ORINGO｜財務報表
   <span style="opacity:.4;font-size:10px;display:block;margin-top:3px">INTERNAL USE ONLY · ©2026 ORINGO</span>
 </footer>
