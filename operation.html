@@ -254,6 +254,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <div class="kpi5" id="monthly-kpi"></div>
   <!-- 選定月份時顯示大型各店達成卡片 -->
   <div id="monthly-store-cards" style="display:none;margin-bottom:1.25rem"></div>
+  <div id="monthly-advice" style="display:none;margin-bottom:1.25rem"></div>
   <div class="g2">
     <div class="card">
       <div class="card-hdr">
@@ -492,6 +493,8 @@ function renderMonthlyStoreCards(m){
     const yoy=rev25>0?((rev-rev25)/rev25*100).toFixed(1):null;
     const revPrevMo=m>1?getD(s,2026,m-1):0;
     const mom=revPrevMo>0?((rev-revPrevMo)/revPrevMo*100).toFixed(1):null;
+    let ytdRev=0,ytdTgt=0;for(let j=1;j<=m;j++){ytdRev+=getD(s,2026,j);ytdTgt+=getTgt(s,j);}
+    const ytdPct=ytdTgt>0?ytdRev/ytdTgt*100:0;
     return`<div class="wkc" style="--wkc-col:${S_COL[i]}">
       <div class="wkc-name">${S_EMO[i]} ${s}</div>
       <div class="wkc-pct" style="color:${c}">${p}%</div>
@@ -505,17 +508,59 @@ function renderMonthlyStoreCards(m){
         <span style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted)">vs 上月 ${fw(revPrevMo)}萬</span>
         <span style="font-size:12px;font-family:'Space Mono',monospace;font-weight:700;color:${parseFloat(mom)>=0?'var(--positive)':'var(--negative)'}">${parseFloat(mom)>=0?'▲ +':'▼ '}${Math.abs(mom)}% MoM</span>
       </div>`:''}
+      <div style="display:flex;justify-content:center;gap:16px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+        ${miniRing(p,'月達成')}${miniRing(ytdPct,'年達成')}
+      </div>
     </div>`;
   }).join('')+`</div>`;
 }
-function renderMonthly(){if(!document.getElementById('m-pills').children.length){const pills=document.getElementById('m-pills');const all=document.createElement('button');all.className='mp active';all.textContent='全年 YTD';all.onclick=()=>selectMonth(0,all);pills.appendChild(all);for(let m=1;m<=12;m++){const b=document.createElement('button');b.className='mp';b.textContent=m+'月';b.onclick=function(){selectMonth(m,this)};pills.appendChild(b);}}renderMonthlyKPI();renderMonthlyStoreCards(selMonth);renderTrendChart();renderCompanyDonut();renderSrMonthly();renderChDonut();renderMonthlyWkDetail(selMonth);}
+function renderMonthlyAdvice(m){
+  const el=document.getElementById('monthly-advice');
+  if(m===0){el.style.display='none';return;}
+  el.style.display='block';
+  const rows=STORES4.map(s=>{
+    const i=STORES.indexOf(s);
+    const rev=getD(s,2026,m),tgt=getTgt(s,m),rev25=getD(s,2025,m);
+    const revPrevMo=m>1?getD(s,2026,m-1):0;
+    const p=tgt>0?rev/tgt*100:0;
+    const yoy=rev25>0?(rev-rev25)/rev25*100:null;
+    const mom=revPrevMo>0?(rev-revPrevMo)/revPrevMo*100:null;
+    const gap=fw(Math.abs(tgt-rev));
+    const col=achColor(p),lbl=achLabel(p);
+    let bullets=[];
+    if(p>=100){
+      bullets.push(`月達成 ${p.toFixed(0)}%，超越月目標，差額 +${gap}萬。建議整理本月成功經驗（促銷節奏、主力品項），作為下月 SOP 參考。`);
+      if(mom!==null&&mom<-5)bullets.push(`但較上月下滑 ${Math.abs(mom).toFixed(1)}%，留意是否有客群或品項結構的季節性影響。`);
+    }else if(p>=85){
+      bullets.push(`月達成 ${p.toFixed(0)}%，表現良好，距目標約 ${gap}萬。下月可嘗試加強高客單品推薦或旺季前提前蓄客。`);
+      if(mom!==null&&mom<0)bullets.push(`MoM ${mom.toFixed(1)}%，較上月下滑，建議盤點是否有促銷空白或人流落差。`);
+    }else if(p>=70){
+      bullets.push(`月達成 ${p.toFixed(0)}%，距目標 ${gap}萬，需提升。建議檢視各週達成是否持續下滑或集中末週衝刺。`);
+      if(yoy!==null&&yoy<0)bullets.push(`YoY ${yoy.toFixed(1)}%，低於去年同期，建議回顧去年同期的銷售策略與活動節奏。`);
+      else bullets.push(`下月應於月初設定分週目標，避免依賴末期補衝，提升達成穩定性。`);
+    }else{
+      bullets.push(`月達成 ${p.toFixed(0)}%，嚴重落後目標 ${gap}萬。建議管理層下月初進行門市輔導，確認人員士氣、陳列與促銷方向。`);
+      if(yoy!==null)bullets.push(`YoY ${yoy>=0?'+':''}${yoy.toFixed(1)}%，${yoy<0?'且低於去年同期，':''}下月應設立週追蹤機制，不可等到月末才發現落後。`);
+    }
+    return`<div style="padding:12px 14px;border-radius:8px;background:${col}09;border:1px solid ${col}28;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+        <div style="width:9px;height:9px;border-radius:50%;background:${col};flex-shrink:0"></div>
+        <span style="font-weight:700;font-size:13px;color:var(--text)">${S_EMO[i]} ${s}</span>
+        <span style="font-size:10px;font-family:'Space Mono',monospace;color:${col};font-weight:700;margin-left:2px">${lbl} ${p.toFixed(0)}%</span>
+      </div>
+      ${bullets.map(b=>`<div style="font-size:11.5px;color:var(--text-sub);line-height:1.65;padding-left:14px;position:relative;margin-bottom:3px"><span style="position:absolute;left:2px;color:var(--text-muted)">›</span>${b}</div>`).join('')}
+    </div>`;
+  });
+  el.innerHTML=`<div class="card"><div class="card-hdr"><span class="card-lbl">營運長建議 — ${m}月</span><span class="card-badge">依月度績效數據自動生成</span></div>${rows.join('')}</div>`;
+}
+function renderMonthly(){if(!document.getElementById('m-pills').children.length){const pills=document.getElementById('m-pills');const all=document.createElement('button');all.className='mp active';all.textContent='全年 YTD';all.onclick=()=>selectMonth(0,all);pills.appendChild(all);for(let m=1;m<=12;m++){const b=document.createElement('button');b.className='mp';b.textContent=m+'月';b.onclick=function(){selectMonth(m,this)};pills.appendChild(b);}}renderMonthlyKPI();renderMonthlyStoreCards(selMonth);renderMonthlyAdvice(selMonth);renderTrendChart();renderCompanyDonut();renderSrMonthly();renderChDonut();renderMonthlyWkDetail(selMonth);}
 function renderMonthlyKPI(){const m=selMonth;let t26=0,t25=0,tgt=0;if(m===0){const y=ytdStats();t26=Math.round(y.rev/10000);t25=Math.round(y.rev25/10000);tgt=Math.round(y.tgt/10000);}else{STORES.forEach(s=>{t26+=getD(s,2026,m);t25+=getD(s,2025,m);tgt+=getTgt(s,m);});}const ach=(t26/tgt*100).toFixed(1),yoy=parseFloat(yd(t26,t25));const wTot=STORES4.reduce((s,n)=>s+WK[n].rev,0),wTgt=STORES4.reduce((s,n)=>s+WK[n].tgt,0);const wAch=(wTot/wTgt*100).toFixed(1);const avgT=Math.round(STORES4.reduce((s,n)=>s+WK[n].ticket,0)/4);const tgtAvgT=Math.round(STORES4.reduce((s,n)=>s+(STORE_BENCHMARKS[n]?STORE_BENCHMARKS[n].ticket:TARGET_TICKET),0)/STORES4.length);let thirdKpi;if(m===0){thirdKpi={l:'上週四店達成',v:wAch+'%',d:parseFloat(wAch)-100,vs:'vs 週目標',c:'#5a8a6e'};}else{const s4Rev=STORES4.reduce((a,n)=>a+getD(n,2026,m),0);const s4Tgt=STORES4.reduce((a,n)=>a+getTgt(n,m),0);const s4Ach=(s4Rev/s4Tgt*100).toFixed(1);thirdKpi={l:'四店月達成率',v:s4Ach+'%',d:parseFloat(s4Ach)-100,vs:'vs 月目標 NT$'+fw(s4Tgt)+'萬',c:'#5a8a6e'};}const kpis=[{l:'全通路累計',v:'NT$'+t26+'萬',d:yoy,vs:'vs 2025 YoY',c:'var(--green)'},{l:'目標達成率',v:ach+'%',d:parseFloat(ach)-75,vs:'vs 75% 階段目標',c:'var(--rust)'},thirdKpi,{l:'四店平均客單',v:'$'+fw(avgT),d:tgtAvgT>0?((avgT-tgtAvgT)/tgtAvgT*100).toFixed(1):'0',vs:'vs 各店平均目標 $'+fw(tgtAvgT),c:'var(--brown)'},{l:'年度目標',v:'NT$'+tgt+'萬',d:null,vs:'全年總目標',c:'var(--gray-pink)'}];document.getElementById('monthly-kpi').innerHTML=kpis.map(k=>{const dv=parseFloat(k.d),cls=dv>0?'pos':dv<0?'neg':'neu',arr=dv>0?'▲ +':'▼ ';return`<div class="kc" style="--kc-color:${k.c}"><div class="kc-l">${k.l}</div><div class="kc-v">${k.v}</div><div class="kc-d">${k.d!==null?`<span class="delta ${cls}">${arr}${Math.abs(dv).toFixed(1)}%</span>`:''}<span class="kc-vs">${k.vs}</span></div></div>`;}).join('');}
 function renderTrendChart(){const lbs=['1','2','3','4','5','6','7','8','9','10','11','12'];const curMo=new Date().getMonth()+1;const t26=lbs.map((_,i)=>(i+1)>curMo?null:STORES.reduce((s,st)=>s+(D26[st]||[])[i],0));const t25=lbs.map((_,i)=>STORES.reduce((s,st)=>s+(D25[st]||[])[i],0));const tg=lbs.map((_,i)=>STORES.reduce((s,st)=>s+(TARGETS[st]||[])[i],0));if(CH.tr)CH.tr.destroy();CH.tr=new Chart(document.getElementById('trend-chart'),{data:{labels:lbs.map(m=>m+'月'),datasets:[{type:'bar',label:'2026',data:t26,backgroundColor:'rgba(40,66,52,.2)',borderColor:'#284234',borderWidth:1.5,borderRadius:4},{type:'bar',label:'2025',data:t25,backgroundColor:'rgba(226,206,185,.5)',borderColor:'#E2CEB9',borderWidth:1,borderRadius:4},{type:'line',label:'目標',data:tg,borderColor:'#A54A1A',borderWidth:2,pointRadius:0,fill:false,tension:.3,borderDash:[5,4]}]},options:cOpts()});}
 function renderCompanyDonut(){const m=selMonth;let t26=0,tgt=0,t25=0;STORES.forEach(s=>{t26+=getD(s,2026,m);tgt+=getTgt(s,m);t25+=getD(s,2025,m);});const p=Math.round(t26/tgt*100),yoy=parseFloat(yd(t26,t25));document.getElementById('company-pct').textContent=p+'%';document.getElementById('company-stats').innerHTML=`<div style="display:flex;justify-content:space-between;font-size:11px;font-family:'Space Mono',monospace;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:6px"><span style="color:var(--text-muted)">累計營收</span><span style="font-weight:700">NT$${fw(t26)}萬</span></div><div style="display:flex;justify-content:space-between;font-size:11px;font-family:'Space Mono',monospace;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:6px"><span style="color:var(--text-muted)">年度目標</span><span style="color:var(--text-muted)">NT$${fw(tgt)}萬</span></div><div style="display:flex;justify-content:space-between;font-size:11px;font-family:'Space Mono',monospace"><span style="color:var(--text-muted)">vs 2025 同期</span><span style="font-weight:700;color:${yoy>=0?'var(--positive)':'var(--negative)'}">${yoy>=0?'▲ +':'▼ '}${Math.abs(yoy)}%</span></div>`;if(CH.cd)CH.cd.destroy();CH.cd=new Chart(document.getElementById('company-donut'),{type:'doughnut',data:{datasets:[{data:[p,Math.max(0,100-p)],backgroundColor:['#A54A1A','#E2CEB9'],borderWidth:0}]},options:{cutout:'72%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});}
 function renderSrMonthly(){const el=document.getElementById('sr-monthly');el.innerHTML='';STORES.forEach((s,i)=>{const m=selMonth;let rev,tgt=getTgt(s,m),rev25;if(m===0){const curMo=new Date().getMonth()+1;rev=0;rev25=0;for(let i=1;i<curMo;i++){rev+=(D26[s]||[])[i-1]||0;rev25+=(D25[s]||[])[i-1]||0;}const d26cur=(D26[s]||[])[curMo-1]||0;rev+=(d26cur||Math.round((WK[s].mtdRev||0)/10000));rev25+=(D25[s]||[])[curMo-1]||0;}else{rev=getD(s,2026,m);rev25=getD(s,2025,m);}const p=tgt>0?(rev/tgt*100):0,yoy=parseFloat(yd(rev,rev25)),c=ac(p);const wrap=document.createElement('div'),row=document.createElement('div');row.className='sr'+(selStoreM===s?' active':'');row.innerHTML=`<div class="sr-top"><div class="sr-name">${S_EMO[i]} ${s}</div><div><div class="sr-pct" style="color:${c}">${p.toFixed(1)}%</div><div class="sr-rev">NT$${fw(rev)}萬 / ${fw(tgt)}萬</div></div></div><div class="prog"><div class="prog-bar" style="width:${Math.min(p,100)}%;background:${S_COL[i]}"></div></div><div class="sr-stats"><div class="sr-stat">YoY <b style="color:${yoy>=0?'var(--positive)':'var(--negative)'}">${yoy>=0?'+':''}${yoy}%</b></div></div>`;row.onclick=()=>{selStoreM=selStoreM===s?null:s;renderSrMonthly();toggleMonthlyDetail();};wrap.appendChild(row);el.appendChild(wrap);});toggleMonthlyDetail();}
 function toggleMonthlyDetail(){const panel=document.getElementById('monthly-detail');if(!selStoreM){panel.style.display='none';return;}panel.style.display='block';const s=selStoreM,i=STORES.indexOf(s),color=S_COL[i];const m=selMonth;let rev,tgt=getTgt(s,m),rev25;if(m===0){const curMo=new Date().getMonth()+1;rev=0;rev25=0;for(let i=1;i<curMo;i++){rev+=(D26[s]||[])[i-1]||0;rev25+=(D25[s]||[])[i-1]||0;}const d26cur=(D26[s]||[])[curMo-1]||0;rev+=(d26cur||Math.round((WK[s].mtdRev||0)/10000));rev25+=(D25[s]||[])[curMo-1]||0;}else{rev=getD(s,2026,m);rev25=getD(s,2025,m);}const ach=(tgt>0?(rev/tgt*100):0).toFixed(1),yoy=parseFloat(yd(rev,rev25));const inner=document.getElementById('monthly-detail-inner');inner.innerHTML=`<div style="font-size:13px;font-weight:700;color:${color};margin-bottom:10px">${S_EMO[i]} ${s} 詳細分析</div><div class="dd4"><div class="dd-kpi"><div class="dd-l">累計營收</div><div class="dd-v" style="color:${color}">NT$${fw(rev)}萬</div></div><div class="dd-kpi"><div class="dd-l">達成率</div><div class="dd-v" style="color:${color}">${ach}%</div></div><div class="dd-kpi"><div class="dd-l">YoY</div><div class="dd-v" style="color:${yoy>=0?'var(--positive)':'var(--negative)'}">${yoy>=0?'+':''}${yoy}%</div></div><div class="dd-kpi"><div class="dd-l">年度目標</div><div class="dd-v" style="color:var(--text-muted)">NT$${fw(tgt)}萬</div></div></div><div style="position:relative;height:150px"><canvas id="sd-chart"></canvas></div>`;setTimeout(()=>{if(CH.sd)CH.sd.destroy();const curMo=new Date().getMonth()+1;const d26Series=(D26[s]||[]).map((v,mi)=>(mi+1)>curMo?null:v);CH.sd=new Chart(document.getElementById('sd-chart'),{data:{labels:['1','2','3','4','5','6','7','8','9','10','11','12'].map(m=>m+'月'),datasets:[{type:'bar',label:'2026',data:d26Series,backgroundColor:color+'30',borderColor:color,borderWidth:1.5,borderRadius:3},{type:'bar',label:'2025',data:D25[s],backgroundColor:'rgba(226,206,185,.5)',borderColor:'#CFA294',borderWidth:1,borderRadius:3},{type:'line',label:'目標',data:TARGETS[s],borderColor:'#A54A1A55',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[4,4]}]},options:cOpts()});},50);}
 function renderChDonut(){const m=selMonth,vals=STORES.map(s=>getD(s,2026,m));const total=vals.reduce((a,b)=>a+b,0);if(CH.chd)CH.chd.destroy();CH.chd=new Chart(document.getElementById('ch-donut'),{type:'doughnut',data:{labels:STORES,datasets:[{data:vals,backgroundColor:S_COL.map(c=>c+'cc'),borderWidth:3,borderColor:'#fff',hoverBorderWidth:0}]},options:{cutout:'58%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'rgba(40,66,52,.15)',borderWidth:1,titleColor:'#284234',bodyColor:'#8D5531',callbacks:{label:ctx=>` ${ctx.label}: ${fw(ctx.parsed)}萬 (${(ctx.parsed/total*100).toFixed(1)}%)`}}}}});document.getElementById('ch-legend').innerHTML=STORES.map((s,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:${S_COL[i]}"></div><span style="font-size:11px;color:var(--text-sub)">${s}</span></div><span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)">${(vals[i]/total*100).toFixed(1)}%</span></div>`).join('');}
-function selectMonth(m,btn){selMonth=m;document.querySelectorAll('.mp').forEach(el=>el.classList.remove('active'));btn.classList.add('active');document.getElementById('ch-badge').textContent=m===0?'2026 YTD':'2026 '+m+'月';renderMonthlyKPI();renderMonthlyStoreCards(m);renderCompanyDonut();renderSrMonthly();renderChDonut();renderMonthlyWkDetail(m);}
+function selectMonth(m,btn){selMonth=m;document.querySelectorAll('.mp').forEach(el=>el.classList.remove('active'));btn.classList.add('active');document.getElementById('ch-badge').textContent=m===0?'2026 YTD':'2026 '+m+'月';renderMonthlyKPI();renderMonthlyStoreCards(m);renderMonthlyAdvice(m);renderCompanyDonut();renderSrMonthly();renderChDonut();renderMonthlyWkDetail(m);}
 function renderMonthlyWkDetail(m){
   const sec=document.getElementById('monthly-wk-section');
   if(m===0){sec.style.display='none';return;}
