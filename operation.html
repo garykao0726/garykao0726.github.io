@@ -691,6 +691,104 @@ function renderMgmt(){
   const storeTotNi=stores.reduce((s,st)=>s+(d.storeData[st]?.ni||0),0);
   const totAch=storeTotRev/storeTotTgt*100;
 
+  /* BEP + 費用結構 */
+  const bepRows=stores.map(st=>{
+    const s=d.storeData[st];
+    if(!s||!s.gpPct)return'';
+    const gpR=s.gpPct/100;
+    // BEP = rev - ni/gpR  (back-calculated from: GP - FixedCosts = ni)
+    const bep=s.rev-s.ni/gpR;
+    const bepW=(bep/10000).toFixed(1);
+    const revW=(s.rev/10000).toFixed(1);
+    const tgtW=(s.target/10000).toFixed(1);
+    const gapW=(s.rev-bep)/10000;
+    const above=gapW>=0;
+    const col=sc[st];
+    const scaleMax=Math.max(s.rev,bep,s.target)*1.12;
+    const bepPos=Math.min(bep/scaleMax*100,97).toFixed(1);
+    const tgtPos=Math.min(s.target/scaleMax*100,97).toFixed(1);
+    const revBarW=Math.min(s.rev/scaleMax*100,100).toFixed(1);
+    // Sensitivity: use allWk April data if available
+    const moNum=parseInt((d.ym||'').split('/')[1]||'0');
+    const moWks=(typeof allWk!=='undefined'&&allWk[st]?allWk[st]:[]).filter(w=>w.month===moNum);
+    const totVis=moWks.reduce((a,w)=>a+(w.vis||0),0);
+    const avgConv=moWks.length?moWks.reduce((a,w)=>a+(w.conv||0),0)/moWks.length:(WK[st]?.conv||0);
+    const avgTkt=moWks.length?moWks.reduce((a,w)=>a+(w.ticket||0),0)/moWks.length:(WK[st]?.ticket||0);
+    let hint='';
+    if(!above&&totVis>0&&avgConv>0&&avgTkt>0){
+      const need=bep-s.rev;
+      const convDelta=need/(totVis*avgTkt)*100;
+      const tktDelta=need/(totVis*avgConv);
+      hint=`<div style="margin-top:6px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-sub);background:rgba(192,57,43,.05);border-radius:5px;padding:5px 8px">
+        還差 <b>${Math.abs(gapW).toFixed(1)}萬</b> 才能打平 ·
+        成交率 +${convDelta.toFixed(1)}pp（現 ${(avgConv*100).toFixed(0)}%）→ 約弭平差距 ·
+        或 客單價 +$${Math.round(tktDelta).toLocaleString()} → 約弭平差距
+      </div>`;
+    }
+    return`<div style="padding:11px 13px;border-radius:8px;border:1px solid ${above?'rgba(26,122,74,.15)':'rgba(192,57,43,.18)'};background:${above?'rgba(26,122,74,.03)':'rgba(192,57,43,.04)'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:9px;height:9px;border-radius:50%;background:${col}"></div>
+          <span style="font-weight:700;font-size:12px">${st}</span>
+          <span style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted)">BEP ${bepW}萬</span>
+        </div>
+        <span style="font-size:11px;font-family:'Space Mono',monospace;font-weight:700;color:${above?'var(--positive)':'var(--negative)'}">
+          ${above?'✓ +':'▼ '}${Math.abs(gapW).toFixed(1)}萬　${above?'已過平衡點':'未達平衡點'}
+        </span>
+      </div>
+      <div style="position:relative;padding-top:15px">
+        <div style="position:absolute;left:${bepPos}%;top:0;bottom:0;pointer-events:none">
+          <span style="font-size:8px;font-family:'Space Mono',monospace;color:#b8860b;white-space:nowrap;display:block;margin-bottom:1px">▼BEP</span>
+          <div style="width:2px;height:20px;background:#d4a72c"></div>
+        </div>
+        <div style="position:absolute;left:${tgtPos}%;top:0;bottom:0;pointer-events:none">
+          <span style="font-size:8px;font-family:'Space Mono',monospace;color:#aaa;white-space:nowrap;display:block;margin-bottom:1px">▼目標</span>
+          <div style="width:2px;height:20px;background:#bbb"></div>
+        </div>
+        <div style="height:20px;background:var(--surface2);border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:${revBarW}%;background:${col};border-radius:4px;display:flex;align-items:center;padding-left:7px">
+            ${parseFloat(revBarW)>12?`<span style="font-family:'Space Mono',monospace;font-size:9px;color:#fff">${revW}萬</span>`:''}
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:5px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted)">
+        估算固定成本：租金 ${fW(s.rentAmt||0)} ＋ 人事 ${fW(s.wageAmt||0)} = ${fW((s.rentAmt||0)+(s.wageAmt||0))}
+      </div>
+      ${hint}
+    </div>`;
+  }).join('');
+
+  const costRows=stores.map(st=>{
+    const s=d.storeData[st];
+    if(!s||!s.gpPct)return'';
+    const wP=s.wageAmt?(s.wageAmt/s.rev*100):0;
+    const rP=(s.rentAmt||0)/s.rev*100;
+    const niP=s.niPct;
+    // otherP = everything else (mgmt allocation, card fees, sys, freight, etc.)
+    const otherP=s.gpPct-wP-rP-(niP>=0?niP:0);
+    const cogsP=100-s.gpPct;
+    const niShow=niP>=0?niP:0;
+    const lossShow=niP<0?Math.abs(niP):0;
+    const col=sc[st];
+    const segs=[
+      {l:'成本',p:cogsP,c:'#c8c0b8',ctrl:false},
+      {l:'人事費',p:wP,c:'#EF9F27',ctrl:true},
+      ...(rP>0.2?[{l:'租金',p:rP,c:'#8a8a8a',ctrl:false}]:[]),
+      {l:'其他管銷',p:Math.max(otherP,0),c:'#c0b0a0',ctrl:false},
+      ...(niShow>0?[{l:'淨利',p:niShow,c:'#1a7a4a',ctrl:false}]:[]),
+      ...(lossShow>0?[{l:'虧損',p:lossShow,c:'#c0392b',ctrl:false}]:[]),
+    ].filter(sg=>sg.p>0.3);
+    return`<div style="margin-bottom:11px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:11px;font-weight:700;color:${col}">${st}</span>
+        <span style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted)">毛利 ${s.gpPct.toFixed(0)}%　人事 ${wP.toFixed(1)}%${rP>.2?' 租金 '+rP.toFixed(1)+'%':''}　<span style="color:${niP>=0?'var(--positive)':'var(--negative)'}">淨利 ${niP.toFixed(1)}%</span></span>
+      </div>
+      <div style="display:flex;height:22px;border-radius:4px;overflow:hidden;border:1px solid rgba(0,0,0,.06)">
+        ${segs.map(sg=>`<div style="width:${sg.p.toFixed(1)}%;background:${sg.c};display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative" title="${sg.l} ${sg.p.toFixed(1)}%">${sg.ctrl?`<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.12) 3px,rgba(255,255,255,.12) 6px)"></div>`:''}${sg.p>6?`<span style="font-size:8px;color:#fff;font-family:'Space Mono',monospace;position:relative;z-index:1">${sg.l}</span>`:''}</div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
   /* store table rows */
   const storeRows=stores.map(st=>{
     const s=d.storeData[st];
@@ -892,6 +990,28 @@ function renderMgmt(){
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- 損益平衡點 + 費用結構 -->
+  <div class="g-half" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">各店損益平衡點</span><span class="card-badge">🟡 BEP線　⬜ 目標線</span></div>
+      <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-bottom:10px">毛利率以 2026/03 確認財報估算；BEP＝全部管銷成本 ÷ 毛利率（含管理費分攤）</div>
+      <div style="display:flex;flex-direction:column;gap:10px">${bepRows}</div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">費用結構（每元營收）</span><span class="card-badge">🟠條紋＝可調整</span></div>
+      <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-bottom:12px">店長可控：人事費排班調整（🟠）；其餘租金、管銷費、COGS 為固定或不可控</div>
+      ${costRows}
+      <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:9px;font-family:'Space Mono',monospace;padding-top:10px;border-top:1px solid var(--border)">
+        <span><span style="display:inline-block;width:10px;height:10px;background:#c8c0b8;border-radius:2px;vertical-align:middle;margin-right:3px"></span>成本 COGS</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#EF9F27;border-radius:2px;vertical-align:middle;margin-right:3px"></span>人事費（可調整排班）</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#8a8a8a;border-radius:2px;vertical-align:middle;margin-right:3px"></span>租金（固定）</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#c0b0a0;border-radius:2px;vertical-align:middle;margin-right:3px"></span>其他管銷（固定）</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#1a7a4a;border-radius:2px;vertical-align:middle;margin-right:3px"></span>淨利</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#c0392b;border-radius:2px;vertical-align:middle;margin-right:3px"></span>虧損超支</span>
+      </div>
     </div>
   </div>
 

@@ -156,17 +156,26 @@ MR: {
   storeNiPrevMo: 997542,   // 各店加總 2026/03 淨利
   storeNiPrevYr:-249991,   // 各店加總 2025/04 淨利
 
-  /* 各店（全為未稅）*/
+  /* 各店（全為未稅）
+     gpPct  : 毛利率，以 2026/03 確認財報為估算基準
+     rentAmt: 月租金（元），來自 HIST_2025_RAW，相對穩定
+     wageAmt: 月人事費估算（元），以 2026/03 × 彈性調整估算
+  */
   storeData: {
     '中山': { rev:1514949, target:1500000, ni: 294212, niPct: 19.42,
+              gpPct:67.96, rentAmt:120000, wageAmt:160000,
               prevMoRev:1696854, prevYrRev:978260,  prevMoNI: 445074, prevYrNI:  94704 },
     '松菸': { rev:1128851, target:1400000, ni:  38998, niPct:  3.45,
+              gpPct:67.11, rentAmt:126889, wageAmt:192000,
               prevMoRev:1523289, prevYrRev:1129701, prevMoNI: 262033, prevYrNI: 130562 },
     '台中': { rev: 877671, target:1200000, ni: -34972, niPct: -3.98,
+              gpPct:66.51, rentAmt: 68267, wageAmt:142000,
               prevMoRev: 995748, prevYrRev:564119,  prevMoNI:  60536, prevYrNI:-177544 },
     '東門': { rev:1126968, target:1200000, ni:  56032, niPct:  4.97,
+              gpPct:65.61, rentAmt:127638, wageAmt:178000,
               prevMoRev:1305843, prevYrRev:715903,  prevMoNI: 147740, prevYrNI:-158917 },
     '電商': { rev: 808717, target:1000000, ni: -17357, niPct: -2.15,
+              gpPct:70.13, rentAmt:      0, wageAmt: 61000,
               prevMoRev:1078725, prevYrRev:641539,  prevMoNI:  82159, prevYrNI:-138796 },
   },
 
