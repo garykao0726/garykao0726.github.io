@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>林果良品｜維修工單</title>
+<title>林果良品｜訂製單</title>
 <link rel="icon" href="/favicon.png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -14,15 +14,14 @@
   --border2:rgba(40,66,52,0.22);--text:#284234;--text-sub:#8D5531;
   --text-muted:#b09a88;--positive:#1a7a4a;--negative:#c0392b;
   --status-quote-bg:#FEF3C7;--status-quote-c:#92400E;
-  --status-sent-bg:#DBEAFE;--status-sent-c:#1E40AF;
+  --status-making-bg:#DBEAFE;--status-making-c:#1E40AF;
   --status-done-bg:#D1FAE5;--status-done-c:#065F46;
   --status-picked-bg:#F3F4F6;--status-picked-c:#6B7280;
-  --status-reject-bg:#FEE2E2;--status-reject-c:#991B1B;
+  --status-cancel-bg:#FEE2E2;--status-cancel-c:#991B1B;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100vh}
 
-/* Header */
 .hdr{position:sticky;top:0;z-index:100;background:var(--green);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem}
 .brand{display:flex;align-items:center;gap:12px}
 .brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--sand)}
@@ -38,12 +37,9 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .live-dot{width:7px;height:7px;border-radius:50%;background:#5be8a0;box-shadow:0 0 8px #5be8a0;animation:blink 2.5s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* Layout */
 .container{max-width:900px;margin:0 auto;padding:1.5rem 1.25rem}
-.view{display:none}
-.view.active{display:block}
+.view{display:none}.view.active{display:block}
 
-/* Top bar */
 .top-bar{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap}
 .top-bar-title{font-size:16px;font-weight:700;color:var(--text);flex:1}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .18s;font-family:'Noto Sans TC',sans-serif}
@@ -52,30 +48,24 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .btn-ghost{background:transparent;color:var(--text-sub);border:1px solid var(--border2)}
 .btn-ghost:hover{background:var(--surface2)}
 .btn-sm{padding:6px 14px;font-size:12px}
-.btn-danger{background:#FEE2E2;color:var(--negative);border:1px solid #FECACA}
-.btn-danger:hover{background:#FECACA}
 .btn-outline{background:transparent;color:var(--green);border:1px solid var(--green)}
 .btn-outline:hover{background:var(--green);color:var(--sand)}
 
-/* Search + filter */
 .filter-row{display:flex;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap}
 .search-wrap{flex:1;min-width:200px;position:relative}
 .search-wrap input{width:100%;padding:9px 12px 9px 36px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);font-size:13px;color:var(--text);outline:none;font-family:'Noto Sans TC',sans-serif}
 .search-wrap input:focus{border-color:var(--green)}
 .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px}
 select.filter-sel{padding:9px 12px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);font-size:13px;color:var(--text);outline:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif}
-select.filter-sel:focus{border-color:var(--green)}
 
-/* Status badge */
 .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
 .badge-quote{background:var(--status-quote-bg);color:var(--status-quote-c)}
-.badge-sent{background:var(--status-sent-bg);color:var(--status-sent-c)}
+.badge-making{background:var(--status-making-bg);color:var(--status-making-c)}
 .badge-done{background:var(--status-done-bg);color:var(--status-done-c)}
 .badge-picked{background:var(--status-picked-bg);color:var(--status-picked-c)}
-.badge-reject{background:var(--status-reject-bg);color:var(--status-reject-c)}
+.badge-cancel{background:var(--status-cancel-bg);color:var(--status-cancel-c)}
 .badge-tag{background:var(--sand);color:var(--green);font-size:10px;padding:2px 8px}
 
-/* Order cards */
 .order-list{display:flex;flex-direction:column;gap:10px}
 .order-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;cursor:pointer;transition:all .18s;position:relative}
 .order-card:hover{border-color:var(--border2);box-shadow:0 2px 12px rgba(40,66,52,.08)}
@@ -91,7 +81,6 @@ select.filter-sel:focus{border-color:var(--green)}
 .empty-icon{font-size:40px;margin-bottom:12px}
 .empty-text{font-size:14px}
 
-/* Stats row */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
 @media(max-width:640px){.stats-row{grid-template-columns:repeat(2,1fr)}}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;position:relative;overflow:hidden}
@@ -99,7 +88,6 @@ select.filter-sel:focus{border-color:var(--green)}
 .stat-l{font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
 .stat-v{font-size:20px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text)}
 
-/* Detail view */
 .detail-back{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem}
 .detail-back button{background:none;border:none;cursor:pointer;font-size:13px;color:var(--text-sub);font-family:'Noto Sans TC',sans-serif;display:flex;align-items:center;gap:6px;padding:4px 0}
 .detail-back button:hover{color:var(--green)}
@@ -108,7 +96,6 @@ select.filter-sel:focus{border-color:var(--green)}
 .detail-name{font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px}
 .detail-meta-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 
-/* Progress steps */
 .steps{display:flex;align-items:center;margin:1.25rem 0}
 .step{flex:1;text-align:center;position:relative}
 .step:not(:last-child)::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--sand);z-index:0}
@@ -119,7 +106,6 @@ select.filter-sel:focus{border-color:var(--green)}
 .step-lbl{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace}
 .step.done .step-lbl,.step.current .step-lbl{color:var(--text)}
 
-/* Detail sections */
 .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
 @media(max-width:640px){.detail-grid{grid-template-columns:1fr}}
 .detail-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem}
@@ -130,22 +116,11 @@ select.filter-sel:focus{border-color:var(--green)}
 .field-label{font-size:11px;color:var(--text-muted);flex-shrink:0}
 .field-value{font-size:12px;font-weight:600;color:var(--text);font-family:'Space Mono',monospace;text-align:right;word-break:break-all}
 
-/* Items list (read-only in detail) */
-.items-table{width:100%;border-collapse:collapse;margin-top:6px}
-.items-table td{padding:5px 0;font-size:12px;border-bottom:1px solid var(--border)}
-.items-table td:last-child{text-align:right;font-family:'Space Mono',monospace;color:var(--rust);font-weight:600}
-.items-total{font-size:13px;font-weight:700;color:var(--text);padding-top:8px !important}
-.items-total td:last-child{font-size:14px;color:var(--rust)}
-
-/* Internal-only banner */
 .internal-banner{background:#FEF3C7;border:1px dashed #F59E0B;color:#92400E;padding:8px 12px;border-radius:6px;font-size:11px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 
-/* Photo section */
 .photo-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:1rem}
-.photo-cols{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-@media(max-width:500px){.photo-cols{grid-template-columns:1fr}}
-.photo-col-title{font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;font-family:'Space Mono',monospace}
-.photo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px}
+.photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+@media(max-width:500px){.photo-grid{grid-template-columns:repeat(3,1fr)}}
 .photo-thumb{width:100%;aspect-ratio:1;border-radius:7px;object-fit:cover;border:1px solid var(--border);cursor:pointer;transition:opacity .15s}
 .photo-thumb:hover{opacity:.85}
 .photo-add{width:100%;aspect-ratio:1;border-radius:7px;border:2px dashed var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:12px;gap:4px;transition:all .18s;background:var(--surface2)}
@@ -153,18 +128,16 @@ select.filter-sel:focus{border-color:var(--green)}
 .photo-add-icon{font-size:24px}
 input[type=file].hidden{display:none}
 
-/* Actions */
 .action-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:1rem}
 .status-buttons{display:flex;gap:8px;flex-wrap:wrap}
 .status-btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:2px solid transparent;transition:all .18s;font-family:'Noto Sans TC',sans-serif}
 .status-btn.active{border-color:var(--green)}
 .status-btn-quote{background:var(--status-quote-bg);color:var(--status-quote-c)}
-.status-btn-sent{background:var(--status-sent-bg);color:var(--status-sent-c)}
+.status-btn-making{background:var(--status-making-bg);color:var(--status-making-c)}
 .status-btn-done{background:var(--status-done-bg);color:var(--status-done-c)}
 .status-btn-picked{background:var(--status-picked-bg);color:var(--status-picked-c)}
-.status-btn-reject{background:var(--status-reject-bg);color:var(--status-reject-c)}
+.status-btn-cancel{background:var(--status-cancel-bg);color:var(--status-cancel-c)}
 
-/* Form view */
 .form-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem}
 .form-group{margin-bottom:1.1rem}
 .form-label{display:block;font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:5px}
@@ -178,24 +151,16 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
 .form-input.mono{font-family:'Space Mono',monospace}
 .form-id-preview{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--green);padding:10px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;letter-spacing:.05em}
 
-/* Repair items checklist */
-.items-block{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:1.1rem}
-.items-block h4{font-size:12px;color:var(--text);margin-bottom:10px;font-weight:700}
-.item-row{display:grid;grid-template-columns:24px 1fr auto auto;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
-.item-row:last-child{border-bottom:none}
-.item-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--green);cursor:pointer}
-.item-row .item-label{font-size:13px;color:var(--text)}
-.item-row .item-sides{display:flex;gap:4px}
-.item-row .side-btn{padding:3px 8px;border-radius:6px;font-size:11px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;color:var(--text-sub);font-family:'Space Mono',monospace}
-.item-row .side-btn.active{background:var(--green);color:var(--sand);border-color:var(--green)}
-.item-row .item-price{width:90px;text-align:right;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--rust)}
-.item-row.disabled{opacity:.45}
-.item-row .price-input{width:80px;padding:4px 8px;border:1px solid var(--border2);border-radius:6px;font-family:'Space Mono',monospace;font-size:12px;text-align:right}
-.items-total-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0 4px;border-top:2px solid var(--green);margin-top:8px}
-.items-total-l{font-size:13px;color:var(--text);font-weight:700}
-.items-total-v{font-size:18px;font-weight:700;color:var(--rust);font-family:'Space Mono',monospace}
+/* Model picker */
+.model-pick-wrap{position:relative}
+.model-pick-list{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:8px;max-height:280px;overflow-y:auto;z-index:50;box-shadow:0 4px 16px rgba(40,66,52,.1);display:none}
+.model-pick-list.open{display:block}
+.model-pick-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:12px}
+.model-pick-item:hover{background:var(--surface2)}
+.model-pick-item .mp-code{font-family:'Space Mono',monospace;font-size:11px;color:var(--rust);font-weight:700}
+.model-pick-item .mp-name{font-size:12px;color:var(--text);margin-top:2px}
+.model-pick-item .mp-meta{font-size:10px;color:var(--text-muted);margin-top:2px}
 
-/* Photo upload area */
 .photo-upload-area{border:2px dashed var(--border2);border-radius:8px;padding:1.5rem;text-align:center;cursor:pointer;color:var(--text-muted);transition:all .18s;background:var(--surface2)}
 .photo-upload-area:hover{border-color:var(--green);color:var(--green)}
 .photo-upload-icon{font-size:32px;margin-bottom:6px}
@@ -206,27 +171,27 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
 .photo-preview-item img{width:100%;height:100%;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
 .photo-preview-remove{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:var(--negative);color:#fff;border-radius:50%;border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:1}
 
-/* Customer view */
+.shipping-options{display:flex;gap:8px;flex-wrap:wrap}
+.shipping-options label{display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 14px;border:1px solid var(--border2);border-radius:8px;font-size:13px;color:var(--text);transition:all .15s}
+.shipping-options label:has(input:checked){border-color:var(--green);background:var(--surface2);color:var(--green);font-weight:600}
+.shipping-options input{accent-color:var(--green)}
+
 .customer-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;max-width:680px;margin:1rem auto}
 .customer-hero{text-align:center;margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)}
 .customer-id{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--rust);margin-bottom:8px}
 .customer-title{font-size:22px;font-weight:700;color:var(--text)}
 
-/* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:var(--sand);padding:10px 22px;border-radius:8px;font-size:13px;opacity:0;transition:all .3s;z-index:9999;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.error{background:var(--negative)}
 
-/* Loading */
 .loading{text-align:center;padding:2rem;color:var(--text-muted);font-family:'Space Mono',monospace;font-size:12px}
 
-/* Lightbox */
 .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9000;align-items:center;justify-content:center}
 .lightbox.open{display:flex}
 .lightbox img{max-width:90vw;max-height:88vh;border-radius:8px;object-fit:contain}
 .lightbox-close{position:absolute;top:16px;right:20px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
-/* Uploading overlay */
 .upload-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8000;align-items:center;justify-content:center}
 .upload-overlay.open{display:flex}
 .upload-box{background:var(--surface);border-radius:12px;padding:2rem 2.5rem;text-align:center;min-width:200px}
@@ -234,7 +199,30 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
 @keyframes spin{to{transform:rotate(360deg)}}
 .upload-box p{font-size:13px;color:var(--text-sub)}
 
-/* Print modal */
+#print-area{display:none}
+@media print{
+  body > *:not(#print-area){display:none !important}
+  #print-area{display:block;background:#fff;color:#000;font-family:'Noto Sans TC',sans-serif}
+  @page{size:A4;margin:12mm}
+}
+.print-receipt h1{font-size:20px;text-align:center;margin-bottom:8px}
+.print-receipt .pr-id{text-align:center;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.1em;color:#666;margin-bottom:16px}
+.print-receipt table{width:100%;border-collapse:collapse;margin-bottom:14px}
+.print-receipt .info-tbl td{padding:4px 8px;font-size:12px;border-bottom:1px dashed #ccc}
+.print-receipt .info-tbl td:first-child{color:#666;width:90px}
+.print-receipt .product-tbl td{padding:6px 8px;font-size:12px;border-bottom:1px solid #eee}
+.print-receipt .product-tbl td:first-child{color:#666;width:90px}
+.print-receipt .total-row td{font-weight:700;font-size:14px;border-bottom:2px solid #000;border-top:1px solid #000}
+.print-receipt .notes{font-size:10px;color:#444;line-height:1.6;margin-top:14px;border-top:1px dashed #999;padding-top:8px}
+.print-receipt .stores-bar{font-size:9px;color:#666;text-align:center;border-top:1px solid #000;padding-top:6px;margin-top:14px}
+.print-labels{display:flex;flex-direction:column;gap:0}
+.print-label{border:1px dashed #999;padding:14px 16px;height:90mm;display:flex;flex-direction:column;justify-content:center;page-break-inside:avoid}
+.print-label:not(:last-child){border-bottom:none}
+.print-label .label-tag{font-size:13px;font-weight:700;color:#a54a1a;letter-spacing:.1em;margin-bottom:6px}
+.print-label .label-id{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;letter-spacing:.1em;margin-bottom:8px}
+.print-label .label-name{font-size:18px;font-weight:700;margin-bottom:4px}
+.print-label .label-items{font-size:12px;line-height:1.5;color:#333;margin-top:4px}
+.print-label .label-meta{font-size:10px;color:#666;margin-top:6px;font-family:'Space Mono',monospace}
 .print-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9100;align-items:center;justify-content:center;padding:20px}
 .print-overlay.open{display:flex}
 .print-modal{background:var(--surface);border-radius:12px;padding:1.5rem;max-width:380px;width:100%}
@@ -244,37 +232,6 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
 .print-opt-btn:hover{border-color:var(--green);background:rgba(40,66,52,.04)}
 .print-opt-btn .o-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
 .print-opt-btn .o-desc{font-size:11px;color:var(--text-muted)}
-
-/* Print layouts (hidden on screen) */
-#print-area{display:none}
-@media print{
-  body > *:not(#print-area){display:none !important}
-  #print-area{display:block;background:#fff;color:#000;font-family:'Noto Sans TC',sans-serif}
-  @page{size:A4;margin:12mm}
-}
-.print-receipt{padding:0}
-.print-receipt h1{font-size:20px;text-align:center;margin-bottom:8px}
-.print-receipt .pr-id{text-align:center;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.1em;color:#666;margin-bottom:16px}
-.print-receipt table{width:100%;border-collapse:collapse;margin-bottom:14px}
-.print-receipt .info-tbl td{padding:4px 8px;font-size:12px;border-bottom:1px dashed #ccc}
-.print-receipt .info-tbl td:first-child{color:#666;width:90px}
-.print-receipt .items-tbl{margin-top:6px}
-.print-receipt .items-tbl th{font-size:11px;color:#666;border-bottom:1px solid #000;padding:4px 8px;text-align:left}
-.print-receipt .items-tbl td{padding:6px 8px;font-size:12px;border-bottom:1px solid #eee}
-.print-receipt .items-tbl td:last-child,.print-receipt .items-tbl th:last-child{text-align:right}
-.print-receipt .total-row td{font-weight:700;font-size:14px;border-bottom:2px solid #000;border-top:1px solid #000}
-.print-receipt .notes{font-size:10px;color:#444;line-height:1.6;margin-top:14px;border-top:1px dashed #999;padding-top:8px}
-.print-receipt .stores-bar{font-size:9px;color:#666;text-align:center;border-top:1px solid #000;padding-top:6px;margin-top:14px}
-
-/* 3-strip labels for shoe box / left / right */
-.print-labels{display:flex;flex-direction:column;gap:0}
-.print-label{border:1px dashed #999;padding:14px 16px;height:90mm;display:flex;flex-direction:column;justify-content:center;page-break-inside:avoid}
-.print-label:not(:last-child){border-bottom:none}
-.print-label .label-tag{font-size:13px;font-weight:700;color:#a54a1a;letter-spacing:.1em;margin-bottom:6px}
-.print-label .label-id{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;letter-spacing:.1em;margin-bottom:8px}
-.print-label .label-name{font-size:18px;font-weight:700;margin-bottom:4px}
-.print-label .label-items{font-size:12px;line-height:1.5;color:#333;margin-top:4px}
-.print-label .label-meta{font-size:10px;color:#666;margin-top:6px;font-family:'Space Mono',monospace}
 
 @media(max-width:640px){
   .container{padding:1rem .9rem}
@@ -294,8 +251,8 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
     <span class="brand-sub">REPAIR &amp; CUSTOM</span>
   </div>
   <div class="hdr-r">
-    <a href="repair.html" class="hdr-tab active">維修</a>
-    <a href="custom.html" class="hdr-tab">訂製</a>
+    <a href="repair.html" class="hdr-tab">維修</a>
+    <a href="custom.html" class="hdr-tab active">訂製</a>
     <a href="https://garykao0726.github.io/" class="back-link">← 中控</a>
     <div class="live-dot"></div>
   </div>
@@ -303,18 +260,18 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
 
 <div class="container">
 
-  <!-- ===== LIST VIEW ===== -->
+  <!-- ===== LIST ===== -->
   <div class="view active" id="view-list">
     <div class="top-bar">
-      <div class="top-bar-title">維修工單追蹤</div>
-      <button class="btn btn-primary" onclick="showView('create')">＋ 新增維修單</button>
+      <div class="top-bar-title">皮鞋訂製單</div>
+      <button class="btn btn-primary" onclick="showView('create')">＋ 新增訂製單</button>
     </div>
 
-    <div class="stats-row" id="stats-row">
+    <div class="stats-row">
       <div class="stat-card" style="--sc-color:var(--status-quote-c)"><div class="stat-l">報價中</div><div class="stat-v" id="stat-quote">—</div></div>
-      <div class="stat-card" style="--sc-color:var(--status-sent-c)"><div class="stat-l">已送修</div><div class="stat-v" id="stat-sent">—</div></div>
+      <div class="stat-card" style="--sc-color:var(--status-making-c)"><div class="stat-l">製作中</div><div class="stat-v" id="stat-making">—</div></div>
       <div class="stat-card" style="--sc-color:var(--status-done-c)"><div class="stat-l">已完成</div><div class="stat-v" id="stat-done">—</div></div>
-      <div class="stat-card" style="--sc-color:var(--green)"><div class="stat-l">本月工單</div><div class="stat-v" id="stat-month">—</div></div>
+      <div class="stat-card" style="--sc-color:var(--green)"><div class="stat-l">本月訂單</div><div class="stat-v" id="stat-month">—</div></div>
     </div>
 
     <div class="filter-row">
@@ -325,10 +282,10 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
       <select class="filter-sel" id="filter-status" onchange="renderList()">
         <option value="">全部狀態</option>
         <option value="報價中">報價中</option>
-        <option value="已送修">已送修</option>
+        <option value="製作中">製作中</option>
         <option value="已完成">已完成</option>
         <option value="已取件">已取件</option>
-        <option value="不適合維修">不適合維修</option>
+        <option value="已取消">已取消</option>
       </select>
       <select class="filter-sel" id="filter-store" onchange="renderList()">
         <option value="">全部門市</option>
@@ -341,24 +298,20 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
       </select>
     </div>
 
-    <div id="list-container"><div class="loading">載入工單中…</div></div>
+    <div id="list-container"><div class="loading">載入中…</div></div>
   </div>
 
-  <!-- ===== DETAIL VIEW ===== -->
+  <!-- ===== DETAIL ===== -->
   <div class="view" id="view-detail">
-    <div class="detail-back">
-      <button onclick="showView('list')">← 返回列表</button>
-    </div>
+    <div class="detail-back"><button onclick="showView('list')">← 返回列表</button></div>
 
-    <div class="detail-header" id="detail-header">
+    <div class="detail-header">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
         <div style="flex:1;min-width:240px">
           <div class="detail-id" id="d-id"></div>
           <div class="detail-name" id="d-name"></div>
           <div class="detail-meta-row">
             <span class="badge" id="d-badge"></span>
-            <span class="badge badge-tag" id="d-tag-official" style="display:none">原廠維修</span>
-            <span class="badge badge-tag" id="d-tag-free" style="display:none">首修免費</span>
             <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text-muted)" id="d-store"></span>
             <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--rust);font-weight:700" id="d-price"></span>
           </div>
@@ -380,22 +333,25 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
         <div class="field-row"><span class="field-label">姓名</span><span class="field-value" id="d-customer-name">—</span></div>
         <div class="field-row"><span class="field-label">電話</span><span class="field-value" id="d-phone">—</span></div>
         <div class="field-row"><span class="field-label">Email</span><span class="field-value" id="d-email">—</span></div>
+        <div class="field-row"><span class="field-label">地址</span><span class="field-value" id="d-address">—</span></div>
         <div class="field-row"><span class="field-label">門市</span><span class="field-value" id="d-store2">—</span></div>
-        <div class="field-row"><span class="field-label">建立時間</span><span class="field-value" id="d-created">—</span></div>
       </div>
       <div class="detail-section">
-        <div class="section-title">維修資訊</div>
-        <div class="field-row"><span class="field-label">款式號碼</span><span class="field-value" id="d-model">—</span></div>
-        <div class="field-row"><span class="field-label">類別</span><span class="field-value" id="d-category">—</span></div>
-        <div class="field-row"><span class="field-label">付款狀態</span><span class="field-value" id="d-payment">—</span></div>
-        <div class="field-row"><span class="field-label">預計完成日</span><span class="field-value" id="d-date">—</span></div>
-        <div class="field-row"><span class="field-label">最後更新</span><span class="field-value" id="d-updated">—</span></div>
+        <div class="section-title">訂製資訊</div>
+        <div class="field-row"><span class="field-label">款式</span><span class="field-value" id="d-model">—</span></div>
+        <div class="field-row"><span class="field-label">顏色</span><span class="field-value" id="d-color">—</span></div>
+        <div class="field-row"><span class="field-label">尺寸</span><span class="field-value" id="d-size">—</span></div>
+        <div class="field-row"><span class="field-label">皮料</span><span class="field-value" id="d-leather">—</span></div>
+        <div class="field-row"><span class="field-label">付款</span><span class="field-value" id="d-payment">—</span></div>
+        <div class="field-row"><span class="field-label">出貨</span><span class="field-value" id="d-shipping">—</span></div>
+        <div class="field-row"><span class="field-label">預估交件日</span><span class="field-value" id="d-date">—</span></div>
+        <div class="field-row"><span class="field-label">服務夥伴</span><span class="field-value" id="d-staff">—</span></div>
       </div>
     </div>
 
-    <div class="detail-section" style="margin-bottom:1rem">
-      <div class="section-title">維修項目明細</div>
-      <table class="items-table" id="d-items-table"><tr><td>—</td></tr></table>
+    <div class="detail-section" style="margin-bottom:1rem" id="d-partial-section">
+      <div class="section-title">局部訂製說明</div>
+      <div id="d-partial" style="font-size:13px;color:var(--text-sub);white-space:pre-wrap;line-height:1.6">—</div>
     </div>
 
     <div class="detail-section" style="margin-bottom:1rem" id="d-internal-section">
@@ -403,64 +359,44 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
       <div id="d-internal-note" style="font-size:13px;color:var(--text-sub);white-space:pre-wrap;line-height:1.6">—</div>
     </div>
 
-    <!-- Photos -->
     <div class="photo-section">
-      <div class="section-title">維修照片</div>
-      <div class="photo-cols">
-        <div>
-          <div class="photo-col-title">收件前</div>
-          <div class="photo-grid" id="photos-before"></div>
-          <label style="cursor:pointer">
-            <div class="photo-add">
-              <span class="photo-add-icon">📷</span>
-              <span>新增收件照</span>
-            </div>
-            <input type="file" class="hidden" id="upload-before" accept="image/*" capture="environment" multiple onchange="handlePhotoUpload('before',this)">
-          </label>
+      <div class="section-title">訂製照片</div>
+      <div class="photo-grid" id="photos-grid"></div>
+      <label style="cursor:pointer;display:block">
+        <div class="photo-add">
+          <span class="photo-add-icon">📷</span>
+          <span>新增照片</span>
         </div>
-        <div>
-          <div class="photo-col-title">修後</div>
-          <div class="photo-grid" id="photos-after"></div>
-          <label style="cursor:pointer">
-            <div class="photo-add">
-              <span class="photo-add-icon">📷</span>
-              <span>新增修後照</span>
-            </div>
-            <input type="file" class="hidden" id="upload-after" accept="image/*" capture="environment" multiple onchange="handlePhotoUpload('after',this)">
-          </label>
-        </div>
-      </div>
+        <input type="file" class="hidden" id="upload-photo" accept="image/*" capture="environment" multiple onchange="handlePhotoUpload(this)">
+      </label>
     </div>
 
-    <!-- Action bar -->
     <div class="action-bar">
       <div class="section-title" style="margin-bottom:.75rem">更新狀態</div>
       <div class="status-buttons" id="status-buttons"></div>
       <div style="display:flex;gap:10px;margin-top:1rem;flex-wrap:wrap;align-items:center">
-        <input type="number" class="form-input mono" id="d-price-input" placeholder="調整總價 NT$" style="max-width:160px">
+        <input type="number" class="form-input mono" id="d-price-input" placeholder="調整賣價 NT$" style="max-width:160px">
         <select class="form-input" id="d-payment-input" style="max-width:200px">
           <option value="">— 付款狀態 —</option>
           <option value="付清">付清</option>
-          <option value="下次來再結帳">下次來再結帳</option>
-          <option value="待後續報價">待後續報價</option>
+          <option value="訂金已付">訂金已付</option>
+          <option value="尾款未付">尾款未付</option>
         </select>
         <button class="btn btn-primary btn-sm" onclick="saveDetailUpdate()">儲存更新</button>
       </div>
     </div>
   </div>
 
-  <!-- ===== CREATE VIEW ===== -->
+  <!-- ===== CREATE ===== -->
   <div class="view" id="view-create">
-    <div class="detail-back">
-      <button onclick="showView('list')">← 返回列表</button>
-    </div>
+    <div class="detail-back"><button onclick="showView('list')">← 返回列表</button></div>
 
     <div class="form-card">
-      <div class="section-title" style="font-size:15px;margin-bottom:1.25rem">新增維修工單</div>
+      <div class="section-title" style="font-size:15px;margin-bottom:1.25rem">新增皮鞋訂製單</div>
 
       <div style="margin-bottom:1.1rem">
         <div class="form-label">工單單號（自動產生）</div>
-        <div class="form-id-preview" id="new-order-id">RP-YYMM-???</div>
+        <div class="form-id-preview" id="new-order-id">CU-YYMM-???</div>
       </div>
 
       <div class="form-grid-3">
@@ -477,17 +413,14 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">維修類別</label>
-          <select class="form-input" id="f-is-official">
-            <option value="false">一般維修／選哥</option>
-            <option value="true">原廠維修</option>
-          </select>
+          <label class="form-label">服務夥伴</label>
+          <input type="text" class="form-input" id="f-staff" placeholder="（選填）">
         </div>
         <div class="form-group">
           <label class="form-label">初始狀態</label>
           <select class="form-input" id="f-status">
             <option value="報價中">報價中</option>
-            <option value="已送修">已送修</option>
+            <option value="製作中">製作中</option>
           </select>
         </div>
       </div>
@@ -495,11 +428,11 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
       <div class="form-grid-3">
         <div class="form-group">
           <label class="form-label">客人姓名 <span>*</span></label>
-          <input type="text" class="form-input" id="f-name" placeholder="例：陳先生">
+          <input type="text" class="form-input" id="f-name" placeholder="例：白先生">
         </div>
         <div class="form-group">
           <label class="form-label">電話 <span>*</span></label>
-          <input type="tel" class="form-input mono" id="f-phone" placeholder="0912345678" onblur="checkFreeRepairOnBlur()">
+          <input type="tel" class="form-input mono" id="f-phone" placeholder="0912345678">
         </div>
         <div class="form-group">
           <label class="form-label">Email <span style="color:var(--text-muted)">（寄送單據）</span></label>
@@ -507,66 +440,82 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
         </div>
       </div>
 
-      <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">地址 <span style="color:var(--text-muted)">（寄送方式才需填）</span></label>
+        <input type="text" class="form-input" id="f-address" placeholder="例：台北市…">
+      </div>
+
+      <div class="form-group model-pick-wrap">
+        <label class="form-label">款式號碼 <span>*</span> <span style="color:var(--text-muted);font-weight:400">輸入查詢，選擇後會自動帶入顏色/尺寸/定價</span></label>
+        <input type="text" class="form-input mono" id="f-model" placeholder="輸入款號或商品名稱，如 1611、雕花" autocomplete="off" oninput="onModelInput()" onfocus="onModelInput()">
+        <div class="model-pick-list" id="model-pick-list"></div>
+      </div>
+
+      <div class="form-grid-3">
         <div class="form-group">
-          <label class="form-label">款式號碼 <span style="color:var(--text-muted)">（如 8905）</span></label>
-          <input type="text" class="form-input mono" id="f-model" placeholder="例：8905" onblur="checkFreeRepairOnBlur()">
+          <label class="form-label">顏色</label>
+          <select class="form-input" id="f-color"><option value="">—</option></select>
         </div>
         <div class="form-group">
-          <label class="form-label">預計完成日</label>
+          <label class="form-label">尺寸</label>
+          <select class="form-input" id="f-size"><option value="">—</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">皮料</label>
+          <input type="text" class="form-input" id="f-leather" placeholder="（選填）">
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">賣價（NT$） <span>*</span></label>
+          <input type="number" class="form-input mono" id="f-price" placeholder="自動帶入，可修改">
+        </div>
+        <div class="form-group">
+          <label class="form-label">預估交件日</label>
           <input type="date" class="form-input mono" id="f-date">
         </div>
       </div>
 
-      <div id="free-hint" style="display:none;font-size:12px;color:var(--positive);margin-bottom:1rem;background:#D1FAE5;padding:8px 12px;border-radius:6px"></div>
-
-      <!-- 維修項目 -->
-      <div class="items-block">
-        <h4>維修項目 <span style="color:var(--text-muted);font-weight:400;font-size:11px">（勾選後自動計算總價）</span></h4>
-        <div id="repair-items-list"></div>
-      </div>
-
-      <!-- 進階保養 -->
-      <div class="items-block">
-        <h4>進階保養 <span style="color:var(--text-muted);font-weight:400;font-size:11px">（費用視情況報價）</span></h4>
-        <div id="care-items-list"></div>
-      </div>
-
-      <div class="items-total-row">
-        <div class="items-total-l">合計報價</div>
-        <div class="items-total-v" id="total-price">NT$ 0</div>
-      </div>
-
-      <div class="form-grid" style="margin-top:1.25rem">
+      <div class="form-grid">
         <div class="form-group">
           <label class="form-label">付款狀態</label>
           <select class="form-input" id="f-payment">
             <option value="">— 請選擇 —</option>
             <option value="付清">付清</option>
-            <option value="下次來再結帳">下次來再結帳</option>
-            <option value="待後續報價">待後續報價</option>
+            <option value="訂金已付">訂金已付</option>
+            <option value="尾款未付">尾款未付</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">服務夥伴</label>
-          <input type="text" class="form-input" id="f-staff" placeholder="（選填）">
+          <label class="form-label">出貨方式</label>
+          <div class="shipping-options" style="margin-top:4px">
+            <label><input type="radio" name="ship" value="自取" checked>自取</label>
+            <label><input type="radio" name="ship" value="寄送">寄送</label>
+            <label><input type="radio" name="ship" value="電話確認">電話確認</label>
+          </div>
         </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">局部訂製說明 <span style="color:var(--text-muted)">（如需異於標準款，請填）</span></label>
+        <textarea class="form-input" id="f-partial" placeholder="例：左腳楦頭加寬 0.5cm、後跟加高 1cm…"></textarea>
       </div>
 
       <div class="form-group">
         <label class="form-label">客戶可見備註</label>
-        <textarea class="form-input" id="f-desc" placeholder="會出現在客戶單據與寄送 email 上"></textarea>
-      </div>
-
-      <div class="form-group" id="internal-note-group">
-        <label class="form-label">內部備註 <span style="color:var(--rust)">⚠ 客戶看不到</span></label>
-        <textarea class="form-input" id="f-internal" placeholder="師傅交辦事項、原廠維修細節等內部資訊"></textarea>
+        <textarea class="form-input" id="f-public" placeholder="會顯示在客戶單據與 email 上"></textarea>
       </div>
 
       <div class="form-group">
-        <label class="form-label">收件照片</label>
+        <label class="form-label">內部備註 <span style="color:var(--rust)">⚠ 客戶看不到</span></label>
+        <textarea class="form-input" id="f-internal" placeholder="師傅交辦、製作細節等內部資訊"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">訂製照片</label>
         <label style="cursor:pointer;display:block">
-          <div class="photo-upload-area" id="create-photo-area">
+          <div class="photo-upload-area">
             <div class="photo-upload-icon">📷</div>
             <div class="photo-upload-text">點擊拍照或選取相簿</div>
             <div class="photo-upload-sub">支援 JPG、PNG，可多選</div>
@@ -582,27 +531,23 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
           建立後寄送 email 給客戶
         </label>
         <button class="btn btn-ghost" onclick="showView('list')">取消</button>
-        <button class="btn btn-primary" onclick="submitOrder()">建立工單</button>
+        <button class="btn btn-primary" onclick="submitOrder()">建立訂製單</button>
       </div>
     </div>
   </div>
 
-  <!-- ===== CUSTOMER VIEW (read-only) ===== -->
+  <!-- ===== CUSTOMER VIEW ===== -->
   <div class="view" id="view-customer">
-    <div class="customer-card" id="customer-card">
-      <div class="loading">載入單據中…</div>
-    </div>
+    <div class="customer-card" id="customer-card"><div class="loading">載入單據中…</div></div>
   </div>
 
-</div><!-- /container -->
+</div>
 
-<!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightbox-img" src="" alt="">
 </div>
 
-<!-- Upload overlay -->
 <div class="upload-overlay" id="upload-overlay">
   <div class="upload-box">
     <div class="upload-spinner"></div>
@@ -610,14 +555,13 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
   </div>
 </div>
 
-<!-- Print modal -->
 <div class="print-overlay" id="print-overlay">
   <div class="print-modal">
     <h3>選擇列印格式</h3>
     <div class="print-options">
       <div class="print-opt-btn" onclick="doPrint('receipt')">
         <div class="o-title">完整單據（A4）</div>
-        <div class="o-desc">給客戶留存的紙本維修單</div>
+        <div class="o-desc">給客戶留存的紙本訂製單</div>
       </div>
       <div class="print-opt-btn" onclick="doPrint('labels')">
         <div class="o-title">三聯標籤（A4 三段）</div>
@@ -628,37 +572,11 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
   </div>
 </div>
 
-<!-- Print area (hidden on screen) -->
 <div id="print-area"></div>
-
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-// =============================================
-// CONFIG
-// =============================================
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbywhbtNQWEsQ68I7sCbcs71bVAPD_DrDGBAY_wm8Nl_MXln1daS77h-tXVBXrOYw4kBBg/exec';
-
-// =============================================
-// 維修項目清單（含預設報價）
-// =============================================
-const REPAIR_ITEMS = [
-  { id:'sole',         label:'天皮更換',         price:500, hasSide:true,  freeFirst:true },
-  { id:'front_rubber', label:'前掌橡膠片',       price:500, hasSide:true },
-  { id:'wood_heel',    label:'木根修補',         price:100, hasSide:true, perPiece:true },
-  { id:'insole',       label:'鞋墊更換',         price:500, hasSide:false },
-  { id:'sole_oil',     label:'止油水天皮',       price:700, hasSide:false },
-  { id:'rubber_oil',   label:'止油前掌膠片',     price:700, hasSide:false },
-  { id:'mild_mold',    label:'輕微發霉（鞋底+鞋面）', price:900, hasSide:false },
-];
-const CARE_ITEMS = [
-  { id:'basic_care',   label:'基礎保養' },
-  { id:'color_care',   label:'進階補色' },
-  { id:'protect',      label:'進階防護' },
-  { id:'mold_remove',  label:'除霉' },
-  { id:'stain_clean',  label:'污漬淡化' },
-];
 
 // =============================================
 // STATE
@@ -667,75 +585,75 @@ let allOrders = [];
 let currentOrder = null;
 let currentStatus = '';
 let createPhotos = [];
-let formItems = {};   // {id: {checked, side, price, qty}}
-let careItems = {};   // {id: {checked, price}}
-let freeRepairChecked = false;
+let allProducts = [];     // [{code, color, name, sizes, price, ...}]
+let productGroups = {};   // {code: [variant, variant…]}
 
-// =============================================
-// INIT
-// =============================================
 window.addEventListener('DOMContentLoaded', () => {
   setDefaultDate();
-  renderRepairItemsForm();
-  renderCareItemsForm();
-
-  // Customer view?
   const params = new URLSearchParams(location.search);
   if (params.get('view') === 'customer' && params.get('id')) {
     loadCustomerView(params.get('id'));
     return;
   }
   loadOrders();
+  loadProducts();
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.model-pick-wrap')) closeModelList();
+  });
 });
 
 function setDefaultDate() {
-  const d = new Date(); d.setDate(d.getDate() + 14);
+  const d = new Date(); d.setDate(d.getDate() + 45);
   document.getElementById('f-date').value = d.toISOString().split('T')[0];
 }
 
-// =============================================
-// VIEWS
-// =============================================
 function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   window.scrollTo(0, 0);
   if (name === 'list') renderList();
-  if (name === 'create') {
-    generateOrderId();
-    document.getElementById('free-hint').style.display = 'none';
-    freeRepairChecked = false;
-  }
+  if (name === 'create') generateOrderId();
 }
 
 // =============================================
-// LOAD ORDERS
+// LOAD ORDERS / PRODUCTS
 // =============================================
 async function loadOrders() {
   try {
-    const resp = await fetch(`${GAS_URL}?action=getOrders&type=repair`, { cache:'no-store' });
-    const data = await resp.json();
-    allOrders = (data.success && data.orders) ? data.orders : [];
+    const r = await fetch(`${GAS_URL}?action=getOrders&type=custom`, { cache:'no-store' });
+    const d = await r.json();
+    allOrders = (d.success && d.orders) ? d.orders : [];
   } catch (e) {
-    console.error('載入失敗', e);
-    allOrders = [];
+    console.error(e); allOrders = [];
   }
-  renderList();
-  renderStats();
+  renderList(); renderStats();
+}
+
+async function loadProducts() {
+  try {
+    const r = await fetch(`${GAS_URL}?action=getProducts`, { cache:'no-store' });
+    const d = await r.json();
+    allProducts = (d.success && d.products) ? d.products : [];
+    productGroups = {};
+    allProducts.forEach(p => {
+      if (!productGroups[p.code]) productGroups[p.code] = [];
+      productGroups[p.code].push(p);
+    });
+  } catch (e) { console.error('products load failed', e); }
 }
 
 function renderStats() {
   const now = new Date();
   const ym = `${String(now.getFullYear()).slice(2)}${String(now.getMonth()+1).padStart(2,'0')}`;
-  let quote=0, sent=0, done=0, month=0;
+  let quote=0, making=0, done=0, month=0;
   allOrders.forEach(o => {
     if (o.status === '報價中') quote++;
-    if (o.status === '已送修') sent++;
+    if (o.status === '製作中') making++;
     if (o.status === '已完成') done++;
-    if (o.id && String(o.id).includes(`RP-${ym}`)) month++;
+    if (o.id && String(o.id).includes(`CU-${ym}`)) month++;
   });
   document.getElementById('stat-quote').textContent = quote;
-  document.getElementById('stat-sent').textContent = sent;
+  document.getElementById('stat-making').textContent = making;
   document.getElementById('stat-done').textContent = done;
   document.getElementById('stat-month').textContent = month;
 }
@@ -744,7 +662,6 @@ function renderList() {
   const q = document.getElementById('search-input').value.toLowerCase();
   const fs = document.getElementById('filter-status').value;
   const fst = document.getElementById('filter-store').value;
-
   const filtered = allOrders.filter(o => {
     const matchQ = !q || [o.id,o.name,o.phone,o.model,o.email].some(v => String(v||'').toLowerCase().includes(q));
     const matchS = !fs || o.status === fs;
@@ -752,15 +669,14 @@ function renderList() {
     return matchQ && matchS && matchSt;
   });
   filtered.sort((a,b) => {
-    const ord = ['報價中','已送修','已完成','已取件','不適合維修'];
+    const ord = ['報價中','製作中','已完成','已取件','已取消'];
     const ai = ord.indexOf(a.status), bi = ord.indexOf(b.status);
     if (ai !== bi) return ai - bi;
     return (b.created||'').localeCompare(a.created||'');
   });
-
   const container = document.getElementById('list-container');
   if (!filtered.length) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔧</div><div class="empty-text">${allOrders.length ? '找不到符合的工單' : '尚無工單資料'}</div></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">👞</div><div class="empty-text">${allOrders.length ? '找不到符合的訂單' : '尚無訂製單資料'}</div></div>`;
     return;
   }
   container.innerHTML = '<div class="order-list">' + filtered.map(o => `
@@ -769,7 +685,7 @@ function renderList() {
         <div>
           <div class="order-id">${esc(o.id)}</div>
           <div class="order-name">${esc(o.name)}</div>
-          <div class="order-store">${esc(o.store)}${o.model ? ' · 款 '+esc(o.model) : ''}</div>
+          <div class="order-store">${esc(o.store)}${o.model ? ' · 款 '+esc(o.model) : ''}${o.color ? ' '+esc(o.color) : ''}</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
           <span class="badge ${badgeClass(o.status)}">${esc(o.status)}</span>
@@ -777,146 +693,73 @@ function renderList() {
         </div>
       </div>
       <div class="order-meta">
-        ${o.date ? `<span class="order-date">預計 ${esc(o.date)}</span>` : ''}
-        ${photoBadge(o)}
+        ${o.date ? `<span class="order-date">交件 ${esc(o.date)}</span>` : ''}
+        ${o.shipping ? `<span class="badge badge-tag">${esc(o.shipping)}</span>` : ''}
         ${o.paymentStatus ? `<span class="badge badge-tag">${esc(o.paymentStatus)}</span>` : ''}
       </div>
-      ${o.desc ? `<div class="order-desc">${esc(o.desc)}</div>` : ''}
+      ${o.publicNote ? `<div class="order-desc">${esc(o.publicNote)}</div>` : ''}
     </div>
   `).join('') + '</div>';
 }
 
-function photoBadge(o) {
-  const b = countPhotos(o.photoBefore), a = countPhotos(o.photoAfter);
-  if (!b && !a) return '';
-  return `<span style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace">📷 前${b} 後${a}</span>`;
-}
-function countPhotos(str) { if (!str) return 0; return String(str).split(',').filter(s => s.trim()).length; }
-
 // =============================================
-// CREATE FORM — repair items rendering
+// MODEL PICKER
 // =============================================
-function renderRepairItemsForm() {
-  const container = document.getElementById('repair-items-list');
-  formItems = {};
-  REPAIR_ITEMS.forEach(it => {
-    formItems[it.id] = { checked:false, side:'雙', qty:1, price:it.price };
-  });
-  container.innerHTML = REPAIR_ITEMS.map(it => `
-    <div class="item-row" id="item-${it.id}">
-      <input type="checkbox" id="cb-${it.id}" onchange="toggleItem('${it.id}')">
-      <label for="cb-${it.id}" class="item-label">${it.label}</label>
-      ${it.hasSide ? `
-        <div class="item-sides" id="sides-${it.id}" style="visibility:hidden">
-          <button type="button" class="side-btn active" onclick="setSide('${it.id}','雙')">雙</button>
-          <button type="button" class="side-btn" onclick="setSide('${it.id}','L')">L</button>
-          <button type="button" class="side-btn" onclick="setSide('${it.id}','R')">R</button>
-        </div>
-      ` : `<div></div>`}
-      <div class="item-price" id="price-${it.id}">NT$${numFmt(it.price)}</div>
-    </div>
-  `).join('');
-}
-
-function renderCareItemsForm() {
-  const container = document.getElementById('care-items-list');
-  careItems = {};
-  CARE_ITEMS.forEach(it => { careItems[it.id] = { checked:false, price:0 }; });
-  container.innerHTML = CARE_ITEMS.map(it => `
-    <div class="item-row" id="care-${it.id}">
-      <input type="checkbox" id="cb-care-${it.id}" onchange="toggleCare('${it.id}')">
-      <label for="cb-care-${it.id}" class="item-label">${it.label}</label>
-      <div></div>
-      <input type="number" class="price-input" id="price-care-${it.id}" placeholder="0" oninput="setCarePrice('${it.id}', this.value)">
-    </div>
-  `).join('');
-}
-
-function toggleItem(id) {
-  const cb = document.getElementById('cb-'+id);
-  const sides = document.getElementById('sides-'+id);
-  formItems[id].checked = cb.checked;
-  if (sides) sides.style.visibility = cb.checked ? 'visible' : 'hidden';
-  updateItemPrice(id);
-  recalcTotal();
-}
-function setSide(id, side) {
-  formItems[id].side = side;
-  document.querySelectorAll(`#sides-${id} .side-btn`).forEach(b => b.classList.toggle('active', b.textContent === side));
-  updateItemPrice(id);
-  recalcTotal();
-}
-function updateItemPrice(id) {
-  const meta = REPAIR_ITEMS.find(x => x.id === id);
-  const item = formItems[id];
-  let p = meta.price;
-  // 首修免費：天皮且 freeRepairChecked & eligible
-  if (id === 'sole' && freeRepairChecked && window._freeEligible) p = 0;
-  // 木根修補按隻計價
-  if (meta.perPiece && item.side === '雙') p = meta.price * 2;
-  item.price = item.checked ? p : 0;
-  document.getElementById('price-'+id).textContent = p === 0 && id === 'sole' && freeRepairChecked ? '免費' : 'NT$'+numFmt(p);
-}
-function toggleCare(id) {
-  careItems[id].checked = document.getElementById('cb-care-'+id).checked;
-  recalcTotal();
-}
-function setCarePrice(id, v) {
-  careItems[id].price = Number(v) || 0;
-  recalcTotal();
-}
-function recalcTotal() {
-  let total = 0;
-  Object.values(formItems).forEach(x => { if (x.checked) total += Number(x.price)||0; });
-  Object.values(careItems).forEach(x => { if (x.checked) total += Number(x.price)||0; });
-  document.getElementById('total-price').textContent = 'NT$ ' + numFmt(total);
-}
-
-function collectFormItems() {
-  const list = [];
-  REPAIR_ITEMS.forEach(meta => {
-    const item = formItems[meta.id];
-    if (!item.checked) return;
-    list.push({ id:meta.id, label:meta.label, side:meta.hasSide ? item.side : '', price:item.price });
-  });
-  CARE_ITEMS.forEach(meta => {
-    const item = careItems[meta.id];
-    if (!item.checked) return;
-    list.push({ id:meta.id, label:meta.label, side:'', price:item.price, isCare:true });
-  });
-  return list;
-}
-
-// =============================================
-// 首修免費判斷
-// =============================================
-async function checkFreeRepairOnBlur() {
-  const phone = document.getElementById('f-phone').value.trim();
-  const model = document.getElementById('f-model').value.trim();
-  const hint = document.getElementById('free-hint');
-  if (!phone || !model) { hint.style.display = 'none'; freeRepairChecked = false; return; }
-  try {
-    const r = await fetch(`${GAS_URL}?action=checkFreeRepair&phone=${encodeURIComponent(phone)}&model=${encodeURIComponent(model)}`);
-    const d = await r.json();
-    freeRepairChecked = true;
-    window._freeEligible = !!d.eligible;
-    if (d.eligible) {
-      hint.style.background = '#D1FAE5';
-      hint.style.color = '#065F46';
-      hint.textContent = '✓ 此電話+款式為首次維修，可享天皮免費更換';
-    } else {
-      hint.style.background = '#FEE2E2';
-      hint.style.color = '#991B1B';
-      hint.textContent = `⚠ 此電話+款式歷史上已使用過 ${d.usedCount||1} 次首修免費，本次需收費`;
-    }
-    hint.style.display = 'block';
-    updateItemPrice('sole');
-    recalcTotal();
-  } catch (e) {
-    console.error(e);
-    freeRepairChecked = false;
+function onModelInput() {
+  const val = document.getElementById('f-model').value.trim().toLowerCase();
+  const list = document.getElementById('model-pick-list');
+  if (!allProducts.length) {
+    list.innerHTML = '<div class="model-pick-item" style="text-align:center;color:var(--text-muted)">商品清單載入中…或請手動輸入</div>';
+    list.classList.add('open');
+    return;
   }
+  // 以款式號碼分組，找符合輸入的
+  const codes = Object.keys(productGroups);
+  const matching = codes.filter(code => {
+    const variants = productGroups[code];
+    if (val === '') return true;
+    if (code.toLowerCase().includes(val)) return true;
+    return variants.some(v => (v.name || '').toLowerCase().includes(val));
+  }).slice(0, 30);
+  if (!matching.length) {
+    list.innerHTML = '<div class="model-pick-item" style="text-align:center;color:var(--text-muted)">查無符合款式，可手動輸入</div>';
+    list.classList.add('open');
+    return;
+  }
+  list.innerHTML = matching.map(code => {
+    const v = productGroups[code][0];
+    const colors = productGroups[code].map(x => x.color).filter(Boolean);
+    return `<div class="model-pick-item" onclick="pickModel('${code}')">
+      <span class="mp-code">${esc(code)}</span>
+      <div class="mp-name">${esc((v.name || '').split('-')[0])}</div>
+      <div class="mp-meta">${colors.length} 色 · ${esc(v.price || '')} · ${esc(v.last || '')} · ${esc(v.series || '')}</div>
+    </div>`;
+  }).join('');
+  list.classList.add('open');
 }
+
+function pickModel(code) {
+  const variants = productGroups[code];
+  if (!variants || !variants.length) return;
+  document.getElementById('f-model').value = code;
+  closeModelList();
+
+  // 顏色選單
+  const colorSel = document.getElementById('f-color');
+  colorSel.innerHTML = '<option value="">— 選擇 —</option>' + variants.map(v => `<option value="${esc(v.color)}">${esc(v.color)}</option>`).join('');
+
+  // 尺寸選單（取第一個 variant 的尺寸）
+  const sizes = variants[0].sizes || '';
+  const sizeSel = document.getElementById('f-size');
+  const sizeArr = sizes.replace(/^UK尺寸：/, '').split('/').map(s => s.trim()).filter(Boolean);
+  sizeSel.innerHTML = '<option value="">— 選擇 —</option>' + sizeArr.map(s => `<option value="UK ${esc(s)}">UK ${esc(s)}</option>`).join('');
+
+  // 賣價
+  const priceText = (variants[0].price || '').replace(/[^\d]/g, '');
+  if (priceText) document.getElementById('f-price').value = priceText;
+}
+
+function closeModelList() { document.getElementById('model-pick-list').classList.remove('open'); }
 
 // =============================================
 // DETAIL
@@ -925,52 +768,38 @@ async function openDetail(id) {
   let o = allOrders.find(x => x.id === id);
   if (!o) {
     try {
-      const r = await fetch(`${GAS_URL}?action=getOrder&id=${encodeURIComponent(id)}&type=repair`);
+      const r = await fetch(`${GAS_URL}?action=getOrder&id=${encodeURIComponent(id)}&type=custom`);
       const d = await r.json();
       o = d.order;
     } catch (e) { toast('載入失敗','error'); return; }
   }
   if (!o) return;
-  currentOrder = o;
-  currentStatus = o.status;
+  currentOrder = o; currentStatus = o.status;
 
   document.getElementById('d-id').textContent = o.id;
   document.getElementById('d-name').textContent = o.name;
   document.getElementById('d-badge').className = 'badge ' + badgeClass(o.status);
   document.getElementById('d-badge').textContent = o.status;
-  document.getElementById('d-tag-official').style.display = (o.isOfficial === true || o.isOfficial === 'TRUE' || o.isOfficial === 'true') ? 'inline-flex' : 'none';
-  document.getElementById('d-tag-free').style.display = (o.isFreeUsed === true || o.isFreeUsed === 'TRUE' || o.isFreeUsed === 'true') ? 'inline-flex' : 'none';
   document.getElementById('d-store').textContent = o.store || '';
   document.getElementById('d-price').textContent = o.price ? `NT$${numFmt(o.price)}` : '待報價';
   document.getElementById('d-customer-name').textContent = o.name || '—';
   document.getElementById('d-phone').textContent = o.phone || '—';
   document.getElementById('d-email').textContent = o.email || '—';
+  document.getElementById('d-address').textContent = o.address || '—';
   document.getElementById('d-store2').textContent = o.store || '—';
-  document.getElementById('d-created').textContent = fmtTs(o.created);
   document.getElementById('d-model').textContent = o.model || '—';
-  document.getElementById('d-category').textContent = (o.isOfficial === true || o.isOfficial === 'TRUE' || o.isOfficial === 'true') ? '原廠維修' : '一般維修';
+  document.getElementById('d-color').textContent = o.color || '—';
+  document.getElementById('d-size').textContent = o.size || '—';
+  document.getElementById('d-leather').textContent = o.leather || '—';
   document.getElementById('d-payment').textContent = o.paymentStatus || '—';
+  document.getElementById('d-shipping').textContent = o.shipping || '—';
   document.getElementById('d-date').textContent = o.date || '—';
-  document.getElementById('d-updated').textContent = fmtTs(o.updated);
+  document.getElementById('d-staff').textContent = o.staff || '—';
+  document.getElementById('d-partial').textContent = o.partialNote || '—';
+  document.getElementById('d-partial-section').style.display = o.partialNote ? 'block' : 'none';
   document.getElementById('d-price-input').value = o.price || '';
   document.getElementById('d-payment-input').value = o.paymentStatus || '';
 
-  // 項目明細
-  const items = parseItems(o.itemsJson);
-  if (items.length) {
-    let html = '';
-    items.forEach(it => {
-      html += `<tr><td>${esc(it.label)}${it.side ? ` <span style="color:var(--text-muted)">(${esc(it.side)})</span>`:''}</td><td>${it.price === 0 ? '<span style="color:var(--positive)">免費</span>' : 'NT$'+numFmt(it.price)}</td></tr>`;
-    });
-    html += `<tr class="items-total"><td>合計</td><td>NT$${numFmt(o.price||0)}</td></tr>`;
-    document.getElementById('d-items-table').innerHTML = html;
-  } else if (o.desc) {
-    document.getElementById('d-items-table').innerHTML = `<tr><td colspan="2" style="text-align:left">${esc(o.desc)}</td></tr>`;
-  } else {
-    document.getElementById('d-items-table').innerHTML = '<tr><td>—</td></tr>';
-  }
-
-  // 內部備註
   const internal = o.internalNote || '';
   document.getElementById('d-internal-note').textContent = internal || '—';
   document.getElementById('d-internal-section').style.display = internal ? 'block' : 'none';
@@ -978,24 +807,18 @@ async function openDetail(id) {
 
   renderSteps(o.status);
   renderStatusButtons(o.status);
-  renderPhotos('before', o.photoBefore);
-  renderPhotos('after', o.photoAfter);
+  renderPhotos(o.photos);
 
   showView('detail');
 }
 
-function parseItems(json) {
-  if (!json) return [];
-  try { return JSON.parse(json); } catch (e) { return []; }
-}
-
 function renderSteps(status) {
-  const steps = ['報價中','已送修','已完成','已取件'];
-  const idx = steps.indexOf(status);
-  if (status === '不適合維修') {
-    document.getElementById('d-steps').innerHTML = `<div style="text-align:center;color:var(--negative);font-size:12px;padding:8px 0">⊗ 此鞋款不適合維修，已結案</div>`;
+  const steps = ['報價中','製作中','已完成','已取件'];
+  if (status === '已取消') {
+    document.getElementById('d-steps').innerHTML = `<div style="text-align:center;color:var(--negative);font-size:12px;padding:8px 0">⊗ 訂單已取消</div>`;
     return;
   }
+  const idx = steps.indexOf(status);
   document.getElementById('d-steps').innerHTML = steps.map((s, i) => {
     const cls = i < idx ? 'done' : i === idx ? 'current' : '';
     const icon = i < idx ? '✓' : i + 1;
@@ -1004,22 +827,18 @@ function renderSteps(status) {
 }
 
 function renderStatusButtons(status) {
-  const statuses = [
+  const ss = [
     {v:'報價中', cls:'status-btn-quote'},
-    {v:'已送修', cls:'status-btn-sent'},
+    {v:'製作中', cls:'status-btn-making'},
     {v:'已完成', cls:'status-btn-done'},
     {v:'已取件', cls:'status-btn-picked'},
-    {v:'不適合維修', cls:'status-btn-reject'},
+    {v:'已取消', cls:'status-btn-cancel'},
   ];
-  document.getElementById('status-buttons').innerHTML = statuses.map(s =>
+  document.getElementById('status-buttons').innerHTML = ss.map(s =>
     `<button class="status-btn ${s.cls} ${currentStatus===s.v?'active':''}" onclick="selectStatus('${s.v}')">${s.v}</button>`
   ).join('');
 }
-function selectStatus(s) {
-  currentStatus = s;
-  renderStatusButtons(s);
-  renderSteps(s);
-}
+function selectStatus(s) { currentStatus = s; renderStatusButtons(s); renderSteps(s); }
 
 async function saveDetailUpdate() {
   if (!currentOrder) return;
@@ -1027,12 +846,12 @@ async function saveDetailUpdate() {
   const payment = document.getElementById('d-payment-input').value;
   showUploadOverlay(true, '更新中…');
   try {
-    const body = { action:'updateOrder', id:currentOrder.id, type:'repair', status:currentStatus };
+    const body = { action:'updateOrder', id:currentOrder.id, type:'custom', status:currentStatus };
     if (price !== '') body.price = Number(price);
     if (payment) body.paymentStatus = payment;
-    const resp = await fetch(GAS_URL, { method:'POST', body: JSON.stringify(body) });
-    const data = await resp.json();
-    if (data.success) {
+    const r = await fetch(GAS_URL, { method:'POST', body: JSON.stringify(body) });
+    const d = await r.json();
+    if (d.success) {
       Object.assign(currentOrder, { status:currentStatus, price: price !== '' ? Number(price) : currentOrder.price, paymentStatus: payment || currentOrder.paymentStatus });
       const idx = allOrders.findIndex(o => o.id === currentOrder.id);
       if (idx >= 0) Object.assign(allOrders[idx], currentOrder);
@@ -1043,20 +862,16 @@ async function saveDetailUpdate() {
       document.getElementById('d-payment').textContent = currentOrder.paymentStatus || '—';
       renderStats();
       toast('✓ 已更新');
-    } else {
-      toast('更新失敗', 'error');
-    }
-  } catch(e) {
-    toast('連線失敗', 'error');
-  }
+    } else { toast('更新失敗','error'); }
+  } catch (e) { toast('連線失敗','error'); }
   showUploadOverlay(false);
 }
 
 // =============================================
 // PHOTOS
 // =============================================
-function renderPhotos(type, urlStr) {
-  const container = document.getElementById(`photos-${type}`);
+function renderPhotos(urlStr) {
+  const container = document.getElementById('photos-grid');
   const urls = String(urlStr||'').split(',').map(s=>s.trim()).filter(Boolean);
   container.innerHTML = urls.map(url => {
     const direct = url.replace('open?id=','uc?id=');
@@ -1064,37 +879,36 @@ function renderPhotos(type, urlStr) {
   }).join('');
 }
 
-async function handlePhotoUpload(type, input) {
+async function handlePhotoUpload(input) {
   if (!input.files.length || !currentOrder) return;
   showUploadOverlay(true, '上傳中…');
   const urls = [];
   for (const file of input.files) {
     try {
       const b64 = await toBase64(file);
-      const resp = await fetch(GAS_URL, {
+      const r = await fetch(GAS_URL, {
         method:'POST',
         body: JSON.stringify({
-          action:'uploadPhoto', orderId:currentOrder.id, orderType:'repair', type,
-          fileName: file.name || `${type}_${Date.now()}.jpg`,
+          action:'uploadPhoto', orderId:currentOrder.id, orderType:'custom', type:'photo',
+          fileName: file.name || `photo_${Date.now()}.jpg`,
           fileData: b64, mimeType: file.type || 'image/jpeg'
         })
       });
-      const data = await resp.json();
-      if (data.success && data.url) urls.push(data.url);
+      const d = await r.json();
+      if (d.success && d.url) urls.push(d.url);
     } catch (e) { console.error(e); }
   }
   if (urls.length) {
-    const field = type === 'before' ? 'photoBefore' : 'photoAfter';
-    const existing = String(currentOrder[field]||'').split(',').filter(Boolean);
+    const existing = String(currentOrder.photos||'').split(',').filter(Boolean);
     const merged = [...existing, ...urls].join(',');
-    await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'updateOrder', id:currentOrder.id, type:'repair', [field]: merged }) });
-    currentOrder[field] = merged;
+    await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'updateOrder', id:currentOrder.id, type:'custom', photos: merged }) });
+    currentOrder.photos = merged;
     const idx = allOrders.findIndex(o => o.id === currentOrder.id);
-    if (idx >= 0) allOrders[idx][field] = merged;
-    renderPhotos(type, merged);
+    if (idx >= 0) allOrders[idx].photos = merged;
+    renderPhotos(merged);
     toast(`✓ 已上傳 ${urls.length} 張`);
   } else {
-    toast('上傳失敗', 'error');
+    toast('上傳失敗','error');
   }
   showUploadOverlay(false);
   input.value = '';
@@ -1107,7 +921,7 @@ function generateOrderId() {
   const now = new Date();
   const yy = String(now.getFullYear()).slice(2);
   const mm = String(now.getMonth()+1).padStart(2,'0');
-  document.getElementById('new-order-id').textContent = `RP-${yy}${mm}-???`;
+  document.getElementById('new-order-id').textContent = `CU-${yy}${mm}-???`;
 }
 
 function handleCreatePhotoPick(input) {
@@ -1131,47 +945,43 @@ async function submitOrder() {
   const name = document.getElementById('f-name').value.trim();
   const phone = document.getElementById('f-phone').value.trim();
   const email = document.getElementById('f-email').value.trim();
+  const address = document.getElementById('f-address').value.trim();
   const model = document.getElementById('f-model').value.trim();
+  const color = document.getElementById('f-color').value;
+  const size = document.getElementById('f-size').value;
+  const leather = document.getElementById('f-leather').value.trim();
+  const price = document.getElementById('f-price').value;
   const date = document.getElementById('f-date').value;
+  const payment = document.getElementById('f-payment').value;
+  const shipping = document.querySelector('input[name=ship]:checked').value;
+  const staff = document.getElementById('f-staff').value.trim();
+  const partial = document.getElementById('f-partial').value.trim();
+  const publicNote = document.getElementById('f-public').value.trim();
+  const internal = document.getElementById('f-internal').value.trim();
   const status = document.getElementById('f-status').value;
-  const isOfficial = document.getElementById('f-is-official').value === 'true';
-  const internalNote = document.getElementById('f-internal').value.trim();
-  const desc = document.getElementById('f-desc').value.trim();
-  const paymentStatus = document.getElementById('f-payment').value;
   const sendEmailFlag = document.getElementById('f-send-email').checked;
 
-  const items = collectFormItems();
-  if (!store || !name || !phone) { toast('請填寫門市、姓名、電話', 'error'); return; }
-  if (!items.length && !desc) { toast('請至少勾選一項維修項目或填寫備註', 'error'); return; }
-  if (sendEmailFlag && !email) { toast('要寄送 email 請先填寫客戶 email', 'error'); return; }
-
-  // 摘要文字 (給 list view 顯示)
-  const summaryDesc = items.length
-    ? items.map(it => it.label + (it.side ? `(${it.side})` : '')).join('、')
-    : desc;
-
-  const total = items.reduce((sum, it) => sum + (Number(it.price)||0), 0);
-  const isFreeUsed = items.some(it => it.id === 'sole' && it.price === 0);
+  if (!store || !name || !phone || !model || !price) { toast('請填寫門市、姓名、電話、款式、賣價','error'); return; }
+  if (sendEmailFlag && !email) { toast('要寄送 email 請先填寫客戶 email','error'); return; }
 
   showUploadOverlay(true, '建立中…');
   try {
     const createResp = await fetch(GAS_URL, {
       method:'POST',
       body: JSON.stringify({
-        action:'createOrder', type:'repair',
-        store, name, phone, email, model,
-        desc: desc || summaryDesc,
-        itemsJson: JSON.stringify(items),
-        isOfficial, internalNote,
-        price: total || null,
-        paymentStatus,
-        isFreeUsed,
-        date, status
+        action:'createOrder', type:'custom',
+        store, name, phone, email, address,
+        model, color, size, leather,
+        partialNote: partial,
+        price: Number(price),
+        paymentStatus: payment,
+        date, shipping, staff,
+        publicNote, internalNote: internal,
+        status
       })
     });
     const createData = await createResp.json();
-    if (!createData.success) { toast('建立失敗：'+(createData.error||''), 'error'); showUploadOverlay(false); return; }
-
+    if (!createData.success) { toast('建立失敗：'+(createData.error||''),'error'); showUploadOverlay(false); return; }
     const orderId = createData.id;
     document.getElementById('new-order-id').textContent = orderId;
 
@@ -1180,60 +990,51 @@ async function submitOrder() {
     for (const p of createPhotos) {
       try {
         const b64 = p.dataUrl.split(',')[1];
-        const resp = await fetch(GAS_URL, {
+        const r = await fetch(GAS_URL, {
           method:'POST',
           body: JSON.stringify({
-            action:'uploadPhoto', orderId, orderType:'repair', type:'before',
-            fileName: p.file.name || 'before.jpg', fileData: b64, mimeType: p.file.type || 'image/jpeg'
+            action:'uploadPhoto', orderId, orderType:'custom', type:'photo',
+            fileName: p.file.name || 'photo.jpg', fileData: b64, mimeType: p.file.type || 'image/jpeg'
           })
         });
-        const d = await resp.json();
+        const d = await r.json();
         if (d.success && d.url) photoUrls.push(d.url);
       } catch (e) { console.error(e); }
     }
     if (photoUrls.length) {
-      await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'updateOrder', id:orderId, type:'repair', photoBefore: photoUrls.join(',') }) });
+      await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'updateOrder', id:orderId, type:'custom', photos: photoUrls.join(',') }) });
     }
 
-    // 寄送 Email
     if (sendEmailFlag && email) {
       showUploadOverlay(true, '寄送 Email 中…');
       try {
-        const r = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'sendEmail', id:orderId, type:'repair' }) });
+        const r = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'sendEmail', id:orderId, type:'custom' }) });
         const d = await r.json();
         if (!d.success) console.warn('Email 寄送失敗:', d.error);
       } catch (e) { console.warn(e); }
     }
 
-    toast(`✓ 工單 ${orderId} 已建立`);
+    toast(`✓ 訂單 ${orderId} 已建立`);
     resetCreateForm();
     await loadOrders();
     showView('list');
   } catch (e) {
     console.error(e);
-    toast('送出失敗，請重試', 'error');
+    toast('送出失敗，請重試','error');
   }
   showUploadOverlay(false);
 }
 
 function resetCreateForm() {
-  document.getElementById('f-store').value = '';
-  document.getElementById('f-name').value = '';
-  document.getElementById('f-phone').value = '';
-  document.getElementById('f-email').value = '';
-  document.getElementById('f-model').value = '';
-  document.getElementById('f-desc').value = '';
-  document.getElementById('f-internal').value = '';
-  document.getElementById('f-payment').value = '';
-  document.getElementById('f-staff').value = '';
-  document.getElementById('f-is-official').value = 'false';
-  document.getElementById('free-hint').style.display = 'none';
-  freeRepairChecked = false;
+  ['f-store','f-name','f-phone','f-email','f-address','f-model','f-leather','f-price','f-partial','f-public','f-internal','f-staff','f-payment'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('f-color').innerHTML = '<option value="">—</option>';
+  document.getElementById('f-size').innerHTML = '<option value="">—</option>';
+  document.querySelector('input[name=ship][value=自取]').checked = true;
   createPhotos = [];
   renderCreatePhotoPreview();
-  renderRepairItemsForm();
-  renderCareItemsForm();
-  recalcTotal();
   setDefaultDate();
 }
 
@@ -1242,20 +1043,20 @@ function resetCreateForm() {
 // =============================================
 async function sendEmail() {
   if (!currentOrder) return;
-  if (!currentOrder.email) { toast('此單未填客戶 email', 'error'); return; }
+  if (!currentOrder.email) { toast('此單未填客戶 email','error'); return; }
   showUploadOverlay(true, '寄送中…');
   try {
-    const r = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'sendEmail', id:currentOrder.id, type:'repair' }) });
+    const r = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'sendEmail', id:currentOrder.id, type:'custom' }) });
     const d = await r.json();
     toast(d.success ? '✓ Email 已寄出' : ('寄送失敗：'+(d.error||'')), d.success ? '' : 'error');
-  } catch (e) { toast('連線失敗', 'error'); }
+  } catch (e) { toast('連線失敗','error'); }
   showUploadOverlay(false);
 }
 
 function copyCustomerLink() {
   if (!currentOrder) return;
   const url = `${location.origin}${location.pathname}?view=customer&id=${encodeURIComponent(currentOrder.id)}`;
-  navigator.clipboard.writeText(url).then(() => toast('✓ 客戶連結已複製，可貼到 LINE/Email')).catch(() => prompt('複製連結：', url));
+  navigator.clipboard.writeText(url).then(() => toast('✓ 客戶連結已複製')).catch(() => prompt('複製連結：', url));
 }
 
 // =============================================
@@ -1264,52 +1065,54 @@ function copyCustomerLink() {
 async function loadCustomerView(id) {
   showView('customer');
   try {
-    const r = await fetch(`${GAS_URL}?action=getCustomerOrder&id=${encodeURIComponent(id)}&type=repair`);
+    const r = await fetch(`${GAS_URL}?action=getCustomerOrder&id=${encodeURIComponent(id)}&type=custom`);
     const d = await r.json();
     if (!d.success || !d.order) {
       document.getElementById('customer-card').innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><div class="empty-text">查無此單號，請確認後再試</div></div>';
       return;
     }
     const o = d.order;
-    const items = parseItems(o.itemsJson);
-    let itemsHtml = items.length
-      ? `<table class="items-table">${items.map(it => `<tr><td>${esc(it.label)}${it.side ? ' ('+esc(it.side)+')' : ''}</td><td>${it.price===0?'免費':'NT$'+numFmt(it.price)}</td></tr>`).join('')}<tr class="items-total"><td>合計</td><td>NT$${numFmt(o.price||0)}</td></tr></table>`
-      : (o.desc ? `<div style="font-size:13px;line-height:1.7;padding:8px 0">${esc(o.desc)}</div>` : '');
-
-    const steps = ['報價中','已送修','已完成','已取件'];
-    const idx = steps.indexOf(o.status);
+    const steps = ['報價中','製作中','已完成','已取件'];
     let stepsHtml = '';
-    if (o.status === '不適合維修') {
-      stepsHtml = `<div style="text-align:center;color:var(--negative);font-size:13px;padding:8px 0">⊗ 此鞋款經評估不適合維修</div>`;
+    if (o.status === '已取消') {
+      stepsHtml = `<div style="text-align:center;color:var(--negative);font-size:13px;padding:8px 0">⊗ 此訂單已取消</div>`;
     } else {
+      const idx = steps.indexOf(o.status);
       stepsHtml = `<div class="steps">${steps.map((s, i) => {
         const cls = i < idx ? 'done' : i === idx ? 'current' : '';
         const icon = i < idx ? '✓' : i + 1;
         return `<div class="step ${cls}"><div class="step-dot">${icon}</div><div class="step-lbl">${s}</div></div>`;
       }).join('')}</div>`;
     }
-
     document.getElementById('customer-card').innerHTML = `
       <div class="customer-hero">
         <div class="customer-id">${esc(o.id)}</div>
-        <div class="customer-title">維修工單</div>
+        <div class="customer-title">皮鞋訂製單</div>
       </div>
       ${stepsHtml}
       <div class="detail-section" style="margin-bottom:1rem">
         <div class="section-title">基本資料</div>
         <div class="field-row"><span class="field-label">姓名</span><span class="field-value">${esc(o.name||'—')}</span></div>
         <div class="field-row"><span class="field-label">送修門市</span><span class="field-value">${esc(o.store||'—')}</span></div>
-        ${o.model ? `<div class="field-row"><span class="field-label">款式</span><span class="field-value">${esc(o.model)}</span></div>` : ''}
-        <div class="field-row"><span class="field-label">預計取件日</span><span class="field-value">${esc(o.date||'—')}</span></div>
+        <div class="field-row"><span class="field-label">預估交件日</span><span class="field-value">${esc(o.date||'—')}</span></div>
         <div class="field-row"><span class="field-label">付款狀態</span><span class="field-value">${esc(o.paymentStatus||'—')}</span></div>
-        <div class="field-row"><span class="field-label">建立時間</span><span class="field-value">${esc(fmtTs(o.created))}</span></div>
+        <div class="field-row"><span class="field-label">出貨方式</span><span class="field-value">${esc(o.shipping||'—')}</span></div>
       </div>
       <div class="detail-section">
-        <div class="section-title">維修明細</div>
-        ${itemsHtml}
+        <div class="section-title">訂製明細</div>
+        <div class="field-row"><span class="field-label">款式</span><span class="field-value">${esc(o.model||'—')}</span></div>
+        <div class="field-row"><span class="field-label">顏色</span><span class="field-value">${esc(o.color||'—')}</span></div>
+        <div class="field-row"><span class="field-label">尺寸</span><span class="field-value">${esc(o.size||'—')}</span></div>
+        <div class="field-row"><span class="field-label">皮料</span><span class="field-value">${esc(o.leather||'—')}</span></div>
+        ${o.partialNote ? `<div class="field-row"><span class="field-label">局部訂製</span><span class="field-value">${esc(o.partialNote)}</span></div>` : ''}
+        <div class="field-row"><span class="field-label">賣價</span><span class="field-value" style="color:var(--rust)">NT$${numFmt(o.price||0)}</span></div>
       </div>
-      <p style="font-size:11px;color:var(--text-muted);line-height:1.7;text-align:center;margin-top:1.25rem">
-        若有疑問請聯絡您送修的門市，謝謝您。
+      ${o.publicNote ? `<div class="detail-section" style="margin-top:1rem"><div class="section-title">備註</div><div style="font-size:13px;color:var(--text);line-height:1.7">${esc(o.publicNote)}</div></div>` : ''}
+      <p style="font-size:11px;color:var(--text-muted);line-height:1.7;margin-top:1.25rem">
+        ・訂製天數約 45 天，完成將另行通知。<br>
+        ・訂製費用需全額付清，恕不接受退換貨。<br>
+        ・真皮皮料染製後會產生不同顏色效果，若非嚴重色差恕不接受退貨。<br>
+        ・通知取件後請於一個月內完成取件，逾期恕不負保管責任。
       </p>
     `;
   } catch (e) {
@@ -1323,7 +1126,6 @@ async function loadCustomerView(id) {
 // =============================================
 function openPrintModal() { document.getElementById('print-overlay').classList.add('open'); }
 function closePrintModal() { document.getElementById('print-overlay').classList.remove('open'); }
-
 function doPrint(kind) {
   closePrintModal();
   if (!currentOrder) return;
@@ -1333,32 +1135,32 @@ function doPrint(kind) {
 }
 
 function renderPrintReceipt(o) {
-  const items = parseItems(o.itemsJson);
-  const itemsRows = items.length
-    ? items.map(it => `<tr><td>${esc(it.label)}${it.side ? ` (${esc(it.side)})` : ''}</td><td>${it.price===0?'首修免費':'NT$'+numFmt(it.price)}</td></tr>`).join('')
-    : `<tr><td colspan="2">${esc(o.desc || '—')}</td></tr>`;
   return `
     <div class="print-receipt">
-      <h1>林果良品｜維修工單</h1>
+      <h1>林果良品｜皮鞋訂製單</h1>
       <div class="pr-id">${esc(o.id)}</div>
       <table class="info-tbl">
         <tr><td>客戶姓名</td><td>${esc(o.name)}</td><td>電話</td><td>${esc(o.phone||'—')}</td></tr>
-        <tr><td>送修門市</td><td>${esc(o.store)}</td><td>送修日期</td><td>${esc(fmtTs(o.created).slice(0,10))}</td></tr>
-        <tr><td>款式號碼</td><td>${esc(o.model||'—')}</td><td>預計取件日</td><td>${esc(o.date||'—')}</td></tr>
-        <tr><td>付款狀態</td><td colspan="3">${esc(o.paymentStatus||'—')}</td></tr>
+        <tr><td>送修門市</td><td>${esc(o.store)}</td><td>建立日期</td><td>${esc(fmtTs(o.created).slice(0,10))}</td></tr>
+        <tr><td>地址</td><td colspan="3">${esc(o.address||'—')}</td></tr>
       </table>
-      <table class="items-tbl">
-        <thead><tr><th>維修項目</th><th>費用</th></tr></thead>
-        <tbody>
-          ${itemsRows}
-          <tr class="total-row"><td>合計</td><td>NT$${numFmt(o.price||0)}</td></tr>
-        </tbody>
+      <table class="product-tbl">
+        <tr><td>款式號碼</td><td>${esc(o.model||'—')}</td></tr>
+        <tr><td>顏色</td><td>${esc(o.color||'—')}</td></tr>
+        <tr><td>尺寸</td><td>${esc(o.size||'—')}</td></tr>
+        <tr><td>皮料</td><td>${esc(o.leather||'—')}</td></tr>
+        ${o.partialNote ? `<tr><td>局部訂製</td><td>${esc(o.partialNote)}</td></tr>` : ''}
+        <tr><td>付款狀態</td><td>${esc(o.paymentStatus||'—')}</td></tr>
+        <tr><td>預估交件日</td><td>${esc(o.date||'—')}</td></tr>
+        <tr><td>出貨方式</td><td>${esc(o.shipping||'—')}</td></tr>
+        <tr class="total-row"><td>賣價</td><td>NT$${numFmt(o.price||0)}</td></tr>
       </table>
       <div class="notes">
-        1. 林果良品提供最常磨損的部位 — 天皮免費更換一次，請善加利用。<br>
-        2. 一年保固期限內如經師傅判斷為商品本身製作品質問題造成故障，提供免費維修。<br>
-        3. 維修服務皆需約 10–15 天，送修過程恕無法中途取回。<br>
-        4. 通知取件後請於一個月內完成取件，逾期恕不負保管責任。
+        1. 請妥善保管取件聯，於取件時攜帶本單據。<br>
+        2. 經林果良品通知取件後，請於通知日起一個月內完成取件，逾期恕不負保管責任。<br>
+        3. 林果提供的訂製服務（局部訂製、皮料更換）皆為師傅特別製作，訂製費用需全額付清，恕不接受退換貨，製作天數約 45 天。<br>
+        4. 林果鞋款選用天然真皮皮革，皮紋、皮疤與蚊蟲叮咬為真皮皮料的自然現象。真皮皮料在染製後會產生不同的顏色效果，若非嚴重色差，恕不接受退貨。<br>
+        5. 皮料可能因短缺或其他因素造成延後交貨時間或無法製作，本公司保留取消此筆訂單之權利。
       </div>
       <div class="stores-bar">
         台北中山 02-25620991　台北松菸 02-27635055　台北東門 02-23512705　台中園道 04-23013307　誠品生活新店 02-89146398　網路客服 02-77097757
@@ -1368,18 +1170,15 @@ function renderPrintReceipt(o) {
 }
 
 function renderPrintLabels(o) {
-  const items = parseItems(o.itemsJson);
-  const itemsText = items.length
-    ? items.map(it => it.label + (it.side ? `(${it.side})` : '')).join('、')
-    : (o.desc || '—');
-  const labelTags = ['鞋盒', '左腳', '右腳'];
-  return `<div class="print-labels">${labelTags.map(tag => `
+  const desc = `${o.model||''} ${o.color||''} ${o.size||''}`.trim();
+  const tags = ['鞋盒','左腳','右腳'];
+  return `<div class="print-labels">${tags.map(tag => `
     <div class="print-label">
       <div class="label-tag">${tag} TAG</div>
       <div class="label-id">${esc(o.id)}</div>
       <div class="label-name">${esc(o.name)}</div>
-      <div class="label-items">${esc(itemsText)}</div>
-      <div class="label-meta">${esc(o.store)}　預計 ${esc(o.date||'')}　${esc(o.phone||'')}</div>
+      <div class="label-items">${esc(desc || '—')}${o.partialNote ? '<br>'+esc(o.partialNote) : ''}</div>
+      <div class="label-meta">${esc(o.store)}　交件 ${esc(o.date||'')}　${esc(o.phone||'')}</div>
     </div>
   `).join('')}</div>`;
 }
@@ -1390,10 +1189,10 @@ function renderPrintLabels(o) {
 function badgeClass(s) {
   return {
     '報價中':'badge-quote',
-    '已送修':'badge-sent',
+    '製作中':'badge-making',
     '已完成':'badge-done',
     '已取件':'badge-picked',
-    '不適合維修':'badge-reject',
+    '已取消':'badge-cancel',
   }[s] || 'badge-picked';
 }
 function numFmt(n) { return Number(n||0).toLocaleString('zh-TW'); }
