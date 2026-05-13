@@ -293,7 +293,7 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
         <option value="東門">東門</option>
         <option value="中山">中山</option>
         <option value="台中">台中</option>
-        <option value="新店">新店</option>
+        <option value="誠品生活新店">誠品生活新店</option>
         <option value="網路">網路</option>
       </select>
     </div>
@@ -408,7 +408,7 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
             <option value="東門">東門</option>
             <option value="中山">中山</option>
             <option value="台中">台中</option>
-            <option value="新店">新店</option>
+            <option value="誠品生活新店">誠品生活新店</option>
             <option value="網路">網路</option>
           </select>
         </div>
@@ -462,18 +462,65 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
         </div>
         <div class="form-group">
           <label class="form-label">皮料</label>
-          <input type="text" class="form-input" id="f-leather" placeholder="（選填）">
+          <select class="form-input" id="f-leather">
+            <option value="">— 請選擇 —</option>
+            <option value="油感皮">油感皮</option>
+            <option value="蠟感皮">蠟感皮</option>
+            <option value="輕塗料皮">輕塗料皮</option>
+            <option value="3M 麂皮">3M 麂皮</option>
+            <option value="Napa 皮">Napa 皮</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 加價選項：自動計入賣價 -->
+      <div class="items-block" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:1.1rem">
+        <h4 style="font-size:12px;color:var(--text);margin-bottom:10px;font-weight:700">加價選項 <span style="color:var(--text-muted);font-weight:400;font-size:11px">（勾選後自動加入賣價）</span></h4>
+
+        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <label style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);cursor:pointer">
+            <input type="checkbox" id="opt-partial" onchange="recalcUpcharge()" style="width:18px;height:18px;accent-color:var(--green)">
+            局部訂製 <span style="font-family:'Space Mono',monospace;color:var(--rust);font-weight:700;margin-left:auto">+ NT$1,600</span>
+          </label>
+          <div id="partial-type-wrap" style="display:none;margin-top:8px;margin-left:28px">
+            <label style="display:inline-flex;align-items:center;gap:6px;margin-right:14px;font-size:12px"><input type="radio" name="partialType" value="皮料更換" checked>皮料更換</label>
+            <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px"><input type="radio" name="partialType" value="局部微調">局部微調</label>
+          </div>
+        </div>
+
+        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <label style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);cursor:pointer">
+            <input type="checkbox" id="opt-bigsize" onchange="recalcUpcharge()" style="width:18px;height:18px;accent-color:var(--green)">
+            大尺碼 <span style="font-family:'Space Mono',monospace;color:var(--rust);font-weight:700;margin-left:auto">+ NT$800</span>
+          </label>
+        </div>
+
+        <div style="padding:8px 0">
+          <label style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);cursor:pointer">
+            <input type="checkbox" id="opt-rubber" onchange="recalcUpcharge()" style="width:18px;height:18px;accent-color:var(--green)">
+            加裝前掌橡膠片 <span style="font-family:'Space Mono',monospace;color:var(--rust);font-weight:700;margin-left:auto">+ NT$500</span>
+          </label>
         </div>
       </div>
 
       <div class="form-grid">
         <div class="form-group">
-          <label class="form-label">賣價（NT$） <span>*</span></label>
-          <input type="number" class="form-input mono" id="f-price" placeholder="自動帶入，可修改">
+          <label class="form-label">基礎賣價（NT$） <span>*</span></label>
+          <input type="number" class="form-input mono" id="f-price" placeholder="款式自動帶入" oninput="recalcUpcharge()">
         </div>
+        <div class="form-group">
+          <label class="form-label">合計（含加價）</label>
+          <div class="form-id-preview" id="f-total" style="color:var(--rust)">NT$ 0</div>
+        </div>
+      </div>
+
+      <div class="form-grid">
         <div class="form-group">
           <label class="form-label">預估交件日</label>
           <input type="date" class="form-input mono" id="f-date">
+        </div>
+        <div class="form-group" style="display:none">
+          <label class="form-label">&nbsp;</label>
         </div>
       </div>
 
@@ -523,6 +570,31 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
           <input type="file" class="hidden" id="f-photos" accept="image/*" capture="environment" multiple onchange="handleCreatePhotoPick(this)">
         </label>
         <div class="photo-preview-list" id="create-photo-preview"></div>
+      </div>
+
+      <!-- 注意事項 -->
+      <div class="items-block" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:1.1rem">
+        <h4 style="font-size:12px;color:var(--text);margin-bottom:8px;font-weight:700">注意事項</h4>
+        <ol style="margin:0;padding-left:18px;font-size:11px;line-height:1.7;color:var(--text-sub)">
+          <li>請妥善保管取件聯，於取件時攜帶本單據。</li>
+          <li>經林果良品通知取件後，請於通知日起一個月內完成取件，逾期恕不負保管責任。</li>
+          <li>林果提供的訂製服務（局部訂製、皮料更換）皆為師傅特別製作，訂製費用需全額付清，恕不接受退換貨，製作天數約 45 天。</li>
+          <li>林果鞋款選用天然真皮皮革，皮紋、皮疤與蚊蟲叮咬為真皮皮料的自然現象。真皮皮料在染製後會產生不同顏色效果，若非嚴重色差，恕不接受退貨。</li>
+          <li>皮料可能因短缺或其他因素造成延後交貨時間或無法製作，本公司保留取消此筆訂單之權利。</li>
+          <li><b>PATINA</b> 為手工刷色鞋款，筆觸、顏色、刷色效果皆有不同，會與陳列商品略有差異。使用過一段時間，顏色飽和度會降低，屬自然現象。</li>
+        </ol>
+      </div>
+
+      <!-- 客戶簽名 -->
+      <div class="form-group">
+        <label class="form-label">客戶簽名 <span style="color:var(--text-muted)">（同意上述注意事項）</span></label>
+        <div style="border:1px solid var(--border2);border-radius:8px;background:var(--surface);padding:6px">
+          <canvas id="sig-canvas" width="640" height="180" style="width:100%;height:180px;display:block;touch-action:none;cursor:crosshair;border-radius:6px;background:#fff"></canvas>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px 0">
+            <span style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace">用手指或筆在框內簽名</span>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="clearSignature()" style="padding:4px 10px;font-size:11px">清除</button>
+          </div>
+        </div>
       </div>
 
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:.5rem;flex-wrap:wrap">
@@ -612,7 +684,7 @@ function showView(name) {
   document.getElementById('view-' + name).classList.add('active');
   window.scrollTo(0, 0);
   if (name === 'list') renderList();
-  if (name === 'create') generateOrderId();
+  if (name === 'create') { generateOrderId(); setTimeout(initSignaturePad, 100); }
 }
 
 // =============================================
@@ -757,9 +829,115 @@ function pickModel(code) {
   // 賣價
   const priceText = (variants[0].price || '').replace(/[^\d]/g, '');
   if (priceText) document.getElementById('f-price').value = priceText;
+  recalcUpcharge();
 }
 
 function closeModelList() { document.getElementById('model-pick-list').classList.remove('open'); }
+
+// =============================================
+// 加價計算（局部訂製 / 大尺碼 / 前掌膠片）
+// =============================================
+const UPCHARGE_DEFS = [
+  { id:'opt-partial', label:'局部訂製', price:1600, withType:true },
+  { id:'opt-bigsize', label:'大尺碼',   price:800 },
+  { id:'opt-rubber',  label:'加裝前掌橡膠片', price:500 },
+];
+
+function recalcUpcharge() {
+  const base = Number(document.getElementById('f-price').value) || 0;
+  let upcharge = 0;
+  UPCHARGE_DEFS.forEach(d => {
+    if (document.getElementById(d.id).checked) upcharge += d.price;
+  });
+  document.getElementById('partial-type-wrap').style.display =
+    document.getElementById('opt-partial').checked ? 'block' : 'none';
+  document.getElementById('f-total').textContent = 'NT$ ' + (base + upcharge).toLocaleString('zh-TW');
+}
+
+function collectUpcharges() {
+  const list = [];
+  UPCHARGE_DEFS.forEach(d => {
+    if (!document.getElementById(d.id).checked) return;
+    const item = { label:d.label, price:d.price };
+    if (d.withType) {
+      const t = document.querySelector('input[name=partialType]:checked');
+      if (t) item.subtype = t.value;
+    }
+    list.push(item);
+  });
+  return list;
+}
+
+// =============================================
+// 客戶簽名 canvas
+// =============================================
+let _sigDrawing = false;
+let _sigHasInk = false;
+function initSignaturePad() {
+  const canvas = document.getElementById('sig-canvas');
+  if (!canvas || canvas._init) return;
+  canvas._init = true;
+  // 因 CSS 縮放，要設定實際像素 buffer
+  const resize = () => {
+    const ratio = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width) return;
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(ratio, ratio);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#284234';
+  };
+  setTimeout(resize, 50);
+  window.addEventListener('resize', resize);
+
+  const getPos = e => {
+    const rect = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+  };
+  const start = e => {
+    e.preventDefault();
+    _sigDrawing = true; _sigHasInk = true;
+    const p = getPos(e);
+    const ctx = canvas.getContext('2d');
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  };
+  const move = e => {
+    if (!_sigDrawing) return;
+    e.preventDefault();
+    const p = getPos(e);
+    const ctx = canvas.getContext('2d');
+    ctx.lineTo(p.x, p.y); ctx.stroke();
+  };
+  const end = () => { _sigDrawing = false; };
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
+  canvas.addEventListener('touchstart', start, { passive:false });
+  canvas.addEventListener('touchmove', move, { passive:false });
+  canvas.addEventListener('touchend', end);
+}
+function clearSignature() {
+  const canvas = document.getElementById('sig-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  _sigHasInk = false;
+}
+function hasSignature() { return _sigHasInk; }
+function getSignatureDataUrl() {
+  if (!_sigHasInk) return '';
+  return document.getElementById('sig-canvas').toDataURL('image/png');
+}
 
 // =============================================
 // DETAIL
@@ -949,8 +1127,8 @@ async function submitOrder() {
   const model = document.getElementById('f-model').value.trim();
   const color = document.getElementById('f-color').value;
   const size = document.getElementById('f-size').value;
-  const leather = document.getElementById('f-leather').value.trim();
-  const price = document.getElementById('f-price').value;
+  const leather = document.getElementById('f-leather').value;
+  const basePrice = Number(document.getElementById('f-price').value) || 0;
   const date = document.getElementById('f-date').value;
   const payment = document.getElementById('f-payment').value;
   const shipping = document.querySelector('input[name=ship]:checked').value;
@@ -960,9 +1138,12 @@ async function submitOrder() {
   const internal = document.getElementById('f-internal').value.trim();
   const status = document.getElementById('f-status').value;
   const sendEmailFlag = document.getElementById('f-send-email').checked;
+  const upcharges = collectUpcharges();
+  const totalPrice = basePrice + upcharges.reduce((s, x) => s + x.price, 0);
 
-  if (!store || !name || !phone || !model || !price) { toast('請填寫門市、姓名、電話、款式、賣價','error'); return; }
+  if (!store || !name || !phone || !model || !basePrice) { toast('請填寫門市、姓名、電話、款式、賣價','error'); return; }
   if (sendEmailFlag && !email) { toast('要寄送 email 請先填寫客戶 email','error'); return; }
+  if (!hasSignature()) { toast('請先讓客戶簽名','error'); return; }
 
   showUploadOverlay(true, '建立中…');
   try {
@@ -973,7 +1154,9 @@ async function submitOrder() {
         store, name, phone, email, address,
         model, color, size, leather,
         partialNote: partial,
-        price: Number(price),
+        price: totalPrice,
+        basePrice,
+        upchargesJson: JSON.stringify(upcharges),
         paymentStatus: payment,
         date, shipping, staff,
         publicNote, internalNote: internal,
@@ -1005,6 +1188,26 @@ async function submitOrder() {
       await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'updateOrder', id:orderId, type:'custom', photos: photoUrls.join(',') }) });
     }
 
+    // 上傳簽名（base64 PNG → Drive）
+    const sigDataUrl = getSignatureDataUrl();
+    if (sigDataUrl) {
+      try {
+        const r = await fetch(GAS_URL, {
+          method:'POST',
+          body: JSON.stringify({
+            action:'uploadPhoto', orderId, orderType:'custom', type:'signature',
+            fileName: `signature_${orderId}.png`,
+            fileData: sigDataUrl.split(',')[1],
+            mimeType: 'image/png'
+          })
+        });
+        const d = await r.json();
+        if (d.success && d.url) {
+          await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'updateOrder', id:orderId, type:'custom', signatureUrl: d.url }) });
+        }
+      } catch (e) { console.warn('簽名上傳失敗', e); }
+    }
+
     if (sendEmailFlag && email) {
       showUploadOverlay(true, '寄送 Email 中…');
       try {
@@ -1030,6 +1233,10 @@ function resetCreateForm() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  ['opt-partial','opt-bigsize','opt-rubber'].forEach(id => { document.getElementById(id).checked = false; });
+  document.getElementById('partial-type-wrap').style.display = 'none';
+  document.getElementById('f-total').textContent = 'NT$ 0';
+  clearSignature();
   document.getElementById('f-color').innerHTML = '<option value="">—</option>';
   document.getElementById('f-size').innerHTML = '<option value="">—</option>';
   document.querySelector('input[name=ship][value=自取]').checked = true;
