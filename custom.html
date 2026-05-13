@@ -174,6 +174,14 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
 .shipping-options{display:flex;gap:8px;flex-wrap:wrap}
 .shipping-options label{display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 14px;border:1px solid var(--border2);border-radius:8px;font-size:13px;color:var(--text);transition:all .15s}
 .shipping-options label:has(input:checked){border-color:var(--green);background:var(--surface2);color:var(--green);font-weight:600}
+
+/* Diagrams (shoe + feet annotation) */
+.diagrams-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:6px}
+@media(max-width:560px){.diagrams-grid{grid-template-columns:1fr 1fr}.diagrams-grid .diagram-item:first-child{grid-column:span 2}}
+.diagram-item{display:flex;flex-direction:column;gap:4px}
+.diagram-title{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;letter-spacing:.06em;text-transform:uppercase}
+.diagram-wrap{background:#fff;border:1px solid var(--border2);border-radius:8px;overflow:hidden;position:relative}
+.diagram-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
 .shipping-options input{accent-color:var(--green)}
 
 .customer-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;max-width:680px;margin:1rem auto}
@@ -549,6 +557,34 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
         <textarea class="form-input" id="f-partial" placeholder="例：左腳楦頭加寬 0.5cm、後跟加高 1cm…"></textarea>
       </div>
 
+      <!-- 鞋款 + 腳型標註圖 -->
+      <div class="form-group">
+        <label class="form-label">局部訂製標註 <span style="color:var(--text-muted)">（可在圖上畫圓圈/標尺寸，標哪邊要改）</span></label>
+        <div class="diagrams-grid">
+          <div class="diagram-item">
+            <div class="diagram-title">鞋款</div>
+            <div class="diagram-wrap" style="aspect-ratio:5/3">
+              <canvas class="diagram-canvas" data-diag="shoe" data-bg="shoe"></canvas>
+            </div>
+          </div>
+          <div class="diagram-item">
+            <div class="diagram-title">右腳</div>
+            <div class="diagram-wrap" style="aspect-ratio:2/5">
+              <canvas class="diagram-canvas" data-diag="footR" data-bg="footR"></canvas>
+            </div>
+          </div>
+          <div class="diagram-item">
+            <div class="diagram-title">左腳</div>
+            <div class="diagram-wrap" style="aspect-ratio:2/5">
+              <canvas class="diagram-canvas" data-diag="footL" data-bg="footL"></canvas>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:6px">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="clearAllDiagrams()" style="padding:4px 12px;font-size:11px">清除全部標註</button>
+        </div>
+      </div>
+
       <div class="form-group">
         <label class="form-label">客戶可見備註</label>
         <textarea class="form-input" id="f-public" placeholder="會顯示在客戶單據與 email 上"></textarea>
@@ -684,7 +720,7 @@ function showView(name) {
   document.getElementById('view-' + name).classList.add('active');
   window.scrollTo(0, 0);
   if (name === 'list') renderList();
-  if (name === 'create') { generateOrderId(); setTimeout(initSignaturePad, 100); }
+  if (name === 'create') { generateOrderId(); setTimeout(() => { initSignaturePad(); initDiagrams(); }, 100); }
 }
 
 // =============================================
@@ -866,6 +902,175 @@ function collectUpcharges() {
     list.push(item);
   });
   return list;
+}
+
+// =============================================
+// 鞋款/腳型標註 canvas
+// =============================================
+const DIAGRAM_SVG = {
+  shoe: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 300">
+    <rect width="500" height="300" fill="#fff"/>
+    <g stroke="#284234" stroke-width="2" fill="none" stroke-linejoin="round">
+      <path d="M20,220 Q20,200 60,195 L120,190 Q160,180 200,170 L320,158 Q380,158 430,180 L470,210 Q485,225 475,245 L450,260 Q300,272 100,270 Q35,265 25,250 Z"/>
+      <path d="M148,190 Q160,165 200,160 L320,150 Q360,150 380,165"/>
+      <line x1="160" y1="170" x2="168" y2="155"/>
+      <line x1="180" y1="166" x2="188" y2="151"/>
+      <line x1="205" y1="162" x2="213" y2="147"/>
+      <line x1="230" y1="158" x2="238" y2="143"/>
+      <line x1="260" y1="155" x2="268" y2="140"/>
+      <line x1="290" y1="153" x2="298" y2="138"/>
+      <line x1="450" y1="220" x2="475" y2="220" stroke-width="2.5"/>
+      <line x1="455" y1="260" x2="475" y2="260" stroke-width="2.5"/>
+      <line x1="20" y1="248" x2="40" y2="270" stroke-width="1.5"/>
+    </g>
+    <text x="30" y="285" font-size="11" font-family="monospace" fill="#888">SHOE 鞋款側面</text>
+  </svg>`,
+  footL: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 500">
+    <rect width="200" height="500" fill="#fff"/>
+    <g stroke="#284234" stroke-width="2" fill="none">
+      <path d="M100,30 Q145,40 158,110 Q165,200 158,330 Q155,420 130,470 Q100,490 70,470 Q45,420 42,330 Q35,200 42,110 Q55,40 100,30 Z"/>
+      <ellipse cx="70" cy="50" rx="12" ry="16"/>
+      <ellipse cx="100" cy="38" rx="15" ry="20"/>
+      <ellipse cx="130" cy="48" rx="12" ry="16"/>
+      <ellipse cx="148" cy="68" rx="10" ry="14"/>
+      <ellipse cx="158" cy="92" rx="9" ry="12"/>
+    </g>
+    <line x1="100" y1="130" x2="100" y2="460" stroke="#bbb" stroke-width="1" stroke-dasharray="4,4"/>
+    <line x1="40" y1="280" x2="160" y2="280" stroke="#bbb" stroke-width="1" stroke-dasharray="4,4"/>
+    <text x="14" y="20" font-size="11" font-family="monospace" fill="#888">LEFT 左腳</text>
+  </svg>`,
+  footR: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 500">
+    <rect width="200" height="500" fill="#fff"/>
+    <g stroke="#284234" stroke-width="2" fill="none" transform="translate(200,0) scale(-1,1)">
+      <path d="M100,30 Q145,40 158,110 Q165,200 158,330 Q155,420 130,470 Q100,490 70,470 Q45,420 42,330 Q35,200 42,110 Q55,40 100,30 Z"/>
+      <ellipse cx="70" cy="50" rx="12" ry="16"/>
+      <ellipse cx="100" cy="38" rx="15" ry="20"/>
+      <ellipse cx="130" cy="48" rx="12" ry="16"/>
+      <ellipse cx="148" cy="68" rx="10" ry="14"/>
+      <ellipse cx="158" cy="92" rx="9" ry="12"/>
+    </g>
+    <line x1="100" y1="130" x2="100" y2="460" stroke="#bbb" stroke-width="1" stroke-dasharray="4,4"/>
+    <line x1="40" y1="280" x2="160" y2="280" stroke="#bbb" stroke-width="1" stroke-dasharray="4,4"/>
+    <text x="14" y="20" font-size="11" font-family="monospace" fill="#888">RIGHT 右腳</text>
+  </svg>`
+};
+
+const _diagState = {}; // {diagId: {hasInk:bool, baseImg:Image}}
+
+function initDiagrams() {
+  document.querySelectorAll('.diagram-canvas').forEach(canvas => {
+    if (canvas._init) return;
+    canvas._init = true;
+    const diag = canvas.dataset.diag;
+    const bg = canvas.dataset.bg;
+    const svgUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(DIAGRAM_SVG[bg])));
+
+    const img = new Image();
+    img.onload = () => {
+      _diagState[diag] = { hasInk:false, baseImg:img };
+      resizeDiagram(canvas);
+    };
+    img.src = svgUrl;
+
+    bindCanvasDraw(canvas, diag);
+  });
+  window.removeEventListener('resize', _diagResizeAll);
+  window.addEventListener('resize', _diagResizeAll);
+}
+
+function _diagResizeAll() {
+  document.querySelectorAll('.diagram-canvas').forEach(c => resizeDiagram(c));
+}
+
+function resizeDiagram(canvas) {
+  const ratio = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width) return;
+  // 保留現有筆觸：先存 ink 再 resize
+  const diag = canvas.dataset.diag;
+  const state = _diagState[diag];
+  const inkBackup = state && state.hasInk ? canvas.toDataURL() : null;
+
+  canvas.width = rect.width * ratio;
+  canvas.height = rect.height * ratio;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(ratio, ratio);
+  redrawBase(canvas);
+
+  if (inkBackup) {
+    const im = new Image();
+    im.onload = () => ctx.drawImage(im, 0, 0, rect.width, rect.height);
+    im.src = inkBackup;
+  }
+}
+
+function redrawBase(canvas) {
+  const diag = canvas.dataset.diag;
+  const state = _diagState[diag];
+  const rect = canvas.getBoundingClientRect();
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, rect.width, rect.height);
+  if (state && state.baseImg) {
+    ctx.drawImage(state.baseImg, 0, 0, rect.width, rect.height);
+  }
+}
+
+function bindCanvasDraw(canvas, diag) {
+  let drawing = false;
+  const getPos = e => {
+    const rect = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+  };
+  const start = e => {
+    e.preventDefault();
+    drawing = true;
+    if (_diagState[diag]) _diagState[diag].hasInk = true;
+    const p = getPos(e);
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#A54A1A';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  };
+  const move = e => {
+    if (!drawing) return;
+    e.preventDefault();
+    const p = getPos(e);
+    const ctx = canvas.getContext('2d');
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  };
+  const end = () => { drawing = false; };
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
+  canvas.addEventListener('touchstart', start, { passive:false });
+  canvas.addEventListener('touchmove', move, { passive:false });
+  canvas.addEventListener('touchend', end);
+}
+
+function clearAllDiagrams() {
+  document.querySelectorAll('.diagram-canvas').forEach(c => {
+    const diag = c.dataset.diag;
+    if (_diagState[diag]) _diagState[diag].hasInk = false;
+    redrawBase(c);
+  });
+}
+
+function collectDiagramDataUrls() {
+  const out = {};
+  document.querySelectorAll('.diagram-canvas').forEach(c => {
+    const diag = c.dataset.diag;
+    if (_diagState[diag] && _diagState[diag].hasInk) {
+      out[diag] = c.toDataURL('image/png');
+    }
+  });
+  return out;
 }
 
 // =============================================
@@ -1208,6 +1413,28 @@ async function submitOrder() {
       } catch (e) { console.warn('簽名上傳失敗', e); }
     }
 
+    // 上傳鞋款/腳型標註圖（只上傳有畫的）
+    const diagrams = collectDiagramDataUrls();
+    const diagUrls = {};
+    for (const [diag, dataUrl] of Object.entries(diagrams)) {
+      try {
+        const r = await fetch(GAS_URL, {
+          method:'POST',
+          body: JSON.stringify({
+            action:'uploadPhoto', orderId, orderType:'custom', type:'diagram_'+diag,
+            fileName: `${diag}_${orderId}.png`,
+            fileData: dataUrl.split(',')[1],
+            mimeType: 'image/png'
+          })
+        });
+        const d = await r.json();
+        if (d.success && d.url) diagUrls[diag] = d.url;
+      } catch (e) { console.warn('標註圖上傳失敗', diag, e); }
+    }
+    if (Object.keys(diagUrls).length) {
+      await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'updateOrder', id:orderId, type:'custom', diagramsJson: JSON.stringify(diagUrls) }) });
+    }
+
     if (sendEmailFlag && email) {
       showUploadOverlay(true, '寄送 Email 中…');
       try {
@@ -1237,6 +1464,7 @@ function resetCreateForm() {
   document.getElementById('partial-type-wrap').style.display = 'none';
   document.getElementById('f-total').textContent = 'NT$ 0';
   clearSignature();
+  clearAllDiagrams();
   document.getElementById('f-color').innerHTML = '<option value="">—</option>';
   document.getElementById('f-size').innerHTML = '<option value="">—</option>';
   document.querySelector('input[name=ship][value=自取]').checked = true;
