@@ -263,7 +263,7 @@ let currentAdminEmail = null;
 
 function initAdmin() {
   try {
-    const d = JSON.parse(sessionStorage.getItem('oringo_auth_v1') || 'null');
+    const d = JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null');
     if (d && d.email && d.exp > Date.now()) {
       currentAdminEmail = d.email.toLowerCase();
     }

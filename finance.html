@@ -683,7 +683,7 @@ async function checkExecAccess(email) {
 // 情境 A：已有 session（重訪或同 tab 切換）
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    const d = JSON.parse(sessionStorage.getItem('oringo_auth_v1') || 'null');
+    const d = JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null');
     if (d && d.email) checkExecAccess(d.email);
   } catch(e) {}
 });

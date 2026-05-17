@@ -1,7 +1,7 @@
 /**
  * auth.js — 林果良品 dashboard.oringo.tw 登入保護層
  * 策略：@oringoshoes.com 網域 Google 帳號才可進入
- * 登入狀態存 sessionStorage，關閉分頁後重新驗證
+ * 登入狀態存 localStorage，關閉分頁後重新驗證
  */
 (function () {
   const CLIENT_ID = '901817647731-nsjtqdurcnp6mf40mtltkmn01me3ss93.apps.googleusercontent.com';
@@ -12,13 +12,13 @@
   /* ── 1. 檢查 session ── */
   function isSessionValid() {
     try {
-      const d = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+      const d = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
       return d && d.exp > Date.now() && (d.email || '').toLowerCase().endsWith('@' + ALLOWED_DOMAIN);
     } catch { return false; }
   }
 
   function saveSession(email) {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
       email: email.toLowerCase(),
       exp: Date.now() + SESSION_TTL
     }));
@@ -142,7 +142,7 @@
 
   /* ── 8. 公開登出方法（header 登出按鈕用）── */
   window.oriAuthLogout = function () {
-    sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_KEY);
     location.reload();
   };
 })();
