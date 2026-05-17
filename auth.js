@@ -51,6 +51,8 @@
       saveSession(email);
       document.getElementById('auth-overlay')?.remove();
       document.getElementById('auth-hide-style')?.remove();
+      // 通知其他頁面邏輯（如 finance.html 的二次授權）
+      document.dispatchEvent(new CustomEvent('oriAuthComplete', { detail: { email } }));
     } else {
       const errEl = document.getElementById('auth-error');
       if (errEl) {

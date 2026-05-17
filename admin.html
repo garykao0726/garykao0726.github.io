@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜使用者權限管理</title>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;
+  --rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;
+  --bg:#F5EDE3;--surface:#fff;--border:rgba(40,66,52,.10);--border2:rgba(40,66,52,.22);
+  --text:#284234;--text-sub:#8D5531;--text-muted:#b09a88;
+  --pos:#1a7a4a;--neg:#c0392b;--warn:#b7770d;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text);min-height:100vh}
+
+/* Header */
+.hdr{background:var(--dark);padding:0 28px;height:54px;display:flex;align-items:center;gap:16px;justify-content:space-between}
+.hdr-left{display:flex;align-items:center;gap:16px}
+.hdr-brand{color:var(--sand);font-size:.85rem;font-weight:700;letter-spacing:.12em;text-decoration:none}
+.hdr-sep{color:rgba(226,206,185,.3);font-size:1.1rem}
+.hdr-title{color:var(--sand);font-size:.82rem;opacity:.8}
+.hdr-right{display:flex;align-items:center;gap:12px}
+.admin-badge{background:var(--rust);color:#fff;font-size:.7rem;padding:2px 8px;border-radius:4px;font-weight:700;letter-spacing:.05em}
+.back-link{color:var(--sand);font-size:.78rem;opacity:.7;text-decoration:none;transition:opacity .15s}
+.back-link:hover{opacity:1}
+
+/* Layout */
+.container{max-width:1100px;margin:0 auto;padding:32px 20px}
+
+/* Page header */
+.page-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.page-title{font-size:1.25rem;font-weight:700;color:var(--text)}
+.page-sub{font-size:.8rem;color:var(--text-muted);margin-top:4px}
+
+/* Add user button */
+.btn-add{display:flex;align-items:center;gap:8px;padding:9px 18px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;cursor:pointer;font-weight:500;transition:opacity .15s}
+.btn-add:hover{opacity:.85}
+
+/* Stats row */
+.stats-row{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.stat-card{background:var(--surface);border-radius:10px;border:1px solid var(--border);padding:14px 20px;min-width:120px}
+.stat-num{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--text)}
+.stat-label{font-size:.72rem;color:var(--text-muted);margin-top:2px}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-input{padding:8px 14px;border:1px solid var(--border2);border-radius:8px;font-size:.83rem;font-family:'Noto Sans TC',sans-serif;background:#fff;color:var(--text);outline:none;width:220px;transition:border-color .15s}
+.filter-input:focus{border-color:var(--green)}
+.filter-btn{padding:8px 14px;border:1px solid var(--border2);border-radius:8px;font-size:.78rem;font-family:'Noto Sans TC',sans-serif;background:#fff;color:var(--text);cursor:pointer;transition:all .15s}
+.filter-btn.active,.filter-btn:hover{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* Table */
+.table-wrap{background:var(--surface);border-radius:12px;border:1px solid var(--border);overflow:hidden}
+.table-wrap table{width:100%;border-collapse:collapse}
+.table-wrap th{background:var(--sand-light);padding:11px 14px;text-align:left;font-size:.75rem;font-weight:700;color:var(--text-sub);letter-spacing:.05em;border-bottom:1px solid var(--border)}
+.table-wrap td{padding:13px 14px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:.83rem}
+.table-wrap tr:last-child td{border-bottom:none}
+.table-wrap tr:hover td{background:var(--sand-light)}
+
+/* User cell */
+.user-cell{display:flex;flex-direction:column;gap:2px}
+.user-name{font-weight:500}
+.user-email{font-size:.73rem;color:var(--text-muted);font-family:'Space Mono',monospace}
+
+/* Permission toggles */
+.perm-row{display:flex;gap:6px;flex-wrap:wrap}
+.perm-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:.72rem;font-weight:500;cursor:pointer;border:1.5px solid transparent;transition:all .15s;user-select:none}
+.perm-tag.on{background:#e8f4ef;color:var(--pos);border-color:#a8d5bc}
+.perm-tag.off{background:#f7f7f7;color:#aaa;border-color:#e0e0e0}
+.perm-tag:hover{filter:brightness(.95)}
+.perm-tag.finance.on{background:#fff0e8;color:var(--rust);border-color:#f4c4a0}
+
+/* Role badge */
+.role-badge{display:inline-block;padding:3px 10px;border-radius:5px;font-size:.72rem;font-weight:700;letter-spacing:.04em}
+.role-admin{background:var(--dark);color:var(--sand)}
+.role-exec{background:#e8f0fe;color:#1a57c8}
+.role-staff{background:var(--sand-light);color:var(--text-sub)}
+
+/* Status toggle */
+.status-toggle{display:flex;align-items:center;gap:6px;cursor:pointer}
+.toggle-switch{width:34px;height:18px;border-radius:9px;background:#ccc;position:relative;transition:background .2s;flex-shrink:0}
+.toggle-switch.on{background:var(--pos)}
+.toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s}
+.toggle-switch.on::after{left:18px}
+.status-label{font-size:.75rem;color:var(--text-muted)}
+
+/* Action buttons */
+.action-btns{display:flex;gap:6px}
+.btn-edit,.btn-del{padding:5px 12px;border-radius:6px;font-size:.75rem;font-family:'Noto Sans TC',sans-serif;cursor:pointer;border:1px solid;transition:all .15s;font-weight:500}
+.btn-edit{background:#fff;color:var(--text);border-color:var(--border2)}
+.btn-edit:hover{border-color:var(--green);color:var(--green)}
+.btn-del{background:#fff;color:var(--neg);border-color:rgba(192,57,43,.25)}
+.btn-del:hover{background:var(--neg);color:#fff}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,39,33,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:#fff;border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.modal h3{font-size:1rem;font-weight:700;margin-bottom:20px;color:var(--text)}
+.form-group{margin-bottom:14px}
+.form-label{font-size:.78rem;font-weight:500;color:var(--text-sub);margin-bottom:5px;display:block}
+.form-input{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;color:var(--text);outline:none;transition:border-color .15s}
+.form-input:focus{border-color:var(--green)}
+.form-select{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;color:var(--text);outline:none;background:#fff;cursor:pointer}
+.perm-check-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.perm-check{display:flex;align-items:center;gap:6px;font-size:.8rem;cursor:pointer;padding:5px 10px;border:1.5px solid var(--border2);border-radius:6px;transition:all .15s}
+.perm-check input{accent-color:var(--green)}
+.perm-check:has(input:checked){background:#e8f4ef;border-color:#a8d5bc;color:var(--pos)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+.btn-cancel{padding:9px 20px;border:1px solid var(--border2);border-radius:8px;background:#fff;color:var(--text);font-size:.85rem;font-family:'Noto Sans TC',sans-serif;cursor:pointer}
+.btn-save{padding:9px 20px;border:none;border-radius:8px;background:var(--green);color:#fff;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;cursor:pointer;font-weight:500}
+.btn-save:hover{opacity:.87}
+
+/* Admin-only guard */
+.guard-msg{text-align:center;padding:80px 20px}
+.guard-msg h2{font-size:1.1rem;margin-bottom:8px}
+.guard-msg p{font-size:.83rem;color:var(--text-muted)}
+
+/* Saving indicator */
+.saving-toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:10px 18px;border-radius:8px;font-size:.82rem;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:opacity .3s;z-index:9999}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-left">
+    <a href="index.html" class="hdr-brand">林果良品</a>
+    <span class="hdr-sep">|</span>
+    <span class="hdr-title">使用者權限管理</span>
+  </div>
+  <div class="hdr-right">
+    <span class="admin-badge">ADMIN ONLY</span>
+    <a href="index.html" class="back-link">← 返回中控</a>
+  </div>
+</header>
+
+<div class="container" id="app" style="display:none">
+  <div class="page-hd">
+    <div>
+      <div class="page-title">使用者權限管理</div>
+      <div class="page-sub">管理各成員對各頁面的存取權限。變更後立即生效。</div>
+    </div>
+    <button class="btn-add" onclick="openAddModal()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      邀請使用者
+    </button>
+  </div>
+
+  <div class="stats-row" id="stats-row"></div>
+
+  <div class="filter-bar">
+    <input class="filter-input" type="text" id="search-input" placeholder="搜尋姓名或 Email…" oninput="renderTable()">
+    <button class="filter-btn active" data-role="all" onclick="setRoleFilter(this,'all')">全部</button>
+    <button class="filter-btn" data-role="admin" onclick="setRoleFilter(this,'admin')">管理員</button>
+    <button class="filter-btn" data-role="exec" onclick="setRoleFilter(this,'exec')">高階主管</button>
+    <button class="filter-btn" data-role="staff" onclick="setRoleFilter(this,'staff')">一般員工</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>姓名 / Email</th>
+          <th>角色</th>
+          <th>頁面存取權限</th>
+          <th>狀態</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="user-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Access denied (non-admin) -->
+<div class="container guard-msg" id="guard-msg" style="display:none">
+  <div style="font-size:2.5rem;margin-bottom:16px">🔒</div>
+  <h2>管理員專用頁面</h2>
+  <p>此頁面僅限系統管理員（gary@oringoshoes.com）存取。<br>如有需要請聯絡 Gary。</p>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modal" style="display:none">
+  <div class="modal">
+    <h3 id="modal-title">新增使用者</h3>
+    <div class="form-group">
+      <label class="form-label">姓名</label>
+      <input class="form-input" id="f-name" type="text" placeholder="例：王小明">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Google Email</label>
+      <input class="form-input" id="f-email" type="email" placeholder="xxx@oringoshoes.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">角色</label>
+      <select class="form-select" id="f-role" onchange="syncRolePerms()">
+        <option value="staff">一般員工（預設：運營 / 商品 / SEO / 行銷）</option>
+        <option value="exec">高階主管（全頁面存取）</option>
+        <option value="admin">管理員（全頁面 + 後台）</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">頁面權限（可自訂）</label>
+      <div class="perm-check-row" id="perm-checks"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-save" onclick="saveUser()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   設定區
+══════════════════════════════════════════ */
+const ADMIN_EMAIL = 'gary@oringoshoes.com';
+
+// GAS Web App 端點（部署後填入）
+// const GAS_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
+const GAS_URL = null; // 尚未部署，先用本機資料
+
+// 頁面定義
+const PAGES = [
+  { id: 'operation', label: '運營績效', emoji: '📊' },
+  { id: 'products',  label: '商品分析', emoji: '👟' },
+  { id: 'marketing', label: '行銷',     emoji: '📣' },
+  { id: 'seo',       label: 'SEO',      emoji: '🔍' },
+  { id: 'finance',   label: '財務報表', emoji: '💰' },
+];
+
+// 預設角色權限
+const ROLE_PERMS = {
+  admin: { operation: true, products: true, marketing: true, seo: true, finance: true },
+  exec:  { operation: true, products: true, marketing: true, seo: true, finance: true },
+  staff: { operation: true, products: true, marketing: true, seo: true, finance: false },
+};
+
+// 初始使用者資料（之後從 GAS 讀取）
+let USERS = [
+  { id:1,  name:'Gary Kao',       email:'gary@oringoshoes.com',       role:'admin', active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:true} },
+  { id:2,  name:'杜衣倢',          email:'gill.tu@oringoshoes.com',     role:'exec',  active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:true} },
+  { id:3,  name:'江選忠',          email:'ray.chiang@oringoshoes.com',  role:'exec',  active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:true} },
+  { id:4,  name:'曾信儒',          email:'rintseng@oringoshoes.com',    role:'exec',  active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:true} },
+  { id:5,  name:'楊茜雯',          email:'qianwen@oringoshoes.com',     role:'exec',  active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:true} },
+  { id:6,  name:'惠貞',           email:'erin.chen@oringoshoes.com',   role:'staff', active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:false} },
+  { id:7,  name:'黃筱凌',          email:'linda@oringoshoes.com',       role:'staff', active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:false} },
+  { id:8,  name:'鄭宇志',          email:'miller@oringoshoes.com',      role:'staff', active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:false} },
+  { id:9,  name:'建威',           email:'wei.chen@oringoshoes.com',    role:'staff', active:true,  perms:{operation:true,products:true,marketing:true,seo:false,finance:false} },
+  { id:10, name:'林果倉管-惠美',    email:'wh@oringoshoes.com',          role:'staff', active:true,  perms:{operation:true,products:true,marketing:false,seo:false,finance:false} },
+  { id:11, name:'中山店',          email:'store.zs@oringoshoes.com',    role:'staff', active:true,  perms:{operation:true,products:false,marketing:false,seo:false,finance:false} },
+  { id:12, name:'台中店',          email:'store.tc@oringoshoes.com',    role:'staff', active:true,  perms:{operation:true,products:false,marketing:false,seo:false,finance:false} },
+  { id:13, name:'東門店',          email:'store.dm@oringoshoes.com',    role:'staff', active:true,  perms:{operation:true,products:false,marketing:false,seo:false,finance:false} },
+  { id:14, name:'松菸店',          email:'store.sy@oringoshoes.com',    role:'staff', active:true,  perms:{operation:true,products:false,marketing:false,seo:false,finance:false} },
+  { id:15, name:'新店店',          email:'store.xd@oringoshoes.com',    role:'staff', active:true,  perms:{operation:true,products:false,marketing:false,seo:false,finance:false} },
+];
+
+/* ══════════════════════════════════════════
+   Admin 保護層（只有 ADMIN_EMAIL 可進）
+══════════════════════════════════════════ */
+let currentAdminEmail = null;
+
+function initAdmin() {
+  try {
+    const d = JSON.parse(sessionStorage.getItem('oringo_auth_v1') || 'null');
+    if (d && d.email && d.exp > Date.now()) {
+      currentAdminEmail = d.email.toLowerCase();
+    }
+  } catch(e) {}
+  grantOrDenyAdmin();
+}
+
+function grantOrDenyAdmin() {
+  if (currentAdminEmail === ADMIN_EMAIL) {
+    document.getElementById('app').style.display = 'block';
+    renderStats();
+    renderTable();
+    loadFromGAS(); // 嘗試從 GAS 讀最新資料
+  } else if (currentAdminEmail) {
+    // 有登入但不是 admin
+    document.getElementById('guard-msg').style.display = 'block';
+  }
+  // 若還沒登入，auth.js 的 overlay 已在擋著
+}
+
+document.addEventListener('DOMContentLoaded', initAdmin);
+document.addEventListener('oriAuthComplete', e => {
+  currentAdminEmail = (e.detail?.email || '').toLowerCase();
+  grantOrDenyAdmin();
+});
+
+/* ══════════════════════════════════════════
+   GAS 資料載入（待 GAS_URL 設定後啟用）
+══════════════════════════════════════════ */
+async function loadFromGAS() {
+  if (!GAS_URL) return; // 尚未部署，使用本機預設資料
+  try {
+    const res = await fetch(GAS_URL + '?action=getUsers');
+    const data = await res.json();
+    if (data.users) {
+      USERS = data.users;
+      renderStats();
+      renderTable();
+    }
+  } catch(e) {
+    console.warn('GAS 連線失敗，使用本機資料', e);
+  }
+}
+
+async function saveToGAS(payload) {
+  if (!GAS_URL) {
+    showToast('⚠️ GAS 尚未部署，變更僅儲存於本頁');
+    return false;
+  }
+  try {
+    await fetch(GAS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ ...payload, adminEmail: currentAdminEmail })
+    });
+    showToast('✅ 已儲存');
+    return true;
+  } catch(e) {
+    showToast('❌ 儲存失敗，請重試');
+    return false;
+  }
+}
+
+/* ══════════════════════════════════════════
+   Stats
+══════════════════════════════════════════ */
+function renderStats() {
+  const active = USERS.filter(u => u.active);
+  const stats = [
+    { num: USERS.length,                              label: '總使用者' },
+    { num: active.length,                             label: '已啟用' },
+    { num: USERS.filter(u=>u.role==='exec'||u.role==='admin').length, label: '高階主管' },
+    { num: USERS.filter(u=>u.perms?.finance).length,  label: '財務權限' },
+  ];
+  document.getElementById('stats-row').innerHTML = stats.map(s => `
+    <div class="stat-card">
+      <div class="stat-num">${s.num}</div>
+      <div class="stat-label">${s.label}</div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   Table
+══════════════════════════════════════════ */
+let roleFilter = 'all';
+
+function setRoleFilter(btn, role) {
+  roleFilter = role;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function renderTable() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const filtered = USERS.filter(u => {
+    const matchRole = roleFilter === 'all' || u.role === roleFilter;
+    const matchQ = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+    return matchRole && matchQ;
+  });
+
+  document.getElementById('user-tbody').innerHTML = filtered.map(u => `
+    <tr>
+      <td>
+        <div class="user-cell">
+          <span class="user-name">${u.name}</span>
+          <span class="user-email">${u.email}</span>
+        </div>
+      </td>
+      <td>
+        <span class="role-badge role-${u.role}">
+          ${u.role === 'admin' ? '管理員' : u.role === 'exec' ? '高階主管' : '一般員工'}
+        </span>
+      </td>
+      <td>
+        <div class="perm-row">
+          ${PAGES.map(p => `
+            <span class="perm-tag ${p.id} ${u.perms?.[p.id] ? 'on' : 'off'}"
+                  onclick="togglePerm(${u.id},'${p.id}',this)"
+                  title="${u.perms?.[p.id] ? '點擊撤銷' : '點擊授予'}">
+              ${p.emoji} ${p.label}
+            </span>`).join('')}
+        </div>
+      </td>
+      <td>
+        <div class="status-toggle" onclick="toggleActive(${u.id},this)">
+          <div class="toggle-switch ${u.active ? 'on' : ''}"></div>
+          <span class="status-label">${u.active ? '已啟用' : '已停用'}</span>
+        </div>
+      </td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(${u.id})">編輯</button>
+          <button class="btn-del" onclick="deleteUser(${u.id})">刪除</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   Permission Toggle
+══════════════════════════════════════════ */
+async function togglePerm(id, pageId, tagEl) {
+  const user = USERS.find(u => u.id === id);
+  if (!user) return;
+  user.perms[pageId] = !user.perms[pageId];
+  tagEl.className = `perm-tag ${pageId} ${user.perms[pageId] ? 'on' : 'off'}`;
+  tagEl.title = user.perms[pageId] ? '點擊撤銷' : '點擊授予';
+  renderStats();
+  await saveToGAS({ action: 'updatePerm', id, pageId, value: user.perms[pageId] });
+}
+
+async function toggleActive(id, toggleEl) {
+  const user = USERS.find(u => u.id === id);
+  if (!user) return;
+  user.active = !user.active;
+  const sw = toggleEl.querySelector('.toggle-switch');
+  const lbl = toggleEl.querySelector('.status-label');
+  sw.className = `toggle-switch ${user.active ? 'on' : ''}`;
+  lbl.textContent = user.active ? '已啟用' : '已停用';
+  renderStats();
+  await saveToGAS({ action: 'updateActive', id, value: user.active });
+}
+
+/* ══════════════════════════════════════════
+   Modal
+══════════════════════════════════════════ */
+let editingId = null;
+
+function buildPermChecks(perms = {}) {
+  document.getElementById('perm-checks').innerHTML = PAGES.map(p => `
+    <label class="perm-check">
+      <input type="checkbox" id="pc-${p.id}" ${perms[p.id] ? 'checked' : ''}>
+      ${p.emoji} ${p.label}
+    </label>`).join('');
+}
+
+function syncRolePerms() {
+  const role = document.getElementById('f-role').value;
+  const rp = ROLE_PERMS[role] || ROLE_PERMS.staff;
+  PAGES.forEach(p => {
+    const cb = document.getElementById('pc-' + p.id);
+    if (cb) cb.checked = !!rp[p.id];
+  });
+}
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = '新增使用者';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-email').value = '';
+  document.getElementById('f-role').value = 'staff';
+  buildPermChecks(ROLE_PERMS.staff);
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function openEditModal(id) {
+  const user = USERS.find(u => u.id === id);
+  if (!user) return;
+  editingId = id;
+  document.getElementById('modal-title').textContent = '編輯使用者';
+  document.getElementById('f-name').value = user.name;
+  document.getElementById('f-email').value = user.email;
+  document.getElementById('f-role').value = user.role;
+  buildPermChecks(user.perms || {});
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+function getFormPerms() {
+  const perms = {};
+  PAGES.forEach(p => { perms[p.id] = document.getElementById('pc-' + p.id)?.checked || false; });
+  return perms;
+}
+
+async function saveUser() {
+  const name  = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim().toLowerCase();
+  const role  = document.getElementById('f-role').value;
+  const perms = getFormPerms();
+
+  if (!name || !email) { alert('請填寫姓名與 Email'); return; }
+  if (!email.includes('@')) { alert('Email 格式不正確'); return; }
+
+  if (editingId) {
+    const user = USERS.find(u => u.id === editingId);
+    Object.assign(user, { name, email, role, perms });
+    await saveToGAS({ action: 'updateUser', id: editingId, name, email, role, perms });
+  } else {
+    const newUser = { id: Date.now(), name, email, role, active: true, perms };
+    USERS.push(newUser);
+    await saveToGAS({ action: 'addUser', name, email, role, perms });
+  }
+
+  closeModal();
+  renderStats();
+  renderTable();
+}
+
+async function deleteUser(id) {
+  const user = USERS.find(u => u.id === id);
+  if (!user) return;
+  if (!confirm(`確定要移除「${user.name}」的存取權限嗎？`)) return;
+  USERS = USERS.filter(u => u.id !== id);
+  await saveToGAS({ action: 'deleteUser', id });
+  renderStats();
+  renderTable();
+}
+
+/* ══════════════════════════════════════════
+   Toast
+══════════════════════════════════════════ */
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'saving-toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2200);
+}
+
+/* ══════════════════════════════════════════
+   Modal 背景點擊關閉
+══════════════════════════════════════════ */
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+</script>
+</body>
+</html>

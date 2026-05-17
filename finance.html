@@ -11,7 +11,14 @@
 <script>
 /* ════ 設定區 ════ */
 const GOOGLE_CLIENT_ID = '901817647731-nsjtqdurcnp6mf40mtltkmn01me3ss93.apps.googleusercontent.com';
-const ALLOWED_DOMAIN   = 'oringoshoes.com'; // 改為網域驗證，@oringoshoes.com 皆可登入
+// 財務報表第二道門：僅限高階主管（由 admin.html 管理）
+const FINANCE_EXECS = new Set([
+  'gary@oringoshoes.com',
+  'gill.tu@oringoshoes.com',
+  'ray.chiang@oringoshoes.com',
+  'rintseng@oringoshoes.com',
+  'qianwen@oringoshoes.com',
+]);
 const MASTER_SHEET_ID  = '1mpguyk-fRFQtD3JSs5MmVzEdtHHFm5SxO77N8lk3mr4';
 const DATA_TAB         = '財務彙整';
 
@@ -635,6 +642,36 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
+/* ════════════════ 第二道門：主管權限即時檢查 ════════════════ */
+function checkExecAccess(email) {
+  if (!email) return; // 還沒登入，等 auth.js 完成
+  if (!FINANCE_EXECS.has(email.toLowerCase())) {
+    // @oringoshoes.com 但非主管 → 立即替換 auth-gate 為無權限訊息
+    const gate = document.getElementById('auth-gate');
+    if (gate) gate.innerHTML = `
+      <div style="text-align:center;padding:40px 20px">
+        <div style="font-size:2rem;margin-bottom:16px">🔒</div>
+        <div style="font-weight:700;font-size:1.1rem;color:var(--text);margin-bottom:8px">無存取權限</div>
+        <div style="font-size:.85rem;color:var(--text-muted);line-height:1.7">
+          財務報表僅限授權主管檢視<br>
+          如有需要請聯絡 gary@oringoshoes.com
+        </div>
+        <div style="margin-top:20px;font-size:.75rem;color:var(--text-muted)">登入帳號：${email}</div>
+      </div>`;
+  }
+}
+
+// 情境 A：已有 session（重訪或同 tab 切換）
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    const d = JSON.parse(sessionStorage.getItem('oringo_auth_v1') || 'null');
+    if (d && d.email) checkExecAccess(d.email);
+  } catch(e) {}
+});
+
+// 情境 B：剛透過 auth.js overlay 完成登入
+document.addEventListener('oriAuthComplete', e => checkExecAccess(e.detail?.email));
+
 /* ════════════════ AUTH ════════════════ */
 let accessToken = null;
 let tokenClient;
@@ -659,7 +696,7 @@ async function handleTokenResponse(resp) {
   const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
     headers: { Authorization: 'Bearer ' + accessToken }
   }).then(r => r.json());
-  if ((info.email||'').toLowerCase().endsWith('@' + ALLOWED_DOMAIN)) {
+  if (FINANCE_EXECS.has((info.email||'').toLowerCase())) {
     grantAccess(info);
     renderStaticSections();
     loadHistoricalData();
