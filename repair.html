@@ -12,7 +12,7 @@
   --rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;--bg:#F5EDE3;
   --surface:#ffffff;--surface2:#FAF5EF;--border:rgba(40,66,52,0.10);
   --border2:rgba(40,66,52,0.22);--text:#284234;--text-sub:#8D5531;
-  --text-muted:#b09a88;--positive:#1a7a4a;--negative:#c0392b;
+  --text-muted:#b09a88;--positive:#388E3C;--warning:#F57C00;--info:#1976D2;--negative:#D32F2F;
   --status-quote-bg:#FEF3C7;--status-quote-c:#92400E;
   --status-sent-bg:#DBEAFE;--status-sent-c:#1E40AF;
   --status-done-bg:#D1FAE5;--status-done-c:#065F46;
@@ -245,15 +245,6 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
 .print-opt-btn .o-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
 .print-opt-btn .o-desc{font-size:11px;color:var(--text-muted)}
 
-/* Lead time option buttons */
-.lead-opt-btn{padding:5px 14px;border-radius:20px;font-size:12px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;color:var(--text-sub);font-family:'Noto Sans TC',sans-serif;transition:all .15s}
-.lead-opt-btn.active{background:var(--green);color:var(--sand);border-color:var(--green)}
-.lead-opt-btn:hover:not(.active){border-color:var(--green);color:var(--green)}
-
-/* Custom item row */
-.custom-item-row{display:grid;grid-template-columns:1fr 90px 28px;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
-.custom-item-row:last-child{border-bottom:none}
-
 /* Print layouts (hidden on screen) */
 #print-area{display:none}
 @media print{
@@ -450,8 +441,8 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
         <select class="form-input" id="d-payment-input" style="max-width:200px">
           <option value="">— 付款狀態 —</option>
           <option value="付清">付清</option>
-          <option value="未付">未付</option>
-          <option value="待報價">待報價</option>
+          <option value="下次來再結帳">下次來再結帳</option>
+          <option value="待後續報價">待後續報價</option>
         </select>
         <button class="btn btn-primary btn-sm" onclick="saveDetailUpdate()">儲存更新</button>
       </div>
@@ -472,7 +463,7 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
         <div class="form-id-preview" id="new-order-id">RP-YYMM-???</div>
       </div>
 
-      <div class="form-grid">
+      <div class="form-grid-3">
         <div class="form-group">
           <label class="form-label">門市 <span>*</span></label>
           <select class="form-input" id="f-store">
@@ -490,6 +481,13 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
           <select class="form-input" id="f-is-official">
             <option value="false">一般維修</option>
             <option value="true">原廠維修</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">初始狀態</label>
+          <select class="form-input" id="f-status">
+            <option value="報價中">報價中</option>
+            <option value="已送修">已送修</option>
           </select>
         </div>
       </div>
@@ -511,18 +509,12 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
 
       <div class="form-grid">
         <div class="form-group">
-          <label class="form-label">款式號碼 <span style="color:var(--text-muted)">（型號＋顏色＋尺寸）</span></label>
-          <input type="text" class="form-input mono" id="f-model" placeholder="例：8605 黑 7" onblur="checkFreeRepairOnBlur()">
+          <label class="form-label">款式號碼 <span style="color:var(--text-muted)">（如 8905）</span></label>
+          <input type="text" class="form-input mono" id="f-model" placeholder="例：8905" onblur="checkFreeRepairOnBlur()">
         </div>
         <div class="form-group">
           <label class="form-label">預計完成日</label>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
-            <button type="button" class="lead-opt-btn active" data-opt="兩週" onclick="selectLeadTime('兩週')">兩週</button>
-            <button type="button" class="lead-opt-btn" data-opt="一個月" onclick="selectLeadTime('一個月')">一個月</button>
-            <button type="button" class="lead-opt-btn" data-opt="自訂" onclick="selectLeadTime('自訂')">自訂</button>
-          </div>
-          <div id="f-date-display" style="font-family:'Space Mono',monospace;font-size:13px;color:var(--green);padding:4px 0"></div>
-          <input type="date" class="form-input mono" id="f-date" style="display:none" onchange="onCustomDateChange()">
+          <input type="date" class="form-input mono" id="f-date">
         </div>
       </div>
 
@@ -536,25 +528,12 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
 
       <!-- 進階保養 -->
       <div class="items-block">
-        <h4>進階保養 <span style="color:var(--text-muted);font-weight:400;font-size:11px">（補色/防護/除霉/污漬淡化為固定費用）</span></h4>
+        <h4>進階保養 <span style="color:var(--text-muted);font-weight:400;font-size:11px">（費用視情況報價）</span></h4>
         <div id="care-items-list"></div>
       </div>
 
-      <!-- 彈性自訂項 -->
-      <div class="items-block">
-        <h4>自訂維修項目 <span style="color:var(--text-muted);font-weight:400;font-size:11px">（不常規維修，可自行填寫）</span></h4>
-        <div id="custom-items-list"></div>
-        <button type="button" class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addCustomItem()">＋ 新增項目</button>
-      </div>
-
       <div class="items-total-row">
-        <div class="items-total-l" style="display:flex;align-items:center;gap:12px">
-          合計報價
-          <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:400;color:var(--text-sub);cursor:pointer">
-            <input type="checkbox" id="f-pending-quote" onchange="recalcTotal()" style="accent-color:var(--rust)">
-            待報價
-          </label>
-        </div>
+        <div class="items-total-l">合計報價</div>
         <div class="items-total-v" id="total-price">NT$ 0</div>
       </div>
 
@@ -564,13 +543,13 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
           <select class="form-input" id="f-payment">
             <option value="">— 請選擇 —</option>
             <option value="付清">付清</option>
-            <option value="未付">未付</option>
-            <option value="待報價">待報價</option>
+            <option value="下次來再結帳">下次來再結帳</option>
+            <option value="待後續報價">待後續報價</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">服務夥伴 <span>*</span></label>
-          <input type="text" class="form-input" id="f-staff" placeholder="請填寫接單夥伴姓名">
+          <label class="form-label">服務夥伴</label>
+          <input type="text" class="form-input" id="f-staff" placeholder="（選填）">
         </div>
       </div>
 
@@ -664,23 +643,21 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbywhbtNQWEsQ68I7sCbcs71
 // =============================================
 // 維修項目清單（含預設報價）
 // =============================================
-// hasSide:true + sideSurcharge:true → 雙+200 / 左+100 / 右+100
-// freeFirst:true → 顯示「首次」按鈕，點選後該項金額 -500
 const REPAIR_ITEMS = [
-  { id:'sole',         label:'天皮更換',     price:500, hasSide:true, sideSurcharge:true, freeFirst:true },
-  { id:'front_rubber', label:'前掌橡膠片',   price:500, hasSide:true, sideSurcharge:true },
-  { id:'insole',       label:'鞋墊更換',     price:500, hasSide:false },
-  { id:'sole_oil',     label:'止油水天皮',   price:700, hasSide:true, sideSurcharge:true, freeFirst:true },
-  { id:'rubber_oil',   label:'止油前掌膠片', price:700, hasSide:true, sideSurcharge:true },
+  { id:'sole',         label:'天皮更換',         price:500, hasSide:true,  freeFirst:true },
+  { id:'front_rubber', label:'前掌橡膠片',       price:500, hasSide:true },
+  { id:'wood_heel',    label:'木根修補',         price:100, hasSide:true, perPiece:true },
+  { id:'insole',       label:'鞋墊更換',         price:500, hasSide:false },
+  { id:'sole_oil',     label:'止油水天皮',       price:700, hasSide:false },
+  { id:'rubber_oil',   label:'止油前掌膠片',     price:700, hasSide:false },
+  { id:'mild_mold',    label:'輕微發霉（鞋底+鞋面）', price:900, hasSide:false },
 ];
-const SIDE_SURCHARGE = { '雙': 200, '左': 100, '右': 100 };
-// preset:true → 勾選後自動帶入 price，不可手動修改
 const CARE_ITEMS = [
-  { id:'basic_care',  label:'基礎保養',  preset:false },
-  { id:'color_care',  label:'進階補色',  preset:true,  price:600 },
-  { id:'protect',     label:'進階防護',  preset:true,  price:600 },
-  { id:'mold_remove', label:'除霉',      preset:true,  price:900 },
-  { id:'stain_clean', label:'污漬淡化',  preset:true,  price:600 },
+  { id:'basic_care',   label:'基礎保養' },
+  { id:'color_care',   label:'進階補色' },
+  { id:'protect',      label:'進階防護' },
+  { id:'mold_remove',  label:'除霉' },
+  { id:'stain_clean',  label:'污漬淡化' },
 ];
 
 // =============================================
@@ -690,21 +667,19 @@ let allOrders = [];
 let currentOrder = null;
 let currentStatus = '';
 let createPhotos = [];
-let formItems = {};      // {id: {checked, side, price, firstTime}}
-let careItems = {};      // {id: {checked, price}}
-let customItems = [];    // [{label, price}]
+let formItems = {};   // {id: {checked, side, price, qty}}
+let careItems = {};   // {id: {checked, price}}
 let freeRepairChecked = false;
-let currentLeadOpt = '兩週';  // '兩週' | '一個月' | '自訂'
 
 // =============================================
 // INIT
 // =============================================
 window.addEventListener('DOMContentLoaded', () => {
+  setDefaultDate();
   renderRepairItemsForm();
   renderCareItemsForm();
-  renderCustomItemsForm();
-  selectLeadTime('兩週');
 
+  // Customer view?
   const params = new URLSearchParams(location.search);
   if (params.get('view') === 'customer' && params.get('id')) {
     loadCustomerView(params.get('id'));
@@ -712,6 +687,11 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   loadOrders();
 });
+
+function setDefaultDate() {
+  const d = new Date(); d.setDate(d.getDate() + 14);
+  document.getElementById('f-date').value = d.toISOString().split('T')[0];
+}
 
 // =============================================
 // VIEWS
@@ -725,9 +705,6 @@ function showView(name) {
     generateOrderId();
     document.getElementById('free-hint').style.display = 'none';
     freeRepairChecked = false;
-    customItems = [];
-    renderCustomItemsForm();
-    selectLeadTime('兩週');
   }
 }
 
@@ -823,66 +800,36 @@ function renderRepairItemsForm() {
   const container = document.getElementById('repair-items-list');
   formItems = {};
   REPAIR_ITEMS.forEach(it => {
-    formItems[it.id] = { checked:false, side:'雙', price:it.price, firstTime:false };
+    formItems[it.id] = { checked:false, side:'雙', qty:1, price:it.price };
   });
-  container.innerHTML = REPAIR_ITEMS.map(it => {
-    const sideHtml = it.hasSide ? `
-      <div class="item-sides" id="sides-${it.id}" style="visibility:hidden">
-        <button type="button" class="side-btn active" onclick="setSide('${it.id}','雙')">雙 +200</button>
-        <button type="button" class="side-btn" onclick="setSide('${it.id}','左')">左 +100</button>
-        <button type="button" class="side-btn" onclick="setSide('${it.id}','右')">右 +100</button>
-        ${it.freeFirst ? `<button type="button" class="side-btn" id="first-${it.id}" onclick="toggleFirst('${it.id}')">首次</button>` : ''}
-      </div>
-    ` : `<div></div>`;
-    return `
+  container.innerHTML = REPAIR_ITEMS.map(it => `
     <div class="item-row" id="item-${it.id}">
       <input type="checkbox" id="cb-${it.id}" onchange="toggleItem('${it.id}')">
       <label for="cb-${it.id}" class="item-label">${it.label}</label>
-      ${sideHtml}
-      <div class="item-price" id="price-${it.id}">NT$${numFmt(it.price + SIDE_SURCHARGE['雙'])}</div>
-    </div>`;
-  }).join('');
+      ${it.hasSide ? `
+        <div class="item-sides" id="sides-${it.id}" style="visibility:hidden">
+          <button type="button" class="side-btn active" onclick="setSide('${it.id}','雙')">雙</button>
+          <button type="button" class="side-btn" onclick="setSide('${it.id}','L')">L</button>
+          <button type="button" class="side-btn" onclick="setSide('${it.id}','R')">R</button>
+        </div>
+      ` : `<div></div>`}
+      <div class="item-price" id="price-${it.id}">NT$${numFmt(it.price)}</div>
+    </div>
+  `).join('');
 }
 
 function renderCareItemsForm() {
   const container = document.getElementById('care-items-list');
   careItems = {};
-  CARE_ITEMS.forEach(it => { careItems[it.id] = { checked:false, price: it.preset ? it.price : 0 }; });
+  CARE_ITEMS.forEach(it => { careItems[it.id] = { checked:false, price:0 }; });
   container.innerHTML = CARE_ITEMS.map(it => `
     <div class="item-row" id="care-${it.id}">
       <input type="checkbox" id="cb-care-${it.id}" onchange="toggleCare('${it.id}')">
       <label for="cb-care-${it.id}" class="item-label">${it.label}</label>
       <div></div>
-      ${it.preset
-        ? `<div class="item-price" id="price-care-${it.id}">NT$${numFmt(it.price)}</div>`
-        : `<input type="number" class="price-input" id="price-care-${it.id}" placeholder="0" oninput="setCarePrice('${it.id}', this.value)">`
-      }
+      <input type="number" class="price-input" id="price-care-${it.id}" placeholder="0" oninput="setCarePrice('${it.id}', this.value)">
     </div>
   `).join('');
-}
-
-function renderCustomItemsForm() {
-  const container = document.getElementById('custom-items-list');
-  if (!container) return;
-  if (!customItems.length) { container.innerHTML = ''; return; }
-  container.innerHTML = customItems.map((item, i) => `
-    <div class="custom-item-row">
-      <input type="text" class="form-input" style="font-size:13px;padding:5px 8px" placeholder="維修項目說明" value="${esc(item.label)}" oninput="customItems[${i}].label=this.value">
-      <input type="number" class="price-input" placeholder="金額" value="${item.price||''}" oninput="customItems[${i}].price=Number(this.value)||0;recalcTotal()">
-      <button type="button" onclick="removeCustomItem(${i})" style="background:none;border:none;cursor:pointer;color:var(--negative);font-size:16px;line-height:1">✕</button>
-    </div>
-  `).join('');
-}
-
-function addCustomItem() {
-  customItems.push({ label:'', price:0 });
-  renderCustomItemsForm();
-  recalcTotal();
-}
-function removeCustomItem(i) {
-  customItems.splice(i, 1);
-  renderCustomItemsForm();
-  recalcTotal();
 }
 
 function toggleItem(id) {
@@ -895,16 +842,7 @@ function toggleItem(id) {
 }
 function setSide(id, side) {
   formItems[id].side = side;
-  document.querySelectorAll(`#sides-${id} .side-btn:not(#first-${id})`).forEach(b => {
-    b.classList.toggle('active', b.textContent.startsWith(side));
-  });
-  updateItemPrice(id);
-  recalcTotal();
-}
-function toggleFirst(id) {
-  formItems[id].firstTime = !formItems[id].firstTime;
-  const btn = document.getElementById('first-'+id);
-  if (btn) btn.classList.toggle('active', formItems[id].firstTime);
+  document.querySelectorAll(`#sides-${id} .side-btn`).forEach(b => b.classList.toggle('active', b.textContent === side));
   updateItemPrice(id);
   recalcTotal();
 }
@@ -912,16 +850,15 @@ function updateItemPrice(id) {
   const meta = REPAIR_ITEMS.find(x => x.id === id);
   const item = formItems[id];
   let p = meta.price;
-  if (meta.sideSurcharge) p += SIDE_SURCHARGE[item.side] || 0;
-  if (item.firstTime) p = Math.max(0, p - 500);
-  item.price = p;
-  const el = document.getElementById('price-'+id);
-  if (el) el.textContent = item.firstTime && p === 0 ? '免費' : 'NT$' + numFmt(p);
+  // 首修免費：天皮且 freeRepairChecked & eligible
+  if (id === 'sole' && freeRepairChecked && window._freeEligible) p = 0;
+  // 木根修補按隻計價
+  if (meta.perPiece && item.side === '雙') p = meta.price * 2;
+  item.price = item.checked ? p : 0;
+  document.getElementById('price-'+id).textContent = p === 0 && id === 'sole' && freeRepairChecked ? '免費' : 'NT$'+numFmt(p);
 }
 function toggleCare(id) {
-  const meta = CARE_ITEMS.find(x => x.id === id);
   careItems[id].checked = document.getElementById('cb-care-'+id).checked;
-  if (meta.preset) careItems[id].price = meta.price;
   recalcTotal();
 }
 function setCarePrice(id, v) {
@@ -929,15 +866,9 @@ function setCarePrice(id, v) {
   recalcTotal();
 }
 function recalcTotal() {
-  const pending = document.getElementById('f-pending-quote')?.checked;
-  if (pending) {
-    document.getElementById('total-price').textContent = '待報價';
-    return;
-  }
   let total = 0;
   Object.values(formItems).forEach(x => { if (x.checked) total += Number(x.price)||0; });
   Object.values(careItems).forEach(x => { if (x.checked) total += Number(x.price)||0; });
-  customItems.forEach(x => { total += Number(x.price)||0; });
   document.getElementById('total-price').textContent = 'NT$ ' + numFmt(total);
 }
 
@@ -946,73 +877,14 @@ function collectFormItems() {
   REPAIR_ITEMS.forEach(meta => {
     const item = formItems[meta.id];
     if (!item.checked) return;
-    list.push({ id:meta.id, label:meta.label, side:meta.hasSide ? item.side : '', price:item.price, firstTime:item.firstTime||false });
+    list.push({ id:meta.id, label:meta.label, side:meta.hasSide ? item.side : '', price:item.price });
   });
   CARE_ITEMS.forEach(meta => {
     const item = careItems[meta.id];
     if (!item.checked) return;
     list.push({ id:meta.id, label:meta.label, side:'', price:item.price, isCare:true });
   });
-  customItems.forEach((it, i) => {
-    if (!it.label && !it.price) return;
-    list.push({ id:'custom_'+i, label:it.label||'自訂項目', side:'', price:it.price, isCustom:true });
-  });
   return list;
-}
-
-// =============================================
-// LEAD TIME
-// =============================================
-function selectLeadTime(opt) {
-  currentLeadOpt = opt;
-  document.querySelectorAll('.lead-opt-btn').forEach(b => b.classList.toggle('active', b.dataset.opt === opt));
-  const dateInput = document.getElementById('f-date');
-  const display = document.getElementById('f-date-display');
-  if (!dateInput || !display) return;
-  if (opt === '自訂') {
-    dateInput.style.display = 'block';
-    display.textContent = '';
-  } else {
-    dateInput.style.display = 'none';
-    const date = calcLeadTime(opt);
-    dateInput.value = date;
-    display.textContent = '預計取件：' + date + '（週五）';
-  }
-}
-function onCustomDateChange() {
-  const v = document.getElementById('f-date').value;
-  document.getElementById('f-date-display').textContent = v ? '預計取件：' + v : '';
-}
-function calcLeadTime(opt) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const day = today.getDay(); // 0=Sun,1=Mon,...,6=Sat
-  if (opt === '兩週') {
-    // 週三(含)前→兩週後的週五；週四(含)後→三週後的週五
-    const weeks = (day >= 1 && day <= 3) ? 2 : 3;
-    return fridayOfWeekAhead(today, weeks);
-  }
-  if (opt === '一個月') {
-    const d = new Date(today);
-    d.setDate(d.getDate() + 30);
-    return nextFriday(d);
-  }
-  return today.toISOString().split('T')[0];
-}
-function fridayOfWeekAhead(fromDate, weeks) {
-  const d = new Date(fromDate);
-  const dow = d.getDay();
-  // 移到本週一
-  const toMonday = dow === 0 ? -6 : 1 - dow;
-  d.setDate(d.getDate() + toMonday + weeks * 7 + 4); // 週一+4=週五
-  return d.toISOString().split('T')[0];
-}
-function nextFriday(fromDate) {
-  const d = new Date(fromDate);
-  const dow = d.getDay();
-  if (dow === 5) return d.toISOString().split('T')[0];
-  d.setDate(d.getDate() + ((5 - dow + 7) % 7 || 7));
-  return d.toISOString().split('T')[0];
 }
 
 // =============================================
@@ -1118,11 +990,8 @@ function parseItems(json) {
 }
 
 function renderSteps(status) {
-  // 客端可見的 3 步驟，內部狀態映射
-  const steps = ['送修中','已完成','已取件'];
-  const statusToStep = { '報價中':'送修中', '已送修':'送修中', '已完成':'已完成', '已取件':'已取件' };
-  const displayStatus = statusToStep[status] || status;
-  const idx = steps.indexOf(displayStatus);
+  const steps = ['報價中','已送修','已完成','已取件'];
+  const idx = steps.indexOf(status);
   if (status === '不適合維修') {
     document.getElementById('d-steps').innerHTML = `<div style="text-align:center;color:var(--negative);font-size:12px;padding:8px 0">⊗ 此鞋款不適合維修，已結案</div>`;
     return;
@@ -1197,17 +1066,17 @@ function renderPhotos(type, urlStr) {
 
 async function handlePhotoUpload(type, input) {
   if (!input.files.length || !currentOrder) return;
-  showUploadOverlay(true, '壓縮並上傳中…');
+  showUploadOverlay(true, '上傳中…');
   const urls = [];
   for (const file of input.files) {
     try {
-      const b64 = await compressImage(file);
+      const b64 = await toBase64(file);
       const resp = await fetch(GAS_URL, {
         method:'POST',
         body: JSON.stringify({
           action:'uploadPhoto', orderId:currentOrder.id, orderType:'repair', type,
-          fileName: `${type}_${Date.now()}.jpg`,
-          fileData: b64, mimeType: 'image/jpeg'
+          fileName: file.name || `${type}_${Date.now()}.jpg`,
+          fileData: b64, mimeType: file.type || 'image/jpeg'
         })
       });
       const data = await resp.json();
@@ -1264,26 +1133,25 @@ async function submitOrder() {
   const email = document.getElementById('f-email').value.trim();
   const model = document.getElementById('f-model').value.trim();
   const date = document.getElementById('f-date').value;
+  const status = document.getElementById('f-status').value;
   const isOfficial = document.getElementById('f-is-official').value === 'true';
   const internalNote = document.getElementById('f-internal').value.trim();
   const desc = document.getElementById('f-desc').value.trim();
   const paymentStatus = document.getElementById('f-payment').value;
-  const staff = document.getElementById('f-staff').value.trim();
   const sendEmailFlag = document.getElementById('f-send-email').checked;
-  const pendingQuote = document.getElementById('f-pending-quote')?.checked;
 
   const items = collectFormItems();
   if (!store || !name || !phone) { toast('請填寫門市、姓名、電話', 'error'); return; }
-  if (!staff) { toast('請填寫服務夥伴姓名', 'error'); return; }
   if (!items.length && !desc) { toast('請至少勾選一項維修項目或填寫備註', 'error'); return; }
   if (sendEmailFlag && !email) { toast('要寄送 email 請先填寫客戶 email', 'error'); return; }
 
+  // 摘要文字 (給 list view 顯示)
   const summaryDesc = items.length
     ? items.map(it => it.label + (it.side ? `(${it.side})` : '')).join('、')
     : desc;
 
-  const total = pendingQuote ? null : items.reduce((sum, it) => sum + (Number(it.price)||0), 0);
-  const isFreeUsed = items.some(it => (it.id === 'sole' || it.id === 'sole_oil') && it.firstTime);
+  const total = items.reduce((sum, it) => sum + (Number(it.price)||0), 0);
+  const isFreeUsed = items.some(it => it.id === 'sole' && it.price === 0);
 
   showUploadOverlay(true, '建立中…');
   try {
@@ -1295,11 +1163,10 @@ async function submitOrder() {
         desc: desc || summaryDesc,
         itemsJson: JSON.stringify(items),
         isOfficial, internalNote,
-        price: total,
-        paymentStatus: pendingQuote ? '待報價' : paymentStatus,
+        price: total || null,
+        paymentStatus,
         isFreeUsed,
-        staff,
-        date, status: '已送修'
+        date, status
       })
     });
     const createData = await createResp.json();
@@ -1308,16 +1175,16 @@ async function submitOrder() {
     const orderId = createData.id;
     document.getElementById('new-order-id').textContent = orderId;
 
-    // 上傳照片（壓縮後再傳）
+    // 上傳照片
     const photoUrls = [];
     for (const p of createPhotos) {
       try {
-        const b64 = await compressImage(p.file);
+        const b64 = p.dataUrl.split(',')[1];
         const resp = await fetch(GAS_URL, {
           method:'POST',
           body: JSON.stringify({
             action:'uploadPhoto', orderId, orderType:'repair', type:'before',
-            fileName: `before_${Date.now()}.jpg`, fileData: b64, mimeType: 'image/jpeg'
+            fileName: p.file.name || 'before.jpg', fileData: b64, mimeType: p.file.type || 'image/jpeg'
           })
         });
         const d = await resp.json();
@@ -1360,18 +1227,14 @@ function resetCreateForm() {
   document.getElementById('f-payment').value = '';
   document.getElementById('f-staff').value = '';
   document.getElementById('f-is-official').value = 'false';
-  const pq = document.getElementById('f-pending-quote');
-  if (pq) pq.checked = false;
   document.getElementById('free-hint').style.display = 'none';
   freeRepairChecked = false;
   createPhotos = [];
-  customItems = [];
   renderCreatePhotoPreview();
   renderRepairItemsForm();
   renderCareItemsForm();
-  renderCustomItemsForm();
   recalcTotal();
-  selectLeadTime('兩週');
+  setDefaultDate();
 }
 
 // =============================================
@@ -1413,10 +1276,8 @@ async function loadCustomerView(id) {
       ? `<table class="items-table">${items.map(it => `<tr><td>${esc(it.label)}${it.side ? ' ('+esc(it.side)+')' : ''}</td><td>${it.price===0?'免費':'NT$'+numFmt(it.price)}</td></tr>`).join('')}<tr class="items-total"><td>合計</td><td>NT$${numFmt(o.price||0)}</td></tr></table>`
       : (o.desc ? `<div style="font-size:13px;line-height:1.7;padding:8px 0">${esc(o.desc)}</div>` : '');
 
-    const steps = ['送修中','已完成','已取件'];
-    const statusToStep = { '報價中':'送修中', '已送修':'送修中', '已完成':'已完成', '已取件':'已取件' };
-    const displayStatus = statusToStep[o.status] || o.status;
-    const idx = steps.indexOf(displayStatus);
+    const steps = ['報價中','已送修','已完成','已取件'];
+    const idx = steps.indexOf(o.status);
     let stepsHtml = '';
     if (o.status === '不適合維修') {
       stepsHtml = `<div style="text-align:center;color:var(--negative);font-size:13px;padding:8px 0">⊗ 此鞋款經評估不適合維修</div>`;
@@ -1548,33 +1409,6 @@ function toBase64(file) {
     const reader = new FileReader();
     reader.onload = e => resolve(e.target.result.split(',')[1]);
     reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-// 上傳前壓縮：限制長邊 1600px，JPEG 0.82 品質（手機原圖 3-8MB → 壓至 300-600KB）
-function compressImage(file, maxDim = 1600, quality = 0.82) {
-  return new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > maxDim || height > maxDim) {
-          if (width >= height) { height = Math.round(height * maxDim / width); width = maxDim; }
-          else { width = Math.round(width * maxDim / height); height = maxDim; }
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width; canvas.height = height;
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        canvas.toBlob(blob => {
-          const reader2 = new FileReader();
-          reader2.onload = e2 => resolve(e2.target.result.split(',')[1]);
-          reader2.readAsDataURL(blob);
-        }, 'image/jpeg', quality);
-      };
-      img.src = e.target.result;
-    };
     reader.readAsDataURL(file);
   });
 }

@@ -2,13 +2,13 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>林果良品｜行銷儀表板</title>
+<link rel="icon" href="/favicon.png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-:root{--green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;--rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;--bg:#F5EDE3;--surface:#ffffff;--surface2:#FAF5EF;--border:rgba(40,66,52,0.10);--border2:rgba(40,66,52,0.22);--text:#284234;--text-sub:#8D5531;--text-muted:#b09a88;--positive:#1a7a4a;--negative:#c0392b}
+:root{--green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;--rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;--bg:#F5EDE3;--surface:#ffffff;--surface2:#FAF5EF;--border:rgba(40,66,52,0.10);--border2:rgba(40,66,52,0.22);--text:#284234;--text-sub:#8D5531;--text-muted:#b09a88;--positive:#388E3C;--warning:#F57C00;--info:#1976D2;--negative:#D32F2F}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100vh}
 .hdr{position:sticky;top:0;z-index:100;background:var(--green);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
@@ -52,15 +52,15 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .kc-v{font-size:20px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text);line-height:1;margin-bottom:5px}
 .kc-d{display:flex;align-items:center;gap:6px}
 .delta{font-size:10px;font-family:'Space Mono',monospace;padding:2px 6px;border-radius:3px}
-.pos{background:rgba(26,122,74,.08);color:var(--positive)}.neg{background:rgba(192,57,43,.08);color:var(--negative)}.neu{background:var(--surface2);color:var(--text-muted)}
+.pos{background:rgba(56,142,60,.08);color:var(--positive)}.neg{background:rgba(211,47,47,.08);color:var(--negative)}.neu{background:var(--surface2);color:var(--text-muted)}
 .kc-vs{font-size:10px;color:var(--text-muted)}
 .kc-tgt{display:flex;align-items:center;gap:4px;margin-top:6px;font-size:9px;font-family:'Space Mono',monospace}
 .kc-tgt-bar{flex:1;height:3px;background:#eee;border-radius:2px;overflow:hidden;position:relative}
 .kc-tgt-bar-fg{height:100%;border-radius:2px;transition:width .4s}
 .kc-tgt-pill{padding:1px 6px;border-radius:3px;font-weight:700;letter-spacing:.02em}
-.tgt-good{background:rgba(26,122,74,.12);color:var(--positive)}.tgt-good-bar{background:var(--positive)}
+.tgt-good{background:rgba(56,142,60,.12);color:var(--positive)}.tgt-good-bar{background:var(--positive)}
 .tgt-warn{background:rgba(184,134,11,.14);color:#b8860b}.tgt-warn-bar{background:#b8860b}
-.tgt-bad{background:rgba(192,57,43,.12);color:var(--negative)}.tgt-bad-bar{background:var(--negative)}
+.tgt-bad{background:rgba(211,47,47,.12);color:var(--negative)}.tgt-bad-bar{background:var(--negative)}
 .cmp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
 @media(max-width:1100px){.cmp-grid{grid-template-columns:repeat(2,1fr)}}
 .cmp{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem}
@@ -100,7 +100,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <span class="brand-sub">MARKETING DASHBOARD</span>
   </div>
   <div class="hdr-r">
-    <a href="https://dashboard.oringo.tw/" class="back-link">← 中控中心</a>
+    <a href="https://garykao0726.github.io/" class="back-link">← 中控中心</a>
     <div class="live-dot"></div>
     <div class="hclock" id="clock">--:--:--</div>
     <div class="data-tag">MOCK DATA</div>
@@ -289,7 +289,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 </div>
 
 <footer class="footer">
-  <a href="https://dashboard.oringo.tw/" style="color:var(--gray-pink);text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;border:1px solid rgba(226,206,185,.25);padding:3px 12px;border-radius:20px;display:inline-block;margin-bottom:8px;transition:all .15s" onmouseover="this.style.color='#E2CEB9'" onmouseout="this.style.color=''">← 中控中心</a><br>
+  <a href="https://garykao0726.github.io/" style="color:var(--gray-pink);text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;border:1px solid rgba(226,206,185,.25);padding:3px 12px;border-radius:20px;display:inline-block;margin-bottom:8px;transition:all .15s" onmouseover="this.style.color='#E2CEB9'" onmouseout="this.style.color=''">← 中控中心</a><br>
   林果良品 ORINGO｜行銷儀表板 
   <span style="opacity:.4;font-size:10px;display:block;margin-top:3px">INTERNAL USE ONLY · ©2026 ORINGO</span>
 </footer>
