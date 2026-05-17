@@ -4,7 +4,7 @@
  * 登入狀態存 localStorage，關閉分頁後重新驗證
  */
 (function () {
-  const CLIENT_ID = '901817647731-nsjtqdurcnp6mf40mtltkmn01me3ss93.apps.googleusercontent.com';
+  const CLIENT_ID = '777948523832-8qfmjk689e35f02crqjp35kg47j4kcgn.apps.googleusercontent.com';
   const ALLOWED_DOMAIN = 'oringoshoes.com';
   const SESSION_KEY = 'oringo_auth_v1';
   const SESSION_TTL = 8 * 60 * 60 * 1000; // 8 小時
