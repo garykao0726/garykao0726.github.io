@@ -11,8 +11,12 @@
 <script>
 /* ════ 設定區 ════ */
 const GOOGLE_CLIENT_ID = '901817647731-nsjtqdurcnp6mf40mtltkmn01me3ss93.apps.googleusercontent.com';
-// 財務報表第二道門：僅限高階主管（由 admin.html 管理）
-const FINANCE_EXECS = new Set([
+
+// GAS 端點（部署後填入，與 admin.html 相同）
+const PERM_GAS_URL = null; // ← 部署後換成 'https://script.google.com/macros/s/.../exec'
+
+// 財務報表第二道門：靜態備用白名單（GAS 連不到時生效）
+const FINANCE_EXECS_FALLBACK = new Set([
   'gary@oringoshoes.com',
   'gill.tu@oringoshoes.com',
   'ray.chiang@oringoshoes.com',
@@ -642,23 +646,38 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-/* ════════════════ 第二道門：主管權限即時檢查 ════════════════ */
-function checkExecAccess(email) {
-  if (!email) return; // 還沒登入，等 auth.js 完成
-  if (!FINANCE_EXECS.has(email.toLowerCase())) {
-    // @oringoshoes.com 但非主管 → 立即替換 auth-gate 為無權限訊息
-    const gate = document.getElementById('auth-gate');
-    if (gate) gate.innerHTML = `
-      <div style="text-align:center;padding:40px 20px">
-        <div style="font-size:2rem;margin-bottom:16px">🔒</div>
-        <div style="font-weight:700;font-size:1.1rem;color:var(--text);margin-bottom:8px">無存取權限</div>
-        <div style="font-size:.85rem;color:var(--text-muted);line-height:1.7">
-          財務報表僅限授權主管檢視<br>
-          如有需要請聯絡 gary@oringoshoes.com
-        </div>
-        <div style="margin-top:20px;font-size:.75rem;color:var(--text-muted)">登入帳號：${email}</div>
-      </div>`;
+/* ════════════════ 第二道門：主管權限檢查 ════════════════ */
+function showAccessDenied(email) {
+  const gate = document.getElementById('auth-gate');
+  if (gate) gate.innerHTML = `
+    <div style="text-align:center;padding:40px 20px">
+      <div style="font-size:2rem;margin-bottom:16px">🔒</div>
+      <div style="font-weight:700;font-size:1.1rem;color:var(--text);margin-bottom:8px">無存取權限</div>
+      <div style="font-size:.85rem;color:var(--text-muted);line-height:1.7">
+        財務報表僅限授權主管檢視<br>如有需要請聯絡 gary@oringoshoes.com
+      </div>
+      <div style="margin-top:20px;font-size:.75rem;color:var(--text-muted)">登入帳號：${email}</div>
+    </div>`;
+}
+
+async function checkExecAccess(email) {
+  if (!email) return;
+  const em = email.toLowerCase();
+
+  // 優先查 GAS（admin.html 管理的即時名單）
+  if (PERM_GAS_URL) {
+    try {
+      const res  = await fetch(`${PERM_GAS_URL}?action=checkPerm&email=${encodeURIComponent(em)}&page=finance`);
+      const data = await res.json();
+      if (!data.allowed) showAccessDenied(em);
+      return;
+    } catch(e) {
+      console.warn('GAS 權限查詢失敗，改用靜態備用白名單', e);
+    }
   }
+
+  // GAS 未設定或連線失敗 → 靜態備用名單
+  if (!FINANCE_EXECS_FALLBACK.has(em)) showAccessDenied(em);
 }
 
 // 情境 A：已有 session（重訪或同 tab 切換）
