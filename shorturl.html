@@ -299,35 +299,45 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
         </div>
 
         <div class="action-row">
-          <button class="btn-primary" onclick="copyUTMUrl()" id="btn-copy-utm">
+          <button class="btn-secondary" onclick="copyUTMUrl()" id="btn-copy-utm">
             📋 複製 UTM 網址
-          </button>
-          <button class="btn-secondary" onclick="openLihi()" id="btn-lihi">
-            🔗 開啟 LiHi 建立
           </button>
         </div>
       </div>
 
-      <!-- Short URL input (after creating in LiHi) -->
+      <!-- 直接建立短網址 -->
       <div class="card">
-        <div class="card-lbl">在 LiHi 建立後 → 填入短網址代碼</div>
+        <div class="card-lbl">建立短網址（s.oringo.tw）</div>
         <div class="shorturl-input-area">
-          <label>LiHi 短網址代碼</label>
+          <label>自訂代碼（選填，留空則自動產生 5 碼）</label>
           <div class="shorturl-row">
-            <span class="shorturl-prefix">oringo.tw /</span>
-            <input type="text" class="shorturl-code-input" id="c-short-code" placeholder="ex: CsjUP">
+            <span class="shorturl-prefix">s.oringo.tw /</span>
+            <input type="text" class="shorturl-code-input" id="c-short-code" placeholder="留空自動產生" maxlength="16">
           </div>
         </div>
         <div class="action-row" style="margin-top:.75rem">
-          <button class="btn-primary" onclick="saveToSheets()" id="btn-save">
-            💾 儲存到 Sheets
+          <button class="btn-primary" onclick="createShortUrl()" id="btn-create">
+            🔗 直接建立短網址
           </button>
           <button class="btn-secondary" onclick="resetForm()">
             重置表單
           </button>
         </div>
+
+        <!-- 建立成功後顯示 -->
+        <div id="create-result" style="display:none;margin-top:1rem;padding:1rem;background:#EDF5EF;border:1px solid var(--green);border-radius:8px">
+          <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">✓ 建立成功</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <a id="result-url" target="_blank" style="font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--green);text-decoration:none">—</a>
+            <button class="btn-copy" onclick="copyResultUrl(this)">複製</button>
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:8px;line-height:1.6">
+            已寫入 Sheets · 點擊將透過 s.oringo.tw 跳轉到帶 UTM 的目標網址
+          </div>
+        </div>
+
         <div style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:.75rem;line-height:1.6">
-          💡 儲存後資料會寫入 Google Sheets，短網址欄位可留空（之後補填）
+          💡 自訂代碼限英數字、底線、連字號（3-16 碼）
         </div>
       </div>
     </div>
@@ -823,19 +833,7 @@ function copyUTMUrl() {
   navigator.clipboard.writeText(url).then(() => showToast('✅ UTM 網址已複製到剪貼簿'));
 }
 
-function openLihi() {
-  const url = getGeneratedUrl();
-  if (!url || url.includes('填入') || url.includes('請填')) {
-    showToast('⚠️ 請先填入資料再開 LiHi');
-    return;
-  }
-  navigator.clipboard.writeText(url).then(() => {
-    showToast('✅ 網址已複製，正在開啟 LiHi...');
-    setTimeout(() => window.open('https://app.lihi.io/admin', '_blank'), 400);
-  });
-}
-
-async function saveToSheets() {
+async function createShortUrl() {
   const baseUrl = document.getElementById('c-url').value.trim();
   const platform = document.getElementById('c-platform').value;
   const medium = document.getElementById('c-medium').value;
@@ -843,10 +841,14 @@ async function saveToSheets() {
   const campaignName = document.getElementById('c-campaign-name').value.trim();
   const campaignId = document.getElementById('c-campaign-id').value.trim();
   const productId = document.getElementById('c-product-id').value.trim();
-  const shortCode = document.getElementById('c-short-code').value.trim();
+  const customCode = document.getElementById('c-short-code').value.trim();
 
   if (!baseUrl || !platform) {
     showToast('⚠️ 請填入目標網址和平台');
+    return;
+  }
+  if (!medium) {
+    showToast('⚠️ 請選擇廣告媒介');
     return;
   }
 
@@ -862,7 +864,7 @@ async function saveToSheets() {
     + '&utm_campaign=' + encodeURIComponent(campaign);
 
   const payload = {
-    action: 'save',
+    action: 'create',
     target_url: baseUrl,
     platform, medium,
     date: datePrefix,
@@ -871,53 +873,74 @@ async function saveToSheets() {
     product_id: productId,
     utm_campaign: campaign,
     full_utm_url: fullUrl,
-    short_url: shortCode ? 'https://oringo.tw/' + shortCode : '',
-    author: ''
+    author: '',
+    custom_code: customCode
   };
 
-  if (!GAS_URL || GAS_URL === 'YOUR_GAS_DEPLOYMENT_URL_HERE') {
-    showToast('⚠️ 請先設定 GAS_URL 才能儲存');
-    return;
-  }
-
-  document.getElementById('btn-save').disabled = true;
-  document.getElementById('btn-save').textContent = '儲存中...';
+  const btn = document.getElementById('btn-create');
+  btn.disabled = true;
+  btn.textContent = '建立中...';
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify(payload)
     });
     const data = await res.json();
-    if (data.success) {
-      showToast('✅ 已成功儲存到 Sheets！');
-      // Add to local list
-      if (shortCode) {
-        allUrls.unshift({
-          short_code: shortCode,
-          short_url: 'https://oringo.tw/' + shortCode,
-          target_url: baseUrl,
-          full_utm_url: fullUrl,
-          platform, medium,
-          date: datePrefix,
-          campaign_name: campaignName,
-          campaign_id: campaignId,
-          product_id: productId,
-          utm_campaign: campaign
-        });
-        applyFilters();
-        renderAnalytics();
-        renderKPIs();
-      }
-      resetForm();
+    if (data.success && data.short_url) {
+      const shortCode = data.short_code;
+      const shortUrl = data.short_url;
+
+      // 顯示結果區塊
+      const resultBox = document.getElementById('create-result');
+      const urlEl = document.getElementById('result-url');
+      urlEl.textContent = shortUrl;
+      urlEl.href = shortUrl;
+      resultBox.style.display = 'block';
+
+      // 自動複製
+      navigator.clipboard.writeText(shortUrl).then(
+        () => showToast('✅ 已建立並複製：' + shortUrl),
+        () => showToast('✅ 已建立：' + shortUrl)
+      );
+
+      // 加進本地列表
+      allUrls.unshift({
+        short_code: shortCode,
+        short_url: shortUrl,
+        target_url: baseUrl,
+        full_utm_url: fullUrl,
+        platform, medium,
+        date: datePrefix,
+        campaign_name: campaignName,
+        campaign_id: campaignId,
+        product_id: productId,
+        utm_campaign: campaign
+      });
+      applyFilters();
+      renderAnalytics();
+      renderKPIs();
     } else {
-      showToast('⚠️ 儲存失敗：' + (data.error || '未知錯誤'));
+      showToast('⚠️ 建立失敗：' + (data.error || '未知錯誤'));
     }
   } catch(e) {
     showToast('⚠️ 網路錯誤，請稍後再試');
   } finally {
-    document.getElementById('btn-save').disabled = false;
-    document.getElementById('btn-save').textContent = '💾 儲存到 Sheets';
+    btn.disabled = false;
+    btn.textContent = '🔗 直接建立短網址';
   }
+}
+
+function copyResultUrl(btn) {
+  const url = document.getElementById('result-url').textContent;
+  if (!url || url === '—') return;
+  navigator.clipboard.writeText(url).then(() => {
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = '已複製 ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+    }
+  });
 }
 
 function resetForm() {
@@ -930,6 +953,7 @@ function resetForm() {
   document.getElementById('c-short-code').value = '';
   document.getElementById('preview-url').textContent = '填入左側資料後自動顯示...';
   document.getElementById('preview-campaign').textContent = '—';
+  document.getElementById('create-result').style.display = 'none';
   setDefaultDate();
 }
 
