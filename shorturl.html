@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜短網址管理中心</title>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;--rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;--bg:#F5EDE3;--surface:#ffffff;--surface2:#FAF5EF;--border:rgba(40,66,52,0.10);--border2:rgba(40,66,52,0.22);--text:#284234;--text-sub:#8D5531;--text-muted:#b09a88;--positive:#1a7a4a;--negative:#c0392b}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100vh}
+.hdr{position:sticky;top:0;z-index:100;background:var(--green);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--sand)}
+.brand-sep{width:1px;height:16px;background:rgba(226,206,185,.3)}
+.brand-sub{font-size:10px;color:var(--gray-pink);font-family:'Space Mono',monospace}
+.hdr-r{display:flex;align-items:center;gap:14px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#5be8a0;box-shadow:0 0 8px #5be8a0;animation:blink 2.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hclock{font-family:'Space Mono',monospace;font-size:12px;color:var(--gray-pink)}
+.data-tag{padding:3px 10px;border-radius:20px;border:1px solid rgba(226,206,185,.25);font-size:10px;font-family:'Space Mono',monospace;color:var(--gray-pink)}
+.back-link{font-family:'Space Mono',monospace;font-size:11px;color:var(--gray-pink);text-decoration:none;border:1px solid rgba(226,206,185,.25);padding:3px 10px;border-radius:20px;transition:all .15s}
+.back-link:hover{color:var(--sand);border-color:var(--sand)}
+.tabs{background:var(--green);display:flex;padding:0 2rem;border-bottom:2px solid rgba(226,206,185,.12)}
+.tab{padding:10px 22px;font-size:12px;font-weight:500;color:rgba(226,206,185,.5);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;letter-spacing:.04em}
+.tab:hover{color:var(--sand)}.tab.active{color:var(--sand);border-bottom-color:var(--rust)}
+.container{max-width:1400px;margin:0 auto;padding:1.75rem 2rem}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.sec-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.sec-title::before{content:'';display:block;width:3px;height:14px;background:var(--rust);border-radius:2px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.35rem}
+.card-lbl{font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;margin-bottom:1rem}
+.card-lbl::before{content:'';display:block;width:3px;height:12px;background:var(--rust);border-radius:2px}
+/* KPI cards */
+.kpi4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
+@media(max-width:900px){.kpi4{grid-template-columns:repeat(2,1fr)}}
+.kc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.1rem;position:relative;overflow:hidden}
+.kc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc-color,var(--green))}
+.kc-l{font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.kc-v{font-size:24px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text);line-height:1;margin-bottom:4px}
+.kc-d{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace}
+/* Filter bar */
+.filter-bar{display:flex;align-items:center;gap:12px;margin-bottom:1rem;flex-wrap:wrap}
+.search-box{flex:1;min-width:200px;max-width:320px;position:relative}
+.search-box input{width:100%;padding:7px 12px 7px 34px;border:1px solid var(--border2);border-radius:8px;font-size:12px;font-family:'Noto Sans TC',sans-serif;background:var(--surface);color:var(--text);outline:none;transition:border-color .15s}
+.search-box input:focus{border-color:var(--green)}
+.search-box::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:4px 12px;font-size:11px;font-family:'Space Mono',monospace;border-radius:20px;border:1px solid var(--border);cursor:pointer;transition:all .18s;background:transparent;color:var(--text-muted)}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.active{background:var(--green);color:var(--sand);border-color:var(--green)}
+/* Table */
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;background:var(--surface)}
+.tbl th{text-align:left;padding:9px 12px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--border);background:var(--surface2);white-space:nowrap;cursor:pointer;user-select:none}
+.tbl th:hover{color:var(--text)}
+.tbl th.sort-asc::after{content:' ↑'}
+.tbl th.sort-desc::after{content:' ↓'}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--surface2)}
+.tbl-empty{text-align:center;padding:3rem;color:var(--text-muted);font-size:13px;font-family:'Space Mono',monospace}
+/* Short URL cell */
+.short-url-cell{display:flex;align-items:center;gap:8px}
+.short-code{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--green);text-decoration:none}
+.short-code:hover{text-decoration:underline}
+.btn-copy{background:transparent;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:10px;font-family:'Space Mono',monospace;cursor:pointer;color:var(--text-muted);transition:all .15s;white-space:nowrap}
+.btn-copy:hover{border-color:var(--green);color:var(--green)}
+.btn-copy.copied{border-color:var(--positive);color:var(--positive);background:rgba(26,122,74,.06)}
+/* Platform badge */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:10px;font-family:'Space Mono',monospace;font-weight:700;white-space:nowrap}
+.badge-fb{background:#E7F0FD;color:#1877F2}
+.badge-ig{background:#FCE4EC;color:#E1306C}
+.badge-line{background:#E8F5E9;color:#06C755}
+.badge-crm{background:#FEF3EA;color:#A54A1A}
+.badge-google{background:#E8F0FE;color:#4285F4}
+.badge-kol{background:#F3E8FD;color:#7C3AED}
+.badge-yt{background:#FFE0E0;color:#FF0000}
+.badge-qr{background:#E5F6F6;color:#0D9488}
+.badge-other{background:var(--surface2);color:var(--text-muted)}
+/* Target URL cell */
+.url-cell{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Space Mono',monospace;font-size:11px;color:var(--text-sub)}
+.url-cell a{color:inherit;text-decoration:none}
+.url-cell a:hover{text-decoration:underline;color:var(--green)}
+/* Date */
+.date-cell{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)}
+/* Actions */
+.act-cell{display:flex;gap:6px}
+.btn-act{background:transparent;border:1px solid var(--border);border-radius:5px;padding:4px 10px;font-size:10px;font-family:'Space Mono',monospace;cursor:pointer;color:var(--text-muted);transition:all .15s}
+.btn-act:hover{border-color:var(--green);color:var(--green)}
+.btn-act.danger:hover{border-color:var(--negative);color:var(--negative)}
+/* Create form */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+@media(max-width:800px){.form-grid{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:11px;font-weight:700;color:var(--text-sub);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.04em}
+.form-group input,.form-group select,.form-group textarea{padding:9px 12px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'Noto Sans TC',sans-serif;background:var(--surface);color:var(--text);outline:none;transition:border-color .15s;width:100%}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green)}
+.form-group.span2{grid-column:1/-1}
+.form-hint{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace}
+/* UTM preview */
+.utm-preview{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:1rem;margin-top:1rem}
+.utm-preview-label{font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.utm-url{font-family:'Space Mono',monospace;font-size:11px;color:var(--text);word-break:break-all;line-height:1.6}
+.utm-url.empty{color:var(--text-muted);font-style:italic}
+/* Action buttons */
+.action-row{display:flex;gap:10px;margin-top:1rem;flex-wrap:wrap}
+.btn-primary{background:var(--green);color:var(--sand);border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-family:'Noto Sans TC',sans-serif;font-weight:700;cursor:pointer;transition:opacity .15s;display:flex;align-items:center;gap:6px}
+.btn-primary:hover{opacity:.85}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-secondary{background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:10px 20px;font-size:13px;font-family:'Noto Sans TC',sans-serif;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.btn-secondary:hover{border-color:var(--green);color:var(--green)}
+/* Short URL input area */
+.shorturl-input-area{background:#EDF5EF;border:1px solid var(--green);border-radius:8px;padding:1rem;margin-top:1rem}
+.shorturl-input-area label{font-size:11px;font-weight:700;color:var(--green);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px}
+.shorturl-row{display:flex;gap:8px;align-items:center}
+.shorturl-prefix{font-family:'Space Mono',monospace;font-size:13px;color:var(--text-muted);white-space:nowrap}
+.shorturl-code-input{flex:1;padding:8px 12px;border:1px solid rgba(40,66,52,.3);border-radius:6px;font-size:13px;font-family:'Space Mono',monospace;background:var(--surface);color:var(--text);outline:none}
+.shorturl-code-input:focus{border-color:var(--green)}
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:var(--sand);padding:12px 20px;border-radius:8px;font-size:13px;font-family:'Space Mono',monospace;z-index:1000;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+/* Analytics placeholder */
+.analytics-placeholder{text-align:center;padding:4rem 2rem;color:var(--text-muted)}
+.analytics-placeholder .icon{font-size:3rem;margin-bottom:1rem}
+.analytics-placeholder p{font-size:14px;line-height:1.7;max-width:400px;margin:0 auto}
+/* Stats for analytics tab */
+.platform-chart{display:flex;flex-direction:column;gap:10px}
+.platform-row{display:flex;align-items:center;gap:12px}
+.platform-name{font-size:12px;font-weight:700;width:80px;flex-shrink:0}
+.platform-bar-track{flex:1;height:22px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.platform-bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:10px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.platform-bar-val{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#fff}
+.platform-bar-count{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);white-space:nowrap}
+/* Loading state */
+.loading-row td{text-align:center;padding:2rem;color:var(--text-muted);font-family:'Space Mono',monospace;font-size:12px}
+/* Pagination */
+.pagination{display:flex;align-items:center;gap:8px;margin-top:1rem;justify-content:flex-end}
+.page-btn{padding:4px 10px;font-size:11px;font-family:'Space Mono',monospace;border:1px solid var(--border);border-radius:5px;cursor:pointer;background:transparent;color:var(--text-muted);transition:all .15s}
+.page-btn:hover{border-color:var(--border2);color:var(--text)}
+.page-btn.active{background:var(--green);color:var(--sand);border-color:var(--green)}
+.page-btn:disabled{opacity:.4;cursor:not-allowed}
+.page-info{font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted)}
+.footer{background:var(--green);text-align:center;padding:1.25rem;font-size:11px;font-family:'Space Mono',monospace;color:var(--gray-pink);margin-top:2rem}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="brand">
+    <span class="brand-name">ORINGO</span>
+    <div class="brand-sep"></div>
+    <span class="brand-sub">SHORT URL MANAGER</span>
+  </div>
+  <div class="hdr-r">
+    <a href="https://garykao0726.github.io/" class="back-link">← 中控中心</a>
+    <div class="live-dot"></div>
+    <div class="hclock" id="clock">--:--:--</div>
+    <div class="data-tag" id="data-tag">LOADING...</div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" onclick="switchTab('list',this)">短網址列表</button>
+  <button class="tab" onclick="switchTab('create',this)">建立短網址</button>
+  <button class="tab" onclick="switchTab('analytics',this)">成效分析</button>
+</nav>
+
+<div class="container">
+
+<!-- ===== TAB: 列表 ===== -->
+<div class="tab-panel active" id="panel-list">
+  <div class="sec-hdr">
+    <div class="sec-title">所有短網址</div>
+    <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted)" id="list-updated">—</div>
+  </div>
+
+  <div class="kpi4" id="kpi-row">
+    <div class="kc" style="--kc-color:var(--green)"><div class="kc-l">總短網址</div><div class="kc-v" id="kpi-total">—</div><div class="kc-d">已建立連結</div></div>
+    <div class="kc" style="--kc-color:var(--rust)"><div class="kc-l">本月新增</div><div class="kc-v" id="kpi-month">—</div><div class="kc-d" id="kpi-month-label">—</div></div>
+    <div class="kc" style="--kc-color:#1877F2"><div class="kc-l">最多使用平台</div><div class="kc-v" id="kpi-top-platform">—</div><div class="kc-d" id="kpi-top-platform-count">—</div></div>
+    <div class="kc" style="--kc-color:#06C755"><div class="kc-l">最近建立</div><div class="kc-v" id="kpi-latest-date">—</div><div class="kc-d" id="kpi-latest-campaign">—</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="搜尋短網址、活動、商品..." oninput="applyFilters()">
+    </div>
+    <div class="chips" id="platform-chips">
+      <button class="chip active" onclick="setFilter('all',this)">全部</button>
+      <button class="chip" onclick="setFilter('fb',this)">Facebook</button>
+      <button class="chip" onclick="setFilter('ig',this)">Instagram</button>
+      <button class="chip" onclick="setFilter('line',this)">LINE</button>
+      <button class="chip" onclick="setFilter('crm',this)">EDM</button>
+      <button class="chip" onclick="setFilter('google',this)">Google</button>
+      <button class="chip" onclick="setFilter('kol',this)">KOL</button>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table class="tbl" id="url-table">
+      <thead>
+        <tr>
+          <th onclick="sortTable('short_code')">短網址</th>
+          <th onclick="sortTable('platform')">平台</th>
+          <th onclick="sortTable('campaign_name')">活動</th>
+          <th>目標頁面</th>
+          <th onclick="sortTable('date')">日期</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="url-tbody">
+        <tr class="loading-row"><td colspan="6">載入中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination" id="pagination-row"></div>
+</div>
+
+<!-- ===== TAB: 建立 ===== -->
+<div class="tab-panel" id="panel-create">
+  <div class="sec-hdr">
+    <div class="sec-title">建立新短網址</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
+
+    <!-- Left: Form -->
+    <div class="card">
+      <div class="card-lbl">填入網址與 UTM 參數</div>
+      <div class="form-grid">
+
+        <div class="form-group span2">
+          <label>目標網址 *</label>
+          <input type="url" id="c-url" placeholder="https://www.oringoshoes.com/products/..." oninput="updatePreview()">
+          <div class="form-hint">只接受 oringoshoes.com 網址</div>
+        </div>
+
+        <div class="form-group">
+          <label>來源平台 *</label>
+          <select id="c-platform" onchange="onPlatformChange(); updatePreview()">
+            <option value="">請選擇...</option>
+            <option value="fb">Facebook</option>
+            <option value="ig">Instagram</option>
+            <option value="line">LINE</option>
+            <option value="crm">EDM / CRM</option>
+            <option value="google">Google Ads</option>
+            <option value="youtube">YouTube</option>
+            <option value="blog_kol">KOL / 部落客</option>
+            <option value="media">媒體報導</option>
+            <option value="qr">門市 QR Code</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>廣告媒介 *</label>
+          <select id="c-medium" onchange="updatePreview()">
+            <option value="">請先選平台...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>發文日期 *</label>
+          <input type="date" id="c-date" onchange="updatePreview()">
+        </div>
+
+        <div class="form-group">
+          <label>活動名稱</label>
+          <input type="text" id="c-campaign-name" placeholder="ex: 母親節、新品上市" oninput="updatePreview()">
+        </div>
+
+        <div class="form-group">
+          <label>活動代碼</label>
+          <input type="text" id="c-campaign-id" placeholder="ex: social, launch" oninput="updatePreview()">
+          <div class="form-hint">英文小寫，用於 utm_campaign</div>
+        </div>
+
+        <div class="form-group">
+          <label>商品 ID</label>
+          <input type="text" id="c-product-id" placeholder="ex: mshoes7605bk" oninput="updatePreview()">
+          <div class="form-hint">選填，留空則略過</div>
+        </div>
+
+      </div><!-- /form-grid -->
+    </div><!-- /card -->
+
+    <!-- Right: Preview + Actions -->
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-lbl">自動產生的 UTM 網址</div>
+        <div class="utm-preview">
+          <div class="utm-preview-label">Campaign</div>
+          <div class="utm-url" id="preview-campaign" style="margin-bottom:10px;color:var(--text-sub)">—</div>
+          <div class="utm-preview-label">完整 URL</div>
+          <div class="utm-url" id="preview-url">填入左側資料後自動顯示...</div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-primary" onclick="copyUTMUrl()" id="btn-copy-utm">
+            📋 複製 UTM 網址
+          </button>
+          <button class="btn-secondary" onclick="openLihi()" id="btn-lihi">
+            🔗 開啟 LiHi 建立
+          </button>
+        </div>
+      </div>
+
+      <!-- Short URL input (after creating in LiHi) -->
+      <div class="card">
+        <div class="card-lbl">在 LiHi 建立後 → 填入短網址代碼</div>
+        <div class="shorturl-input-area">
+          <label>LiHi 短網址代碼</label>
+          <div class="shorturl-row">
+            <span class="shorturl-prefix">oringo.tw /</span>
+            <input type="text" class="shorturl-code-input" id="c-short-code" placeholder="ex: CsjUP">
+          </div>
+        </div>
+        <div class="action-row" style="margin-top:.75rem">
+          <button class="btn-primary" onclick="saveToSheets()" id="btn-save">
+            💾 儲存到 Sheets
+          </button>
+          <button class="btn-secondary" onclick="resetForm()">
+            重置表單
+          </button>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:.75rem;line-height:1.6">
+          💡 儲存後資料會寫入 Google Sheets，短網址欄位可留空（之後補填）
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+</div>
+
+<!-- ===== TAB: 分析 ===== -->
+<div class="tab-panel" id="panel-analytics">
+  <div class="sec-hdr">
+    <div class="sec-title">成效分析</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+
+    <!-- Platform distribution -->
+    <div class="card">
+      <div class="card-lbl">各平台短網址數量</div>
+      <div class="platform-chart" id="platform-chart">
+        <div style="color:var(--text-muted);font-family:'Space Mono',monospace;font-size:12px">載入中...</div>
+      </div>
+    </div>
+
+    <!-- Recent activity -->
+    <div class="card">
+      <div class="card-lbl">最近建立（最新 10 筆）</div>
+      <div id="recent-list" style="display:flex;flex-direction:column;gap:6px">
+        <div style="color:var(--text-muted);font-family:'Space Mono',monospace;font-size:12px">載入中...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- GA4 Notice -->
+  <div class="card" style="margin-top:1.25rem;background:#FFFBE6;border-color:#D4A72C">
+    <div style="display:flex;align-items:flex-start;gap:14px">
+      <div style="font-size:1.5rem;flex-shrink:0">📊</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#92600A;margin-bottom:4px">GA4 流量數據 — 下一個版本</div>
+        <div style="font-size:12px;color:#B8860B;line-height:1.7">
+          目前分析頁面顯示 Sheets 的基本統計。<br>
+          下一版本將串接 <b>GA4 Data API</b>，在每個短網址旁邊直接顯示：<br>
+          點擊數、工作階段數、轉換率、實際帶來的業績。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<footer class="footer">
+  ORINGO SHORT URL MANAGER &nbsp;·&nbsp; 林果良品行銷工具 &nbsp;·&nbsp; 資料來源：Google Sheets
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// CONFIG — 部署 GAS 後請把 URL 填入這裡
+// ============================================================
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzx73aS9phj7wVBNgOqkfIHBjDvVhl_4t_Fc7flYBHJUbhG4AGng6_Wp1wq7gjoI8aSLA/exec';
+const SHEET_ID = '1any7iKw80B7Y4EAhU6gkwr7_Xl89wyts';
+
+// ============================================================
+// STATE
+// ============================================================
+let allUrls = [];
+let filteredUrls = [];
+let currentFilter = 'all';
+let sortKey = 'date';
+let sortDir = -1; // -1 = desc, 1 = asc
+let currentPage = 1;
+const PAGE_SIZE = 30;
+
+// ============================================================
+// PLATFORM CONFIG
+// ============================================================
+const PLATFORM_MEDIUMS = {
+  fb:       ['fbpost','fbstory','cpc','dpa'],
+  ig:       ['igpost','igstory','cpc'],
+  line:     ['linepost','linemenu','linemessage'],
+  crm:      ['edm_allen','edm','email','sms'],
+  google:   ['cpc','dpa'],
+  youtube:  ['ytpost','cpc'],
+  blog_kol: ['blogpost','bolger'],
+  media:    ['presspost','press'],
+  qr:       ['qrcode'],
+  other:    ['other']
+};
+
+const PLATFORM_LABELS = {
+  fb:'Facebook', ig:'Instagram', line:'LINE', crm:'EDM',
+  google:'Google', youtube:'YouTube', blog_kol:'KOL',
+  media:'媒體', qr:'QR Code', other:'其他',
+  // legacy source values
+  'fb':'Facebook','ig':'Instagram','line':'LINE','crm':'EDM/CRM',
+  'google':'Google','youtube':'YouTube','blog':'KOL','media':'媒體',
+  'press':'媒體','poya':'通路','event':'活動'
+};
+
+const PLATFORM_BADGE_CLASS = {
+  fb:'badge-fb', ig:'badge-ig', line:'badge-line', crm:'badge-crm',
+  google:'badge-google', youtube:'badge-yt', blog_kol:'badge-kol',
+  blog:'badge-kol', 'blog_kol':'badge-kol', media:'badge-other',
+  qr:'badge-qr', other:'badge-other',
+  press:'badge-other', poya:'badge-other', event:'badge-other'
+};
+
+const PLATFORM_COLORS = {
+  fb:'#1877F2', ig:'#E1306C', line:'#06C755', crm:'#A54A1A',
+  google:'#4285F4', youtube:'#FF0000', blog_kol:'#7C3AED',
+  media:'#6B7280', qr:'#0D9488', other:'#9CA3AF',
+  blog:'#7C3AED', press:'#6B7280', poya:'#6B7280', event:'#6B7280'
+};
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  startClock();
+  setDefaultDate();
+  loadData();
+});
+
+function startClock() {
+  const fmt = () => new Date().toLocaleTimeString('zh-TW',{hour12:false});
+  document.getElementById('clock').textContent = fmt();
+  setInterval(() => document.getElementById('clock').textContent = fmt(), 1000);
+}
+
+function setDefaultDate() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  document.getElementById('c-date').value = `${yyyy}-${mm}-${dd}`;
+}
+
+// ============================================================
+// DATA LOADING
+// ============================================================
+async function loadData() {
+  document.getElementById('data-tag').textContent = 'LOADING...';
+  try {
+    let urls;
+    if (GAS_URL && GAS_URL !== 'YOUR_GAS_DEPLOYMENT_URL_HERE') {
+      const res = await fetch(GAS_URL + '?action=list');
+      const data = await res.json();
+      urls = data.urls || [];
+    } else {
+      // Demo mode: load from gviz (public sheet only)
+      urls = await loadFromGviz();
+    }
+    allUrls = urls;
+    document.getElementById('data-tag').textContent = `${urls.length} 筆`;
+    document.getElementById('list-updated').textContent = '更新：' + new Date().toLocaleString('zh-TW');
+    renderKPIs();
+    applyFilters();
+    renderAnalytics();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('data-tag').textContent = 'ERROR';
+    document.getElementById('url-tbody').innerHTML =
+      '<tr><td colspan="6" class="tbl-empty">⚠️ 無法載入資料。請確認 GAS_URL 設定正確。</td></tr>';
+  }
+}
+
+async function loadFromGviz() {
+  // Fallback: try to read from gviz API (requires sheet to be published or accessible)
+  const gids = [524059931, 87297645, 117035847];
+  const results = [];
+  for (const gid of gids) {
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${gid}`;
+      const res = await fetch(url, {credentials:'include'});
+      const text = await res.text();
+      const json = JSON.parse(text.replace(/^[^(]+\(|\);?\s*$/g,''));
+      const rows = json.table?.rows || [];
+      rows.forEach(row => {
+        const cells = row.c || [];
+        const get = i => (cells[i]?.v ?? '');
+        const shortUrl = String(get(23)).trim();
+        const targetUrl = String(get(1)).trim();
+        if (!shortUrl.includes('oringo.tw') || !targetUrl.startsWith('http')) return;
+        const code = shortUrl.replace('https://oringo.tw/','').replace('http://oringo.tw/','').trim();
+        if (!code) return;
+        results.push({
+          short_code: code,
+          short_url: 'https://oringo.tw/' + code,
+          target_url: targetUrl,
+          full_utm_url: String(get(22)).trim(),
+          platform: String(get(2)).trim(),
+          medium: String(get(3)).trim(),
+          date: String(get(4)).trim(),
+          campaign_name: String(get(5)).trim(),
+          campaign_id: String(get(6)).trim(),
+          product_id: String(get(7)).trim(),
+          utm_campaign: String(get(8)).trim(),
+          author: String(get(0)).trim(),
+          sheet_gid: gid
+        });
+      });
+    } catch(e2) { /* sheet might not be accessible */ }
+  }
+  results.sort((a,b) => b.date.localeCompare(a.date));
+  return results;
+}
+
+// ============================================================
+// KPIs
+// ============================================================
+function renderKPIs() {
+  document.getElementById('kpi-total').textContent = allUrls.length;
+
+  // This month
+  const now = new Date();
+  const ym = String(now.getFullYear()).slice(2) + String(now.getMonth()+1).padStart(2,'0');
+  const monthCount = allUrls.filter(u => u.date && u.date.startsWith(ym)).length;
+  document.getElementById('kpi-month').textContent = monthCount;
+  document.getElementById('kpi-month-label').textContent =
+    now.getFullYear() + '年' + (now.getMonth()+1) + '月';
+
+  // Top platform
+  const platCount = {};
+  allUrls.forEach(u => { platCount[u.platform] = (platCount[u.platform]||0) + 1; });
+  const topPlat = Object.entries(platCount).sort((a,b)=>b[1]-a[1])[0];
+  if (topPlat) {
+    document.getElementById('kpi-top-platform').textContent = PLATFORM_LABELS[topPlat[0]] || topPlat[0];
+    document.getElementById('kpi-top-platform-count').textContent = topPlat[1] + ' 筆';
+  }
+
+  // Latest
+  if (allUrls.length > 0) {
+    const latest = allUrls[0];
+    document.getElementById('kpi-latest-date').textContent = formatDate(latest.date);
+    document.getElementById('kpi-latest-campaign').textContent = latest.campaign_name || latest.utm_campaign || '—';
+  }
+}
+
+function formatDate(d) {
+  if (!d || d.length < 6) return d || '—';
+  const y = '20' + d.slice(0,2);
+  const m = d.slice(2,4);
+  const day = d.slice(4,6);
+  return `${m}/${day}`;
+}
+
+function formatDateFull(d) {
+  if (!d || d.length < 6) return d || '—';
+  const y = '20' + d.slice(0,2);
+  const m = d.slice(2,4);
+  const day = d.slice(4,6);
+  return `${y}-${m}-${day}`;
+}
+
+// ============================================================
+// FILTER + SORT
+// ============================================================
+function setFilter(platform, el) {
+  currentFilter = platform;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentPage = 1;
+  applyFilters();
+}
+
+function applyFilters() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  filteredUrls = allUrls.filter(u => {
+    const matchPlat = currentFilter === 'all'
+      || u.platform === currentFilter
+      || (currentFilter === 'kol' && (u.platform.includes('kol') || u.platform === 'blog'));
+    const matchSearch = !search
+      || u.short_code.toLowerCase().includes(search)
+      || u.utm_campaign.toLowerCase().includes(search)
+      || u.campaign_name.toLowerCase().includes(search)
+      || u.product_id.toLowerCase().includes(search)
+      || u.target_url.toLowerCase().includes(search);
+    return matchPlat && matchSearch;
+  });
+  sortUrls();
+  renderTable();
+}
+
+function sortTable(key) {
+  if (sortKey === key) sortDir *= -1;
+  else { sortKey = key; sortDir = -1; }
+  document.querySelectorAll('.tbl th').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
+  });
+  event.target.classList.add(sortDir === -1 ? 'sort-desc' : 'sort-asc');
+  sortUrls();
+  renderTable();
+}
+
+function sortUrls() {
+  filteredUrls.sort((a,b) => {
+    const av = a[sortKey] || '';
+    const bv = b[sortKey] || '';
+    return av.localeCompare(bv) * sortDir;
+  });
+}
+
+// ============================================================
+// TABLE RENDER
+// ============================================================
+function renderTable() {
+  const tbody = document.getElementById('url-tbody');
+  const start = (currentPage-1)*PAGE_SIZE;
+  const page = filteredUrls.slice(start, start+PAGE_SIZE);
+
+  if (filteredUrls.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="tbl-empty">找不到符合條件的短網址</td></tr>';
+    renderPagination();
+    return;
+  }
+
+  tbody.innerHTML = page.map(u => {
+    const platLabel = PLATFORM_LABELS[u.platform] || u.platform || '—';
+    const badgeClass = PLATFORM_BADGE_CLASS[u.platform] || 'badge-other';
+    const pageSlug = u.target_url.replace('https://www.oringoshoes.com','') || '/';
+    const campaignDisplay = u.campaign_name || u.utm_campaign || '—';
+    return `<tr>
+      <td>
+        <div class="short-url-cell">
+          <a class="short-code" href="https://oringo.tw/${u.short_code}" target="_blank">
+            oringo.tw/${u.short_code}
+          </a>
+          <button class="btn-copy" onclick="copyText('https://oringo.tw/${u.short_code}',this)">複製</button>
+        </div>
+      </td>
+      <td><span class="badge ${badgeClass}">${platLabel}</span></td>
+      <td>
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${escHtml(campaignDisplay.slice(0,30))}</div>
+        <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted)">${escHtml(u.product_id || '')}</div>
+      </td>
+      <td class="url-cell">
+        <a href="${escHtml(u.full_utm_url || u.target_url)}" target="_blank" title="${escHtml(u.full_utm_url || u.target_url)}">
+          ${escHtml(pageSlug.slice(0,40))}
+        </a>
+      </td>
+      <td class="date-cell">${formatDateFull(u.date)}</td>
+      <td class="act-cell">
+        <button class="btn-act" onclick="copyText('${escHtml(u.full_utm_url || u.target_url)}',this)">複製 UTM</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderPagination();
+}
+
+function renderPagination() {
+  const total = filteredUrls.length;
+  const totalPages = Math.ceil(total/PAGE_SIZE);
+  const pag = document.getElementById('pagination-row');
+  if (totalPages <= 1) { pag.innerHTML = ''; return; }
+  let html = `<span class="page-info">${filteredUrls.length} 筆 共 ${totalPages} 頁</span>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>‹</button>`;
+  for (let i=1;i<=totalPages;i++) {
+    if (i===1||i===totalPages||Math.abs(i-currentPage)<=1) {
+      html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    } else if (Math.abs(i-currentPage)===2) {
+      html += '<span class="page-info">…</span>';
+    }
+  }
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}>›</button>`;
+  pag.innerHTML = html;
+}
+
+function goPage(p) {
+  currentPage = p;
+  renderTable();
+  document.getElementById('url-table').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ============================================================
+// ANALYTICS
+// ============================================================
+function renderAnalytics() {
+  // Platform chart
+  const platCount = {};
+  allUrls.forEach(u => {
+    const k = u.platform || 'other';
+    platCount[k] = (platCount[k]||0) + 1;
+  });
+  const sorted = Object.entries(platCount).sort((a,b)=>b[1]-a[1]);
+  const max = sorted[0]?.[1] || 1;
+  const chartHtml = sorted.map(([plat, count]) => {
+    const pct = Math.round(count/max*100);
+    const color = PLATFORM_COLORS[plat] || '#9CA3AF';
+    const label = PLATFORM_LABELS[plat] || plat;
+    return `<div class="platform-row">
+      <div class="platform-name" style="font-family:'Noto Sans TC',sans-serif">${label}</div>
+      <div class="platform-bar-track">
+        <div class="platform-bar-fill" style="width:${pct}%;background:${color}">
+          <span class="platform-bar-val">${count}</span>
+        </div>
+      </div>
+      <div class="platform-bar-count">${count} 筆</div>
+    </div>`;
+  }).join('');
+  document.getElementById('platform-chart').innerHTML = chartHtml || '<div style="color:var(--text-muted);font-size:12px">無資料</div>';
+
+  // Recent list
+  const recent = allUrls.slice(0,10);
+  document.getElementById('recent-list').innerHTML = recent.map(u => {
+    const platLabel = PLATFORM_LABELS[u.platform] || u.platform || '—';
+    const badgeClass = PLATFORM_BADGE_CLASS[u.platform] || 'badge-other';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span class="badge ${badgeClass}" style="flex-shrink:0">${platLabel}</span>
+      <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--green);flex-shrink:0">
+        oringo.tw/${u.short_code}
+      </span>
+      <span style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        ${escHtml(u.campaign_name || u.utm_campaign || '—')}
+      </span>
+      <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);flex-shrink:0">
+        ${formatDateFull(u.date)}
+      </span>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// TAB SWITCH
+// ============================================================
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+}
+
+// ============================================================
+// CREATE FORM
+// ============================================================
+function onPlatformChange() {
+  const platform = document.getElementById('c-platform').value;
+  const mediums = PLATFORM_MEDIUMS[platform] || ['other'];
+  const sel = document.getElementById('c-medium');
+  sel.innerHTML = mediums.map(m => `<option value="${m}">${m}</option>`).join('');
+}
+
+function updatePreview() {
+  const baseUrl = document.getElementById('c-url').value.trim();
+  const platform = document.getElementById('c-platform').value;
+  const medium = document.getElementById('c-medium').value;
+  const dateVal = document.getElementById('c-date').value;
+  const campaignId = document.getElementById('c-campaign-id').value.trim();
+  const productId = document.getElementById('c-product-id').value.trim();
+
+  if (!platform || !baseUrl) {
+    document.getElementById('preview-url').textContent = '填入左側資料後自動顯示...';
+    document.getElementById('preview-campaign').textContent = '—';
+    return;
+  }
+
+  // Generate date prefix (YYMMDD)
+  const datePrefix = dateVal ? dateVal.replace(/-/g,'').slice(2) : '';
+
+  // Build utm_campaign
+  let campaign = datePrefix;
+  if (campaignId) campaign += '_' + campaignId;
+  if (productId) campaign += '_' + productId;
+
+  document.getElementById('preview-campaign').textContent = campaign || '—';
+
+  // Build full URL
+  if (!baseUrl.startsWith('http')) {
+    document.getElementById('preview-url').textContent = '請填入完整的 https:// 網址';
+    return;
+  }
+  const sep = baseUrl.includes('?') ? '&' : '?';
+  const fullUrl = baseUrl + sep
+    + 'utm_source=' + encodeURIComponent(platform)
+    + '&utm_medium=' + encodeURIComponent(medium)
+    + '&utm_campaign=' + encodeURIComponent(campaign);
+
+  document.getElementById('preview-url').textContent = fullUrl;
+}
+
+function getGeneratedUrl() {
+  return document.getElementById('preview-url').textContent;
+}
+
+function copyUTMUrl() {
+  const url = getGeneratedUrl();
+  if (!url || url.includes('填入') || url.includes('請填')) {
+    showToast('⚠️ 請先填入目標網址和平台');
+    return;
+  }
+  navigator.clipboard.writeText(url).then(() => showToast('✅ UTM 網址已複製到剪貼簿'));
+}
+
+function openLihi() {
+  const url = getGeneratedUrl();
+  if (!url || url.includes('填入') || url.includes('請填')) {
+    showToast('⚠️ 請先填入資料再開 LiHi');
+    return;
+  }
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('✅ 網址已複製，正在開啟 LiHi...');
+    setTimeout(() => window.open('https://app.lihi.io/admin', '_blank'), 400);
+  });
+}
+
+async function saveToSheets() {
+  const baseUrl = document.getElementById('c-url').value.trim();
+  const platform = document.getElementById('c-platform').value;
+  const medium = document.getElementById('c-medium').value;
+  const dateVal = document.getElementById('c-date').value;
+  const campaignName = document.getElementById('c-campaign-name').value.trim();
+  const campaignId = document.getElementById('c-campaign-id').value.trim();
+  const productId = document.getElementById('c-product-id').value.trim();
+  const shortCode = document.getElementById('c-short-code').value.trim();
+
+  if (!baseUrl || !platform) {
+    showToast('⚠️ 請填入目標網址和平台');
+    return;
+  }
+
+  const datePrefix = dateVal ? dateVal.replace(/-/g,'').slice(2) : '';
+  let campaign = datePrefix;
+  if (campaignId) campaign += '_' + campaignId;
+  if (productId) campaign += '_' + productId;
+
+  const sep = baseUrl.includes('?') ? '&' : '?';
+  const fullUrl = baseUrl + sep
+    + 'utm_source=' + encodeURIComponent(platform)
+    + '&utm_medium=' + encodeURIComponent(medium)
+    + '&utm_campaign=' + encodeURIComponent(campaign);
+
+  const payload = {
+    action: 'save',
+    target_url: baseUrl,
+    platform, medium,
+    date: datePrefix,
+    campaign_name: campaignName,
+    campaign_id: campaignId,
+    product_id: productId,
+    utm_campaign: campaign,
+    full_utm_url: fullUrl,
+    short_url: shortCode ? 'https://oringo.tw/' + shortCode : '',
+    author: ''
+  };
+
+  if (!GAS_URL || GAS_URL === 'YOUR_GAS_DEPLOYMENT_URL_HERE') {
+    showToast('⚠️ 請先設定 GAS_URL 才能儲存');
+    return;
+  }
+
+  document.getElementById('btn-save').disabled = true;
+  document.getElementById('btn-save').textContent = '儲存中...';
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('✅ 已成功儲存到 Sheets！');
+      // Add to local list
+      if (shortCode) {
+        allUrls.unshift({
+          short_code: shortCode,
+          short_url: 'https://oringo.tw/' + shortCode,
+          target_url: baseUrl,
+          full_utm_url: fullUrl,
+          platform, medium,
+          date: datePrefix,
+          campaign_name: campaignName,
+          campaign_id: campaignId,
+          product_id: productId,
+          utm_campaign: campaign
+        });
+        applyFilters();
+        renderAnalytics();
+        renderKPIs();
+      }
+      resetForm();
+    } else {
+      showToast('⚠️ 儲存失敗：' + (data.error || '未知錯誤'));
+    }
+  } catch(e) {
+    showToast('⚠️ 網路錯誤，請稍後再試');
+  } finally {
+    document.getElementById('btn-save').disabled = false;
+    document.getElementById('btn-save').textContent = '💾 儲存到 Sheets';
+  }
+}
+
+function resetForm() {
+  document.getElementById('c-url').value = '';
+  document.getElementById('c-platform').value = '';
+  document.getElementById('c-medium').innerHTML = '<option value="">請先選平台...</option>';
+  document.getElementById('c-campaign-name').value = '';
+  document.getElementById('c-campaign-id').value = '';
+  document.getElementById('c-product-id').value = '';
+  document.getElementById('c-short-code').value = '';
+  document.getElementById('preview-url').textContent = '填入左側資料後自動顯示...';
+  document.getElementById('preview-campaign').textContent = '—';
+  setDefaultDate();
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = '已複製 ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+    } else {
+      showToast('✅ 已複製');
+    }
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
