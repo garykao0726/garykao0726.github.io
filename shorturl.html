@@ -459,6 +459,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 // CONFIG — 部署 GAS 後請把 URL 填入這裡
 // ============================================================
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzx73aS9phj7wVBNgOqkfIHBjDvVhl_4t_Fc7flYBHJUbhG4AGng6_Wp1wq7gjoI8aSLA/exec';
+// GA4 stats 走 marketing-gas（已有正常運作的 analytics.readonly 授權）
+const GA4_GAS_URL = 'https://script.google.com/macros/s/AKfycbx_MMJeFKFpT9DvkK1iy0mQGoR9NhbDGHZ1iyDuHSAPigRUT5qn7BE3zbSz-qFOetih/exec';
 const SHEET_ID = '1any7iKw80B7Y4EAhU6gkwr7_Xl89wyts';
 
 // ============================================================
@@ -805,7 +807,7 @@ async function loadGA4Stats() {
   document.getElementById('ga4-range-label').textContent = fmt(start) + ' → ' + fmt(end);
 
   try {
-    const res = await fetch(GAS_URL + '?action=ga4_stats&start=' + fmt(start) + '&end=' + fmt(end));
+    const res = await fetch(GA4_GAS_URL + '?fn=shorturl_stats&start=' + fmt(start) + '&end=' + fmt(end));
     const data = await res.json();
     if (data.error) {
       const banner = document.getElementById('ga4-banner');
