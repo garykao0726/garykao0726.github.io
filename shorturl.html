@@ -126,6 +126,34 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .analytics-placeholder{text-align:center;padding:4rem 2rem;color:var(--text-muted)}
 .analytics-placeholder .icon{font-size:3rem;margin-bottom:1rem}
 .analytics-placeholder p{font-size:14px;line-height:1.7;max-width:400px;margin:0 auto}
+/* Date range toggle */
+.date-range{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px}
+.date-btn{padding:5px 14px;font-size:11px;font-family:'Space Mono',monospace;border:none;background:transparent;color:var(--text-muted);cursor:pointer;border-radius:5px;transition:all .15s}
+.date-btn:hover{color:var(--text)}
+.date-btn.active{background:var(--green);color:var(--sand);font-weight:700}
+/* GA4 perf table */
+.perf-tbl{width:100%;border-collapse:collapse;font-size:12px;background:var(--surface)}
+.perf-tbl th{text-align:right;padding:9px 12px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--border);background:var(--surface2);white-space:nowrap;cursor:pointer;user-select:none}
+.perf-tbl th:first-child,.perf-tbl th:nth-child(2),.perf-tbl th:nth-child(3){text-align:left}
+.perf-tbl th:hover{color:var(--text)}
+.perf-tbl th.sort-asc::after{content:' ↑'}
+.perf-tbl th.sort-desc::after{content:' ↓'}
+.perf-tbl td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;font-family:'Space Mono',monospace;text-align:right;white-space:nowrap}
+.perf-tbl td:first-child,.perf-tbl td:nth-child(2),.perf-tbl td:nth-child(3){text-align:left;font-family:'Noto Sans TC',sans-serif}
+.perf-tbl tr:last-child td{border-bottom:none}
+.perf-tbl tr:hover td{background:var(--surface2)}
+.perf-num{font-weight:700;color:var(--text)}
+.perf-num-zero{color:var(--text-muted);font-weight:400}
+.perf-revenue{color:var(--positive);font-weight:700}
+.perf-cvr{color:var(--rust);font-weight:700}
+.perf-link{font-family:'Space Mono',monospace;font-size:11px;color:var(--green);text-decoration:none}
+.perf-link:hover{text-decoration:underline}
+.perf-status-warn{color:var(--text-muted);font-style:italic}
+/* GA4 auth banner */
+.ga4-banner{background:#FFFBE6;border:1px solid #D4A72C;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem;font-size:12px;line-height:1.7;color:#B8860B;display:none}
+.ga4-banner.show{display:block}
+.ga4-banner code{font-family:'Space Mono',monospace;background:rgba(212,167,44,.15);padding:1px 6px;border-radius:3px;font-size:11px}
+.ga4-banner b{color:#92600A}
 /* Stats for analytics tab */
 .platform-chart{display:flex;flex-direction:column;gap:10px}
 .platform-row{display:flex;align-items:center;gap:12px}
@@ -347,44 +375,75 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
 <!-- ===== TAB: 分析 ===== -->
 <div class="tab-panel" id="panel-analytics">
-  <div class="sec-hdr">
-    <div class="sec-title">成效分析</div>
+  <div class="sec-hdr" style="margin-bottom:1.25rem">
+    <div class="sec-title">成效分析（GA4 即時數據）</div>
+    <div class="date-range" id="date-range">
+      <button class="date-btn" onclick="setDateRange(7,this)">7 天</button>
+      <button class="date-btn active" onclick="setDateRange(30,this)">30 天</button>
+      <button class="date-btn" onclick="setDateRange(90,this)">90 天</button>
+      <button class="date-btn" onclick="setDateRange(365,this)">1 年</button>
+    </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+  <!-- GA4 授權提示 -->
+  <div class="ga4-banner" id="ga4-banner">
+    <b>⚠️ GA4 需要授權</b>　請 GAS 編輯器手動跑一次 <code>testGA4</code> 觸發新權限授權，然後重新整理本頁。<br>
+    <span id="ga4-error-msg" style="opacity:.7;font-size:11px"></span>
+  </div>
 
-    <!-- Platform distribution -->
+  <!-- KPI 卡片 -->
+  <div class="kpi4" id="ga4-kpis">
+    <div class="kc" style="--kc-color:var(--green)"><div class="kc-l">總點擊 (sessions)</div><div class="kc-v" id="ga4-total-sessions">—</div><div class="kc-d" id="ga4-range-label">—</div></div>
+    <div class="kc" style="--kc-color:#1877F2"><div class="kc-l">不重複用戶</div><div class="kc-v" id="ga4-total-users">—</div><div class="kc-d">active users</div></div>
+    <div class="kc" style="--kc-color:var(--rust)"><div class="kc-l">購買數</div><div class="kc-v" id="ga4-total-purchases">—</div><div class="kc-d">電商成交</div></div>
+    <div class="kc" style="--kc-color:#06C755"><div class="kc-l">業績</div><div class="kc-v" id="ga4-total-revenue">—</div><div class="kc-d">含稅</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
+    <!-- 各平台效能 -->
     <div class="card">
-      <div class="card-lbl">各平台短網址數量</div>
+      <div class="card-lbl">各平台 GA4 流量</div>
       <div class="platform-chart" id="platform-chart">
         <div style="color:var(--text-muted);font-family:'Space Mono',monospace;font-size:12px">載入中...</div>
       </div>
     </div>
 
-    <!-- Recent activity -->
+    <!-- Top 業績 -->
     <div class="card">
-      <div class="card-lbl">最近建立（最新 10 筆）</div>
-      <div id="recent-list" style="display:flex;flex-direction:column;gap:6px">
+      <div class="card-lbl">業績 Top 10 短網址</div>
+      <div id="top-revenue-list" style="display:flex;flex-direction:column;gap:6px">
         <div style="color:var(--text-muted);font-family:'Space Mono',monospace;font-size:12px">載入中...</div>
       </div>
     </div>
-
   </div>
 
-  <!-- GA4 Notice -->
-  <div class="card" style="margin-top:1.25rem;background:#FFFBE6;border-color:#D4A72C">
-    <div style="display:flex;align-items:flex-start;gap:14px">
-      <div style="font-size:1.5rem;flex-shrink:0">📊</div>
-      <div>
-        <div style="font-size:13px;font-weight:700;color:#92600A;margin-bottom:4px">GA4 流量數據 — 下一個版本</div>
-        <div style="font-size:12px;color:#B8860B;line-height:1.7">
-          目前分析頁面顯示 Sheets 的基本統計。<br>
-          下一版本將串接 <b>GA4 Data API</b>，在每個短網址旁邊直接顯示：<br>
-          點擊數、工作階段數、轉換率、實際帶來的業績。
-        </div>
-      </div>
+  <!-- 全部短網址成效表 -->
+  <div class="card">
+    <div class="card-lbl">所有短網址效能排行 <span style="font-weight:400;color:var(--text-muted);font-family:'Space Mono',monospace;font-size:10px;margin-left:6px" id="perf-count">—</span></div>
+    <div class="tbl-wrap">
+      <table class="perf-tbl" id="perf-table">
+        <thead>
+          <tr>
+            <th onclick="sortPerf('short_code')">短網址</th>
+            <th onclick="sortPerf('platform')">平台</th>
+            <th onclick="sortPerf('campaign_name')">活動</th>
+            <th onclick="sortPerf('sessions')">點擊</th>
+            <th onclick="sortPerf('users')">用戶</th>
+            <th onclick="sortPerf('purchases')">購買</th>
+            <th onclick="sortPerf('revenue')">業績</th>
+            <th onclick="sortPerf('cvr')">CVR</th>
+          </tr>
+        </thead>
+        <tbody id="perf-tbody">
+          <tr class="loading-row"><td colspan="8">載入中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:.75rem;line-height:1.6">
+      💡 點擊數來自 GA4，依 utm_campaign 對照。<span style="color:var(--rust)">「—」</span> 代表該短網址在期間內無 GA4 流量（可能還沒被點擊，或剛建立）。
     </div>
   </div>
+
 </div>
 
 </div><!-- /container -->
@@ -715,51 +774,197 @@ function goPage(p) {
 }
 
 // ============================================================
-// ANALYTICS
+// ANALYTICS (GA4 整合)
 // ============================================================
-function renderAnalytics() {
-  // Platform chart
-  const platCount = {};
-  allUrls.forEach(u => {
-    const k = u.platform || 'other';
-    platCount[k] = (platCount[k]||0) + 1;
+let ga4Stats = null;           // { 'utm_campaign_value': {sessions,users,purchases,revenue} }
+let ga4Totals = null;
+let currentDateRange = 30;
+let perfSortKey = 'revenue';
+let perfSortDir = -1;
+
+function setDateRange(days, btn) {
+  currentDateRange = days;
+  document.querySelectorAll('#date-range .date-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  loadGA4Stats();
+}
+
+async function loadGA4Stats() {
+  // Reset KPIs to loading state
+  ['ga4-total-sessions','ga4-total-users','ga4-total-purchases','ga4-total-revenue']
+    .forEach(id => document.getElementById(id).textContent = '...');
+  document.getElementById('ga4-banner').classList.remove('show');
+  document.getElementById('perf-tbody').innerHTML = '<tr class="loading-row"><td colspan="8">載入 GA4 數據中...</td></tr>';
+  document.getElementById('platform-chart').innerHTML = '<div style="color:var(--text-muted);font-family:\'Space Mono\',monospace;font-size:12px">載入中...</div>';
+  document.getElementById('top-revenue-list').innerHTML = '<div style="color:var(--text-muted);font-family:\'Space Mono\',monospace;font-size:12px">載入中...</div>';
+
+  const end = new Date();
+  const start = new Date(); start.setDate(start.getDate() - currentDateRange);
+  const fmt = d => d.toISOString().slice(0,10);
+
+  document.getElementById('ga4-range-label').textContent = fmt(start) + ' → ' + fmt(end);
+
+  try {
+    const res = await fetch(GAS_URL + '?action=ga4_stats&start=' + fmt(start) + '&end=' + fmt(end));
+    const data = await res.json();
+    if (data.error) {
+      const banner = document.getElementById('ga4-banner');
+      banner.classList.add('show');
+      document.getElementById('ga4-error-msg').textContent = data.error;
+      ga4Stats = {};
+      ga4Totals = { sessions: 0, users: 0, purchases: 0, revenue: 0 };
+      renderGA4KPIs();
+      renderPerfTable();
+      renderGA4Chart();
+      renderTopRevenue();
+      return;
+    }
+    ga4Stats = data.stats || {};
+    ga4Totals = data.totals || { sessions:0,users:0,purchases:0,revenue:0 };
+    renderGA4KPIs();
+    renderPerfTable();
+    renderGA4Chart();
+    renderTopRevenue();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('perf-tbody').innerHTML =
+      '<tr><td colspan="8" class="tbl-empty">⚠️ 無法載入 GA4 資料</td></tr>';
+  }
+}
+
+function renderGA4KPIs() {
+  document.getElementById('ga4-total-sessions').textContent  = (ga4Totals.sessions  || 0).toLocaleString();
+  document.getElementById('ga4-total-users').textContent     = (ga4Totals.users     || 0).toLocaleString();
+  document.getElementById('ga4-total-purchases').textContent = (ga4Totals.purchases || 0).toLocaleString();
+  document.getElementById('ga4-total-revenue').textContent   = 'NT$' + Math.round(ga4Totals.revenue || 0).toLocaleString();
+}
+
+function getPerfRows() {
+  // Merge allUrls + ga4Stats
+  return allUrls.map(u => {
+    const s = ga4Stats[u.utm_campaign] || null;
+    const sessions = s ? s.sessions : 0;
+    const users = s ? s.users : 0;
+    const purchases = s ? s.purchases : 0;
+    const revenue = s ? s.revenue : 0;
+    const cvr = sessions > 0 ? purchases / sessions : 0;
+    return Object.assign({}, u, {
+      has_ga4: !!s,
+      sessions, users, purchases, revenue, cvr
+    });
   });
-  const sorted = Object.entries(platCount).sort((a,b)=>b[1]-a[1]);
-  const max = sorted[0]?.[1] || 1;
-  const chartHtml = sorted.map(([plat, count]) => {
-    const pct = Math.round(count/max*100);
+}
+
+function sortPerf(key) {
+  if (perfSortKey === key) perfSortDir *= -1;
+  else { perfSortKey = key; perfSortDir = -1; }
+  document.querySelectorAll('.perf-tbl th').forEach(th => th.classList.remove('sort-asc','sort-desc'));
+  if (event && event.target) event.target.classList.add(perfSortDir === -1 ? 'sort-desc' : 'sort-asc');
+  renderPerfTable();
+}
+
+function renderPerfTable() {
+  let rows = getPerfRows();
+  rows.sort((a,b) => {
+    let av = a[perfSortKey], bv = b[perfSortKey];
+    if (typeof av === 'string') return av.localeCompare(bv) * perfSortDir;
+    return ((av||0) - (bv||0)) * perfSortDir;
+  });
+
+  document.getElementById('perf-count').textContent = '（共 ' + rows.length + ' 筆）';
+
+  const tbody = document.getElementById('perf-tbody');
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="tbl-empty">無資料</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(u => {
+    const platLabel = PLATFORM_LABELS[u.platform] || u.platform || '—';
+    const badgeClass = PLATFORM_BADGE_CLASS[u.platform] || 'badge-other';
+    const campaignDisplay = u.campaign_name || u.utm_campaign || '—';
+    const numCell = (v) => v > 0
+      ? `<span class="perf-num">${v.toLocaleString()}</span>`
+      : `<span class="perf-num-zero">—</span>`;
+    const revCell = u.revenue > 0
+      ? `<span class="perf-revenue">NT$${Math.round(u.revenue).toLocaleString()}</span>`
+      : `<span class="perf-num-zero">—</span>`;
+    const cvrCell = u.sessions > 0 && u.cvr > 0
+      ? `<span class="perf-cvr">${(u.cvr*100).toFixed(1)}%</span>`
+      : `<span class="perf-num-zero">—</span>`;
+    return `<tr>
+      <td><a class="perf-link" href="${escHtml(u.short_url)}" target="_blank">${escHtml(u.short_url.replace(/^https?:\/\//,''))}</a></td>
+      <td><span class="badge ${badgeClass}">${platLabel}</span></td>
+      <td><div style="font-size:12px;font-weight:600;color:var(--text)">${escHtml(campaignDisplay.slice(0,28))}</div>
+          <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted)">${escHtml(u.product_id || '')}</div></td>
+      <td>${numCell(u.sessions)}</td>
+      <td>${numCell(u.users)}</td>
+      <td>${numCell(u.purchases)}</td>
+      <td>${revCell}</td>
+      <td>${cvrCell}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderGA4Chart() {
+  // 各平台 GA4 流量（用 sessions + revenue 聚合）
+  const platAgg = {};
+  getPerfRows().forEach(r => {
+    const k = r.platform || 'other';
+    if (!platAgg[k]) platAgg[k] = { sessions: 0, revenue: 0 };
+    platAgg[k].sessions += r.sessions;
+    platAgg[k].revenue  += r.revenue;
+  });
+  const sorted = Object.entries(platAgg).sort((a,b) => b[1].sessions - a[1].sessions);
+  const max = Math.max(...sorted.map(s => s[1].sessions), 1);
+
+  const html = sorted.map(([plat, v]) => {
+    const pct = Math.round(v.sessions/max*100);
     const color = PLATFORM_COLORS[plat] || '#9CA3AF';
     const label = PLATFORM_LABELS[plat] || plat;
     return `<div class="platform-row">
       <div class="platform-name" style="font-family:'Noto Sans TC',sans-serif">${label}</div>
       <div class="platform-bar-track">
         <div class="platform-bar-fill" style="width:${pct}%;background:${color}">
-          <span class="platform-bar-val">${count}</span>
+          <span class="platform-bar-val">${v.sessions.toLocaleString()}</span>
         </div>
       </div>
-      <div class="platform-bar-count">${count} 筆</div>
+      <div class="platform-bar-count">NT$${Math.round(v.revenue).toLocaleString()}</div>
     </div>`;
   }).join('');
-  document.getElementById('platform-chart').innerHTML = chartHtml || '<div style="color:var(--text-muted);font-size:12px">無資料</div>';
+  document.getElementById('platform-chart').innerHTML = html || '<div style="color:var(--text-muted);font-size:12px">無資料</div>';
+}
 
-  // Recent list
-  const recent = allUrls.slice(0,10);
-  document.getElementById('recent-list').innerHTML = recent.map(u => {
+function renderTopRevenue() {
+  const top = getPerfRows().filter(r => r.revenue > 0).sort((a,b) => b.revenue - a.revenue).slice(0,10);
+  if (top.length === 0) {
+    document.getElementById('top-revenue-list').innerHTML =
+      '<div style="color:var(--text-muted);font-family:\'Space Mono\',monospace;font-size:12px;padding:1rem 0">期間內無業績資料</div>';
+    return;
+  }
+  document.getElementById('top-revenue-list').innerHTML = top.map((u, i) => {
     const platLabel = PLATFORM_LABELS[u.platform] || u.platform || '—';
     const badgeClass = PLATFORM_BADGE_CLASS[u.platform] || 'badge-other';
-    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--text-muted);width:18px;flex-shrink:0">#${i+1}</span>
       <span class="badge ${badgeClass}" style="flex-shrink:0">${platLabel}</span>
       <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--green);flex-shrink:0">
-        oringo.tw/${u.short_code}
+        ${escHtml(u.short_url.replace(/^https?:\/\//,''))}
       </span>
-      <span style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+      <span style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">
         ${escHtml(u.campaign_name || u.utm_campaign || '—')}
       </span>
-      <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);flex-shrink:0">
-        ${formatDateFull(u.date)}
+      <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--positive);flex-shrink:0">
+        NT$${Math.round(u.revenue).toLocaleString()}
       </span>
     </div>`;
   }).join('');
+}
+
+// 舊的 renderAnalytics 包成 wrapper（給其他地方呼叫用）
+function renderAnalytics() {
+  if (ga4Stats === null) loadGA4Stats();
+  else { renderGA4Chart(); renderTopRevenue(); renderPerfTable(); }
 }
 
 // ============================================================
