@@ -138,6 +138,65 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .footer{background:var(--green);text-align:center;padding:1.25rem;font-size:11px;font-family:'Space Mono',monospace;color:var(--gray-pink);margin-top:2rem}
 
 .warn-tag{display:inline-block;background:var(--negative);color:#fff;font-size:9px;font-family:'Space Mono',monospace;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:6px;vertical-align:middle}
+
+/* RFM grid */
+.rfm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:900px){.rfm-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.rfm-grid{grid-template-columns:1fr}}
+.rfm-card{padding:1rem;border-radius:10px;border:1px solid var(--border);background:var(--surface);position:relative;overflow:hidden;cursor:default;transition:transform .15s}
+.rfm-card:hover{transform:translateY(-2px)}
+.rfm-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--rfm-color,var(--green))}
+.rfm-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.rfm-name{font-size:13px;font-weight:700;color:var(--text)}
+.rfm-tag{font-size:9px;font-family:'Space Mono',monospace;padding:2px 8px;border-radius:10px;background:var(--rfm-color);color:#fff;font-weight:700}
+.rfm-people{font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:var(--rfm-color);line-height:1;margin-bottom:4px}
+.rfm-people-l{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-bottom:10px}
+.rfm-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-family:'Space Mono',monospace}
+.rfm-stat{padding:5px 8px;background:var(--surface2);border-radius:5px}
+.rfm-stat-l{font-size:8px;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px}
+.rfm-stat-v{font-size:11px;font-weight:700;color:var(--text)}
+.rfm-revenue{margin-top:8px;font-size:11px;color:var(--text-sub);font-family:'Space Mono',monospace;display:flex;justify-content:space-between;padding-top:8px;border-top:1px dashed var(--border)}
+
+/* Heatmap */
+.hm-wrap{overflow-x:auto}
+.hm{display:grid;grid-template-columns:90px repeat(12,1fr);gap:3px;min-width:780px}
+.hm-h{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;text-align:center;padding:4px 2px;font-weight:700}
+.hm-d{font-size:11px;color:var(--text);font-family:'Noto Sans TC',sans-serif;font-weight:600;display:flex;align-items:center;padding-right:8px}
+.hm-c{border-radius:5px;height:42px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Space Mono',monospace;cursor:default;transition:transform .1s;color:#fff;font-weight:700;font-size:10px}
+.hm-c:hover{transform:scale(1.08);box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:1}
+.hm-c-amt{font-size:10px;line-height:1}
+.hm-c-lo{color:#284234 !important}
+
+/* Flow matrix */
+.flow-tbl{width:100%;border-collapse:collapse;font-family:'Space Mono',monospace}
+.flow-tbl th,.flow-tbl td{padding:8px;text-align:center;font-size:11px;border:1px solid var(--border)}
+.flow-tbl th{background:var(--surface2);font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+.flow-tbl th:first-child,.flow-tbl td:first-child{text-align:left;font-family:'Noto Sans TC',sans-serif;font-weight:600;color:var(--text);background:var(--surface2);font-size:12px}
+.flow-cell{position:relative}
+.flow-pct{font-size:13px;font-weight:700}
+.flow-cnt{font-size:9px;opacity:.7;margin-top:2px}
+.flow-diag{background:rgba(40,66,52,0.08)}
+
+/* VIP recommendation */
+.vip-rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:800px){.vip-rec-grid{grid-template-columns:1fr}}
+.vip-tier{padding:1.2rem;border-radius:10px;border:1px solid var(--border);background:linear-gradient(135deg,#fffbf6 0%,#fff5e8 100%);position:relative;overflow:hidden}
+.vip-tier::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--tier-color,var(--vip))}
+.vip-tier-name{font-size:18px;font-weight:900;color:var(--tier-color);margin-bottom:4px;letter-spacing:.04em}
+.vip-tier-desc{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-bottom:14px}
+.vip-tier-cond{padding:.8rem 1rem;background:var(--surface);border-radius:8px;border:1px dashed var(--border2);margin-bottom:12px}
+.vip-tier-cond-l{font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;margin-bottom:3px}
+.vip-tier-cond-v{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--text)}
+.vip-tier-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-family:'Space Mono',monospace}
+.vip-tier-stat{padding:8px 10px;background:var(--surface);border-radius:6px}
+.vip-tier-stat-l{font-size:9px;color:var(--text-muted);margin-bottom:2px}
+.vip-tier-stat-v{font-size:14px;font-weight:700;color:var(--tier-color)}
+.threshold-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.threshold-tbl th,.threshold-tbl td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--border);font-family:'Space Mono',monospace}
+.threshold-tbl th{font-size:9px;color:var(--text-muted);text-transform:uppercase;background:var(--surface2)}
+.threshold-tbl th:first-child,.threshold-tbl td:first-child{text-align:left}
+.threshold-tbl tr.suggested{background:rgba(165,74,26,0.06);font-weight:700}
+.threshold-tbl tr.suggested td:first-child::before{content:'★ ';color:var(--rust)}
 </style>
 </head>
 <body>
@@ -231,6 +290,131 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
   <div class="store-grid" id="store-cards"></div>
 
+  <!-- RFM 分群 -->
+  <div class="sec-hdr">
+    <div class="sec-title">RFM 顧客分群</div>
+    <div class="sec-date">3 年資料｜R 最近購買 ｜ F 訂單頻率 ｜ M 累積金額</div>
+  </div>
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-hdr">
+      <span class="card-lbl">9 大族群佔比與貢獻</span>
+      <span class="card-badge" id="rfm-total-label">—</span>
+    </div>
+    <div class="rfm-grid" id="rfm-grid"></div>
+    <div class="insight" style="margin-top:1rem;margin-bottom:0">
+      <div class="insight-icon">▸</div>
+      <div class="insight-txt">
+        <b>已流失 4,029 人</b>（過去貢獻 13.9% 業績）是最大的再行銷機會池；
+        <b>新晉高消費 3,733 人</b>（單筆 ≥ NT$ 8k 的新客）應該重點培養成忠誠客；
+        <b>需挽回 VIP 124 人</b>（過去 F≥4 但近期未回頭）建議專人聯繫。
+      </div>
+    </div>
+  </div>
+
+  <!-- 流向矩陣 -->
+  <div class="sec-hdr">
+    <div class="sec-title">首購店 → 後續購店流向</div>
+    <div class="sec-date">看每店招到的新客，後續去哪裡買</div>
+  </div>
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-hdr">
+      <span class="card-lbl">流向矩陣（橫向 100%）</span>
+      <span class="card-badge">深綠對角 = 同店忠誠</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="flow-tbl" id="flow-tbl"></table>
+    </div>
+    <div class="insight" style="margin-top:1rem;margin-bottom:0">
+      <div class="insight-icon">▸</div>
+      <div class="insight-txt">
+        <b>各通路客戶基本互不流動</b>：實體店 68-86% 同店回購，<b>官網 93% 留在官網</b>。
+        中山店是台北流動樞紐（11.3% 流到松菸、8.9% 流到東門）。
+        台中園道幾乎封閉系統（85.5% 留台中、僅 7% 外流到官網）。
+      </div>
+    </div>
+  </div>
+
+  <!-- 季節性熱力圖 -->
+  <div class="sec-hdr">
+    <div class="sec-title">季節性熱力圖</div>
+    <div class="sec-date">月份 × 店別｜3 年平均月業績</div>
+  </div>
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-hdr">
+      <span class="card-lbl">熱力圖（顏色越深業績越高）</span>
+      <span class="card-badge">3-year monthly average</span>
+    </div>
+    <div class="hm-wrap"><div class="hm" id="heatmap"></div></div>
+    <div class="insight" style="margin-top:1rem;margin-bottom:0">
+      <div class="insight-icon">▸</div>
+      <div class="insight-txt">
+        <b>旺季：12 月、1 月（年節送禮）+ 3 月（春季換鞋）</b>；
+        <b>淡季：6-9 月（夏季鞋款需求低）</b>。實體店淡旺季差異約 1.5-2 倍。
+        官網則 2 月、9 月偏弱（年後 + 收假期），淡旺季差約 3 倍，建議夏季加碼促銷。
+      </div>
+    </div>
+  </div>
+
+  <!-- VIP 門檻建議 -->
+  <div class="sec-hdr">
+    <div class="sec-title">VIP / VVIP 門檻建議</div>
+    <div class="sec-date">基於 Y3 消費分布計算</div>
+  </div>
+  <div class="insight warn" style="margin-bottom:1.25rem">
+    <div class="insight-icon">⚠</div>
+    <div class="insight-txt">
+      <b>現行 VIP 系統已與「高消費」脫鉤</b>：目前 OR 開頭 VIP 在 Y3 的累積消費中位數僅 NT$ 6,924，
+      連全會員中位數 NT$ 6,064 都只高一點點。建議重新設計 VIP / VVIP 門檻，重新激活會員制度。
+    </div>
+  </div>
+  <div class="g2" style="margin-bottom:1.25rem">
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">建議門檻｜平衡版（推薦）</span><span class="card-badge">★ 推薦採用</span></div>
+      <div class="vip-rec-grid">
+        <div class="vip-tier" style="--tier-color:#8D5531">
+          <div class="vip-tier-name">VIP</div>
+          <div class="vip-tier-desc">中階忠誠會員 / 約 12% 會員達標</div>
+          <div class="vip-tier-cond">
+            <div class="vip-tier-cond-l">升等條件（擇一）</div>
+            <div class="vip-tier-cond-v">年累積 NT$ 12,000</div>
+            <div class="vip-tier-cond-v" style="font-size:14px;margin-top:4px;color:var(--text-sub)">或 單筆消費 ≥ NT$ 10,000</div>
+          </div>
+          <div class="vip-tier-stats">
+            <div class="vip-tier-stat"><div class="vip-tier-stat-l">預估人數</div><div class="vip-tier-stat-v">~1,100 人</div></div>
+            <div class="vip-tier-stat"><div class="vip-tier-stat-l">達標者年均</div><div class="vip-tier-stat-v">NT$ 19,000</div></div>
+          </div>
+        </div>
+        <div class="vip-tier" style="--tier-color:#A54A1A">
+          <div class="vip-tier-name">VVIP</div>
+          <div class="vip-tier-desc">頂級會員 / 約 0.9% 會員達標</div>
+          <div class="vip-tier-cond">
+            <div class="vip-tier-cond-l">升等條件</div>
+            <div class="vip-tier-cond-v">年累積 NT$ 30,000</div>
+          </div>
+          <div class="vip-tier-stats">
+            <div class="vip-tier-stat"><div class="vip-tier-stat-l">預估人數</div><div class="vip-tier-stat-v">82 人</div></div>
+            <div class="vip-tier-stat"><div class="vip-tier-stat-l">達標者年均</div><div class="vip-tier-stat-v">NT$ 40,029</div></div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:1rem;font-size:11px;color:var(--text-sub);line-height:1.7;padding:10px 12px;background:var(--surface2);border-left:3px solid var(--rust);border-radius:6px">
+        <b>設定理由：</b>
+        NT$ 12,000 ≈ 2.5 雙鞋的價位（一年買 2-3 雙就升等）；單筆 NT$ 10,000 鼓勵套組消費（鞋+鞋墊+保養品）；
+        VVIP 30,000 維持稀缺感與專屬服務可行性。<br>
+        <b>建議：</b>用「滾動 12 個月」累積計算（非曆年），避免每年 1 月斷崖；升等門檻 12k / 降等門檻 10k（8 折）。
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">門檻試算表</span><span class="card-badge">不同金額對應的達標規模</span></div>
+      <table class="threshold-tbl" id="threshold-tbl"></table>
+      <div style="margin-top:1rem;font-size:11px;color:var(--text-sub);line-height:1.7">
+        ★ 標記列為平衡版建議。另兩種方案：<br>
+        ・<b>保守版</b>：VIP 15k (7.5%) + VVIP 30k (0.9%)<br>
+        ・<b>進攻版</b>：VIP 10k (17.8%) + VVIP 25k (1.6%)
+      </div>
+    </div>
+  </div>
+
   <!-- 3-year trend -->
   <div class="sec-hdr">
     <div class="sec-title">3 年月度業績趨勢</div>
@@ -260,6 +444,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
 <script>
 const DATA = {"meta": {"years": {"Y1": "2023/05–2024/04", "Y2": "2024/05–2025/04", "Y3": "2025/05–2026/04"}, "date_range": "2023-05-01 ~ 2026-04-30", "total_orders": 36416, "total_customers": 20864, "total_revenue": 171151356}, "yearly": {"Y1": {"唯一會員": 7405, "新客數": 7405, "舊客回流數": 0, "訂單數": 9711, "總業績": 51440615, "平均客單": 5297, "整體再購率": 22.5, "新客平均客單": 5297, "舊客平均客單": 0, "新客業績": 51440615, "舊客業績": 0, "VIP會員數": 1614, "VIP業績": 19621205, "VIP平均客單": 7423, "VIP訂單數": 2643, "回購單平均客單": 2755, "回購訂單數": 2306}, "Y2": {"唯一會員": 8175, "新客數": 6721, "舊客回流數": 1454, "訂單數": 12452, "總業績": 55303350, "平均客單": 4441, "整體再購率": 36.2, "新客平均客單": 4458, "舊客平均客單": 4365, "新客業績": 45026869, "舊客業績": 10276481, "VIP會員數": 1353, "VIP業績": 14404492, "VIP平均客單": 5957, "VIP訂單數": 2418, "回購單平均客單": 1700, "回購訂單數": 4277}, "Y3": {"唯一會員": 9214, "新客數": 6738, "舊客回流數": 2476, "訂單數": 14253, "總業績": 64407391, "平均客單": 4518, "整體再購率": 37.1, "新客平均客單": 4794, "舊客平均客單": 3859, "新客業績": 48191536, "舊客業績": 16215855, "VIP會員數": 957, "VIP業績": 8033441, "VIP平均客單": 4587, "VIP訂單數": 1751, "回購單平均客單": 1692, "回購訂單數": 5039}}, "cohorts": {"Y1": {"人數": 7405, "Y1_活躍": 7405, "Y1_業績": 51440615, "Y1_留存率": 100.0, "Y2_活躍": 1454, "Y2_業績": 10276481, "Y2_留存率": 19.6, "Y3_活躍": 1357, "Y3_業績": 9371381, "Y3_留存率": 18.3}, "Y2": {"人數": 6721, "Y1_活躍": 0, "Y1_業績": 0, "Y1_留存率": 0.0, "Y2_活躍": 6721, "Y2_業績": 45026869, "Y2_留存率": 100.0, "Y3_活躍": 1119, "Y3_業績": 6844474, "Y3_留存率": 16.6}, "Y3": {"人數": 6738, "Y1_活躍": 0, "Y1_業績": 0, "Y1_留存率": 0.0, "Y2_活躍": 0, "Y2_業績": 0, "Y2_留存率": 0.0, "Y3_活躍": 6738, "Y3_業績": 48191536, "Y3_留存率": 100.0}}, "ltv_by_cohort": {"Y1": {"人數": 7405, "平均LTV": 9600, "中位LTV": 7045, "平均訂單": 1.94}, "Y2": {"人數": 6721, "平均LTV": 7717, "中位LTV": 6137, "平均訂單": 1.78}, "Y3": {"人數": 6738, "平均LTV": 7152, "中位LTV": 6288, "平均訂單": 1.49}}, "vip_vs_normal": {"VIP": {"人數": 2571, "平均LTV": 16359}, "非VIP": {"人數": 18293, "平均LTV": 7056}}, "store_yearly": {"台北中山店": {"Y1": {"訂單數": 3124, "唯一會員": 2514, "總業績": 15654936, "平均客單": 5011, "新客平均客單": 5011, "舊客平均客單": 0, "VIP平均客單": 6838, "同店再購率": 19.5, "新客數": 2514, "舊客數": 0, "VIP數": 472}, "Y2": {"訂單數": 2707, "唯一會員": 2204, "總業績": 14171227, "平均客單": 5235, "新客平均客單": 5393, "舊客平均客單": 4681, "VIP平均客單": 6846, "同店再購率": 18.1, "新客數": 1745, "舊客數": 459, "VIP數": 370}, "Y3": {"訂單數": 3298, "唯一會員": 2592, "總業績": 16344009, "平均客單": 4955, "新客平均客單": 5494, "舊客平均客單": 3829, "VIP平均客單": 4498, "同店再購率": 20.8, "新客數": 1843, "舊客數": 749, "VIP數": 258}}, "台北東門店": {"Y1": {"訂單數": 2077, "唯一會員": 1656, "總業績": 10976922, "平均客單": 5284, "新客平均客單": 5284, "舊客平均客單": 0, "VIP平均客單": 7940, "同店再購率": 19.2, "新客數": 1656, "舊客數": 0, "VIP數": 379}, "Y2": {"訂單數": 1980, "唯一會員": 1551, "總業績": 10527515, "平均客單": 5316, "新客平均客單": 5495, "舊客平均客單": 4740, "VIP平均客單": 6250, "同店再購率": 19.4, "新客數": 1228, "舊客數": 323, "VIP數": 300}, "Y3": {"訂單數": 2345, "唯一會員": 1818, "總業績": 13228708, "平均客單": 5641, "新客平均客單": 6152, "舊客平均客單": 4539, "VIP平均客單": 5583, "同店再購率": 20.5, "新客數": 1300, "舊客數": 518, "VIP數": 214}}, "台中園道店": {"Y1": {"訂單數": 1951, "唯一會員": 1449, "總業績": 10899357, "平均客單": 5586, "新客平均客單": 5586, "舊客平均客單": 0, "VIP平均客單": 7797, "同店再購率": 23.7, "新客數": 1449, "舊客數": 0, "VIP數": 375}, "Y2": {"訂單數": 1693, "唯一會員": 1273, "總業績": 9226949, "平均客單": 5450, "新客平均客單": 5690, "舊客平均客單": 4730, "VIP平均客單": 6530, "同店再購率": 24.4, "新客數": 989, "舊客數": 284, "VIP數": 283}, "Y3": {"訂單數": 1880, "唯一會員": 1401, "總業績": 10369135, "平均客單": 5515, "新客平均客單": 5948, "舊客平均客單": 4550, "VIP平均客單": 5056, "同店再購率": 25.6, "新客數": 1010, "舊客數": 391, "VIP數": 192}}, "台北松菸店": {"Y1": {"訂單數": 2559, "唯一會員": 2044, "總業績": 13909400, "平均客單": 5435, "新客平均客單": 5435, "舊客平均客單": 0, "VIP平均客單": 7264, "同店再購率": 18.9, "新客數": 2044, "舊客數": 0, "VIP數": 511}, "Y2": {"訂單數": 2391, "唯一會員": 1830, "總業績": 13283578, "平均客單": 5555, "新客平均客單": 5843, "舊客平均客單": 4663, "VIP平均客單": 6216, "同店再購率": 21.9, "新客數": 1411, "舊客數": 419, "VIP數": 423}, "Y3": {"訂單數": 2811, "唯一會員": 2131, "總業績": 15045417, "平均客單": 5352, "新客平均客單": 5942, "舊客平均客單": 4299, "VIP平均客單": 4725, "同店再購率": 23.6, "新客數": 1443, "舊客數": 688, "VIP數": 315}}, "官網": {"Y1": {"訂單數": 0, "唯一會員": 0, "總業績": 0, "平均客單": 0, "新客平均客單": 0, "舊客平均客單": 0, "VIP平均客單": 0, "同店再購率": 0, "新客數": 0, "舊客數": 0, "VIP數": 0}, "Y2": {"訂單數": 3681, "唯一會員": 1722, "總業績": 8094081, "平均客單": 2198, "新客平均客單": 2227, "舊客平均客單": 1839, "VIP平均客單": 2656, "同店再購率": 85.1, "新客數": 1595, "舊客數": 127, "VIP數": 128}, "Y3": {"訂單數": 3919, "唯一會員": 1806, "總業績": 9420122, "平均客單": 2403, "新客平均客單": 2454, "舊客平均客單": 2207, "VIP平均客單": 2341, "同店再購率": 86.9, "新客數": 1449, "舊客數": 357, "VIP數": 104}}}, "monthly": {"2023-05": {"新客訂單": 815, "舊客訂單": 0, "新客業績": 4257760, "舊客業績": 0, "新客數": 725}, "2023-06": {"新客訂單": 741, "舊客訂單": 0, "新客業績": 3996484, "舊客業績": 0, "新客數": 657}, "2023-07": {"新客訂單": 756, "舊客訂單": 0, "新客業績": 3754191, "舊客業績": 0, "新客數": 672}, "2023-08": {"新客訂單": 767, "舊客訂單": 0, "新客業績": 3599506, "舊客業績": 0, "新客數": 670}, "2023-09": {"新客訂單": 771, "舊客訂單": 0, "新客業績": 4220465, "舊客業績": 0, "新客數": 685}, "2023-10": {"新客訂單": 780, "舊客訂單": 0, "新客業績": 4147672, "舊客業績": 0, "新客數": 698}, "2023-11": {"新客訂單": 763, "舊客訂單": 0, "新客業績": 3948600, "舊客業績": 0, "新客數": 684}, "2023-12": {"新客訂單": 985, "舊客訂單": 0, "新客業績": 5379812, "舊客業績": 0, "新客數": 880}, "2024-01": {"新客訂單": 871, "舊客訂單": 0, "新客業績": 4930548, "舊客業績": 0, "新客數": 790}, "2024-02": {"新客訂單": 879, "舊客訂單": 0, "新客業績": 4847141, "舊客業績": 0, "新客數": 788}, "2024-03": {"新客訂單": 859, "舊客訂單": 0, "新客業績": 4589877, "舊客業績": 0, "新客數": 767}, "2024-04": {"新客訂單": 724, "舊客訂單": 0, "新客業績": 3768559, "舊客業績": 0, "新客數": 653}, "2024-05": {"新客訂單": 559, "舊客訂單": 218, "新客業績": 2963182, "舊客業績": 714611, "新客數": 480}, "2024-06": {"新客訂單": 688, "舊客訂單": 199, "新客業績": 3088519, "舊客業績": 845975, "新客數": 549}, "2024-07": {"新客訂單": 686, "舊客訂單": 187, "新客業績": 2868160, "舊客業績": 771987, "新客數": 528}, "2024-08": {"新客訂單": 700, "舊客訂單": 199, "新客業績": 2875138, "舊客業績": 887365, "新客數": 527}, "2024-09": {"新客訂單": 657, "舊客訂單": 163, "新客業績": 3198224, "舊客業績": 677171, "新客數": 534}, "2024-10": {"新客訂單": 833, "舊客訂單": 192, "新客業績": 4025980, "舊客業績": 959558, "新客數": 647}, "2024-11": {"新客訂單": 953, "舊客訂單": 219, "新客業績": 3971067, "舊客業績": 963192, "新客數": 728}, "2024-12": {"新客訂單": 1200, "舊客訂單": 229, "新客業績": 5255075, "舊客業績": 996644, "新客數": 906}, "2025-01": {"新客訂單": 1151, "舊客訂單": 211, "新客業績": 5246686, "舊客業績": 1124601, "新客數": 874}, "2025-02": {"新客訂單": 974, "舊客訂單": 204, "新客業績": 4160901, "舊客業績": 923467, "新客數": 759}, "2025-03": {"新客訂單": 942, "舊客訂單": 184, "新客業績": 4013509, "舊客業績": 780036, "新客數": 709}, "2025-04": {"新客訂單": 755, "舊客訂單": 149, "新客業績": 3360428, "舊客業績": 631874, "新客數": 568}, "2025-05": {"新客訂單": 670, "舊客訂單": 298, "新客業績": 3356192, "舊客業績": 1064961, "新客數": 526}, "2025-06": {"新客訂單": 610, "舊客訂單": 271, "新客業績": 2820191, "舊客業績": 1126292, "新客數": 465}, "2025-07": {"新客訂單": 609, "舊客訂單": 267, "新客業績": 2711063, "舊客業績": 1139499, "新客數": 453}, "2025-08": {"新客訂單": 728, "舊客訂單": 351, "新客業績": 3210195, "舊客業績": 1190192, "新客數": 565}, "2025-09": {"新客訂單": 702, "舊客訂單": 299, "新客業績": 3420312, "舊客業績": 1216920, "新客數": 564}, "2025-10": {"新客訂單": 880, "舊客訂單": 370, "新客業績": 4229645, "舊客業績": 1387154, "新客數": 682}, "2025-11": {"新客訂單": 1068, "舊客訂單": 374, "新客業績": 4948502, "舊客業績": 1498889, "新客數": 823}, "2025-12": {"新客訂單": 1105, "舊客訂單": 443, "新客業績": 5471854, "舊客業績": 1740995, "新客數": 846}, "2026-01": {"新客訂單": 962, "舊客訂單": 463, "新客業績": 4624432, "舊客業績": 1865036, "新客數": 724}, "2026-02": {"新客訂單": 747, "舊客訂單": 326, "新客業績": 3911406, "舊客業績": 1421081, "新客數": 623}, "2026-03": {"新客訂單": 1119, "舊客訂單": 420, "新客業績": 5294543, "舊客業績": 1454665, "新客數": 865}, "2026-04": {"新客訂單": 851, "舊客訂單": 320, "新客業績": 4193201, "舊客業績": 1110171, "新客數": 659}}, "aov_distribution": {"Y1": {"新客": {"<1k": 1291, "1-2k": 620, "2-3k": 295, "3-4k": 205, "4-5k": 1558, "5-7.5k": 2154, "7.5-10k": 1568, "10-15k": 668, "15k+": 343}, "舊客": {}, "VIP": {"<1k": 222, "1-2k": 133, "2-3k": 61, "3-4k": 59, "4-5k": 234, "5-7.5k": 344, "7.5-10k": 267, "10-15k": 567, "15k+": 333}}, "Y2": {"新客": {"<1k": 885, "1-2k": 616, "2-3k": 362, "3-4k": 489, "4-5k": 1396, "5-7.5k": 1851, "7.5-10k": 1263, "10-15k": 642, "15k+": 262}, "舊客": {"<1k": 385, "1-2k": 184, "2-3k": 99, "3-4k": 108, "4-5k": 311, "5-7.5k": 403, "7.5-10k": 268, "10-15k": 163, "15k+": 57}, "VIP": {"<1k": 222, "1-2k": 138, "2-3k": 79, "3-4k": 74, "4-5k": 241, "5-7.5k": 325, "7.5-10k": 249, "10-15k": 404, "15k+": 185}}, "Y3": {"新客": {"<1k": 853, "1-2k": 525, "2-3k": 458, "3-4k": 319, "4-5k": 1071, "5-7.5k": 1974, "7.5-10k": 1555, "10-15k": 690, "15k+": 305}, "舊客": {"<1k": 846, "1-2k": 418, "2-3k": 176, "3-4k": 124, "4-5k": 437, "5-7.5k": 593, "7.5-10k": 457, "10-15k": 233, "15k+": 98}, "VIP": {"<1k": 271, "1-2k": 165, "2-3k": 80, "3-4k": 61, "4-5k": 148, "5-7.5k": 253, "7.5-10k": 219, "10-15k": 138, "15k+": 71}}}};
+
+const ADV_DATA = {"rfm":{"segments":{"一般客戶":{"人數":7571,"平均R天":535,"平均F訂單":1.0,"平均M金額":6266,"總業績":47436380,"業績佔比":27.7},"新晉高消費":{"人數":3733,"平均R天":136,"平均F訂單":1.0,"平均M金額":9798,"總業績":36577657,"業績佔比":21.4},"冠軍客戶":{"人數":1076,"平均R天":120,"平均F訂單":6.0,"平均M金額":24273,"總業績":26117618,"業績佔比":15.3},"已流失":{"人數":4029,"平均R天":942,"平均F訂單":1.0,"平均M金額":5905,"總業績":23791364,"業績佔比":13.9},"忠誠客戶":{"人數":867,"平均R天":131,"平均F訂單":3.0,"平均M金額":14158,"總業績":12275339,"業績佔比":7.2},"潛力客戶":{"人數":631,"平均R天":418,"平均F訂單":4.0,"平均M金額":16199,"總業績":10221586,"業績佔比":6.0},"新客觀察":{"人數":2433,"平均R天":150,"平均F訂單":1.0,"平均M金額":2988,"總業績":7270657,"業績佔比":4.2},"流失中老客":{"人數":400,"平均R天":718,"平均F訂單":3.0,"平均M金額":12186,"總業績":4874244,"業績佔比":2.8},"需挽回 VIP":{"人數":124,"平均R天":669,"平均F訂單":4.0,"平均M金額":20859,"總業績":2586511,"業績佔比":1.5}},"total_customers":20864,"total_revenue":171151356},"flow":{"stores":["台中園道店","台北中山店","台北東門店","台北松菸店","官網"],"matrix_count":{"台中園道店":{"台中園道店":1941,"台北中山店":61,"台北東門店":39,"台北松菸店":69,"官網":159},"台北中山店":{"台中園道店":59,"台北中山店":2561,"台北東門店":331,"台北松菸店":421,"官網":365},"台北東門店":{"台中園道店":29,"台北中山店":203,"台北東門店":1730,"台北松菸店":207,"官網":182},"台北松菸店":{"台中園道店":60,"台北中山店":292,"台北東門店":280,"台北松菸店":2286,"官網":283},"官網":{"台中園道店":60,"台北中山店":82,"台北東門店":43,"台北松菸店":95,"官網":3714}},"matrix_pct":{"台中園道店":{"台中園道店":85.5,"台北中山店":2.7,"台北東門店":1.7,"台北松菸店":3.0,"官網":7.0},"台北中山店":{"台中園道店":1.6,"台北中山店":68.5,"台北東門店":8.9,"台北松菸店":11.3,"官網":9.8},"台北東門店":{"台中園道店":1.2,"台北中山店":8.6,"台北東門店":73.6,"台北松菸店":8.8,"官網":7.7},"台北松菸店":{"台中園道店":1.9,"台北中山店":9.1,"台北東門店":8.7,"台北松菸店":71.4,"官網":8.8},"官網":{"台中園道店":1.5,"台北中山店":2.1,"台北東門店":1.1,"台北松菸店":2.4,"官網":93.0}}},"seasonal":{"months":[1,2,3,4,5,6,7,8,9,10,11,12],"stores":["台中園道店","台北中山店","台北東門店","台北松菸店","官網"],"data":{"台中園道店":[1083529,969843,872628,739715,713605,672598,679664,790273,820658,878385,834848,1109401],"台北中山店":[1505602,1442546,1407625,1146878,1239153,1036819,1066613,1089587,1083855,1395372,1361512,1614494],"台北東門店":[1225152,1046960,1057012,893655,793599,829895,650813,753728,855887,910016,1145463,1415535],"台北松菸店":[1394681,1242480,1371726,1102658,1087223,1018708,910518,858702,1166677,1197781,1250952,1477359],"官網":[1082205,579254,1002828,707758,427982,601700,661037,642762,475930,802674,775964,997006]}},"vip_threshold":{"single_order_percentiles":{"P50":4688,"P70":6588,"P80":7908,"P90":9787,"P95":13075,"P97.5":15573,"P99":18977},"annual_cum_y3_percentiles":{"P50":6064,"P70":8040,"P80":9468,"P90":13482,"P95":17213,"P97.5":21717,"P99":27903},"current_vip_median_annual_y3":6924,"current_vip_mean_annual_y3":8394,"thresholds_table":[{"門檻":"6k","金額":6000,"單筆達標佔比":34.1,"單筆達標數":4859,"年度達標人數":4627,"年度達標佔比":50.2,"達標者平均":10826},{"門檻":"10k","金額":10000,"單筆達標佔比":9.3,"單筆達標數":1326,"年度達標人數":1643,"年度達標佔比":17.8,"達標者平均":16330},{"門檻":"12k","金額":12000,"單筆達標佔比":7.2,"單筆達標數":1025,"年度達標人數":1311,"年度達標佔比":14.2,"達標者平均":17721},{"門檻":"15k","金額":15000,"單筆達標佔比":2.8,"單筆達標數":403,"年度達標人數":687,"年度達標佔比":7.5,"達標者平均":21818},{"門檻":"20k","金額":20000,"單筆達標佔比":0.8,"單筆達標數":120,"年度達標人數":287,"年度達標佔比":3.1,"達標者平均":28316},{"門檻":"30k","金額":30000,"單筆達標佔比":0.1,"單筆達標數":21,"年度達標人數":82,"年度達標佔比":0.9,"達標者平均":40029},{"門檻":"50k","金額":50000,"單筆達標佔比":0.0,"單筆達標數":1,"年度達標人數":11,"年度達標佔比":0.1,"達標者平均":69381}]}};
 
 const fmtMoney = n => n >= 100000 ? 'NT$ ' + (n/10000).toFixed(0) + ' 萬' : 'NT$ ' + n.toLocaleString();
 const fmtMoneyFull = n => 'NT$ ' + n.toLocaleString();
@@ -620,6 +806,152 @@ function updateClock(){
   document.getElementById('clock').textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
+// === Advanced analytics rendering ===
+
+const RFM_COLORS = {
+  '冠軍客戶':'#284234',
+  '忠誠客戶':'#3d6b50',
+  '新晉高消費':'#A54A1A',
+  '潛力客戶':'#8D5531',
+  '新客觀察':'#CFA294',
+  '需挽回 VIP':'#c0392b',
+  '流失中老客':'#b8860b',
+  '已流失':'#b09a88',
+  '一般客戶':'#9ab3a0',
+};
+
+function renderRFM(){
+  const segs = ADV_DATA.rfm.segments;
+  const totalCust = ADV_DATA.rfm.total_customers;
+  const totalRev = ADV_DATA.rfm.total_revenue;
+  document.getElementById('rfm-total-label').textContent =
+    `總會員 ${fmtNum(totalCust)} 人｜總業績 ${fmtMan(totalRev)}`;
+
+  const order = ['冠軍客戶','忠誠客戶','新晉高消費','潛力客戶','新客觀察','需挽回 VIP','流失中老客','已流失','一般客戶'];
+  document.getElementById('rfm-grid').innerHTML = order.map(name => {
+    const s = segs[name];
+    if (!s) return '';
+    const color = RFM_COLORS[name] || '#888';
+    return `<div class="rfm-card" style="--rfm-color:${color}">
+      <div class="rfm-hd">
+        <div class="rfm-name">${name}</div>
+        <div class="rfm-tag" style="background:${color}">${s.業績佔比}%</div>
+      </div>
+      <div class="rfm-people">${fmtNum(s.人數)}</div>
+      <div class="rfm-people-l">人 ｜ 佔 ${(s.人數/totalCust*100).toFixed(1)}%</div>
+      <div class="rfm-stats">
+        <div class="rfm-stat"><div class="rfm-stat-l">R 天數</div><div class="rfm-stat-v">${s.平均R天}d</div></div>
+        <div class="rfm-stat"><div class="rfm-stat-l">F 訂單</div><div class="rfm-stat-v">${s.平均F訂單.toFixed(1)}</div></div>
+      </div>
+      <div class="rfm-revenue">
+        <span>M 平均</span><span style="color:${color};font-weight:700">${fmtMoneyFull(s.平均M金額)}</span>
+      </div>
+      <div class="rfm-revenue" style="border-top:none;padding-top:0">
+        <span>群業績</span><span>${fmtMan(s.總業績)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderFlow(){
+  const flow = ADV_DATA.flow;
+  const stores = ['台北中山店','台北松菸店','台北東門店','台中園道店','官網'];
+  let html = '<thead><tr><th>首購店 \\ 後續</th>';
+  stores.forEach(s => html += `<th>${s}</th>`);
+  html += '</tr></thead><tbody>';
+  stores.forEach(fr => {
+    if (!flow.matrix_pct[fr]) {
+      html += `<tr><td>${fr}</td>${stores.map(()=>'<td style="color:var(--text-muted)">—</td>').join('')}</tr>`;
+      return;
+    }
+    html += `<tr><td>${fr}</td>`;
+    stores.forEach(to => {
+      const pct = flow.matrix_pct[fr][to] || 0;
+      const cnt = flow.matrix_count[fr][to] || 0;
+      const isDiag = fr === to;
+      let bg = '';
+      let color = 'var(--text)';
+      if (pct >= 50) { bg = '#284234'; color = '#fff'; }
+      else if (pct >= 20) { bg = '#5a8068'; color = '#fff'; }
+      else if (pct >= 10) { bg = '#A54A1A'; color = '#fff'; }
+      else if (pct >= 5) { bg = '#CFA294'; color = '#fff'; }
+      else if (pct >= 1) { bg = '#F5EDE3'; color = '#284234'; }
+      else { bg = '#FAFAFA'; color = '#b09a88'; }
+      html += `<td class="flow-cell ${isDiag?'flow-diag':''}" style="background:${bg};color:${color}">
+        <div class="flow-pct">${pct.toFixed(1)}%</div>
+        <div class="flow-cnt">${cnt} 單</div>
+      </td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  document.getElementById('flow-tbl').innerHTML = html;
+}
+
+function renderHeatmap(){
+  const h = ADV_DATA.seasonal;
+  const stores = ['台北中山店','台北松菸店','台北東門店','台中園道店','官網'];
+  const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+  let maxVal = 0;
+  stores.forEach(s => { if (h.data[s]) h.data[s].forEach(v => { if (v > maxVal) maxVal = v; }); });
+
+  function cellColor(v){
+    if (v === 0) return {bg:'#f4f0eb', fg:'#b09a88'};
+    const ratio = v / maxVal;
+    if (ratio >= 0.85) return {bg:'#A54A1A', fg:'#fff'};
+    if (ratio >= 0.70) return {bg:'#c46838', fg:'#fff'};
+    if (ratio >= 0.55) return {bg:'#d68a5e', fg:'#fff'};
+    if (ratio >= 0.40) return {bg:'#e3ad88', fg:'#284234'};
+    if (ratio >= 0.25) return {bg:'#efcbb1', fg:'#284234'};
+    return {bg:'#f7e4d2', fg:'#284234'};
+  }
+
+  let html = '<div class="hm-h"></div>';
+  months.forEach(m => html += `<div class="hm-h">${m}</div>`);
+  stores.forEach(s => {
+    html += `<div class="hm-d">${s}</div>`;
+    const data = h.data[s] || [];
+    for (let i = 0; i < 12; i++) {
+      const v = data[i] || 0;
+      const {bg, fg} = cellColor(v);
+      const label = v >= 100000 ? (v/10000).toFixed(0) + '萬' : '—';
+      html += `<div class="hm-c" style="background:${bg};color:${fg}" title="${s} ${months[i]}：NT$ ${v.toLocaleString()}">
+        <div class="hm-c-amt">${label}</div>
+      </div>`;
+    }
+  });
+  document.getElementById('heatmap').innerHTML = html;
+}
+
+function renderThresholdTable(){
+  const t = ADV_DATA.vip_threshold.thresholds_table;
+  let html = `<thead><tr>
+    <th>金額</th>
+    <th>單筆達標%</th>
+    <th>單筆數</th>
+    <th>年度達標人數</th>
+    <th>年度達標%</th>
+    <th>達標者均</th>
+  </tr></thead><tbody>`;
+  t.forEach(row => {
+    const isSuggestedVIP = row.金額 === 12000;
+    const isSuggestedVVIP = row.金額 === 30000;
+    const cls = (isSuggestedVIP || isSuggestedVVIP) ? 'suggested' : '';
+    const tag = isSuggestedVIP ? ' (VIP)' : (isSuggestedVVIP ? ' (VVIP)' : '');
+    html += `<tr class="${cls}">
+      <td>NT$ ${row.金額.toLocaleString()}${tag}</td>
+      <td>${row.單筆達標佔比}%</td>
+      <td>${fmtNum(row.單筆達標數)}</td>
+      <td>${fmtNum(row.年度達標人數)}</td>
+      <td>${row.年度達標佔比}%</td>
+      <td>${fmtMoneyFull(row.達標者平均)}</td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('threshold-tbl').innerHTML = html;
+}
+
 // Boot
 renderTopKpi();
 renderInsight();
@@ -631,6 +963,10 @@ renderStoreCards();
 renderAovChart();
 render3YrMonthly();
 renderNewCustChart();
+renderRFM();
+renderFlow();
+renderHeatmap();
+renderThresholdTable();
 updateClock();
 setInterval(updateClock, 1000);
 </script>
