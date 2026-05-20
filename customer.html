@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜顧客分析儀表板</title>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;--rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;--bg:#F5EDE3;--surface:#ffffff;--surface2:#FAF5EF;--border:rgba(40,66,52,0.10);--border2:rgba(40,66,52,0.22);--text:#284234;--text-sub:#8D5531;--text-muted:#b09a88;--positive:#1a7a4a;--negative:#c0392b;--warning:#b8860b;--new:#A54A1A;--repeat:#284234;--vip:#8D5531}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100vh}
+.hdr{position:sticky;top:0;z-index:100;background:var(--green);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--sand)}
+.brand-sep{width:1px;height:16px;background:rgba(226,206,185,.3)}
+.brand-sub{font-size:10px;color:var(--gray-pink);font-family:'Space Mono',monospace}
+.hdr-r{display:flex;align-items:center;gap:14px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#5be8a0;box-shadow:0 0 8px #5be8a0;animation:blink 2.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hclock{font-family:'Space Mono',monospace;font-size:12px;color:var(--gray-pink)}
+.data-tag{padding:3px 10px;border-radius:20px;border:1px solid rgba(226,206,185,.25);font-size:10px;font-family:'Space Mono',monospace;color:var(--gray-pink)}
+.back-link{font-family:'Space Mono',monospace;font-size:11px;color:var(--gray-pink);text-decoration:none;border:1px solid rgba(226,206,185,.25);padding:3px 10px;border-radius:20px;transition:all .15s}
+.back-link:hover{color:var(--sand);border-color:var(--sand)}
+.container{max-width:1400px;margin:0 auto;padding:1.75rem 2rem}
+.g2{display:grid;grid-template-columns:3fr 2fr;gap:1.25rem;margin-bottom:1.25rem}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+.g-half{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:1.25rem}
+@media(max-width:1000px){.g2,.g3,.g-half,.g4{grid-template-columns:1fr}}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;margin-top:.25rem;gap:12px;flex-wrap:wrap}
+.sec-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.sec-title::before{content:'';display:block;width:3px;height:14px;background:var(--rust);border-radius:2px}
+.sec-date{font-size:11px;color:var(--text-muted);font-family:'Space Mono',monospace}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.35rem}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem}
+.card-lbl{font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px}
+.card-lbl::before{content:'';display:block;width:3px;height:12px;background:var(--rust);border-radius:2px}
+.card-badge{font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px}
+
+/* Year toggle */
+.yr-toggle{display:flex;border:1px solid var(--border2);border-radius:7px;overflow:hidden;background:var(--surface)}
+.yr-btn{padding:7px 18px;font-size:12px;font-family:'Space Mono',monospace;cursor:pointer;transition:all .18s;background:transparent;color:var(--text-muted);border:none;border-right:1px solid var(--border);font-weight:700}
+.yr-btn:last-child{border-right:none}
+.yr-btn:hover{color:var(--text)}
+.yr-btn.active{background:var(--green);color:var(--sand)}
+.yr-btn .yr-period{font-size:9px;display:block;opacity:.65;font-weight:400;margin-top:2px}
+
+/* Top KPI cards */
+.kpi5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1.25rem}
+@media(max-width:1100px){.kpi5{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:640px){.kpi5{grid-template-columns:repeat(2,1fr)}}
+.kc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.1rem;position:relative;overflow:hidden}
+.kc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc-color,var(--green))}
+.kc-l{font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.kc-v{font-size:22px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text);line-height:1;margin-bottom:6px}
+.kc-d{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.delta{font-size:10px;font-family:'Space Mono',monospace;padding:2px 6px;border-radius:3px;font-weight:700}
+.pos{background:rgba(26,122,74,.12);color:var(--positive)}.neg{background:rgba(192,57,43,.12);color:var(--negative)}.neu{background:var(--surface2);color:var(--text-muted)}
+.kc-vs{font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace}
+.kc-sub{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace}
+
+/* Segment hero cards */
+.seg-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:1rem}
+.seg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--seg-color)}
+.seg-hdr{display:flex;align-items:flex-start;justify-content:space-between}
+.seg-title{font-size:18px;font-weight:700;color:var(--text)}
+.seg-desc{font-size:10px;color:var(--text-muted);margin-top:4px;font-family:'Space Mono',monospace}
+.seg-tag{font-size:10px;font-family:'Space Mono',monospace;padding:3px 10px;border-radius:14px;background:var(--seg-color);color:#fff;font-weight:700}
+.seg-main{display:flex;align-items:baseline;gap:10px;padding:.5rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.seg-main-v{font-family:'Space Mono',monospace;font-size:30px;font-weight:700;color:var(--seg-color);line-height:1}
+.seg-main-u{font-size:11px;color:var(--text-muted);font-family:'Space Mono',monospace}
+.seg-main-r{margin-left:auto;text-align:right}
+.seg-main-r-v{font-family:'Space Mono',monospace;font-size:17px;font-weight:700;color:var(--text)}
+.seg-main-r-l{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace}
+.seg-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg-m{padding:.7rem .9rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px}
+.seg-m-l{font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;margin-bottom:3px}
+.seg-m-v{font-family:'Space Mono',monospace;font-size:17px;font-weight:700;color:var(--text);line-height:1}
+.seg-m-d{font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:3px}
+
+/* Store table */
+.ctbl{width:100%;border-collapse:collapse;font-size:12px}
+.ctbl th{text-align:right;padding:9px 10px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--border);background:var(--surface2);white-space:nowrap}
+.ctbl th:first-child{text-align:left}
+.ctbl td{padding:10px;border-bottom:1px solid var(--border);font-family:'Space Mono',monospace;text-align:right}
+.ctbl td:first-child{text-align:left}
+.ctbl tr:last-child td{border-bottom:none}.ctbl tr:hover td{background:var(--surface2)}
+.td-s{font-family:'Noto Sans TC',sans-serif;font-size:13px;font-weight:600;color:var(--text)}
+.td-new{color:var(--new);font-weight:700}.td-rep{color:var(--repeat);font-weight:700}.td-vip{color:var(--vip);font-weight:700}
+.pct-bar{display:inline-block;width:50px;height:6px;background:var(--sand);border-radius:3px;overflow:hidden;margin-right:8px;vertical-align:middle}
+.pct-bar-fill{height:100%;background:var(--green);border-radius:3px}
+
+/* Cohort matrix */
+.cohort-grid{display:grid;grid-template-columns:80px repeat(3,1fr);gap:6px}
+.coh-h,.coh-name{padding:8px;font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);text-align:center;font-weight:700;background:var(--surface2);border-radius:6px}
+.coh-name{color:var(--text);text-align:left;padding-left:12px}
+.coh-cell{padding:10px 6px;border-radius:6px;text-align:center;font-family:'Space Mono',monospace;position:relative;cursor:default}
+.coh-pct{font-size:16px;font-weight:700;line-height:1.1}
+.coh-cnt{font-size:9px;opacity:.85;margin-top:3px}
+.coh-empty{background:#f4f0eb;color:var(--text-muted)}
+
+/* Chart heights */
+.ch180{position:relative;height:200px}
+.ch240{position:relative;height:260px}
+.ch300{position:relative;height:320px}
+
+/* Insight callouts */
+.insight{display:flex;gap:12px;padding:1rem 1.2rem;background:#fff8ef;border:1px solid #e6c89e;border-left:4px solid var(--rust);border-radius:8px;margin-bottom:1.25rem}
+.insight.warn{background:#fff5f0;border:1px solid #f3c8b3;border-left:4px solid var(--negative)}
+.insight-icon{font-family:'Space Mono',monospace;font-size:14px;color:var(--rust);font-weight:700;flex-shrink:0}
+.insight.warn .insight-icon{color:var(--negative)}
+.insight-txt{font-size:12px;line-height:1.6;color:var(--text)}
+.insight-txt b{color:var(--rust)}
+.insight.warn .insight-txt b{color:var(--negative)}
+
+/* Store cards */
+.store-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.25rem}
+@media(max-width:1200px){.store-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.store-grid{grid-template-columns:1fr 1fr}}
+.store-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem;position:relative;overflow:hidden}
+.store-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--sc-color,var(--green))}
+.sc-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:.8rem;display:flex;align-items:center;gap:6px}
+.sc-aov{display:flex;flex-direction:column;gap:6px;margin-bottom:.8rem}
+.sc-aov-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px dashed var(--border)}
+.sc-aov-row:last-child{border-bottom:none}
+.sc-aov-lbl{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace}
+.sc-aov-val{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text)}
+.sc-stat{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sc-stat-c{padding:6px 8px;background:var(--surface2);border-radius:6px;text-align:center}
+.sc-stat-l{font-size:8px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-bottom:2px}
+.sc-stat-v{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--text)}
+
+/* LTV table */
+.ltv-tbl td.cohort-tag{font-family:'Space Mono',monospace;font-weight:700;color:var(--text-sub)}
+
+.footer{background:var(--green);text-align:center;padding:1.25rem;font-size:11px;font-family:'Space Mono',monospace;color:var(--gray-pink);margin-top:2rem}
+
+.warn-tag{display:inline-block;background:var(--negative);color:#fff;font-size:9px;font-family:'Space Mono',monospace;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:6px;vertical-align:middle}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="brand">
+    <span class="brand-name">ORINGO</span>
+    <div class="brand-sep"></div>
+    <span class="brand-sub">CUSTOMER ANALYTICS</span>
+  </div>
+  <div class="hdr-r">
+    <a href="https://garykao0726.github.io/" class="back-link">← 中控中心</a>
+    <div class="live-dot"></div>
+    <div class="hclock" id="clock">--:--:--</div>
+    <div class="data-tag">3 YR DATASET</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Year toggle -->
+  <div class="sec-hdr">
+    <div class="sec-title">顧客總覽</div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="sec-date" id="dr-label">資料區間 2023/05 – 2026/04 ｜ 共 36 個月</div>
+      <div class="yr-toggle" id="yr-toggle">
+        <button class="yr-btn" data-yr="Y1">Y1<span class="yr-period">23/05–24/04</span></button>
+        <button class="yr-btn" data-yr="Y2">Y2<span class="yr-period">24/05–25/04</span></button>
+        <button class="yr-btn active" data-yr="Y3">Y3<span class="yr-period">25/05–26/04</span></button>
+      </div>
+    </div>
+  </div>
+  <div class="kpi5" id="kpi-top"></div>
+
+  <!-- Key insights -->
+  <div class="insight">
+    <div class="insight-icon">▸</div>
+    <div class="insight-txt" id="hero-insight"></div>
+  </div>
+
+  <div class="insight warn">
+    <div class="insight-icon">⚠</div>
+    <div class="insight-txt">
+      <b>VIP 系統性流失警訊</b>：OR 開頭卡號為舊系統 VIP，無新增來源。
+      3 年來會員數 1,614 → 1,353 → 957（-41%），業績從 1,962 萬掉到 803 萬（-59%），
+      VIP 平均客單也從 NT$ 7,423 跌到 NT$ 4,587。<b>建議啟動 VIP 重新激活方案，或設計新版 VIP 制度。</b>
+    </div>
+  </div>
+
+  <!-- 三大客群 -->
+  <div class="sec-hdr">
+    <div class="sec-title">三大客群分析</div>
+    <div class="sec-date" id="seg-year-label">Y3｜2025/05 – 2026/04</div>
+  </div>
+  <div class="g3" id="seg-cards"></div>
+
+  <!-- Cohort retention -->
+  <div class="sec-hdr">
+    <div class="sec-title">世代留存矩陣</div>
+    <div class="sec-date">看每屆新客在後續年度的回購表現</div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">留存率 Heatmap</span><span class="card-badge">每屆世代 × 各年</span></div>
+      <div id="cohort-matrix"></div>
+      <div style="margin-top:14px;font-size:11px;color:var(--text-sub);line-height:1.7">
+        <b>關鍵發現：</b>Y1 招到 7,405 位新客 → Y2 只剩 19.6% 活躍 → Y3 剩 18.3%。
+        <b style="color:var(--negative)">約 80% 的新客在隔年不會再回購</b>，這是品牌最大的留存挑戰。
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">跨年度 LTV｜依首購世代</span><span class="card-badge">真實累積貢獻</span></div>
+      <table class="ctbl ltv-tbl" id="ltv-tbl"></table>
+      <div style="margin-top:14px;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--vip)">
+        <div style="font-size:11px;color:var(--text-sub);margin-bottom:4px;font-weight:700">VIP vs 一般客 (3 年累積)</div>
+        <div style="font-family:'Space Mono',monospace;font-size:12px;display:flex;justify-content:space-between">
+          <span>VIP (2,571 人)：<b style="color:var(--vip);font-size:14px">NT$ 16,359</b></span>
+          <span>非 VIP (18,293 人)：<b style="color:var(--text);font-size:14px">NT$ 7,057</b></span>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;font-family:'Space Mono',monospace">VIP 終身價值是一般客的 2.32 倍</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 各店消費習性 -->
+  <div class="sec-hdr">
+    <div class="sec-title">各店消費習性</div>
+    <div class="sec-date" id="store-year-label">Y3｜同會員同店同日合併為 1 訂單</div>
+  </div>
+  <div class="card" style="margin-bottom:1.25rem;padding:1rem 1.1rem">
+    <table class="ctbl" id="store-tbl"></table>
+  </div>
+  <div class="store-grid" id="store-cards"></div>
+
+  <!-- 3-year trend -->
+  <div class="sec-hdr">
+    <div class="sec-title">3 年月度業績趨勢</div>
+    <div class="sec-date">新客 vs 舊客回流</div>
+  </div>
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="ch300"><canvas id="monthly3yr-chart"></canvas></div>
+  </div>
+
+  <!-- 圖表區 -->
+  <div class="g-half">
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">客單價分布｜依客群</span><span class="card-badge" id="aov-year-label">Y3 訂單級</span></div>
+      <div class="ch240"><canvas id="aov-chart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">每月新會員取得</span><span class="card-badge">3 年連續</span></div>
+      <div class="ch240"><canvas id="newcust-chart"></canvas></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  © 2026 ORINGO Customer Analytics ｜ 資料：2023/05 – 2026/04 共 36 個月 ｜ 規則：同會員同店同日合併 1 單、VIP = OR 開頭卡號、新舊客以「該會員首購日落點」判定
+</div>
+
+<script>
+const DATA = {"meta": {"years": {"Y1": "2023/05–2024/04", "Y2": "2024/05–2025/04", "Y3": "2025/05–2026/04"}, "date_range": "2023-05-01 ~ 2026-04-30", "total_orders": 36416, "total_customers": 20864, "total_revenue": 171151356}, "yearly": {"Y1": {"唯一會員": 7405, "新客數": 7405, "舊客回流數": 0, "訂單數": 9711, "總業績": 51440615, "平均客單": 5297, "整體再購率": 22.5, "新客平均客單": 5297, "舊客平均客單": 0, "新客業績": 51440615, "舊客業績": 0, "VIP會員數": 1614, "VIP業績": 19621205, "VIP平均客單": 7423, "VIP訂單數": 2643, "回購單平均客單": 2755, "回購訂單數": 2306}, "Y2": {"唯一會員": 8175, "新客數": 6721, "舊客回流數": 1454, "訂單數": 12452, "總業績": 55303350, "平均客單": 4441, "整體再購率": 36.2, "新客平均客單": 4458, "舊客平均客單": 4365, "新客業績": 45026869, "舊客業績": 10276481, "VIP會員數": 1353, "VIP業績": 14404492, "VIP平均客單": 5957, "VIP訂單數": 2418, "回購單平均客單": 1700, "回購訂單數": 4277}, "Y3": {"唯一會員": 9214, "新客數": 6738, "舊客回流數": 2476, "訂單數": 14253, "總業績": 64407391, "平均客單": 4518, "整體再購率": 37.1, "新客平均客單": 4794, "舊客平均客單": 3859, "新客業績": 48191536, "舊客業績": 16215855, "VIP會員數": 957, "VIP業績": 8033441, "VIP平均客單": 4587, "VIP訂單數": 1751, "回購單平均客單": 1692, "回購訂單數": 5039}}, "cohorts": {"Y1": {"人數": 7405, "Y1_活躍": 7405, "Y1_業績": 51440615, "Y1_留存率": 100.0, "Y2_活躍": 1454, "Y2_業績": 10276481, "Y2_留存率": 19.6, "Y3_活躍": 1357, "Y3_業績": 9371381, "Y3_留存率": 18.3}, "Y2": {"人數": 6721, "Y1_活躍": 0, "Y1_業績": 0, "Y1_留存率": 0.0, "Y2_活躍": 6721, "Y2_業績": 45026869, "Y2_留存率": 100.0, "Y3_活躍": 1119, "Y3_業績": 6844474, "Y3_留存率": 16.6}, "Y3": {"人數": 6738, "Y1_活躍": 0, "Y1_業績": 0, "Y1_留存率": 0.0, "Y2_活躍": 0, "Y2_業績": 0, "Y2_留存率": 0.0, "Y3_活躍": 6738, "Y3_業績": 48191536, "Y3_留存率": 100.0}}, "ltv_by_cohort": {"Y1": {"人數": 7405, "平均LTV": 9600, "中位LTV": 7045, "平均訂單": 1.94}, "Y2": {"人數": 6721, "平均LTV": 7717, "中位LTV": 6137, "平均訂單": 1.78}, "Y3": {"人數": 6738, "平均LTV": 7152, "中位LTV": 6288, "平均訂單": 1.49}}, "vip_vs_normal": {"VIP": {"人數": 2571, "平均LTV": 16359}, "非VIP": {"人數": 18293, "平均LTV": 7056}}, "store_yearly": {"台北中山店": {"Y1": {"訂單數": 3124, "唯一會員": 2514, "總業績": 15654936, "平均客單": 5011, "新客平均客單": 5011, "舊客平均客單": 0, "VIP平均客單": 6838, "同店再購率": 19.5, "新客數": 2514, "舊客數": 0, "VIP數": 472}, "Y2": {"訂單數": 2707, "唯一會員": 2204, "總業績": 14171227, "平均客單": 5235, "新客平均客單": 5393, "舊客平均客單": 4681, "VIP平均客單": 6846, "同店再購率": 18.1, "新客數": 1745, "舊客數": 459, "VIP數": 370}, "Y3": {"訂單數": 3298, "唯一會員": 2592, "總業績": 16344009, "平均客單": 4955, "新客平均客單": 5494, "舊客平均客單": 3829, "VIP平均客單": 4498, "同店再購率": 20.8, "新客數": 1843, "舊客數": 749, "VIP數": 258}}, "台北東門店": {"Y1": {"訂單數": 2077, "唯一會員": 1656, "總業績": 10976922, "平均客單": 5284, "新客平均客單": 5284, "舊客平均客單": 0, "VIP平均客單": 7940, "同店再購率": 19.2, "新客數": 1656, "舊客數": 0, "VIP數": 379}, "Y2": {"訂單數": 1980, "唯一會員": 1551, "總業績": 10527515, "平均客單": 5316, "新客平均客單": 5495, "舊客平均客單": 4740, "VIP平均客單": 6250, "同店再購率": 19.4, "新客數": 1228, "舊客數": 323, "VIP數": 300}, "Y3": {"訂單數": 2345, "唯一會員": 1818, "總業績": 13228708, "平均客單": 5641, "新客平均客單": 6152, "舊客平均客單": 4539, "VIP平均客單": 5583, "同店再購率": 20.5, "新客數": 1300, "舊客數": 518, "VIP數": 214}}, "台中園道店": {"Y1": {"訂單數": 1951, "唯一會員": 1449, "總業績": 10899357, "平均客單": 5586, "新客平均客單": 5586, "舊客平均客單": 0, "VIP平均客單": 7797, "同店再購率": 23.7, "新客數": 1449, "舊客數": 0, "VIP數": 375}, "Y2": {"訂單數": 1693, "唯一會員": 1273, "總業績": 9226949, "平均客單": 5450, "新客平均客單": 5690, "舊客平均客單": 4730, "VIP平均客單": 6530, "同店再購率": 24.4, "新客數": 989, "舊客數": 284, "VIP數": 283}, "Y3": {"訂單數": 1880, "唯一會員": 1401, "總業績": 10369135, "平均客單": 5515, "新客平均客單": 5948, "舊客平均客單": 4550, "VIP平均客單": 5056, "同店再購率": 25.6, "新客數": 1010, "舊客數": 391, "VIP數": 192}}, "台北松菸店": {"Y1": {"訂單數": 2559, "唯一會員": 2044, "總業績": 13909400, "平均客單": 5435, "新客平均客單": 5435, "舊客平均客單": 0, "VIP平均客單": 7264, "同店再購率": 18.9, "新客數": 2044, "舊客數": 0, "VIP數": 511}, "Y2": {"訂單數": 2391, "唯一會員": 1830, "總業績": 13283578, "平均客單": 5555, "新客平均客單": 5843, "舊客平均客單": 4663, "VIP平均客單": 6216, "同店再購率": 21.9, "新客數": 1411, "舊客數": 419, "VIP數": 423}, "Y3": {"訂單數": 2811, "唯一會員": 2131, "總業績": 15045417, "平均客單": 5352, "新客平均客單": 5942, "舊客平均客單": 4299, "VIP平均客單": 4725, "同店再購率": 23.6, "新客數": 1443, "舊客數": 688, "VIP數": 315}}, "官網": {"Y1": {"訂單數": 0, "唯一會員": 0, "總業績": 0, "平均客單": 0, "新客平均客單": 0, "舊客平均客單": 0, "VIP平均客單": 0, "同店再購率": 0, "新客數": 0, "舊客數": 0, "VIP數": 0}, "Y2": {"訂單數": 3681, "唯一會員": 1722, "總業績": 8094081, "平均客單": 2198, "新客平均客單": 2227, "舊客平均客單": 1839, "VIP平均客單": 2656, "同店再購率": 85.1, "新客數": 1595, "舊客數": 127, "VIP數": 128}, "Y3": {"訂單數": 3919, "唯一會員": 1806, "總業績": 9420122, "平均客單": 2403, "新客平均客單": 2454, "舊客平均客單": 2207, "VIP平均客單": 2341, "同店再購率": 86.9, "新客數": 1449, "舊客數": 357, "VIP數": 104}}}, "monthly": {"2023-05": {"新客訂單": 815, "舊客訂單": 0, "新客業績": 4257760, "舊客業績": 0, "新客數": 725}, "2023-06": {"新客訂單": 741, "舊客訂單": 0, "新客業績": 3996484, "舊客業績": 0, "新客數": 657}, "2023-07": {"新客訂單": 756, "舊客訂單": 0, "新客業績": 3754191, "舊客業績": 0, "新客數": 672}, "2023-08": {"新客訂單": 767, "舊客訂單": 0, "新客業績": 3599506, "舊客業績": 0, "新客數": 670}, "2023-09": {"新客訂單": 771, "舊客訂單": 0, "新客業績": 4220465, "舊客業績": 0, "新客數": 685}, "2023-10": {"新客訂單": 780, "舊客訂單": 0, "新客業績": 4147672, "舊客業績": 0, "新客數": 698}, "2023-11": {"新客訂單": 763, "舊客訂單": 0, "新客業績": 3948600, "舊客業績": 0, "新客數": 684}, "2023-12": {"新客訂單": 985, "舊客訂單": 0, "新客業績": 5379812, "舊客業績": 0, "新客數": 880}, "2024-01": {"新客訂單": 871, "舊客訂單": 0, "新客業績": 4930548, "舊客業績": 0, "新客數": 790}, "2024-02": {"新客訂單": 879, "舊客訂單": 0, "新客業績": 4847141, "舊客業績": 0, "新客數": 788}, "2024-03": {"新客訂單": 859, "舊客訂單": 0, "新客業績": 4589877, "舊客業績": 0, "新客數": 767}, "2024-04": {"新客訂單": 724, "舊客訂單": 0, "新客業績": 3768559, "舊客業績": 0, "新客數": 653}, "2024-05": {"新客訂單": 559, "舊客訂單": 218, "新客業績": 2963182, "舊客業績": 714611, "新客數": 480}, "2024-06": {"新客訂單": 688, "舊客訂單": 199, "新客業績": 3088519, "舊客業績": 845975, "新客數": 549}, "2024-07": {"新客訂單": 686, "舊客訂單": 187, "新客業績": 2868160, "舊客業績": 771987, "新客數": 528}, "2024-08": {"新客訂單": 700, "舊客訂單": 199, "新客業績": 2875138, "舊客業績": 887365, "新客數": 527}, "2024-09": {"新客訂單": 657, "舊客訂單": 163, "新客業績": 3198224, "舊客業績": 677171, "新客數": 534}, "2024-10": {"新客訂單": 833, "舊客訂單": 192, "新客業績": 4025980, "舊客業績": 959558, "新客數": 647}, "2024-11": {"新客訂單": 953, "舊客訂單": 219, "新客業績": 3971067, "舊客業績": 963192, "新客數": 728}, "2024-12": {"新客訂單": 1200, "舊客訂單": 229, "新客業績": 5255075, "舊客業績": 996644, "新客數": 906}, "2025-01": {"新客訂單": 1151, "舊客訂單": 211, "新客業績": 5246686, "舊客業績": 1124601, "新客數": 874}, "2025-02": {"新客訂單": 974, "舊客訂單": 204, "新客業績": 4160901, "舊客業績": 923467, "新客數": 759}, "2025-03": {"新客訂單": 942, "舊客訂單": 184, "新客業績": 4013509, "舊客業績": 780036, "新客數": 709}, "2025-04": {"新客訂單": 755, "舊客訂單": 149, "新客業績": 3360428, "舊客業績": 631874, "新客數": 568}, "2025-05": {"新客訂單": 670, "舊客訂單": 298, "新客業績": 3356192, "舊客業績": 1064961, "新客數": 526}, "2025-06": {"新客訂單": 610, "舊客訂單": 271, "新客業績": 2820191, "舊客業績": 1126292, "新客數": 465}, "2025-07": {"新客訂單": 609, "舊客訂單": 267, "新客業績": 2711063, "舊客業績": 1139499, "新客數": 453}, "2025-08": {"新客訂單": 728, "舊客訂單": 351, "新客業績": 3210195, "舊客業績": 1190192, "新客數": 565}, "2025-09": {"新客訂單": 702, "舊客訂單": 299, "新客業績": 3420312, "舊客業績": 1216920, "新客數": 564}, "2025-10": {"新客訂單": 880, "舊客訂單": 370, "新客業績": 4229645, "舊客業績": 1387154, "新客數": 682}, "2025-11": {"新客訂單": 1068, "舊客訂單": 374, "新客業績": 4948502, "舊客業績": 1498889, "新客數": 823}, "2025-12": {"新客訂單": 1105, "舊客訂單": 443, "新客業績": 5471854, "舊客業績": 1740995, "新客數": 846}, "2026-01": {"新客訂單": 962, "舊客訂單": 463, "新客業績": 4624432, "舊客業績": 1865036, "新客數": 724}, "2026-02": {"新客訂單": 747, "舊客訂單": 326, "新客業績": 3911406, "舊客業績": 1421081, "新客數": 623}, "2026-03": {"新客訂單": 1119, "舊客訂單": 420, "新客業績": 5294543, "舊客業績": 1454665, "新客數": 865}, "2026-04": {"新客訂單": 851, "舊客訂單": 320, "新客業績": 4193201, "舊客業績": 1110171, "新客數": 659}}, "aov_distribution": {"Y1": {"新客": {"<1k": 1291, "1-2k": 620, "2-3k": 295, "3-4k": 205, "4-5k": 1558, "5-7.5k": 2154, "7.5-10k": 1568, "10-15k": 668, "15k+": 343}, "舊客": {}, "VIP": {"<1k": 222, "1-2k": 133, "2-3k": 61, "3-4k": 59, "4-5k": 234, "5-7.5k": 344, "7.5-10k": 267, "10-15k": 567, "15k+": 333}}, "Y2": {"新客": {"<1k": 885, "1-2k": 616, "2-3k": 362, "3-4k": 489, "4-5k": 1396, "5-7.5k": 1851, "7.5-10k": 1263, "10-15k": 642, "15k+": 262}, "舊客": {"<1k": 385, "1-2k": 184, "2-3k": 99, "3-4k": 108, "4-5k": 311, "5-7.5k": 403, "7.5-10k": 268, "10-15k": 163, "15k+": 57}, "VIP": {"<1k": 222, "1-2k": 138, "2-3k": 79, "3-4k": 74, "4-5k": 241, "5-7.5k": 325, "7.5-10k": 249, "10-15k": 404, "15k+": 185}}, "Y3": {"新客": {"<1k": 853, "1-2k": 525, "2-3k": 458, "3-4k": 319, "4-5k": 1071, "5-7.5k": 1974, "7.5-10k": 1555, "10-15k": 690, "15k+": 305}, "舊客": {"<1k": 846, "1-2k": 418, "2-3k": 176, "3-4k": 124, "4-5k": 437, "5-7.5k": 593, "7.5-10k": 457, "10-15k": 233, "15k+": 98}, "VIP": {"<1k": 271, "1-2k": 165, "2-3k": 80, "3-4k": 61, "4-5k": 148, "5-7.5k": 253, "7.5-10k": 219, "10-15k": 138, "15k+": 71}}}};
+
+const fmtMoney = n => n >= 100000 ? 'NT$ ' + (n/10000).toFixed(0) + ' 萬' : 'NT$ ' + n.toLocaleString();
+const fmtMoneyFull = n => 'NT$ ' + n.toLocaleString();
+const fmtMan = n => (n/10000).toFixed(0) + ' 萬';
+const fmtNum = n => n.toLocaleString();
+const fmtPct = n => n.toFixed(1) + '%';
+const COLORS = {new:'#A54A1A', repeat:'#284234', vip:'#8D5531', oldreturn:'#CFA294', sand:'#E2CEB9', green:'#284234'};
+const YEAR_LABEL = DATA.meta.years;
+
+let currentYear = 'Y3';
+let charts = {};
+
+// --- Top KPI with YoY comparison ---
+function renderTopKpi(){
+  const cur = DATA.yearly[currentYear];
+  const prevYear = {Y3:'Y2', Y2:'Y1', Y1:null}[currentYear];
+  const prev = prevYear ? DATA.yearly[prevYear] : null;
+
+  function delta(curV, prevV, isPct){
+    if (!prev) return {html:'<span class="delta neu">— 無前期</span>'};
+    if (!prevV) return {html:'<span class="delta neu">— N/A</span>'};
+    const d = isPct ? (curV-prevV) : ((curV-prevV)/prevV*100);
+    const sign = d>=0 ? '+' : '';
+    const cls = d>0 ? 'pos' : (d<0 ? 'neg' : 'neu');
+    const suf = isPct ? 'pp' : '%';
+    return {html:`<span class="delta ${cls}">${sign}${d.toFixed(1)}${suf}</span><span class="kc-vs">vs ${prevYear}</span>`};
+  }
+
+  const kpis = [
+    {l:'唯一會員', v:fmtNum(cur.唯一會員), d:delta(cur.唯一會員, prev?.唯一會員), c:'var(--green)'},
+    {l:'總訂單', v:fmtNum(cur.訂單數), d:delta(cur.訂單數, prev?.訂單數), c:'var(--rust)'},
+    {l:'總業績', v:fmtMan(cur.總業績), d:delta(cur.總業績, prev?.總業績), sub:fmtMoneyFull(cur.總業績), c:'var(--brown)'},
+    {l:'平均客單', v:fmtMoneyFull(cur.平均客單), d:delta(cur.平均客單, prev?.平均客單), c:'var(--gray-pink)'},
+    {l:'整體再購率', v:fmtPct(cur.整體再購率), d:delta(cur.整體再購率, prev?.整體再購率, true), c:'var(--green)'},
+  ];
+  document.getElementById('kpi-top').innerHTML = kpis.map(k => `
+    <div class="kc" style="--kc-color:${k.c}">
+      <div class="kc-l">${k.l}</div>
+      <div class="kc-v">${k.v}</div>
+      <div class="kc-d">${k.d.html}</div>
+      ${k.sub?`<div class="kc-sub">${k.sub}</div>`:''}
+    </div>
+  `).join('');
+}
+
+// --- Hero insight ---
+function renderInsight(){
+  const c = DATA.yearly[currentYear];
+  const totalRev = c.總業績;
+  const newPct = (c.新客業績/totalRev*100).toFixed(1);
+  let txt;
+  if (currentYear === 'Y1') {
+    txt = `<b>Y1 為資料起始年</b>，所有 ${fmtNum(c.唯一會員)} 位會員皆視為「新客」（因無更早期資料可比對）。
+           總業績 ${fmtMan(totalRev)}，平均客單 ${fmtMoneyFull(c.平均客單)}。
+           Y1 主要作為後續世代留存分析的基準。`;
+  } else {
+    txt = `<b>${currentYear} 期間共招到 ${fmtNum(c.新客數)} 位新會員</b>，貢獻 ${fmtMan(c.新客業績)}（佔 ${newPct}% 業績）。
+           另有 ${fmtNum(c.舊客回流數)} 位過往會員回流，貢獻 ${fmtMan(c.舊客業績)}。
+           新客平均客單 <b>${fmtMoneyFull(c.新客平均客單)}</b> > 舊客回流客單 ${fmtMoneyFull(c.舊客平均客單)}（新客一次買齊套組，回流客多為補貨型）。`;
+  }
+  document.getElementById('hero-insight').innerHTML = txt;
+}
+
+// --- Segment cards ---
+function renderSegments(){
+  const c = DATA.yearly[currentYear];
+  const totalRev = c.總業績;
+  document.getElementById('seg-year-label').textContent = `${currentYear}｜${YEAR_LABEL[currentYear]}`;
+
+  const newCustCount = c.新客數;
+  const oldCustCount = c.舊客回流數;
+  const newAvgPerCust = c.新客數 > 0 ? (c.新客業績 / c.新客數) : 0;
+  const oldAvgPerCust = c.舊客回流數 > 0 ? (c.舊客業績 / c.舊客回流數) : 0;
+  // repeat count (people who bought ≥2 within year) — approximated using overall_repeat * 唯一會員
+  const repeatCount = Math.round(c.唯一會員 * c.整體再購率/100);
+
+  const cards = [
+    {key:'新客', color:COLORS.new, title:'新客', tag:'NEW', desc:'本期首次建檔且消費',
+     main:fmtNum(newCustCount), unit:'人', sideV:fmtMan(c.新客業績), sideL:`業績 / 佔 ${(c.新客業績/totalRev*100).toFixed(1)}%`,
+     metrics:[
+       {l:'平均客單價', v:fmtMoneyFull(c.新客平均客單), d:'訂單級平均'},
+       {l:'人均年貢獻', v:fmtMoneyFull(Math.round(newAvgPerCust)), d:`總業績 / ${fmtNum(newCustCount)} 人`},
+       {l:'新客訂單', v:fmtNum(c.訂單數 - (c.舊客回流數>0 ? Math.round(c.舊客業績/c.舊客平均客單) : 0)), d:`新客訂單佔比 ${((c.新客業績/totalRev)*100).toFixed(0)}%+`},
+       {l:'業績佔比', v:`${(c.新客業績/totalRev*100).toFixed(1)}%`, d:`vs 舊客 ${(c.舊客業績/totalRev*100).toFixed(1)}%`},
+     ]},
+    {key:'回購客', color:COLORS.repeat, title:'回購客', tag:'REPEAT', desc:'本期內購買 ≥2 次',
+     main:fmtNum(repeatCount), unit:'人', sideV:fmtPct(c.整體再購率), sideL:'整體再購率',
+     metrics:[
+       {l:'回購訂單客單', v:fmtMoneyFull(c.回購單平均客單), d:'第 2 單後（補貨型）'},
+       {l:'回購訂單數', v:fmtNum(c.回購訂單數), d:'第 2 單後總筆數'},
+       {l:'人均訂單', v:(c.訂單數/c.唯一會員).toFixed(2), d:'整體 = 訂單/會員'},
+       {l:'舊客回流人數', v:c.舊客回流數===0?'—':fmtNum(c.舊客回流數), d:c.舊客回流數===0?'Y1 無前期可比':'過往會員回頭'},
+     ]},
+    {key:'VIP', color:COLORS.vip, title:'VIP', tag:'VIP', desc:'OR 開頭卡號（歷史 VIP 會員）',
+     main:fmtNum(c.VIP會員數), unit:'人', sideV:fmtMan(c.VIP業績), sideL:`業績 / 佔 ${(c.VIP業績/totalRev*100).toFixed(1)}%`,
+     metrics:[
+       {l:'VIP 平均客單', v:fmtMoneyFull(c.VIP平均客單), d:currentYear==='Y3'?'⚠ 持續下滑':''},
+       {l:'VIP 訂單', v:fmtNum(c.VIP訂單數), d:`平均 ${(c.VIP訂單數/c.VIP會員數).toFixed(2)} 單/人`},
+       {l:'VIP 人均年貢獻', v:fmtMoneyFull(Math.round(c.VIP業績/c.VIP會員數)), d:'單一年度貢獻'},
+       {l:'VIP 佔比', v:`${(c.VIP會員數/c.唯一會員*100).toFixed(1)}%`, d:'VIP / 唯一會員'},
+     ]},
+  ];
+  document.getElementById('seg-cards').innerHTML = cards.map(c => `
+    <div class="seg-card" style="--seg-color:${c.color}">
+      <div class="seg-hdr">
+        <div>
+          <div class="seg-title">${c.title}</div>
+          <div class="seg-desc">${c.desc}</div>
+        </div>
+        <div class="seg-tag" style="background:${c.color}">${c.tag}</div>
+      </div>
+      <div class="seg-main">
+        <div class="seg-main-v">${c.main}</div>
+        <div class="seg-main-u">${c.unit}</div>
+        <div class="seg-main-r">
+          <div class="seg-main-r-v">${c.sideV}</div>
+          <div class="seg-main-r-l">${c.sideL}</div>
+        </div>
+      </div>
+      <div class="seg-metrics">
+        ${c.metrics.map(m => `
+          <div class="seg-m">
+            <div class="seg-m-l">${m.l}</div>
+            <div class="seg-m-v">${m.v}</div>
+            <div class="seg-m-d">${m.d}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// --- Cohort matrix ---
+function renderCohort(){
+  const cohorts = DATA.cohorts;
+  const yrs = ['Y1','Y2','Y3'];
+  function cellColor(pct){
+    if (pct === 100) return '#284234';
+    if (pct >= 30) return '#A54A1A';
+    if (pct >= 15) return '#CFA294';
+    if (pct > 0) return '#E2CEB9';
+    return null;
+  }
+  function txtColor(pct){
+    return pct >= 30 ? '#fff' : (pct >= 15 ? '#fff' : '#284234');
+  }
+  let html = `<div class="cohort-grid">
+    <div class="coh-h">世代 \\ 年</div>
+    <div class="coh-h">Y1</div>
+    <div class="coh-h">Y2</div>
+    <div class="coh-h">Y3</div>`;
+  yrs.forEach(cohort => {
+    const d = cohorts[cohort];
+    html += `<div class="coh-name">${cohort}<br><span style="font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace">${fmtNum(d.人數)} 人</span></div>`;
+    yrs.forEach(y => {
+      const pct = d[y+'_留存率'];
+      const cnt = d[y+'_活躍'];
+      const rev = d[y+'_業績'];
+      if (cnt === 0 && y < cohort) {
+        html += `<div class="coh-cell coh-empty"><div class="coh-pct">—</div><div class="coh-cnt">未開始</div></div>`;
+      } else {
+        const bg = cellColor(pct);
+        const fg = txtColor(pct);
+        html += `<div class="coh-cell" style="background:${bg};color:${fg}" title="${cnt} 人 / NT$ ${rev.toLocaleString()}">
+          <div class="coh-pct">${pct}%</div>
+          <div class="coh-cnt">${fmtNum(cnt)} 人 ｜ ${fmtMan(rev)}</div>
+        </div>`;
+      }
+    });
+  });
+  html += '</div>';
+  document.getElementById('cohort-matrix').innerHTML = html;
+}
+
+// --- LTV by cohort table ---
+function renderLtv(){
+  const data = DATA.ltv_by_cohort;
+  const periodCount = {Y1:3, Y2:2, Y3:1};
+  const head = `<thead><tr>
+    <th>首購世代</th><th>人數</th><th>累積期間</th><th>平均 LTV</th><th>中位 LTV</th><th>平均訂單</th>
+  </tr></thead>`;
+  const body = '<tbody>' + ['Y1','Y2','Y3'].map(c => {
+    const d = data[c];
+    return `<tr>
+      <td class="cohort-tag">${c}<br><span style="font-size:9px;color:var(--text-muted);font-weight:400">${YEAR_LABEL[c]}</span></td>
+      <td>${fmtNum(d.人數)}</td>
+      <td>${periodCount[c]} 年</td>
+      <td><b>${fmtMoneyFull(d.平均LTV)}</b></td>
+      <td>${fmtMoneyFull(d.中位LTV)}</td>
+      <td>${d.平均訂單.toFixed(2)}</td>
+    </tr>`;
+  }).join('') + '</tbody>';
+  document.getElementById('ltv-tbl').innerHTML = head + body;
+}
+
+// --- Store table ---
+function renderStoreTable(){
+  const stores = DATA.store_yearly;
+  const order = ['台北中山店','台北松菸店','台北東門店','台中園道店','官網'];
+  const colors = {'台北中山店':'#284234','台北松菸店':'#A54A1A','台北東門店':'#8D5531','台中園道店':'#CFA294','官網':'#284234'};
+  document.getElementById('store-year-label').textContent = `${currentYear}｜${YEAR_LABEL[currentYear]}｜同會員同店同日合併為 1 訂單`;
+  const maxRev = Math.max(...order.map(s => stores[s]?.[currentYear]?.總業績 || 0));
+  const head = `<thead><tr>
+    <th>店別</th>
+    <th>訂單</th>
+    <th>會員數</th>
+    <th>業績</th>
+    <th>平均客單</th>
+    <th>新客客單</th>
+    <th>舊客客單</th>
+    <th>VIP 客單</th>
+    <th>同店再購率</th>
+  </tr></thead>`;
+  const body = '<tbody>' + order.map(s => {
+    const d = stores[s]?.[currentYear];
+    if (!d || d.訂單數 === 0) return `<tr>
+      <td class="td-s">${s}</td>
+      <td colspan="8" style="color:var(--text-muted);text-align:center">— 本期間無資料 —</td>
+    </tr>`;
+    const pct = (d.總業績/maxRev*100).toFixed(0);
+    return `<tr>
+      <td class="td-s">${s}</td>
+      <td>${fmtNum(d.訂單數)}</td>
+      <td>${fmtNum(d.唯一會員)}</td>
+      <td><span class="pct-bar"><span class="pct-bar-fill" style="width:${pct}%;background:${colors[s]}"></span></span>${fmtMan(d.總業績)}</td>
+      <td>${fmtMoneyFull(d.平均客單)}</td>
+      <td class="td-new">${d.新客平均客單?fmtMoneyFull(d.新客平均客單):'—'}</td>
+      <td class="td-rep">${d.舊客平均客單?fmtMoneyFull(d.舊客平均客單):'—'}</td>
+      <td class="td-vip">${d.VIP平均客單?fmtMoneyFull(d.VIP平均客單):'—'}</td>
+      <td>${fmtPct(d.同店再購率)}</td>
+    </tr>`;
+  }).join('') + '</tbody>';
+  document.getElementById('store-tbl').innerHTML = head + body;
+}
+
+// --- Store cards ---
+function renderStoreCards(){
+  const stores = DATA.store_yearly;
+  const order = ['台北中山店','台北松菸店','台北東門店','台中園道店','官網'];
+  const colors = {'台北中山店':'#284234','台北松菸店':'#A54A1A','台北東門店':'#8D5531','台中園道店':'#CFA294','官網':'#284234'};
+  document.getElementById('store-cards').innerHTML = order.map(s => {
+    const d = stores[s]?.[currentYear];
+    if (!d || d.訂單數 === 0) {
+      return `<div class="store-card" style="--sc-color:#cfa294;opacity:.55">
+        <div class="sc-name">${s}</div>
+        <div style="font-size:11px;color:var(--text-muted);padding:1rem 0">本期無資料</div>
+      </div>`;
+    }
+    return `<div class="store-card" style="--sc-color:${colors[s]}">
+      <div class="sc-name">${s}</div>
+      <div class="sc-aov">
+        <div class="sc-aov-row"><span class="sc-aov-lbl">新客</span><span class="sc-aov-val td-new">${d.新客平均客單?fmtMoneyFull(d.新客平均客單):'—'}</span></div>
+        <div class="sc-aov-row"><span class="sc-aov-lbl">舊客回流</span><span class="sc-aov-val td-rep">${d.舊客平均客單?fmtMoneyFull(d.舊客平均客單):'—'}</span></div>
+        <div class="sc-aov-row"><span class="sc-aov-lbl">VIP</span><span class="sc-aov-val td-vip">${d.VIP平均客單?fmtMoneyFull(d.VIP平均客單):'—'}</span></div>
+      </div>
+      <div class="sc-stat">
+        <div class="sc-stat-c"><div class="sc-stat-l">新客 / 舊客</div><div class="sc-stat-v">${d.新客數}/${d.舊客數}</div></div>
+        <div class="sc-stat-c"><div class="sc-stat-l">VIP 數</div><div class="sc-stat-v">${d.VIP數}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// --- AOV distribution chart ---
+function renderAovChart(){
+  document.getElementById('aov-year-label').textContent = `${currentYear} 訂單級`;
+  const labels = ['<1k','1-2k','2-3k','3-4k','4-5k','5-7.5k','7.5-10k','10-15k','15k+'];
+  const d = DATA.aov_distribution[currentYear];
+  const ds = [
+    {label:'新客', backgroundColor:COLORS.new, data:labels.map(l => d.新客[l]||0)},
+    {label:'舊客回流', backgroundColor:COLORS.oldreturn, data:labels.map(l => d.舊客[l]||0)},
+    {label:'VIP', backgroundColor:COLORS.vip, data:labels.map(l => d.VIP[l]||0)},
+  ];
+  if (charts.aov) charts.aov.destroy();
+  charts.aov = new Chart(document.getElementById('aov-chart'),{
+    type:'bar',
+    data:{labels, datasets:ds},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{x:{stacked:true, grid:{display:false}, ticks:{font:{family:'Space Mono',size:10}}},
+              y:{stacked:true, grid:{color:'rgba(40,66,52,0.06)'}, ticks:{font:{family:'Space Mono',size:10}}}},
+      plugins:{legend:{position:'bottom',labels:{font:{family:'Noto Sans TC',size:11},boxWidth:12,padding:10}}}
+    }
+  });
+}
+
+// --- 3-year monthly chart ---
+function render3YrMonthly(){
+  const months = Object.keys(DATA.monthly).sort();
+  const labels = months.map(m => {
+    const [y,mo] = m.split('-');
+    return y.slice(-2)+'/'+mo;
+  });
+  const newRev = months.map(m => DATA.monthly[m].新客業績);
+  const oldRev = months.map(m => DATA.monthly[m].舊客業績);
+  if (charts.monthly) charts.monthly.destroy();
+  charts.monthly = new Chart(document.getElementById('monthly3yr-chart'),{
+    type:'bar',
+    data:{labels, datasets:[
+      {label:'新客業績', backgroundColor:COLORS.new, data:newRev, stack:'rev'},
+      {label:'舊客回流業績', backgroundColor:COLORS.oldreturn, data:oldRev, stack:'rev'},
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{family:'Space Mono',size:9},maxRotation:60,minRotation:60}},
+              y:{stacked:true,grid:{color:'rgba(40,66,52,0.06)'},ticks:{font:{family:'Space Mono',size:10},callback:v=>fmtMan(v)}}},
+      plugins:{legend:{position:'bottom',labels:{font:{family:'Noto Sans TC',size:11},boxWidth:12,padding:10}},
+               tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtMoneyFull(c.raw),
+                                   title:items=>items[0].label+'  ('+(items[0].label.startsWith('23')||items[0].label.startsWith('24/04')?'Y1':(items[0].label.startsWith('24')||items[0].label.startsWith('25/04')?'Y2':'Y3'))+')'}}}
+    }
+  });
+}
+
+// --- New customer acquisition chart ---
+function renderNewCustChart(){
+  const months = Object.keys(DATA.monthly).sort();
+  const labels = months.map(m => {
+    const [y,mo] = m.split('-');
+    return y.slice(-2)+'/'+mo;
+  });
+  const newCust = months.map(m => DATA.monthly[m].新客數);
+  if (charts.newcust) charts.newcust.destroy();
+  charts.newcust = new Chart(document.getElementById('newcust-chart'),{
+    type:'line',
+    data:{labels, datasets:[{
+      label:'每月新會員', data:newCust,
+      borderColor:COLORS.new, backgroundColor:'rgba(165,74,26,0.12)',
+      borderWidth:2.5, fill:true, tension:0.35,
+      pointBackgroundColor:COLORS.new, pointRadius:3, pointHoverRadius:6
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{x:{grid:{display:false},ticks:{font:{family:'Space Mono',size:9},maxRotation:60,minRotation:60}},
+              y:{beginAtZero:true,grid:{color:'rgba(40,66,52,0.06)'},ticks:{font:{family:'Space Mono',size:10}}}},
+      plugins:{legend:{display:false},
+               tooltip:{callbacks:{label:c=>c.raw + ' 位新會員'}}}
+    }
+  });
+}
+
+// --- Year switch ---
+function switchYear(y){
+  currentYear = y;
+  document.querySelectorAll('.yr-btn').forEach(b => b.classList.toggle('active', b.dataset.yr===y));
+  renderTopKpi();
+  renderInsight();
+  renderSegments();
+  renderStoreTable();
+  renderStoreCards();
+  renderAovChart();
+}
+document.querySelectorAll('.yr-btn').forEach(b => b.addEventListener('click', () => switchYear(b.dataset.yr)));
+
+// --- Clock ---
+function updateClock(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('clock').textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+// Boot
+renderTopKpi();
+renderInsight();
+renderSegments();
+renderCohort();
+renderLtv();
+renderStoreTable();
+renderStoreCards();
+renderAovChart();
+render3YrMonthly();
+renderNewCustChart();
+updateClock();
+setInterval(updateClock, 1000);
+</script>
+
+</body>
+</html>
