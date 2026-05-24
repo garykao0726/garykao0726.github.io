@@ -319,6 +319,53 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div id="pos-store-content"></div>
   </div>
 
+  <!-- ════════════════════════════════════════
+       歷史月份分析（可選擇任一月份）
+       ════════════════════════════════════════ -->
+  <div class="sec" style="margin-top:2rem">📅 歷史月份分析</div>
+  <div class="rank-card" style="padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <label for="month-picker" style="font-size:12px;color:var(--text-muted);font-weight:600">選擇月份：</label>
+    <select id="month-picker" style="font-family:'Space Mono',monospace;font-size:13px;padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--green);cursor:pointer;min-width:140px">
+      <option>讀取中…</option>
+    </select>
+    <span id="month-summary" style="font-size:12px;color:var(--text-muted);margin-left:auto"></span>
+  </div>
+
+  <div class="kpi-grid" id="month-kpi-grid" style="margin-top:1rem">
+    <div class="kpi"><div class="skel" style="width:60%;height:12px"></div><div class="skel" style="width:80%;height:28px;margin-top:8px"></div></div>
+    <div class="kpi"><div class="skel" style="width:60%;height:12px"></div><div class="skel" style="width:80%;height:28px;margin-top:8px"></div></div>
+    <div class="kpi"><div class="skel" style="width:60%;height:12px"></div><div class="skel" style="width:80%;height:28px;margin-top:8px"></div></div>
+    <div class="kpi"><div class="skel" style="width:60%;height:12px"></div><div class="skel" style="width:80%;height:28px;margin-top:8px"></div></div>
+  </div>
+
+  <div class="rank-card" style="margin-top:1rem">
+    <div class="rank-hd">
+      <span class="rank-hd-title">💰 該月商品銷售排行 Top 20（依金額）</span>
+      <span class="rank-hd-sub" id="month-rank-period">—</span>
+    </div>
+    <table class="rank-table">
+      <thead><tr>
+        <th style="width:40px">排名</th>
+        <th>商品</th>
+        <th class="num">金額</th>
+        <th class="num">件數</th>
+        <th class="num">均價</th>
+        <th style="width:110px">營業額佔比</th>
+      </tr></thead>
+      <tbody id="month-rank-body"><tr><td colspan="6" class="no-data">讀取中…</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="sec" style="margin-top:1.5rem">該月各通路 Top 10 熱銷商品</div>
+  <div class="tab-bar" id="month-store-tabs">
+    <button class="tab-btn active" data-store="官網" onclick="switchMonthStore('官網',this)">官網（Shopline）</button>
+    <button class="tab-btn" data-store="中山店" onclick="switchMonthStore('中山店',this)">中山店</button>
+    <button class="tab-btn" data-store="松菸店" onclick="switchMonthStore('松菸店',this)">松菸店</button>
+    <button class="tab-btn" data-store="台中店" onclick="switchMonthStore('台中店',this)">台中店</button>
+    <button class="tab-btn" data-store="東門店" onclick="switchMonthStore('東門店',this)">東門店</button>
+  </div>
+  <div id="month-store-content"></div>
+
 </div><!-- /container -->
 
 <script>
@@ -633,6 +680,11 @@ function aggregateByColor(rows) {
 let _posData = [], _productsData = [], _posCurrentStore = '電商', _posPeriodMode = 'week';
 const TOP_STORE = 10;
 
+/* 歷史月份模組狀態 */
+let _monthSelected = null;     // 'YYYY-MM' e.g. '2026-04'
+let _monthStore    = '官網';
+const MONTH_STORES = ['官網','中山店','松菸店','台中店','東門店'];
+
 function switchStore(storeName, btn) {
   _posCurrentStore = storeName;
   document.querySelectorAll('#pos-tab-bar .tab-btn').forEach(b => b.classList.remove('active'));
@@ -847,6 +899,9 @@ async function init() {
   _posData = validPos;
   _productsData = products;
   renderStoreProducts(validPos, products, _posCurrentStore, _posPeriodMode);
+
+  /* ── 歷史月份分析 ── */
+  initMonthModule(products, validPos);
 }
 
 /* ════════════════════════════════════════
@@ -1224,6 +1279,223 @@ function setBanner(type, msg) {
   const el = document.getElementById('banner');
   el.className = 'banner ' + type;
   el.textContent = msg;
+}
+
+/* ════════════════════════════════════════
+   歷史月份分析
+   ════════════════════════════════════════ */
+
+/* period 字串 → YYYY-MM（取週期開始日的年月） */
+function periodToYM(periodStr) {
+  if (!periodStr) return null;
+  const s = String(periodStr).trim();
+  // 支援 "2026/04/07 ~ 2026/04/13" 或 "2026/4/7 ~ 2026/4/13" 或 "2026-04-07 ~ ..."
+  const m = s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if (!m) return null;
+  return m[1] + '-' + String(m[2]).padStart(2, '0');
+}
+
+function ymLabel(ym) {
+  if (!ym) return '—';
+  const [y, m] = ym.split('-');
+  return `${y} 年 ${parseInt(m, 10)} 月`;
+}
+
+function switchMonthStore(storeName, btn) {
+  _monthStore = storeName;
+  document.querySelectorAll('#month-store-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMonthStore();
+}
+
+function initMonthModule(products, posRows) {
+  // 萃取所有出現過的月份（線上 + POS 任一通路出現即列出）
+  const months = new Set();
+  products.forEach(r => { const ym = periodToYM(r[P_PERIOD]); if (ym) months.add(ym); });
+  posRows.forEach(r => { const ym = periodToYM(r[POS_PERIOD]); if (ym) months.add(ym); });
+
+  const sorted = [...months].sort().reverse(); // 新月份在前
+  const picker = document.getElementById('month-picker');
+  if (!sorted.length) {
+    picker.innerHTML = '<option>無資料</option>';
+    document.getElementById('month-kpi-grid').innerHTML = '<div class="kpi"><div class="kpi-label">狀態</div><div class="kpi-val" style="font-size:16px">無歷史資料</div></div>';
+    document.getElementById('month-rank-body').innerHTML = '<tr><td colspan="6" class="no-data">尚無資料</td></tr>';
+    document.getElementById('month-store-content').innerHTML = '';
+    return;
+  }
+  picker.innerHTML = sorted.map(ym => `<option value="${ym}">${ymLabel(ym)}</option>`).join('');
+  _monthSelected = sorted[0];
+  picker.value = _monthSelected;
+  picker.onchange = e => { _monthSelected = e.target.value; renderMonthSection(); };
+  renderMonthSection();
+}
+
+function getMonthRows(allRows, ym, accessor) {
+  return allRows.filter(r => periodToYM(accessor(r)) === ym);
+}
+
+function renderMonthSection() {
+  if (!_monthSelected) return;
+  const ym = _monthSelected;
+
+  // 線上資料（商品週報）
+  const onlineRows = getMonthRows(_productsData, ym, r => r[P_PERIOD]);
+  const onlineAgg  = aggregateByName(onlineRows)
+    .map(e => ({ name: e.name, qty: e.qty, amt: e.rev, ord: e.ord, store: '官網' }));
+  const onlineQty  = onlineRows.reduce((s,r) => s + n(r[P_QTY]), 0);
+  const onlineRev  = onlineRows.reduce((s,r) => s + n(r[P_REV]), 0);
+
+  // POS 資料（商品彙整表）
+  const posRows = getMonthRows(_posData, ym, r => r[POS_PERIOD]);
+  const posByStore = {};
+  let posQty = 0, posAmt = 0;
+  posRows.forEach(r => {
+    const store = String(r[POS_STORE]||'').trim();
+    const name  = String(r[POS_NAME]||'').trim();
+    if (!store || !name || NON_SALES_RE.test(name)) return;
+    const qty = n(r[POS_QTY]);
+    const amt = n(r[POS_AMT]);
+    if (qty <= 0) return;
+    posQty += qty; posAmt += amt;
+    if (!posByStore[store]) posByStore[store] = new Map();
+    const map = posByStore[store];
+    if (!map.has(name)) map.set(name, { name, qty:0, amt:0, store });
+    const e = map.get(name);
+    e.qty += qty; e.amt += amt;
+  });
+
+  // 全通路 Top（線上 + POS 合併，依商品名稱）
+  const allMap = new Map();
+  function add(name, qty, amt) {
+    if (!allMap.has(name)) allMap.set(name, { name, qty:0, amt:0 });
+    const e = allMap.get(name);
+    e.qty += qty; e.amt += amt;
+  }
+  onlineAgg.forEach(e => add(e.name, e.qty, e.amt));
+  Object.values(posByStore).forEach(map => map.forEach(e => add(e.name, e.qty, e.amt)));
+  const allSorted = [...allMap.values()].sort((a,b) => (b.amt - a.amt) || (b.qty - a.qty));
+
+  const totalQty = onlineQty + posQty;
+  const totalAmt = onlineRev + posAmt;
+  const skuCount = allSorted.length;
+  const top1     = allSorted[0];
+
+  // 該月有幾週資料
+  const onlinePeriods = new Set(onlineRows.map(r => String(r[P_PERIOD]||'')));
+  const posPeriods   = new Set(posRows.map(r => String(r[POS_PERIOD]||'')));
+  const allPeriods   = new Set([...onlinePeriods, ...posPeriods]);
+  const weekCount = allPeriods.size;
+
+  document.getElementById('month-summary').textContent =
+    weekCount ? `共 ${weekCount} 週資料 · ${skuCount} 個 SKU` : '此月份無資料';
+
+  // KPI
+  document.getElementById('month-kpi-grid').innerHTML = [
+    { label:'月份',          val: ymLabel(ym),                 sub: `${weekCount} 週資料` },
+    { label:'全通路總金額',  val: '$ ' + fmt(Math.round(totalAmt)), sub: `線上 $${fmt(Math.round(onlineRev))} / 門市 $${fmt(Math.round(posAmt))}` },
+    { label:'全通路總件數',  val: fmt(totalQty) + ' 件',          sub: `線上 ${fmt(onlineQty)} / 門市 ${fmt(posQty)}` },
+    { label:'當月最熱銷',    val: top1 ? String(top1.name).slice(0,12) : '—', sub: top1 ? `${fmt(top1.qty)} 件 · $${fmt(Math.round(top1.amt))}` : '' },
+  ].map(k => `
+    <div class="kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-val" style="font-size:${k.val.length > 12 ? '16px':'22px'}">${k.val}</div>
+      <div class="kpi-sub">${k.sub||''}</div>
+    </div>`).join('');
+
+  // Top 20 排行（依金額）
+  document.getElementById('month-rank-period').textContent =
+    `${ymLabel(ym)}｜合計 $${fmt(Math.round(totalAmt))}・${fmt(totalQty)} 件`;
+  const TOP = 20;
+  const maxRev = allSorted[0]?.amt || 1;
+  const tbody = document.getElementById('month-rank-body');
+  if (!allSorted.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-data">此月份無商品銷售資料</td></tr>';
+  } else {
+    tbody.innerHTML = allSorted.slice(0, TOP).map((e,i) => {
+      const pctBar = (e.amt/maxRev*100).toFixed(1);
+      const avg = e.qty > 0 ? e.amt/e.qty : 0;
+      return `<tr>
+        <td>${badge(i+1)}</td>
+        <td><div class="product-name">${e.name}</div></td>
+        <td class="num"><strong>$ ${fmt(Math.round(e.amt))}</strong></td>
+        <td class="num">${fmt(e.qty)}</td>
+        <td class="num">$ ${fmt(Math.round(avg))}</td>
+        <td>
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:2px">${totalAmt>0?(e.amt/totalAmt*100).toFixed(1):0}%</div>
+          <div class="bar-bg"><div class="bar-fg${i===0?' gold':''}" style="width:${pctBar}%"></div></div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // 暫存當月各通路資料給 tab 切換用
+  _monthPayload = { ym, onlineAgg, posByStore, totalAmt, onlineRev, onlineQty, posQty };
+  renderMonthStore();
+}
+
+let _monthPayload = null;
+function renderMonthStore() {
+  const el = document.getElementById('month-store-content');
+  if (!_monthPayload) { el.innerHTML = ''; return; }
+  const { ym, onlineAgg, posByStore } = _monthPayload;
+  const store = _monthStore;
+
+  let sorted;
+  if (store === '官網') {
+    sorted = onlineAgg.slice().sort((a,b) => (b.amt - a.amt) || (b.qty - a.qty));
+  } else {
+    const map = posByStore[store] || new Map();
+    sorted = [...map.values()].sort((a,b) => (b.amt - a.amt) || (b.qty - a.qty));
+  }
+
+  if (!sorted.length) {
+    el.innerHTML = `<div class="rank-card"><div class="no-data" style="padding:32px">${store} 此月份無資料</div></div>`;
+    return;
+  }
+
+  const totalQty = sorted.reduce((s,e) => s + e.qty, 0);
+  const totalAmt = sorted.reduce((s,e) => s + e.amt, 0);
+  const maxA = sorted[0]?.amt || 1;
+  const TOP = 10;
+  const icon = store === '官網' ? '🌐' : '🏪';
+
+  el.innerHTML = `
+    <div class="rank-card">
+      <div class="rank-hd">
+        <span class="rank-hd-title">${icon} ${store}・Top ${Math.min(sorted.length, TOP)} 熱銷商品</span>
+        <span class="rank-hd-sub">${ymLabel(ym)}｜合計 $${fmt(Math.round(totalAmt))}・${fmt(totalQty)} 件</span>
+      </div>
+      <table class="rank-table">
+        <thead><tr>
+          <th style="width:40px">排名</th>
+          <th>商品</th>
+          <th>系列</th>
+          <th class="num">金額</th>
+          <th class="num">件數</th>
+          <th class="num">均價</th>
+          <th style="width:110px">營業額佔比</th>
+        </tr></thead>
+        <tbody>
+          ${sorted.slice(0, TOP).map((e,i) => {
+            const barW = (e.amt/maxA*100).toFixed(1);
+            const avg = e.qty > 0 ? e.amt/e.qty : 0;
+            const series = classifySeries(e.name) || '—';
+            return `<tr>
+              <td>${badge(i+1)}</td>
+              <td><div class="product-name">${e.name}</div></td>
+              <td><span style="font-size:11px;color:var(--text-muted)">${series}</span></td>
+              <td class="num"><strong>$${fmt(Math.round(e.amt))}</strong></td>
+              <td class="num">${fmt(e.qty)}</td>
+              <td class="num">$${fmt(Math.round(avg))}</td>
+              <td>
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:2px">${totalAmt>0?(e.amt/totalAmt*100).toFixed(1):0}%</div>
+                <div class="bar-bg"><div class="bar-fg${i===0?' gold':''}" style="width:${barW}%"></div></div>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
 }
 
 init();
