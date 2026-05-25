@@ -14,7 +14,7 @@ git status --short
 echo ""
 echo "▶ 暫存儀表板頁面（排除 index.html 中控中心）"
 git add operation.html finance.html marketing.html products.html \
-        seo.html repair.html custom.html data.js 2>/dev/null || true
+        seo.html repair.html custom.html announcements.html data.js 2>/dev/null || true
 
 if git diff --cached --quiet; then
   echo "⚠️  沒有需要提交的變更，略過 commit。"
