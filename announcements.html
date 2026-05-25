@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜公告查詢</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{
+  --green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;
+  --rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;
+  --bg:#F5EDE3;--surface:#fff;--surface2:#FAF5EF;
+  --border:rgba(40,66,52,.10);--border2:rgba(40,66,52,.22);
+  --text:#284234;--text-muted:#b09a88;
+  --pos:#388E3C;--neg:#D32F2F;--warn:#F57C00
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;line-height:1.7}
+
+/* ── Header ── */
+.hdr{position:sticky;top:0;z-index:100;background:var(--green);height:54px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--sand)}
+.brand-sep{width:1px;height:16px;background:rgba(226,206,185,.3)}
+.brand-sub{font-size:10px;color:var(--gray-pink);font-family:'Space Mono',monospace}
+.hdr-r{display:flex;align-items:center;gap:14px}
+.hdr-back{font-size:11px;color:var(--gray-pink);text-decoration:none;font-family:'Space Mono',monospace;
+  border:1px solid rgba(226,206,185,.25);padding:5px 12px;border-radius:14px;transition:.2s}
+.hdr-back:hover{background:rgba(226,206,185,.1);color:var(--sand)}
+
+/* ── Hero ── */
+.hero{background:var(--green);padding:3rem 1.5rem 2.6rem;text-align:center;
+  border-bottom:1px solid rgba(226,206,185,.15)}
+.hero-eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:5px;
+  color:var(--gray-pink);text-transform:uppercase;margin-bottom:18px}
+.hero-rule{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:16px}
+.hero-line{width:48px;height:1px;background:rgba(226,206,185,.3)}
+.hero-icon{font-size:22px}
+.hero-title{font-family:'Noto Sans TC',sans-serif;font-size:clamp(22px,3.4vw,32px);
+  font-weight:700;color:var(--sand);letter-spacing:.04em;line-height:1.25;margin-bottom:6px}
+.hero-sub{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;
+  color:rgba(207,162,148,.7);text-transform:uppercase}
+
+/* ── Container ── */
+.container{max-width:780px;margin:0 auto;padding:2.4rem 1.5rem 4rem}
+
+/* ── Search box ── */
+.search-wrap{position:relative;margin-bottom:1.4rem}
+.search-box{width:100%;background:var(--surface);border:1.5px solid var(--border2);
+  border-radius:14px;padding:18px 60px 18px 22px;font-size:16px;color:var(--text);
+  font-family:inherit;outline:none;transition:.2s;box-shadow:0 2px 8px rgba(40,66,52,.04)}
+.search-box:focus{border-color:var(--green);box-shadow:0 4px 18px rgba(40,66,52,.12)}
+.search-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  background:var(--green);color:var(--sand);border:none;border-radius:10px;
+  width:46px;height:46px;font-size:18px;cursor:pointer;transition:.2s;
+  display:flex;align-items:center;justify-content:center}
+.search-btn:hover{background:var(--dark)}
+.search-btn:disabled{opacity:.5;cursor:wait}
+.search-hint{font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:1.4rem;
+  font-family:'Space Mono',monospace;letter-spacing:1px}
+
+/* ── Quick questions ── */
+.quick-wrap{margin-bottom:2rem}
+.quick-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;
+  color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;text-align:center}
+.quick-list{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.quick-chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:7px 16px;font-size:12.5px;color:var(--green);cursor:pointer;transition:.18s;
+  font-family:inherit}
+.quick-chip:hover{background:var(--green);color:var(--sand);border-color:var(--green)}
+
+/* ── Answer card ── */
+.answer-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;
+  padding:24px 26px;box-shadow:0 4px 18px rgba(40,66,52,.06);margin-bottom:1.4rem;
+  display:none}
+.answer-card.show{display:block;animation:slide-in .35s ease}
+@keyframes slide-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.answer-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;
+  padding-bottom:12px;border-bottom:1px dashed var(--border)}
+.answer-icon{width:34px;height:34px;border-radius:50%;background:var(--sand-light);
+  display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid var(--border)}
+.answer-title{font-size:13px;font-weight:700;color:var(--green);letter-spacing:.05em}
+.answer-title small{font-family:'Space Mono',monospace;font-size:9.5px;color:var(--text-muted);
+  margin-left:8px;font-weight:400;letter-spacing:1px}
+.answer-body{font-size:14.5px;line-height:1.85;color:var(--text);white-space:pre-wrap;word-break:break-word}
+.answer-body strong{color:var(--green);font-weight:700}
+.answer-body code{background:var(--sand-light);padding:2px 7px;border-radius:5px;
+  font-family:'Space Mono',monospace;font-size:13px;color:var(--brown)}
+.answer-body a{color:var(--rust);text-decoration:underline;text-underline-offset:3px}
+
+/* ── Sources ── */
+.sources-wrap{margin-top:18px;padding-top:14px;border-top:1px dashed var(--border)}
+.sources-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2.5px;
+  color:var(--text-muted);text-transform:uppercase;margin-bottom:10px}
+.sources-list{display:flex;flex-direction:column;gap:8px}
+.source-card{display:flex;align-items:center;gap:12px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:10px;padding:11px 14px;
+  text-decoration:none;color:inherit;transition:.18s}
+.source-card:hover{border-color:var(--green);background:#fff;transform:translateX(2px)}
+.source-icon{font-size:18px;flex-shrink:0}
+.source-meta{flex:1;min-width:0}
+.source-name{font-size:13px;font-weight:500;color:var(--green);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.source-date{font-size:11px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:2px}
+.source-arrow{color:var(--text-muted);font-size:14px;flex-shrink:0;transition:.18s}
+.source-card:hover .source-arrow{color:var(--green);transform:translateX(3px)}
+
+/* ── Status / error ── */
+.status-box{background:var(--surface);border:1.5px dashed var(--border);border-radius:14px;
+  padding:24px;text-align:center;color:var(--text-muted);margin-bottom:1rem;display:none}
+.status-box.show{display:block}
+.status-box.error{border-color:var(--rust);background:rgba(165,74,26,.04);color:var(--rust)}
+.spinner{display:inline-block;width:18px;height:18px;border:2.5px solid var(--border);
+  border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;
+  vertical-align:middle;margin-right:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Empty state ── */
+.intro{text-align:center;color:var(--text-muted);padding:1rem 0 2rem;
+  font-size:13px;line-height:1.9}
+.intro strong{color:var(--green)}
+
+/* ── Footer ── */
+.footer{border-top:1px solid var(--border);padding:1.6rem;text-align:center;
+  font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);
+  letter-spacing:1.5px}
+
+/* Mobile tweaks */
+@media(max-width:540px){
+  .hdr{padding:0 1rem}
+  .hero{padding:2.2rem 1rem 2rem}
+  .container{padding:2rem 1rem 3rem}
+  .search-box{font-size:15px;padding:16px 56px 16px 18px}
+  .answer-card{padding:20px 18px}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="hdr">
+  <div class="brand">
+    <div class="brand-name">ORINGO</div>
+    <div class="brand-sep"></div>
+    <div class="brand-sub">Announcements</div>
+  </div>
+  <div class="hdr-r">
+    <a href="/" class="hdr-back">← 中控中心</a>
+  </div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">Internal Knowledge Search</div>
+  <div class="hero-rule">
+    <div class="hero-line"></div>
+    <div class="hero-icon">📋</div>
+    <div class="hero-line"></div>
+  </div>
+  <div class="hero-title">公司公告查詢</div>
+  <div class="hero-sub">ASK ABOUT POLICIES &amp; ANNOUNCEMENTS</div>
+</div>
+
+<!-- Main -->
+<div class="container">
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <input
+      id="search-input"
+      class="search-box"
+      type="text"
+      placeholder="例如：特休怎麼計算？中秋連假怎麼放？"
+      autocomplete="off"
+      autofocus />
+    <button id="search-btn" class="search-btn" aria-label="搜尋">🔍</button>
+  </div>
+  <div class="search-hint">PRESS ENTER OR CLICK 🔍 TO ASK 林果小博士</div>
+
+  <!-- Quick questions -->
+  <div class="quick-wrap" id="quick-wrap">
+    <div class="quick-label">常見問題</div>
+    <div class="quick-list">
+      <button class="quick-chip" data-q="特休假怎麼計算？">特休假怎麼計算？</button>
+      <button class="quick-chip" data-q="連假/國定假日怎麼放？">連假怎麼放？</button>
+      <button class="quick-chip" data-q="員工購鞋優惠規則？">員工購鞋優惠？</button>
+      <button class="quick-chip" data-q="盤點作業要做什麼？">盤點怎麼做？</button>
+      <button class="quick-chip" data-q="維修申訴的處理流程？">維修申訴流程？</button>
+    </div>
+  </div>
+
+  <!-- Intro / Empty state -->
+  <div class="intro" id="intro">
+    這個頁面整合公司所有<strong>公告、人事規章、福利辦法</strong>。<br>
+    直接問問題，林果小博士會幫你找答案並附上原文連結。
+  </div>
+
+  <!-- Loading / Status -->
+  <div class="status-box" id="status-box">
+    <span class="spinner"></span><span id="status-text">林果小博士思考中…</span>
+  </div>
+
+  <!-- Answer -->
+  <div class="answer-card" id="answer-card">
+    <div class="answer-header">
+      <div class="answer-icon">📚</div>
+      <div class="answer-title">
+        林果小博士
+        <small id="ann-count"></small>
+      </div>
+    </div>
+    <div class="answer-body" id="answer-body"></div>
+    <div class="sources-wrap" id="sources-wrap" style="display:none">
+      <div class="sources-label">📎 引用來源</div>
+      <div class="sources-list" id="sources-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">© 2026 ORINGO SHOES CO., LTD. · INTERNAL USE ONLY</div>
+
+<script>
+// ============================================================
+// 林果小博士 Web API 設定
+// ============================================================
+const WEBAPI_URL = 'https://script.google.com/macros/s/AKfycbwZg0u8Rc1IdTiu7Ueo67ap_08UruitwuLOanBCjsNzwXLfPI2ErhVwlvLjvDUYo-BFmA/exec';
+const WEBAPI_TOKEN = '3a0df4334f271c7d0fa8fe0d6a19e48fb7631024f2487e48';
+
+const $ = id => document.getElementById(id);
+const input = $('search-input');
+const btn = $('search-btn');
+const statusBox = $('status-box');
+const statusText = $('status-text');
+const answerCard = $('answer-card');
+const answerBody = $('answer-body');
+const sourcesWrap = $('sources-wrap');
+const sourcesList = $('sources-list');
+const annCount = $('ann-count');
+const intro = $('intro');
+const quickWrap = $('quick-wrap');
+
+// 簡易 markdown 渲染（粗體 + 行內代碼 + 連結 + 換行）
+function renderMarkdown(text) {
+  if (!text) return '';
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\n/g,'<br>');
+}
+
+function setStatus(msg, isError) {
+  if (!msg) {
+    statusBox.classList.remove('show', 'error');
+    return;
+  }
+  statusText.textContent = msg;
+  statusBox.classList.add('show');
+  statusBox.classList.toggle('error', !!isError);
+}
+
+function clearAnswer() {
+  answerCard.classList.remove('show');
+  sourcesWrap.style.display = 'none';
+}
+
+async function askQuestion(question) {
+  if (!question || !question.trim()) return;
+  btn.disabled = true;
+  clearAnswer();
+  intro.style.display = 'none';
+  quickWrap.style.display = 'none';
+  setStatus('林果小博士思考中…');
+
+  try {
+    const resp = await fetch(WEBAPI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 避免 CORS preflight
+      body: JSON.stringify({
+        question: question.trim(),
+        token: WEBAPI_TOKEN
+      }),
+      redirect: 'follow'
+    });
+
+    const data = await resp.json();
+    setStatus(null);
+
+    if (data.error) {
+      setStatus('⚠️ ' + data.error, true);
+      return;
+    }
+
+    // 顯示答案
+    answerBody.innerHTML = renderMarkdown(data.answer || '（沒有回應）');
+    annCount.textContent = data.announcements_count
+      ? `· 已搜尋 ${data.announcements_count} 篇公告`
+      : '';
+
+    // 顯示來源
+    sourcesList.innerHTML = '';
+    if (data.sources && data.sources.length) {
+      data.sources.forEach(s => {
+        const a = document.createElement('a');
+        a.className = 'source-card';
+        a.href = s.url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.innerHTML = `
+          <div class="source-icon">📄</div>
+          <div class="source-meta">
+            <div class="source-name">${escapeHtml(s.name)}</div>
+            <div class="source-date">更新於 ${escapeHtml(s.modified || '')}</div>
+          </div>
+          <div class="source-arrow">→</div>`;
+        sourcesList.appendChild(a);
+      });
+      sourcesWrap.style.display = 'block';
+    }
+    answerCard.classList.add('show');
+
+  } catch (err) {
+    console.error(err);
+    setStatus('⚠️ 連線失敗：' + err.message + '。請稍後再試或聯絡管理員。', true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+// Events
+btn.addEventListener('click', () => askQuestion(input.value));
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') askQuestion(input.value);
+});
+document.querySelectorAll('.quick-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    input.value = chip.dataset.q;
+    askQuestion(chip.dataset.q);
+  });
+});
+</script>
+</body>
+</html>
