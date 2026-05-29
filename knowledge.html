@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>林果良品｜人事小管家</title>
+<title>林果良品｜林果小博士．商品知識</title>
 <link rel="icon" type="image/png" href="/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
@@ -147,7 +147,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <div class="brand">
     <div class="brand-name">ORINGO</div>
     <div class="brand-sep"></div>
-    <div class="brand-sub">HR Assistant</div>
+    <div class="brand-sub">Product Knowledge</div>
   </div>
   <div class="hdr-r">
     <a href="/" class="hdr-back">← 中控中心</a>
@@ -156,14 +156,14 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
 <!-- Hero -->
 <div class="hero">
-  <div class="hero-eyebrow">HR &amp; Policy Assistant</div>
+  <div class="hero-eyebrow">Brand &amp; Product Assistant</div>
   <div class="hero-rule">
     <div class="hero-line"></div>
-    <div class="hero-icon">📋</div>
+    <div class="hero-icon">📚</div>
     <div class="hero-line"></div>
   </div>
-  <div class="hero-title">人事小管家</div>
-  <div class="hero-sub">ASK ABOUT POLICIES &amp; ANNOUNCEMENTS</div>
+  <div class="hero-title">林果小博士</div>
+  <div class="hero-sub">ASK ABOUT PRODUCTS &amp; CRAFT</div>
 </div>
 
 <!-- Main -->
@@ -175,34 +175,34 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       id="search-input"
       class="search-box"
       type="text"
-      placeholder="例如：特休怎麼計算？中秋連假怎麼放？"
+      placeholder="例如：這雙鞋的材質是什麼？皮帶保固怎麼算？"
       autocomplete="off"
       autofocus />
     <button id="search-btn" class="search-btn" aria-label="搜尋">🔍</button>
   </div>
-  <div class="search-hint">PRESS ENTER OR CLICK 🔍 TO ASK 人事小管家</div>
+  <div class="search-hint">PRESS ENTER OR CLICK 🔍 TO ASK 林果小博士</div>
 
   <!-- Quick questions -->
   <div class="quick-wrap" id="quick-wrap">
     <div class="quick-label">常見問題</div>
     <div class="quick-list">
-      <button class="quick-chip" data-q="特休假怎麼計算？">特休假怎麼計算？</button>
-      <button class="quick-chip" data-q="連假/國定假日怎麼放？">連假怎麼放？</button>
-      <button class="quick-chip" data-q="員工購鞋優惠規則？">員工購鞋優惠？</button>
-      <button class="quick-chip" data-q="盤點作業要做什麼？">盤點怎麼做？</button>
-      <button class="quick-chip" data-q="維修申訴的處理流程？">維修申訴流程？</button>
+      <button class="quick-chip" data-q="35mm 寬版皮帶的材質和保固是什麼？">皮帶材質與保固？</button>
+      <button class="quick-chip" data-q="這款鞋的大底材質和產地？">大底材質與產地？</button>
+      <button class="quick-chip" data-q="這雙鞋適合搭配哪一種保養品？">該用哪種保養品？</button>
+      <button class="quick-chip" data-q="這款商品的開發理念與銷售特點？">開發理念與賣點？</button>
+      <button class="quick-chip" data-q="尺寸怎麼選？特殊腳型怎麼處理？">尺寸怎麼選？</button>
     </div>
   </div>
 
   <!-- Intro / Empty state -->
   <div class="intro" id="intro">
-    這個頁面整合公司所有<strong>公告、人事規章、福利辦法</strong>。<br>
-    直接問問題，人事小管家會幫你找答案並附上原文連結。
+    這個頁面整合林果所有<strong>商品確認單與品牌知識</strong>。<br>
+    問商品的材質、尺寸、保固、保養、賣點，林果小博士會幫你找答案並附上原文連結。
   </div>
 
   <!-- Loading / Status -->
   <div class="status-box" id="status-box">
-    <span class="spinner"></span><span id="status-text">人事小管家思考中…</span>
+    <span class="spinner"></span><span id="status-text">林果小博士思考中…</span>
   </div>
 
   <!-- Answer -->
@@ -210,7 +210,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div class="answer-header">
       <div class="answer-icon">📚</div>
       <div class="answer-title">
-        人事小管家
+        林果小博士
         <small id="ann-count"></small>
       </div>
     </div>
@@ -227,11 +227,11 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
 <script>
 // ============================================================
-// 人事小管家 Web API 設定
+// 林果小博士 商品問答 Web API 設定
 // ============================================================
 const WEBAPI_URL = 'https://script.google.com/macros/s/AKfycbwZg0u8Rc1IdTiu7Ueo67ap_08UruitwuLOanBCjsNzwXLfPI2ErhVwlvLjvDUYo-BFmA/exec';
 const WEBAPI_TOKEN = '3a0df4334f271c7d0fa8fe0d6a19e48fb7631024f2487e48';
-const WEBAPI_SCOPE = 'hr';
+const WEBAPI_SCOPE = 'product';
 
 const $ = id => document.getElementById(id);
 const input = $('search-input');
@@ -278,7 +278,7 @@ async function askQuestion(question) {
   clearAnswer();
   intro.style.display = 'none';
   quickWrap.style.display = 'none';
-  setStatus('人事小管家思考中…');
+  setStatus('林果小博士思考中…');
 
   try {
     const resp = await fetch(WEBAPI_URL, {
@@ -303,7 +303,7 @@ async function askQuestion(question) {
     // 顯示答案
     answerBody.innerHTML = renderMarkdown(data.answer || '（沒有回應）');
     annCount.textContent = data.announcements_count
-      ? `· 已搜尋 ${data.announcements_count} 篇公告`
+      ? `· 已搜尋 ${data.announcements_count} 筆商品資料`
       : '';
 
     // 顯示來源
