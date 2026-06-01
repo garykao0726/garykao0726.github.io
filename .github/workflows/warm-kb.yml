@@ -1,0 +1,24 @@
+name: warm-knowledge-cache
+
+# 每 3 小時呼叫一次林果問答後端的 /warm，預先把 PDF 文字擷取進快取，
+# 讓人事小管家 / 林果小博士 的查詢永遠秒回（避免冷啟動超時）。
+# PDF 原檔完全不動，這裡只是觸發背景保溫。
+
+on:
+  schedule:
+    - cron: '20 */3 * * *'   # 每 3 小時（UTC）
+  workflow_dispatch:          # 也可手動觸發
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Warm KB cache
+        run: |
+          NEW='https://script.google.com/macros/s/AKfycbyBTPHliwIIyYGxKokNEUYXM8TJwhmPrl62pwo6l7nUgeZjBw9aBy7PdD3xpp_Z4BkJ/exec'
+          BODY='{"question":"/warm","token":"3a0df4334f271c7d0fa8fe0d6a19e48fb7631024f2487e48"}'
+          LOC=$(curl -s -D - -o /dev/null -X POST "$NEW" \
+            -H 'Content-Type: text/plain;charset=utf-8' \
+            -d "$BODY" | grep -i '^location:' | sed 's/location: //I' | tr -d '\r')
+          if [ -z "$LOC" ]; then echo "no redirect (cold build still running) — ok"; exit 0; fi
+          echo "result:"; curl -s --max-time 290 "$LOC" || echo "(warm run continues server-side)"
