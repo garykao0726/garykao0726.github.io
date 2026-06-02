@@ -87,7 +87,13 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .answer-title{font-size:13px;font-weight:700;color:var(--green);letter-spacing:.05em}
 .answer-title small{font-family:'Space Mono',monospace;font-size:9.5px;color:var(--text-muted);
   margin-left:8px;font-weight:400;letter-spacing:1px}
-.answer-body{font-size:14.5px;line-height:1.85;color:var(--text);white-space:pre-wrap;word-break:break-word}
+.answer-body{font-size:14.5px;line-height:1.85;color:var(--text);word-break:break-word}
+.answer-body .md-p{margin:0 0 9px}
+.answer-body .md-p:last-child{margin-bottom:0}
+.answer-body .md-gap{height:5px}
+.answer-body .md-list{margin:6px 0 11px;padding:0;list-style:none}
+.answer-body .md-list li{position:relative;padding-left:20px;margin:5px 0}
+.answer-body .md-list li::before{content:'•';position:absolute;left:5px;top:-1px;color:var(--rust);font-weight:700}
 .answer-body strong{color:var(--green);font-weight:700}
 .answer-body code{background:var(--sand-light);padding:2px 7px;border-radius:5px;
   font-family:'Space Mono',monospace;font-size:13px;color:var(--brown)}
@@ -249,12 +255,27 @@ const quickWrap = $('quick-wrap');
 // 簡易 markdown 渲染（粗體 + 行內代碼 + 連結 + 換行）
 function renderMarkdown(text) {
   if (!text) return '';
-  return text
+  let t = text
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
     .replace(/`([^`]+)`/g,'<code>$1</code>')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
-    .replace(/\n/g,'<br>');
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  const lines = t.split('\n');
+  let html = '', inList = false;
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/,'');
+    const m = line.match(/^\s*(?:[-*•]|\d+\.)\s+(.*)$/);
+    if (m) {
+      if (!inList) { html += '<ul class="md-list">'; inList = true; }
+      html += '<li>' + m[1] + '</li>';
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      if (line.trim() === '') html += '<div class="md-gap"></div>';
+      else html += '<div class="md-p">' + line + '</div>';
+    }
+  }
+  if (inList) html += '</ul>';
+  return html;
 }
 
 function setStatus(msg, isError) {
