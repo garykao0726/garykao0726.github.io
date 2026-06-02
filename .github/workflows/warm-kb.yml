@@ -1,24 +1,29 @@
 name: warm-knowledge-cache
 
-# 每 3 小時呼叫一次林果問答後端的 /warm，預先把 PDF 文字擷取進快取，
-# 讓人事小管家 / 林果小博士 的查詢永遠秒回（避免冷啟動超時）。
+# 每 2 小時呼叫林果問答後端的 /warm，預先把 PDF 文字擷取進快取，
+# 讓人事小管家 / 林果小博士 的查詢永遠秒回（避免冷啟動）。
+# 每次最多重試 3 輪直到 allDone，避免單輪 250 秒沒跑完就漏掉。
 # PDF 原檔完全不動，這裡只是觸發背景保溫。
 
 on:
   schedule:
-    - cron: '20 */3 * * *'   # 每 3 小時（UTC）
-  workflow_dispatch:          # 也可手動觸發
+    - cron: '0 */2 * * *'    # 每 2 小時（UTC），比 6h 快取 TTL 留足餘裕
+  workflow_dispatch:
 
 jobs:
   warm:
     runs-on: ubuntu-latest
     steps:
-      - name: Warm KB cache
+      - name: Warm KB cache (loop until done)
         run: |
           NEW='https://script.google.com/macros/s/AKfycbyBTPHliwIIyYGxKokNEUYXM8TJwhmPrl62pwo6l7nUgeZjBw9aBy7PdD3xpp_Z4BkJ/exec'
           BODY='{"question":"/warm","token":"3a0df4334f271c7d0fa8fe0d6a19e48fb7631024f2487e48"}'
-          LOC=$(curl -s -D - -o /dev/null -X POST "$NEW" \
-            -H 'Content-Type: text/plain;charset=utf-8' \
-            -d "$BODY" | grep -i '^location:' | sed 's/location: //I' | tr -d '\r')
-          if [ -z "$LOC" ]; then echo "no redirect (cold build still running) — ok"; exit 0; fi
-          echo "result:"; curl -s --max-time 290 "$LOC" || echo "(warm run continues server-side)"
+          for i in 1 2 3; do
+            LOC=$(curl -s -D - -o /dev/null -X POST "$NEW" \
+              -H 'Content-Type: text/plain;charset=utf-8' \
+              -d "$BODY" | grep -i '^location:' | sed 's/location: //I' | tr -d '\r')
+            if [ -z "$LOC" ]; then echo "round $i: no redirect, retry"; continue; fi
+            R=$(curl -s --max-time 290 "$LOC")
+            echo "round $i: $R"
+            echo "$R" | grep -q '"allDone":true' && { echo "warm complete"; break; }
+          done
