@@ -60,6 +60,17 @@ const MONTHS = {
     opProfit:1368291, opPct:19.73,
     nonOpIn:131580, nonOpOut:41477,
     pretax:1458394, tax:46000, ni:1412394, niPct:20.37,
+    /* 去年同期 2025/01 + 累計 */
+    prevRev:6620786, prevNI:520778, yoyRevPct:4.75,
+    prevYtdRev:6620786, prevYtdNI:520778,
+    prevGpPct:65.69, prevSellPct:35.92, prevMgmtPct:21.07, prevNiPct:7.87,
+    storeData: {
+      '電商': { rev:942026,  cogs:328236, gp:613790,  gpPct:65.16, wPct:6.49,  rPct:0,    mktPct:15.23, opProfit:74511,  pretax:74511,  pretaxPct:7.91,  target:1250000 },
+      '中山': { rev:1606767, cogs:539062, gp:1067705, gpPct:66.45, wPct:12.29, rPct:8.09, mktPct:1.51,  opProfit:385167, nonOpIn:60000, pretax:445167, pretaxPct:27.71, target:1800000 },
+      '松菸': { rev:1392233, cogs:487336, gp:904897,  gpPct:65.00, wPct:13.16, rPct:9.11, mktPct:1.74,  opProfit:249953, pretax:249953, pretaxPct:17.95, target:1600000 },
+      '台中': { rev:1060592, cogs:358392, gp:702200,  gpPct:66.21, wPct:10.70, rPct:8.54, mktPct:2.30,  opProfit:151072, pretax:151072, pretaxPct:14.24, target:1300000 },
+      '東門': { rev:1554419, cogs:538109, gp:1016310, gpPct:65.38, wPct:11.04, rPct:8.21, mktPct:1.56,  opProfit:365612, pretax:365612, pretaxPct:23.52, target:1400000 },
+    },
   },
   '2026/02': {
     ym:'2026/02', label:'2月', confirmed:true,
@@ -74,6 +85,18 @@ const MONTHS = {
     opProfit:536211, opPct:10.03,
     nonOpIn:90146, nonOpOut:40511,
     pretax:585846, tax:46000, ni:539846, niPct:10.10,
+    /* 去年同期 2025/02 + 累計 */
+    prevRev:6010360, prevNI:450087, yoyRevPct:-11.07,
+    prevYtdRev:12631146, prevYtdNI:970865,
+    prevGpPct:65.72, prevSellPct:36.69, prevMgmtPct:20.80, prevNiPct:7.49,
+    /* 2 月部門報表僅含官網（無電商平台拆分），故「電商」標記 partial */
+    storeData: {
+      '電商': { rev:444909,  cogs:259091, gp:185818,  gpPct:41.77, wPct:13.75, rPct:0,     mktPct:23.99, opProfit:-333391, pretax:-333391, pretaxPct:-74.93, target:1150000, partial:'僅官網實績，未含電商平台（批發）' },
+      '中山': { rev:1346098, cogs:415331, gp:930767,  gpPct:69.15, wPct:13.76, rPct:9.66,  mktPct:1.33,  opProfit:276051, nonOpIn:60000, pretax:336051, pretaxPct:24.96, target:1700000 },
+      '松菸': { rev:1386346, cogs:430680, gp:955666,  gpPct:68.93, wPct:13.84, rPct:9.15,  mktPct:1.29,  opProfit:286378, pretax:286378, pretaxPct:20.66, target:1500000 },
+      '台中': { rev:758941,  cogs:252751, gp:506190,  gpPct:66.70, wPct:18.15, rPct:9.00,  mktPct:2.35,  opProfit:-34668, pretax:-34668, pretaxPct:-4.57, target:1200000 },
+      '東門': { rev:1074869, cogs:353574, gp:721295,  gpPct:67.11, wPct:17.60, rPct:11.87, mktPct:1.66,  opProfit:63415,  pretax:63415,  pretaxPct:5.90,  target:1300000 },
+    },
   },
   '2026/03': {
     ym:'2026/03', label:'3月', confirmed:true,
@@ -130,6 +153,9 @@ const MONTHS = {
 /* ── 衍生資料：月度比較陣列 + 逐月累計 YTD + 月度營收目標 ── */
 const CMP_KEYS = ['2026/01','2026/02','2026/03','2026/04'];
 const CMP = CMP_KEYS.map(k => MONTHS[k]);
+/* 包裝費（5539，原併入營業成本，單獨追蹤）與去年同期包裝費 */
+const PKG     = { '2026/01':105321, '2026/02':86556,  '2026/03':37740,  '2026/04':286662 };
+const PKG_PREV = { '2026/01':32191,  '2026/02':66224,  '2026/03':null,   '2026/04':25433  };
 (function deriveMonths(){
   let cumRev = 0, cumNI = 0;
   CMP.forEach(m => {
@@ -138,6 +164,7 @@ const CMP = CMP_KEYS.map(k => MONTHS[k]);
     m.ytdNIPct = cumRev ? cumNI / cumRev * 100 : 0;
     const mi = parseInt(m.ym.split('/')[1], 10) - 1;
     m.totalTarget = STORES.reduce((s, st) => s + (MONTHLY_TARGETS[st][mi] || 0) * 10000, 0);
+    m.pkg = PKG[m.ym] || 0;
   });
 })();
 
@@ -270,6 +297,34 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .exp-label{font-size:10px;color:var(--text-muted);margin-bottom:5px;font-family:'Space Mono',monospace;letter-spacing:.04em}
 .exp-val{font-size:22px;font-weight:700;font-family:'Space Mono',monospace;margin-bottom:5px}
 .exp-sub{font-size:11px;color:var(--text-muted)}
+
+/* ── 1–4月 比較表 ── */
+.cmp-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.cmp-table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px}
+.cmp-table th,.cmp-table td{padding:7px 14px;text-align:right;white-space:nowrap}
+.cmp-table thead th{position:sticky;top:0;background:var(--green);color:var(--sand);font-family:'Space Mono',monospace;font-size:11px;font-weight:700}
+.cmp-table th:first-child,.cmp-table td:first-child{text-align:left}
+.cmp-table tbody td{border-bottom:1px solid var(--border);font-family:'Space Mono',monospace}
+.cmp-table tbody tr:last-child td{border-bottom:none}
+.cmp-table .row-label{font-family:'Noto Sans TC',sans-serif;color:var(--text)}
+.cmp-table .r-strong td{font-weight:700;background:rgba(40,66,52,.04)}
+.cmp-table .r-sub td{color:var(--text-muted);font-size:11px}
+.cmp-table .r-sub .row-label{padding-left:18px;color:var(--text-muted);font-size:11px}
+.cmp-table .r-memo td{font-size:11px;background:rgba(226,206,185,.16)}
+.cmp-table .r-memo .row-label{color:var(--text-sub)}
+.cmp-table td.cur{background:rgba(165,74,26,.08);font-weight:700}
+.cmp-table th.cur{background:var(--rust)}
+.cmp-table .col-tot{border-left:2px solid var(--border2);color:var(--text)}
+
+/* ── 深入觀察 ── */
+.insight-list{display:flex;flex-direction:column;gap:12px}
+.insight{background:var(--surface);border:1px solid var(--border);border-left-width:4px;border-radius:10px;padding:14px 16px}
+.insight-hd{display:flex;align-items:baseline;gap:8px;margin-bottom:7px;flex-wrap:wrap}
+.insight-tag{font-size:9px;font-family:'Space Mono',monospace;font-weight:700;padding:2px 9px;border-radius:20px;letter-spacing:.04em;color:#fff;flex-shrink:0}
+.insight-title{font-weight:700;font-size:14px;color:var(--text)}
+.insight-body{font-size:12.5px;color:var(--text-sub);line-height:1.75}
+.insight-body b{color:var(--text)}
+.insight-data{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);margin-top:7px;padding-top:7px;border-top:1px dashed var(--border)}
 
 /* ── Q1 stats row ── */
 .q1-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:10px}
@@ -493,6 +548,20 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       <div class="chart-card-title">月份損益表結構（萬元，未稅）</div>
       <div class="chart-wrap"><canvas id="q1-chart"></canvas></div>
     </div>
+
+    <!-- 1–4月 全公司損益比較表 -->
+    <div class="sec" style="margin-top:1.75rem">1–4 月 全公司損益比較表</div>
+    <div class="cmp-table-wrap">
+      <table class="cmp-table" id="cmp-table"></table>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.7">
+      ＊ 金額單位：<strong>萬元（未稅）</strong>，括號內為佔當月營收比例；費用列以「−」表示扣減。<strong>累計</strong>欄為 1–4 月加總（比率列為加權平均）。目前所選月份以底色標示。<br>
+      ＊ 下方<strong>備忘列</strong>（廣告費／總人事費／包裝費）為原本被併入成本或費用、值得單獨追蹤的科目。
+    </div>
+
+    <!-- 深入觀察 -->
+    <div class="sec" style="margin-top:1.75rem">深入觀察 — 值得拉出來討論（現行分析未涵蓋）</div>
+    <div class="insight-list" id="insight-list"></div>
 
     <!-- Expense cards -->
     <div class="sec">費用率監控（本月全通路加總）</div>
@@ -837,6 +906,8 @@ function renderStaticSections() {
   renderStoreCards();
   renderMktBreakdown();
   renderQ1Chart();
+  renderCompareTable();
+  renderInsights();
   renderExpenseCards();
   renderAchievementCharts();
   renderAnomalies();
@@ -1141,6 +1212,8 @@ function renderStoreCards() {
 
     const nonOpBadge = d.nonOpIn
       ? `<div style="font-size:10px;color:var(--pos);margin-top:3px">含租賃收益 +${(d.nonOpIn/10000).toFixed(0)}萬</div>` : '';
+    const partialBadge = d.partial
+      ? `<div style="font-size:9px;color:var(--warn);margin-top:3px;line-height:1.4">⚠ ${d.partial}</div>` : '';
 
     return `
     <div class="store-card">
@@ -1164,6 +1237,7 @@ function renderStoreCards() {
         <span class="store-pl-val ${nc}">${fmtPct(ptPct)}</span>
       </div>
       ${nonOpBadge}
+      ${partialBadge}
       <div class="store-divider"></div>
       <div class="store-rates">
         <div class="rate-row"><span class="rate-lbl">成本率</span><span class="${(() => { const v = d.cogs/d.rev*100; return v>=35?'neg':v>=32?'warn':'pos'; })()}">${fmtPct(d.cogs/d.rev*100)}</span></div>
@@ -1368,6 +1442,104 @@ function renderQ1Chart() {
   });
 }
 
+/* ── 1–4月 全公司損益比較表 ── */
+function renderCompareTable() {
+  const el = document.getElementById('cmp-table');
+  if (!el) return;
+  const W0    = v => Math.round(v / 10000);
+  const money = v => (v < 0 ? '−' : '') + W0(Math.abs(v)).toLocaleString('en-US');
+  const sum   = fn => CMP.reduce((s, m) => s + fn(m), 0);
+  const pctStr = (a, b) => (b ? a / b * 100 : 0).toFixed(1) + '%';
+
+  const C = {
+    rev: sum(m=>m.rev), cogs: sum(m=>m.cogs), gp: sum(m=>m.gp),
+    sell: sum(m=>m.sell), mgmt: sum(m=>m.mgmt), op: sum(m=>m.opProfit),
+    nonOp: sum(m=>m.nonOpIn-m.nonOpOut), pretax: sum(m=>m.pretax),
+    tax: sum(m=>m.tax), ni: sum(m=>m.ni),
+    mkt: sum(m=>m.mkt), wage: sum(m=>m.w6100+m.w6201), pkg: sum(m=>m.pkg),
+  };
+  const niTotCls = npColor(C.ni / C.rev * 100);
+
+  const rows = [
+    { label:'營業收入',   cls:'r-strong', cell:m=>money(m.rev),                tot:money(C.rev) },
+    { label:'銷貨成本',   cls:'r-sub',    cell:m=>money(-m.cogs),              tot:money(-C.cogs) },
+    { label:'營業毛利',   cls:'r-strong', cell:m=>money(m.gp),                 tot:money(C.gp) },
+    { label:'毛利率',     cls:'r-sub',    cell:m=>pctStr(m.gp,m.rev),          tot:pctStr(C.gp,C.rev) },
+    { label:'推銷費用',   cls:'r-sub',    cell:m=>money(-m.sell),              tot:money(-C.sell) },
+    { label:'推銷費率',   cls:'r-sub',    cell:m=>pctStr(m.sell,m.rev),        tot:pctStr(C.sell,C.rev) },
+    { label:'管理費用',   cls:'r-sub',    cell:m=>money(-m.mgmt),              tot:money(-C.mgmt) },
+    { label:'管理費率',   cls:'r-sub',    cell:m=>pctStr(m.mgmt,m.rev),        tot:pctStr(C.mgmt,C.rev) },
+    { label:'營業淨利',   cls:'r-strong', cell:m=>money(m.opProfit),           tot:money(C.op) },
+    { label:'營業利益率', cls:'r-sub',    cell:m=>pctStr(m.opProfit,m.rev),    tot:pctStr(C.op,C.rev) },
+    { label:'業外淨額',   cls:'r-sub',    cell:m=>money(m.nonOpIn-m.nonOpOut), tot:money(C.nonOp) },
+    { label:'稅前損益',   cls:'',         cell:m=>money(m.pretax),             tot:money(C.pretax) },
+    { label:'所得稅',     cls:'r-sub',    cell:m=>money(-m.tax),               tot:money(-C.tax) },
+    { label:'本期損益',   cls:'r-strong', cell:m=>`<span class="${npColor(m.niPct)}">${money(m.ni)}</span>`,        tot:`<span class="${niTotCls}">${money(C.ni)}</span>` },
+    { label:'本期損益率', cls:'r-sub',    cell:m=>`<span class="${npColor(m.niPct)}">${pctStr(m.ni,m.rev)}</span>`, tot:`<span class="${niTotCls}">${pctStr(C.ni,C.rev)}</span>` },
+    { label:'廣告費 (6117)',          cls:'r-memo', cell:m=>`${money(m.mkt)}（${pctStr(m.mkt,m.rev)}）`,                 tot:`${money(C.mkt)}（${pctStr(C.mkt,C.rev)}）` },
+    { label:'總人事費 (6100+6201)',   cls:'r-memo', cell:m=>`${money(m.w6100+m.w6201)}（${pctStr(m.w6100+m.w6201,m.rev)}）`, tot:`${money(C.wage)}（${pctStr(C.wage,C.rev)}）` },
+    { label:'包裝費 (5539)',          cls:'r-memo', cell:m=>`${money(m.pkg)}（${pctStr(m.pkg,m.rev)}）`,                 tot:`${money(C.pkg)}（${pctStr(C.pkg,C.rev)}）` },
+  ];
+
+  const head = `<thead><tr><th>項目（萬元）</th>${CMP.map(m=>`<th class="${m.ym===S.ym?'cur':''}">${m.label}</th>`).join('')}<th class="col-tot">累計</th></tr></thead>`;
+  const body = `<tbody>${rows.map(r=>`<tr class="${r.cls}">
+    <td class="row-label">${r.label}</td>
+    ${CMP.map(m=>`<td class="${m.ym===S.ym?'cur':''}">${r.cell(m)}</td>`).join('')}
+    <td class="col-tot">${r.tot}</td>
+  </tr>`).join('')}</tbody>`;
+  el.innerHTML = head + body;
+}
+
+/* ── 深入觀察（跨月、與所選月份無關，內容固定） ── */
+function renderInsights() {
+  const el = document.getElementById('insight-list');
+  if (!el) return;
+  const w = v => (v/10000).toFixed(1) + '萬';
+  const A = MONTHS['2026/04'];
+
+  const pkgApr = PKG['2026/04'];
+  const pkgAvg = (PKG['2026/01']+PKG['2026/02']+PKG['2026/03'])/3;
+  const pkgYoY = (pkgApr - PKG_PREV['2026/04']) / PKG_PREV['2026/04'] * 100;
+  const aprWage = A.w6100 + A.w6201;
+
+  const items = [
+    { sev:'red', tag:'毛利', title:'4 月包裝費暴衝，是毛利率掉到 63.6% 的隱形主因',
+      body:`包裝費（科目 5539，<b>目前併在營業成本裡看不到</b>）4 月衝到 <b>${w(pkgApr)}</b>，是 1–3 月平均 ${w(pkgAvg)} 的 <b>${(pkgApr/pkgAvg).toFixed(1)} 倍</b>、去年同月 ${w(PKG_PREV['2026/04'])} 的 <b>+${pkgYoY.toFixed(0)}%</b>。光這一項就多吃掉約 ${w(pkgApr-pkgAvg)} 毛利，把 4 月毛利率從常態 ~66% 壓到 63.6%。現行只看「商品成本率」總和，抓不到這筆。建議釐清是一次性備料（紙箱／提袋大量進貨）還是新包材常態化。`,
+      data:`5539 包裝費：1月 ${w(PKG['2026/01'])}｜2月 ${w(PKG['2026/02'])}｜3月 ${w(PKG['2026/03'])}｜4月 ${w(pkgApr)}` },
+
+    { sev:'red', tag:'營收', title:'營收動能由正轉負 —— YoY 從 +18.9%（3月）翻成 −11.2%（4月）',
+      body:`月營收 1→4 月為 <b>693 → 534 → 678 → 527 萬</b>，與去年同月比由正轉負。3 月看似強勁，主因是<b>去年 3 月基期極低</b>；4 月則明顯衰退。單看單月 YoY 容易誤判，建議改用「近 3 個月移動平均」與「對全年目標進度」追蹤。`,
+      data:`營收 YoY：${CMP.map(m=>m.label+' '+(m.yoyRevPct>=0?'+':'')+m.yoyRevPct.toFixed(1)+'%').join('｜')}` },
+
+    { sev:'amber', tag:'獲利品質', title:'獲利改善主要靠「省人事」，不是靠成長 —— 是縮編還是增效？',
+      body:`今年每月淨利都遠優於去年，但拆解後主因是<b>人事費大降</b>：4 月推銷薪資(6100) YoY <b>−26%</b>、管理薪資(6201) YoY <b>−37%</b>，兩者合計較去年同月少約 67 萬。同期營收在衰退，代表獲利成長並非來自業績，而是成本壓縮。若為人力縮編，須評估對門市服務與後續成長的衝擊；若去年有一次性獎金墊高基期，今年的「改善」會被高估。`,
+      data:`4月總人事費 ${w(aprWage)}（佔營收 ${(aprWage/A.rev*100).toFixed(1)}%）　vs　去年同月 ≈ 210 萬` },
+
+    { sev:'amber', tag:'基期', title:'YTD 淨利 +514% 很漂亮，但去年基期極低（去年 4 月還虧損）',
+      body:`1–4 月累計本期損益 <b>296.9 萬</b> vs 去年同期 <b>48.3 萬</b>，YoY +514%——這個倍數被低基期放大，去年 4 月單月就<b>虧損 54.3 萬</b>。對內外溝通建議同時看「絕對金額＋損益率」：今年 YTD <b>12.2%</b> vs 去年 <b>1.99%</b>，比成長倍數更能反映真實體質。`,
+      data:`YTD 本期損益率：2026 = 12.2%　vs　2025 = 1.99%` },
+
+    { sev:'amber', tag:'通路', title:'官網（電商）幾乎每月在虧 —— 結構性問題，非淡旺季',
+      body:`線上（官網）1 月僅打平（+0.06萬）、2 月虧 33.3 萬、4 月虧 15.0 萬。主因是線上要單獨吸收<b>廣告費（佔線上營收 16–24%）</b>＋系統費＋總部分攤，毛利撐不住；實體店則普遍獲利。建議把「線上獲利模型」單獨檢討（ROAS、客單價、分攤合理性），而非只看全公司廣告費率 6%。`,
+      data:`官網營業淨利：1月 +0.1萬｜2月 −33.3萬｜4月 −15.0萬（線上廣告費率遠高於門市）` },
+
+    { sev:'neutral', tag:'固定成本', title:'租金連年漲、營收卻持平／下滑 —— 損益兩平點被墊高',
+      body:`房租(6114) YoY 持續 +7~12%（中山漲租、東門漲租，另有園道支援住宿），加上 4 月折舊也 +10%。當營收走平而固定成本上升，淡月更易由盈轉虧（如台中 4 月稅前 −13%）。建議追蹤各店「租金率」與「損益兩平所需營收」門檻，作為展店／續約決策依據。`,
+      data:`各店租金率(6114)：${CMP.map(m=>m.label+' '+m.rPct6114.toFixed(1)+'%').join('｜')}` },
+  ];
+
+  const tagColor = { red:'#c0392b', amber:'#b07d12', neutral:'#8D5531' };
+  el.innerHTML = items.map(it => `
+    <div class="insight" style="border-left-color:${tagColor[it.sev]}">
+      <div class="insight-hd">
+        <span class="insight-tag" style="background:${tagColor[it.sev]}">${it.tag}</span>
+        <span class="insight-title">${it.title}</span>
+      </div>
+      <div class="insight-body">${it.body}</div>
+      <div class="insight-data">${it.data}</div>
+    </div>`).join('');
+}
+
 /* ── Expense Cards ── */
 function renderExpenseCards() {
   const mIdx          = monthNum(S.ym) - 1;
@@ -1431,7 +1603,7 @@ function renderAnomalies() {
   /* Per store */
   if (S.storeData) STORES.forEach(st => {
     const d = S.storeData[st];
-    if (!d) return;
+    if (!d || d.partial) return;  // partial（資料不完整）的通路不納入異常判讀
     const ach = pct(d.rev, d.target);
     if (salColor(d.wPct) === 'neg')
       anomalies.push({ cls:'red', msg:`${st} 薪資率 ${fmtPct(d.wPct)}，嚴重超標（上限15%）` });
