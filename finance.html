@@ -43,79 +43,107 @@ const COMPANY_NI_TARGET  = 6400000;
 const ANNUAL_MKT_BASE    = 65000000;  // 廣告費預算基準收入：6,500萬
 const COMPANY_MKT_BUDGET = 3900000;   // 年度廣告費預算：6,500萬 × 6% = 390萬
 
-/* ════ 2026/03 靜態財報資料（來源：ERP 財務月報 2026-05-02）════ */
-const S = {
-  ym: '2026/03',
-  /* ── 全公司損益 ── */
-  rev: 6775630, cogs: 2248408, gp: 4527222, gpPct: 66.82,
-  sell: 2312592, sellPct: 34.13,
-    w6100: 780594,  wPct6100: 11.52,
-    r6114: 452794,  rPct6114: 6.68,
-    mkt:   590117,  mktPct:   8.71,
-      mktPhoto: 58675, mktMedia: 309925, mktPrint: 0, mktEvent: 8535, mktPR: 212982,
-    freight: 54508, sys: 137281, cardFee: 124356, sample: 56697,
-  mgmt: 1140879, mgmtPct: 16.84,
-    w6201: 771262, wPct6201: 11.38,
-    r6202: 176000, depr: 55618,
-  opProfit: 1073751, opPct: 15.85,
-  nonOpIn: 82271, nonOpOut: 41880,
-  pretax:  1114142, tax: 176000,
-  ni: 938142, niPct: 13.85,
-  /* ── YTD Q1 2026 ── */
-  ytdRev: 19056297, ytdNI: 2890382, ytdNIPct: 15.17,
-  /* ── YOY 2025/03 ── */
-  prevRev: 5697649, prevNI: 55790,
-  yoyRevPct: 18.92, yoyNIPct: 1581.56,
-  /* ── 月目標合計（各店 March 加總）── */
-  totalTarget: 6850000,
-
-  /* ── 各店（部門比較表 202603）── */
-  storeData: {
-    '電商': {
-      rev: 1078725, cogs: 322218, gp: 756507, gpPct: 70.13,
-      wPct: 5.67, rPct: 0, mktPct: 16.51,
-      opProfit: 82159, pretax: 82159, pretaxPct: 7.62,
-      target: 1150000,
-    },
-    '中山': {
-      rev: 1696854, cogs: 543632, gp: 1153222, gpPct: 67.96,
-      wPct: 9.89, rPct: 7.66, mktPct: 1.74,
-      opProfit: 445074, nonOpIn: 60000, pretax: 505074, pretaxPct: 29.77,
-      target: 1700000,
-    },
-    '松菸': {
-      rev: 1523289, cogs: 501018, gp: 1022271, gpPct: 67.11,
-      wPct: 14.56, rPct: 8.33, mktPct: 1.94,
-      opProfit: 262033, pretax: 262033, pretaxPct: 17.20,
-      target: 1500000,
-    },
-    '台中': {
-      rev: 995748, cogs: 333476, gp: 662272, gpPct: 66.51,
-      wPct: 14.22, rPct: 6.86, mktPct: 2.97,
-      opProfit: 60536, pretax: 60536, pretaxPct: 6.08,
-      target: 1200000,
-    },
-    '東門': {
-      rev: 1305843, cogs: 449112, gp: 856731, gpPct: 65.61,
-      wPct: 13.93, rPct: 9.77, mktPct: 2.26,
-      opProfit: 147740, pretax: 147740, pretaxPct: 11.31,
-      target: 1300000,
+/* ════ 月度財報資料（來源：ERP 損益月份比較表／同期比較表／部門比較表，2026-06-06）════
+ *  全公司損益：1–4 月皆完整；分店別（storeData）與去年同期（prev*）目前僅 3、4 月有來源。
+ *  1–2 月僅有總公司合併損益，分店別資料留待 ERP 補出。 */
+const MONTHS = {
+  '2026/01': {
+    ym:'2026/01', label:'1月', confirmed:true,
+    rev:6935368, cogs:2427825, gp:4507543, gpPct:64.99,
+    sell:1934610, sellPct:27.89,
+      w6100:759798, wPct6100:10.96, r6114:475060, rPct6114:6.85,
+      mkt:275761, mktPct:3.98,
+        mktPhoto:498, mktMedia:244304, mktPrint:2073, mktEvent:17582, mktPR:11304,
+      freight:50149, sys:108667, cardFee:102969, sample:47722,
+    mgmt:1204642, mgmtPct:17.37,
+      w6201:833927, wPct6201:12.02, r6202:177115, depr:55618,
+    opProfit:1368291, opPct:19.73,
+    nonOpIn:131580, nonOpOut:41477,
+    pretax:1458394, tax:46000, ni:1412394, niPct:20.37,
+  },
+  '2026/02': {
+    ym:'2026/02', label:'2月', confirmed:true,
+    rev:5345299, cogs:1718154, gp:3627145, gpPct:67.86,
+    sell:1956223, sellPct:36.60,
+      w6100:772260, wPct6100:14.45, r6114:452794, rPct6114:8.47,
+      mkt:249337, mktPct:4.66,
+        mktPhoto:10000, mktMedia:188288, mktPrint:19710, mktEvent:1890, mktPR:29449,
+      freight:46949, sys:128013, cardFee:90205, sample:37965,
+    mgmt:1134711, mgmtPct:21.23,
+      w6201:796594, wPct6201:14.90, r6202:179000, depr:55618,
+    opProfit:536211, opPct:10.03,
+    nonOpIn:90146, nonOpOut:40511,
+    pretax:585846, tax:46000, ni:539846, niPct:10.10,
+  },
+  '2026/03': {
+    ym:'2026/03', label:'3月', confirmed:true,
+    rev:6775630, cogs:2248408, gp:4527222, gpPct:66.82,
+    sell:2312592, sellPct:34.13,
+      w6100:780594, wPct6100:11.52, r6114:452794, rPct6114:6.68,
+      mkt:590117, mktPct:8.71,
+        mktPhoto:58675, mktMedia:309925, mktPrint:0, mktEvent:8535, mktPR:212982,
+      freight:54508, sys:137281, cardFee:124356, sample:56697,
+    mgmt:1140879, mgmtPct:16.84,
+      w6201:771262, wPct6201:11.38, r6202:176000, depr:55618,
+    opProfit:1073751, opPct:15.85,
+    nonOpIn:82271, nonOpOut:41880,
+    pretax:1114142, tax:176000, ni:938142, niPct:13.85,
+    /* 去年同期 2025/03 + 累計 */
+    prevRev:5697649, prevNI:55790, yoyRevPct:18.92,
+    prevYtdRev:18328795, prevYtdNI:1026655,
+    prevGpPct:65.01, prevSellPct:41.28, prevMgmtPct:22.42, prevNiPct:0.98,
+    storeData: {
+      '電商': { rev:1078725, cogs:322218, gp:756507, gpPct:70.13, wPct:5.67,  rPct:0,    mktPct:16.51, opProfit:82159,  pretax:82159,  pretaxPct:7.62,  target:1150000 },
+      '中山': { rev:1696854, cogs:543632, gp:1153222, gpPct:67.96, wPct:9.89,  rPct:7.66, mktPct:1.74,  opProfit:445074, nonOpIn:60000, pretax:505074, pretaxPct:29.77, target:1700000 },
+      '松菸': { rev:1523289, cogs:501018, gp:1022271, gpPct:67.11, wPct:14.56, rPct:8.33, mktPct:1.94,  opProfit:262033, pretax:262033, pretaxPct:17.20, target:1500000 },
+      '台中': { rev:995748,  cogs:333476, gp:662272,  gpPct:66.51, wPct:14.22, rPct:6.86, mktPct:2.97,  opProfit:60536,  pretax:60536,  pretaxPct:6.08,  target:1200000 },
+      '東門': { rev:1305843, cogs:449112, gp:856731,  gpPct:65.61, wPct:13.93, rPct:9.77, mktPct:2.26,  opProfit:147740, pretax:147740, pretaxPct:11.31, target:1300000 },
     },
   },
-
-  /* ── Q1 月份比較（1–3月 2026）── */
-  q1: [
-    { label:'1月', rev:6935368, cogs:2427825, gp:4507543, gpPct:64.99,
-      mkt:275761, mktPct:3.98, sell:1934610, sellPct:27.89,
-      mgmt:1169677, opProfit:1403256, opPct:20.23 },
-    { label:'2月', rev:5345299, cogs:1718154, gp:3627145, gpPct:67.86,
-      mkt:249337, mktPct:4.66, sell:1956223, sellPct:36.60,
-      mgmt:1169676, opProfit:501246, opPct:9.38 },
-    { label:'3月', rev:6775630, cogs:2248408, gp:4527222, gpPct:66.82,
-      mkt:590117, mktPct:8.71, sell:2312592, sellPct:34.13,
-      mgmt:1140879, opProfit:1073751, opPct:15.85 },
-  ],
+  '2026/04': {
+    ym:'2026/04', label:'4月', confirmed:true,
+    rev:5272759, cogs:1920048, gp:3352711, gpPct:63.59,
+    sell:2101745, sellPct:39.86,
+      w6100:737711, wPct6100:13.99, r6114:452794, rPct6114:8.59,
+      mkt:426367, mktPct:8.09,
+        mktPhoto:51000, mktMedia:223491, mktPrint:2246, mktEvent:4760, mktPR:144870,
+      freight:51337, sys:147594, cardFee:94355, sample:34175,
+    mgmt:1147788, mgmtPct:21.77,
+      w6201:693127, wPct6201:13.15, r6202:179524, depr:61010,
+    opProfit:103178, opPct:1.96,
+    nonOpIn:71676, nonOpOut:38586,
+    pretax:136268, tax:58000, ni:78268, niPct:1.48,
+    /* 去年同期 2025/04（去年 4 月為虧損 -54.3萬）+ 累計 */
+    prevRev:5936770, prevNI:-543295, yoyRevPct:-11.18,
+    prevYtdRev:24265565, prevYtdNI:483360,
+    prevGpPct:57.56, prevSellPct:38.26, prevMgmtPct:27.77, prevNiPct:-9.15,
+    storeData: {
+      '電商': { rev:796289,  cogs:288247, gp:508042, gpPct:63.80, wPct:8.23,  rPct:0,     mktPct:16.63, opProfit:-84182,  pretax:-84182,  pretaxPct:-10.57, target:1000000 },
+      '中山': { rev:1410853, cogs:485953, gp:924900, gpPct:65.56, wPct:14.23, rPct:9.21,  mktPct:1.56,  opProfit:203851,  nonOpIn:60000, pretax:263851,  pretaxPct:18.70,  target:1500000 },
+      '松菸': { rev:1168418, cogs:429649, gp:738769, gpPct:63.23, wPct:14.58, rPct:10.86, mktPct:1.89,  opProfit:51484,   pretax:51484,   pretaxPct:4.41,   target:1400000 },
+      '台中': { rev:822477,  cogs:325574, gp:496903, gpPct:60.42, wPct:19.82, rPct:8.30,  mktPct:2.68,  opProfit:-106986, pretax:-106986, pretaxPct:-13.01, target:1200000 },
+      '東門': { rev:1074722, cogs:390625, gp:684097, gpPct:63.65, wPct:12.19, rPct:11.88, mktPct:2.05,  opProfit:39136,   pretax:39136,   pretaxPct:3.64,   target:1200000 },
+    },
+  },
 };
+
+/* ── 衍生資料：月度比較陣列 + 逐月累計 YTD + 月度營收目標 ── */
+const CMP_KEYS = ['2026/01','2026/02','2026/03','2026/04'];
+const CMP = CMP_KEYS.map(k => MONTHS[k]);
+(function deriveMonths(){
+  let cumRev = 0, cumNI = 0;
+  CMP.forEach(m => {
+    cumRev += m.rev; cumNI += m.ni;
+    m.ytdRev = cumRev; m.ytdNI = cumNI;
+    m.ytdNIPct = cumRev ? cumNI / cumRev * 100 : 0;
+    const mi = parseInt(m.ym.split('/')[1], 10) - 1;
+    m.totalTarget = STORES.reduce((s, st) => s + (MONTHLY_TARGETS[st][mi] || 0) * 10000, 0);
+  });
+})();
+
+/* 目前檢視的月份（預設最新月）；render 函式皆讀取全域 S */
+let CUR_YM = '2026/04';
+let S = MONTHS[CUR_YM];
 </script>
 
 <style>
@@ -158,6 +186,13 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .data-status{font-size:11px;color:var(--text-muted);font-family:'Space Mono',monospace}
 .sensitive-notice{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);margin-bottom:1.25rem;padding:9px 14px;background:rgba(165,74,26,.05);border:1px solid rgba(165,74,26,.12);border-radius:8px}
 .data-source-note{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--pos);padding:2px 9px;background:rgba(26,122,74,.07);border:1px solid rgba(26,122,74,.2);border-radius:20px;font-family:'Space Mono',monospace}
+
+/* ── Month switcher ── */
+.month-nav{display:flex;gap:6px;margin-bottom:1.4rem;flex-wrap:wrap}
+.month-btn{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;padding:7px 20px;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text-sub);cursor:pointer;transition:all .15s;line-height:1.2;text-align:center}
+.month-btn:hover{border-color:var(--green);color:var(--green)}
+.month-btn.active{background:var(--green);color:var(--sand);border-color:var(--green);box-shadow:0 2px 8px rgba(40,66,52,.18)}
+.month-btn .mb-sub{font-size:9px;display:block;font-weight:400;opacity:.8;margin-top:2px}
 
 /* ── Section title ── */
 .sec{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);margin:1.75rem 0 .75rem;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:10px}
@@ -396,10 +431,13 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div class="page-hd">
       <div class="page-title">財務報表</div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <span class="data-source-note">● 2026/03 資料已確認（ERP 月報）</span>
-        <span class="data-status" id="data-status">2026年3月</span>
+        <span class="data-source-note" id="data-source-note">● 2026/04 資料已確認（ERP 月報）</span>
+        <span class="data-status" id="data-status">2026年4月</span>
       </div>
     </div>
+
+    <!-- Month switcher -->
+    <div class="month-nav" id="month-nav"></div>
 
     <div class="sensitive-notice">
       🔒 本頁資料屬機密，請勿截圖或轉發。目前登入帳號：<strong id="logged-email" style="margin-left:4px"></strong>
@@ -410,12 +448,12 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div class="kpi-grid" id="kpi-grid"></div>
 
     <!-- P&L Waterfall -->
-    <div class="sec">2026年3月 損益結構</div>
+    <div class="sec" id="sec-pl">2026年4月 損益結構</div>
     <div class="waterfall-wrap">
       <div class="wf-header">
         <div>
           <div class="wf-title">全公司損益瀑布圖（萬元）</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">來源：ERP 損益表 2026/03 · 管理帳</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px" id="wf-source">來源：ERP 損益表 2026/04 · 管理帳</div>
         </div>
         <div class="wf-legend">
           <div class="wf-leg"><div class="wf-dot" style="background:#284234"></div>收入／毛利</div>
@@ -424,53 +462,32 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
         </div>
       </div>
       <div class="wf-chart-wrap"><canvas id="waterfall-chart"></canvas></div>
-      <div class="wf-summary">
-        <div class="wf-item">
-          <div class="wf-item-label">毛利率</div>
-          <div class="wf-item-val pos">66.82%</div>
-          <div class="wf-item-pct">去年 65.01%</div>
-        </div>
-        <div class="wf-item">
-          <div class="wf-item-label">推銷費率</div>
-          <div class="wf-item-val warn">34.13%</div>
-          <div class="wf-item-pct">去年 41.28%</div>
-        </div>
-        <div class="wf-item">
-          <div class="wf-item-label">管理費率</div>
-          <div class="wf-item-val" style="color:var(--text)">16.84%</div>
-          <div class="wf-item-pct">去年 22.42%</div>
-        </div>
-        <div class="wf-item">
-          <div class="wf-item-label">本期損益率</div>
-          <div class="wf-item-val pos">13.85%</div>
-          <div class="wf-item-pct">去年 0.98%</div>
-        </div>
-      </div>
+      <div class="wf-summary" id="wf-summary"></div>
     </div>
 
     <!-- Store cards -->
-    <div class="sec">各門市當月績效</div>
+    <div class="sec" id="sec-store">各門市當月績效</div>
     <div class="store-grid" id="store-grid"></div>
 
     <!-- Mkt Breakdown -->
-    <div class="sec">廣告費用分析（本月 8.71% — 超出上限 6%）</div>
+    <div class="sec" id="sec-mkt">廣告費用分析</div>
     <div class="three-col">
       <div class="chart-card" style="margin-bottom:0">
-        <div class="chart-card-title">廣告費用明細（本月 59.0萬 vs 月上限 40.7萬）</div>
+        <div class="chart-card-title" id="mkt-detail-title">廣告費用明細</div>
         <div class="chart-wrap-sm"><canvas id="mkt-bar-chart"></canvas></div>
         <div class="mkt-compare-grid" id="mkt-compare-grid"></div>
       </div>
       <div>
         <div class="mkt-alert" id="mkt-alert"></div>
         <div class="chart-card" style="margin-bottom:0">
-          <div class="chart-card-title">Q1 廣告費率月趨勢</div>
+          <div class="chart-card-title">廣告費率月趨勢（1–4月）</div>
           <div class="chart-wrap-sm"><canvas id="mkt-trend-chart"></canvas></div>
         </div>
       </div>
     </div>
 
-    <!-- Q1 Comparison -->
-    <div class="sec" style="margin-top:1.75rem">Q1 月份比較（2026年1–3月）</div>
+    <!-- Monthly Comparison -->
+    <div class="sec" style="margin-top:1.75rem" id="sec-cmp">月份損益比較（2026年1–4月）</div>
     <div class="q1-stats" id="q1-stats"></div>
     <div class="chart-card">
       <div class="chart-card-title">月份損益表結構（萬元，未稅）</div>
@@ -487,7 +504,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <!-- Donut charts: 本月 + 年度 -->
     <div class="ach-donut-grid">
       <div class="ach-donut-card">
-        <div class="ach-donut-card-hd">本月（2026/03）</div>
+        <div class="ach-donut-card-hd" id="ach-month-hd">本月（2026/04）</div>
 
         <div class="ach-donut-row-label">營收達成率</div>
         <div class="ach-metric-row">
@@ -519,7 +536,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       </div>
 
       <div class="ach-donut-card">
-        <div class="ach-donut-card-hd">年度完成進度（Q1 累計 / 全年目標）</div>
+        <div class="ach-donut-card-hd" id="ach-ytd-hd">年度完成進度（YTD 累計 / 全年目標）</div>
 
         <div class="ach-donut-row-label">YTD 營收完成度（全年目標）</div>
         <div class="ach-metric-row">
@@ -766,8 +783,55 @@ function tagClass(cls) {
   return cls==='pos' ? 'tag-ok' : cls==='neg' ? 'tag-bad' : 'tag-warn';
 }
 
-/* ════════════════ STATIC RENDER (202603) ════════════════ */
+/* ════════════════ MONTH-DRIVEN RENDER ════════════════ */
+/* 建立 Chart 前先銷毀同一 canvas 的舊圖（切換月份不殘留） */
+function mkChart(id, config) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const prev = Chart.getChart(el);
+  if (prev) prev.destroy();
+  return new Chart(el, config);
+}
+
+const monthNum = ym => parseInt(ym.split('/')[1], 10);
+
+/* 月份切換列 */
+function renderMonthNav() {
+  const el = document.getElementById('month-nav');
+  if (!el) return;
+  el.innerHTML = CMP.map(m => {
+    const active = m.ym === CUR_YM ? ' active' : '';
+    return `<button class="month-btn${active}" onclick="switchMonth('${m.ym}')">
+      ${m.label}<span class="mb-sub">淨利 ${(m.ni/10000).toFixed(0)}萬</span>
+    </button>`;
+  }).join('');
+}
+
+function switchMonth(ym) {
+  if (!MONTHS[ym] || ym === CUR_YM) return;
+  CUR_YM = ym;
+  S = MONTHS[ym];
+  renderStaticSections();
+}
+
+/* 依目前月份更新各區塊標題文字 */
+function updateMonthLabels() {
+  const [y, mm] = S.ym.split('/');
+  const mNum = parseInt(mm, 10);
+  const set = (id, t) => { const e = document.getElementById(id); if (e) e.textContent = t; };
+  set('data-status', `${y}年${mNum}月`);
+  set('data-source-note', `● ${S.ym} 資料已確認（ERP 月報）`);
+  set('sec-pl', `${y}年${mNum}月 損益結構`);
+  set('wf-source', `來源：ERP 損益表 ${S.ym} · 管理帳`);
+  set('ach-month-hd', `本月（${S.ym}）`);
+  set('ach-ytd-hd', `年度完成進度（1–${mNum}月累計 / 全年目標）`);
+  set('sec-mkt', `廣告費用分析（本月 ${fmtPct(S.mktPct)}${S.mktPct > 6 ? ' — 超出上限 6%' : ' — 控制於上限 6% 內'}）`);
+  set('sec-store', S.storeData ? '各門市當月績效' : '各門市績效（本月僅有總公司合併損益，暫無分店別資料）');
+}
+
 function renderStaticSections() {
+  renderMonthNav();
+  updateMonthLabels();
   renderKPIs();
   renderWaterfall();
   renderStoreCards();
@@ -793,7 +857,7 @@ function drawAchDonut(cId, centerId, detailId, actual, target, detailHTML) {
   const pct  = target > 0 ? actual / target * 100 : 0;
   const clr  = pct >= 100 ? '#284234' : pct >= 85 ? '#EF9F27' : '#A54A1A';
   const fill = Math.min(pct, 100);
-  new Chart(document.getElementById(cId), {
+  mkChart(cId, {
     type: 'doughnut',
     data: { datasets: [{ data: [fill, 100 - fill],
       backgroundColor: [clr, 'rgba(0,0,0,.07)'], borderWidth: 0, cutout: '72%' }] },
@@ -807,10 +871,20 @@ function drawAchDonut(cId, centerId, detailId, actual, target, detailHTML) {
   document.getElementById(detailId).innerHTML = detailHTML;
 }
 
+/* 無分店資料時的 donut 佔位 */
+function drawAchNA(cId, centerId, detailId, note) {
+  const el = document.getElementById(cId);
+  if (el) { const prev = Chart.getChart(el); if (prev) prev.destroy(); }
+  const c = document.getElementById(centerId);
+  if (c) c.innerHTML = `<div class="ach-donut-main" style="color:var(--text-muted);font-size:15px">—</div>`;
+  const d = document.getElementById(detailId);
+  if (d) d.innerHTML = note || '本月暫無分店別資料';
+}
+
 function renderAchievementCharts() {
-  const [, mStr] = S.ym.split('/');
-  const mIdx = parseInt(mStr) - 1;
+  const mIdx = monthNum(S.ym) - 1;
   const NI_TGT_RATE = 0.08;
+  const hasStore = !!S.storeData;
 
   /* ── 月目標 ── */
   const storesMthTgt    = STORES.reduce((s, st) => s + (MONTHLY_TARGETS[st][mIdx] || 0) * 10000, 0);
@@ -819,43 +893,39 @@ function renderAchievementCharts() {
   const companyMthNITgt = companyMthTgt * NI_TGT_RATE;
   const storesMthNITgt  = storesMthTgt  * NI_TGT_RATE;
 
-  /* ── Q1 目標 ── */
-  const q1StoresTgt    = STORES.reduce((s, st) =>
-    s + [0,1,2].reduce((ss, i) => ss + (MONTHLY_TARGETS[st][i] || 0) * 10000, 0), 0);
-  const q1CompanyTgt   = q1StoresTgt + b2bMthTgt * 3;
-  const q1CompanyNITgt = q1CompanyTgt * NI_TGT_RATE;
-  const q1StoresNITgt  = q1StoresTgt  * NI_TGT_RATE;
-
-  /* ── 五店實績（從 storeData 加總）── */
-  const storesRev    = STORES.reduce((s, st) => s + (S.storeData[st]?.rev    || 0), 0);
-  const storesPretax = STORES.reduce((s, st) => s + (S.storeData[st]?.pretax || 0), 0);
+  /* ── 五店實績（從 storeData 加總；無資料則略過五店圈）── */
+  const storesRev    = hasStore ? STORES.reduce((s, st) => s + (S.storeData[st]?.rev    || 0), 0) : 0;
+  const storesPretax = hasStore ? STORES.reduce((s, st) => s + (S.storeData[st]?.pretax || 0), 0) : 0;
   const niTaxAdj     = S.pretax > 0 ? S.ni / S.pretax : 1;   // 稅前→稅後 比例
   const storesNI     = storesPretax * niTaxAdj;              // 五店估算稅後淨利
 
-  /* ── 五店 YTD 估算（按月度比例外推）── */
-  const revRatio     = S.rev > 0 ? storesRev / S.rev : 1;
+  /* ── 五店 YTD 估算（按本月營收比例外推）── */
+  const revRatio     = (hasStore && S.rev > 0) ? storesRev / S.rev : 1;
   const storesYtdRev = S.ytdRev * revRatio;
   const storesYtdNI  = S.ytdNI  * revRatio;
 
-  const ytdAnnualPct = S.ytdRev / COMPANY_REV_TARGET * 100;
-  const ytdShouldPct = q1CompanyTgt / COMPANY_REV_TARGET * 100;
+  const ytdLabel = `1–${mIdx + 1}月累計`;
 
   /* ── 本月 4 donut ── */
   drawAchText('dc-m-rev-co', 'dd-m-rev-co',
     S.rev, companyMthTgt,
     `實績 ${fmtW(S.rev)}<br>月目標 ${fmtW(companyMthTgt)}`);
 
-  drawAchDonut('d-m-rev-st', 'dc-m-rev-st', 'dd-m-rev-st',
-    storesRev, storesMthTgt,
-    `實績 ${fmtW(storesRev)}<br>月目標 ${fmtW(storesMthTgt)}`);
-
   drawAchText('dc-m-ni-co', 'dd-m-ni-co',
     S.ni, companyMthNITgt,
     `淨利 ${fmtW(S.ni)}<br>目標 ${fmtW(companyMthNITgt)}（${fmtW(companyMthTgt)} × 8%）`);
 
-  drawAchDonut('d-m-ni-st', 'dc-m-ni-st', 'dd-m-ni-st',
-    storesNI, storesMthNITgt,
-    `淨利 ${fmtW(storesNI)}<br>目標 ${fmtW(storesMthNITgt)}（${fmtW(storesMthTgt)} × 8%）`);
+  if (hasStore) {
+    drawAchDonut('d-m-rev-st', 'dc-m-rev-st', 'dd-m-rev-st',
+      storesRev, storesMthTgt,
+      `實績 ${fmtW(storesRev)}<br>月目標 ${fmtW(storesMthTgt)}`);
+    drawAchDonut('d-m-ni-st', 'dc-m-ni-st', 'dd-m-ni-st',
+      storesNI, storesMthNITgt,
+      `淨利 ${fmtW(storesNI)}<br>目標 ${fmtW(storesMthNITgt)}（${fmtW(storesMthTgt)} × 8%）`);
+  } else {
+    drawAchNA('d-m-rev-st', 'dc-m-rev-st', 'dd-m-rev-st');
+    drawAchNA('d-m-ni-st',  'dc-m-ni-st',  'dd-m-ni-st');
+  }
 
   /* ── 年度 4 donut（分母 = 全年目標）── */
   const annualCompanyNITgt = COMPANY_REV_TARGET * NI_TGT_RATE;
@@ -863,27 +933,31 @@ function renderAchievementCharts() {
 
   drawAchText('dc-y-rev-co', 'dd-y-rev-co',
     S.ytdRev, COMPANY_REV_TARGET,
-    `Q1累計 ${fmtW(S.ytdRev)}<br>全年目標 ${fmtW(COMPANY_REV_TARGET)}`);
-
-  drawAchDonut('d-y-rev-st', 'dc-y-rev-st', 'dd-y-rev-st',
-    storesYtdRev, STORES_REV_TARGET,
-    `Q1累計 ${fmtW(storesYtdRev)}　／　全年目標 ${fmtW(STORES_REV_TARGET)}`);
+    `${ytdLabel} ${fmtW(S.ytdRev)}<br>全年目標 ${fmtW(COMPANY_REV_TARGET)}`);
 
   drawAchText('dc-y-ni-co', 'dd-y-ni-co',
     S.ytdNI, annualCompanyNITgt,
     `YTD淨利 ${fmtW(S.ytdNI)}<br>年度目標 ${fmtW(annualCompanyNITgt)}（${fmtW(COMPANY_REV_TARGET)} × 8%）`);
 
-  drawAchDonut('d-y-ni-st', 'dc-y-ni-st', 'dd-y-ni-st',
-    storesYtdNI, annualStoresNITgt,
-    `YTD淨利 ${fmtW(storesYtdNI)}<br>年度淨利目標 ${fmtW(annualStoresNITgt)}（${fmtW(STORES_REV_TARGET)} × 8%）`);
+  if (hasStore) {
+    drawAchDonut('d-y-rev-st', 'dc-y-rev-st', 'dd-y-rev-st',
+      storesYtdRev, STORES_REV_TARGET,
+      `${ytdLabel} ${fmtW(storesYtdRev)}　／　全年目標 ${fmtW(STORES_REV_TARGET)}`);
+    drawAchDonut('d-y-ni-st', 'dc-y-ni-st', 'dd-y-ni-st',
+      storesYtdNI, annualStoresNITgt,
+      `YTD淨利 ${fmtW(storesYtdNI)}<br>年度淨利目標 ${fmtW(annualStoresNITgt)}（${fmtW(STORES_REV_TARGET)} × 8%）`);
+  } else {
+    drawAchNA('d-y-rev-st', 'dc-y-rev-st', 'dd-y-rev-st', '需分店別資料');
+    drawAchNA('d-y-ni-st',  'dc-y-ni-st',  'dd-y-ni-st', '需分店別資料');
+  }
 
   /* ── Layer 2: Store snapshot table ── */
   const snapRows = [
     { name: '全公司', color: '#284234', rev: S.rev, tgt: companyMthTgt, ni: S.ni, niPct: S.niPct, co: true },
-    ...STORES.map(st => {
+    ...(hasStore ? STORES.map(st => {
       const d = S.storeData[st];
       return { name: st, color: STORE_COLORS[st], rev: d.rev, tgt: (MONTHLY_TARGETS[st][mIdx]||0)*10000, ni: d.pretax, niPct: d.pretaxPct, co: false };
-    })
+    }) : [])
   ];
 
   document.getElementById('store-snap-body').innerHTML = snapRows.map(r => {
@@ -906,31 +980,47 @@ function renderAchievementCharts() {
 
 /* ── KPIs ── */
 function renderKPIs() {
+  const mNum = monthNum(S.ym);
   const ach = pct(S.rev, S.totalTarget);
-  const yoyNI = S.prevNI > 0 ? pct(S.ni - S.prevNI, S.prevNI) : 999;
-  const prev2025Q1 = 1026655; // from YOY comparison file (Q1 2025 NI)
-  const yoyQ1NI = pct(S.ytdNI - prev2025Q1, prev2025Q1);
+  const hasYoY    = (S.yoyRevPct !== undefined);
+  const hasYtdYoY = (S.prevYtdNI !== undefined);
+
+  /* KPI1：當月營收 YoY（依正負上色） */
+  const revDelta    = hasYoY ? `YOY ${chg(S.yoyRevPct)}` : '去年同月資料待補';
+  const revDeltaCls = hasYoY ? (S.yoyRevPct >= 0 ? 'pos' : 'neg') : 'warn';
+
+  /* KPI4：YTD 累計損益 + 同期 YoY */
+  let ytdDelta = `累計 ${mNum} 個月`, ytdCls = 'pos';
+  if (hasYtdYoY) {
+    if (S.prevYtdNI > 0) {
+      const yoyYtdNI = pct(S.ytdNI - S.prevYtdNI, S.prevYtdNI);
+      ytdDelta = `YOY ${chg(yoyYtdNI)}（去年 ${(S.prevYtdNI/10000).toFixed(1)}萬）`;
+    } else {
+      ytdDelta = `去年同期 ${(S.prevYtdNI/10000).toFixed(1)}萬 → 今年由負轉正`;
+    }
+    ytdCls = (S.ytdNI >= S.prevYtdNI) ? 'pos' : 'neg';
+  }
 
   const kpis = [
     { label:'五通路當月營收',
       val: fmtW(S.rev),
       sub: `目標 ${fmtW(S.totalTarget)}`,
-      delta: `YOY ${chg(S.yoyRevPct)}`, dCls: 'pos',
+      delta: revDelta, dCls: revDeltaCls,
       accent: '#284234' },
     { label:'全通路目標達成率',
       val: fmtPct(ach),
       sub: '目標 100%',
-      delta: `去年同月 ${fmtW(S.prevRev)}`, dCls: achColor(ach),
+      delta: hasYoY ? `去年同月 ${fmtW(S.prevRev)}` : '—', dCls: achColor(ach),
       accent: cSSColor(achColor(ach)) },
     { label:'全公司本期損益率',
       val: fmtPct(S.niPct),
       sub: '目標 8%',
       delta: `本月淨利 ${fmtW(S.ni)}`, dCls: npColor(S.niPct),
       accent: cSSColor(npColor(S.niPct)) },
-    { label:'Q1累積本期損益',
+    { label:`1–${mNum}月累計本期損益`,
       val: fmtW(S.ytdNI),
       sub: `累積損益率 ${fmtPct(S.ytdNIPct)}`,
-      delta: `YOY ${chg(yoyQ1NI)}（去年 ${(prev2025Q1/10000).toFixed(1)}萬）`, dCls: 'pos',
+      delta: ytdDelta, dCls: ytdCls,
       accent: '#284234' },
   ];
 
@@ -972,7 +1062,7 @@ function renderWaterfall() {
 
   const COLOR = { in:'#284234', cost:'#A54A1A', cost2:'#c76b2a', sub:'rgba(0,39,33,.75)', final:'#002721' };
 
-  new Chart(document.getElementById('waterfall-chart'), {
+  mkChart('waterfall-chart', {
     type: 'bar',
     data: {
       labels: bars.map(b => b.label),
@@ -1008,12 +1098,36 @@ function renderWaterfall() {
       }
     }
   });
+
+  /* ── 摘要列（本月費率 + 去年同期，若有來源）── */
+  const wfItems = [
+    { label:'毛利率',     val:S.gpPct,   prev:S.prevGpPct,   cls:'pos' },
+    { label:'推銷費率',   val:S.sellPct, prev:S.prevSellPct, cls:(S.sellPct>=38?'neg':S.sellPct>=33?'warn':'pos') },
+    { label:'管理費率',   val:S.mgmtPct, prev:S.prevMgmtPct, cls:'' },
+    { label:'本期損益率', val:S.niPct,   prev:S.prevNiPct,   cls:npColor(S.niPct) },
+  ];
+  const wfEl = document.getElementById('wf-summary');
+  if (wfEl) wfEl.innerHTML = wfItems.map(it => {
+    const valStyle = it.cls ? `class="wf-item-val ${it.cls}"` : `class="wf-item-val" style="color:var(--text)"`;
+    const prevTxt  = (it.prev !== undefined) ? `去年 ${fmtPct(it.prev)}` : '去年同期待補';
+    return `<div class="wf-item">
+      <div class="wf-item-label">${it.label}</div>
+      <div ${valStyle}>${fmtPct(it.val)}</div>
+      <div class="wf-item-pct">${prevTxt}</div>
+    </div>`;
+  }).join('');
 }
 
 /* ── Store Cards ── */
 function renderStoreCards() {
+  const grid = document.getElementById('store-grid');
+  if (!S.storeData) {
+    grid.innerHTML = `<div style="grid-column:1/-1;padding:22px;text-align:center;color:var(--text-muted);font-size:13px;background:var(--surface);border:1px dashed var(--border2);border-radius:12px">
+      ${S.label}僅提供總公司合併損益，分店別資料待 ERP 補出。可改看 3、4 月或下方「歷史趨勢分析」各店走勢。</div>`;
+    return;
+  }
   const order = ['中山','松菸','東門','台中','電商'];
-  document.getElementById('store-grid').innerHTML = order.map(st => {
+  grid.innerHTML = order.map(st => {
     const d = S.storeData[st];
     if (!d) return '';
     const ach = pct(d.rev, d.target);
@@ -1068,7 +1182,7 @@ function renderMktBreakdown() {
   const vals = [S.mktMedia, S.mktPR, S.mktPhoto, S.mktEvent, S.mktPrint];
   const barColors = ['#284234','#A54A1A','#CFA294','#8D5531','#c8b5a0'];
 
-  new Chart(document.getElementById('mkt-bar-chart'), {
+  mkChart('mkt-bar-chart', {
     type: 'bar',
     data: {
       labels: cats,
@@ -1093,13 +1207,26 @@ function renderMktBreakdown() {
     }
   });
 
-  /* Comparison mini cards */
+  const mIdx      = monthNum(S.ym) - 1;
   const budget6Pct = Math.round(S.rev * 0.06);
-  const overspend  = S.mkt - budget6Pct;
+  const over      = S.mkt > budget6Pct;            // 是否超出月上限
+  const diff      = Math.abs(S.mkt - budget6Pct);
+
+  /* 累計廣告費（1月~本月）與年度預算使用率 */
+  const ytdMkt     = CMP.slice(0, mIdx + 1).reduce((s, m) => s + m.mkt, 0);
+  const ytdMktRate = S.ytdRev ? ytdMkt / S.ytdRev * 100 : 0;
+  const budgetUsed = ytdMkt / COMPANY_MKT_BUDGET * 100;
+  const remainMkt  = COMPANY_MKT_BUDGET - ytdMkt;
+
+  /* detail card title */
+  document.getElementById('mkt-detail-title').textContent =
+    `廣告費用明細（本月 ${fmtW(S.mkt)} vs 月上限 ${fmtW(budget6Pct)}）`;
+
+  /* Comparison mini cards */
   document.getElementById('mkt-compare-grid').innerHTML = `
     <div class="mkt-compare-card">
       <div class="mkt-compare-label">本月廣告費</div>
-      <div class="mkt-compare-val neg">${fmtW(S.mkt)}</div>
+      <div class="mkt-compare-val ${over ? 'neg' : 'pos'}">${fmtW(S.mkt)}</div>
       <div class="mkt-compare-sub">${fmtPct(S.mktPct)} of 營收</div>
     </div>
     <div class="mkt-compare-card">
@@ -1108,39 +1235,54 @@ function renderMktBreakdown() {
       <div class="mkt-compare-sub">= ${fmtW(S.rev)} × 6%</div>
     </div>
     <div class="mkt-compare-card">
-      <div class="mkt-compare-label">超支金額</div>
-      <div class="mkt-compare-val neg">+${fmtW(overspend)}</div>
-      <div class="mkt-compare-sub">+${((S.mktPct - 6)).toFixed(2)}%pts</div>
+      <div class="mkt-compare-label">${over ? '超支金額' : '結餘金額'}</div>
+      <div class="mkt-compare-val ${over ? 'neg' : 'pos'}">${over ? '+' : '−'}${fmtW(diff)}</div>
+      <div class="mkt-compare-sub">${over ? '+' : '−'}${Math.abs(S.mktPct - 6).toFixed(2)}%pts</div>
     </div>`;
 
-  /* Alert box */
-  document.getElementById('mkt-alert').innerHTML = `
-    <div class="mkt-alert-hd">⚠ 廣告費超標原因分析</div>
-    <div class="mkt-alert-body">
-      <strong>公關宣傳</strong>本月 ${fmtW(S.mktPR)}（佔廣告費 ${(S.mktPR/S.mkt*100).toFixed(0)}%），
-      相較 1月 1.1萬、2月 2.9萬，3月大幅增加 +213%。<br><br>
-      <strong>商品拍攝</strong>本月 ${fmtW(S.mktPhoto)}，同為主要增項。<br><br>
-      Q1 累計廣告費率 5.85%，<span style="color:var(--pos)">仍在年度預算內（6%）</span>，
-      剩餘預算 ${fmtW(COMPANY_MKT_BUDGET - 1115215)}，需控管後續月份。
-    </div>`;
+  /* Alert box（依本月是否超標切換語氣，敘述全部由資料推導） */
+  const ranked = cats.map((c, i) => ({ c, v: vals[i] })).filter(x => x.v > 0).sort((a, b) => b.v - a.v);
+  const top = ranked[0] || { c:'—', v:0 };
+  const top2 = ranked[1];
+  const budgetState = ytdMktRate <= 6
+    ? `<span style="color:var(--pos)">仍在年度預算率內（6%）</span>`
+    : `<span style="color:var(--neg)">已超出年度預算率（6%）</span>`;
+  document.getElementById('mkt-alert').innerHTML = over
+    ? `<div class="mkt-alert-hd">⚠ 廣告費超標原因分析</div>
+       <div class="mkt-alert-body">
+         本月廣告費 <strong>${fmtW(S.mkt)}</strong>（佔營收 ${fmtPct(S.mktPct)}），超出月上限 6%（${fmtW(budget6Pct)}）。<br><br>
+         最大項目為<strong>${top.c}</strong> ${fmtW(top.v)}（佔廣告費 ${(top.v/S.mkt*100).toFixed(0)}%）${top2 ? `，其次為${top2.c} ${fmtW(top2.v)}` : ''}。<br><br>
+         1–${mIdx+1}月累計廣告費率 ${fmtPct(ytdMktRate)}，${budgetState}，
+         年度預算已使用 ${fmtPct(budgetUsed)}，剩餘 ${fmtW(remainMkt)}，需控管後續月份。
+       </div>`
+    : `<div class="mkt-alert-hd" style="color:var(--pos)">✓ 廣告費控管良好</div>
+       <div class="mkt-alert-body">
+         本月廣告費 <strong>${fmtW(S.mkt)}</strong>（佔營收 ${fmtPct(S.mktPct)}），控制於月上限 6% 內（${fmtW(budget6Pct)}）。<br><br>
+         最大項目為<strong>${top.c}</strong> ${fmtW(top.v)}（佔廣告費 ${(top.v/S.mkt*100).toFixed(0)}%）。<br><br>
+         1–${mIdx+1}月累計廣告費率 ${fmtPct(ytdMktRate)}，${budgetState}，
+         年度預算已使用 ${fmtPct(budgetUsed)}，剩餘 ${fmtW(remainMkt)}。
+       </div>`;
 
-  /* Q1 mkt trend line */
-  new Chart(document.getElementById('mkt-trend-chart'), {
+  /* 廣告費率月趨勢（1–4月，標示目前月份） */
+  mkChart('mkt-trend-chart', {
     type: 'line',
     data: {
-      labels: S.q1.map(m => m.label),
+      labels: CMP.map(m => m.label),
       datasets: [
         {
           label: '廣告費率 %',
-          data: S.q1.map(m => m.mktPct),
+          data: CMP.map(m => m.mktPct),
           borderColor: '#A54A1A',
           backgroundColor: 'rgba(165,74,26,.1)',
           fill: true,
-          borderWidth: 2, pointRadius: 5, tension: 0.3,
+          borderWidth: 2, tension: 0.3,
+          pointRadius: CMP.map(m => m.ym === S.ym ? 7 : 4),
+          pointBackgroundColor: CMP.map(m => m.ym === S.ym ? '#A54A1A' : '#fff'),
+          pointBorderColor: '#A54A1A',
         },
         {
           label: '上限 6%',
-          data: S.q1.map(() => 6),
+          data: CMP.map(() => 6),
           borderColor: 'rgba(165,74,26,.4)',
           borderDash: [5,4], borderWidth: 1.5, pointRadius: 0,
           backgroundColor: 'transparent',
@@ -1158,40 +1300,54 @@ function renderMktBreakdown() {
   });
 }
 
-/* ── Q1 Chart ── */
+/* ── Monthly Comparison Chart ── */
 function renderQ1Chart() {
-  /* Stats row */
-  const q1Rev  = S.q1.reduce((s,m) => s + m.rev, 0);
-  const q1Op   = S.q1.reduce((s,m) => s + m.opProfit, 0);
-  const prevQ1Rev = 18328795; // from YOY file
+  const mIdx = monthNum(S.ym) - 1;
+  /* Stats row（累計至目前月份） */
+  const ytdMkt     = CMP.slice(0, mIdx + 1).reduce((s, m) => s + m.mkt, 0);
+  const ytdMktRate = S.ytdRev ? ytdMkt / S.ytdRev * 100 : 0;
+
+  const revSub = (S.prevYtdRev !== undefined)
+    ? `去年同期 ${fmtW(S.prevYtdRev)} · YOY ${chg(pct(S.ytdRev - S.prevYtdRev, S.prevYtdRev))}`
+    : `1–${mIdx+1}月累計（去年同期待補）`;
+
+  let niSub;
+  if (S.prevYtdNI !== undefined) {
+    niSub = S.prevYtdNI > 0
+      ? `損益率 ${fmtPct(S.ytdNIPct)} · 去年同期 ${fmtW(S.prevYtdNI)}`
+      : `損益率 ${fmtPct(S.ytdNIPct)} · 去年同期 ${fmtW(S.prevYtdNI)}（虧損）`;
+  } else {
+    niSub = `損益率 ${fmtPct(S.ytdNIPct)} · 去年同期待補`;
+  }
+
   document.getElementById('q1-stats').innerHTML = `
     <div class="q1-stat">
-      <div class="q1-stat-label">Q1 累積營收</div>
-      <div class="q1-stat-val">${fmtW(q1Rev)}</div>
-      <div class="q1-stat-sub">去年同期 ${fmtW(prevQ1Rev)} · YOY ${chg(pct(q1Rev-prevQ1Rev, prevQ1Rev))}</div>
+      <div class="q1-stat-label">1–${mIdx+1}月 累計營收</div>
+      <div class="q1-stat-val">${fmtW(S.ytdRev)}</div>
+      <div class="q1-stat-sub">${revSub}</div>
     </div>
     <div class="q1-stat">
-      <div class="q1-stat-label">Q1 累積本期損益</div>
-      <div class="q1-stat-val pos">${fmtW(S.ytdNI)}</div>
-      <div class="q1-stat-sub">損益率 ${fmtPct(S.ytdNIPct)} · 去年 102.7萬（5.6%）</div>
+      <div class="q1-stat-label">1–${mIdx+1}月 累計本期損益</div>
+      <div class="q1-stat-val ${S.ytdNI >= 0 ? 'pos' : 'neg'}">${fmtW(S.ytdNI)}</div>
+      <div class="q1-stat-sub">${niSub}</div>
     </div>
     <div class="q1-stat">
-      <div class="q1-stat-label">3月廣告費超支</div>
-      <div class="q1-stat-val warn">但 Q1 廣告費率 5.85%</div>
-      <div class="q1-stat-sub">年度預算上限 6%，Q1 仍達標</div>
+      <div class="q1-stat-label">廣告費年度預算使用</div>
+      <div class="q1-stat-val ${ytdMktRate > 6 ? 'neg' : 'pos'}">${fmtPct(ytdMkt / COMPANY_MKT_BUDGET * 100)}</div>
+      <div class="q1-stat-sub">累計廣告費率 ${fmtPct(ytdMktRate)}（上限 6%）</div>
     </div>`;
 
-  /* Grouped bar chart */
-  new Chart(document.getElementById('q1-chart'), {
+  /* Grouped bar chart（1–4月） */
+  mkChart('q1-chart', {
     type: 'bar',
     data: {
-      labels: S.q1.map(m => m.label),
+      labels: CMP.map(m => m.label),
       datasets: [
-        { label: '營業收入', data: S.q1.map(m => W(m.rev)),       backgroundColor: '#284234', borderRadius: 3, borderWidth: 0 },
-        { label: '毛利',     data: S.q1.map(m => W(m.gp)),        backgroundColor: '#1D9E75', borderRadius: 3, borderWidth: 0 },
-        { label: '推銷費用', data: S.q1.map(m => W(m.sell)),      backgroundColor: '#A54A1A', borderRadius: 3, borderWidth: 0 },
-        { label: '管理費用', data: S.q1.map(m => W(m.mgmt)),      backgroundColor: '#EF9F27', borderRadius: 3, borderWidth: 0 },
-        { label: '營業淨利', data: S.q1.map(m => W(m.opProfit)),  backgroundColor: '#378ADD', borderRadius: 3, borderWidth: 0 },
+        { label: '營業收入', data: CMP.map(m => W(m.rev)),       backgroundColor: '#284234', borderRadius: 3, borderWidth: 0 },
+        { label: '毛利',     data: CMP.map(m => W(m.gp)),        backgroundColor: '#1D9E75', borderRadius: 3, borderWidth: 0 },
+        { label: '推銷費用', data: CMP.map(m => W(m.sell)),      backgroundColor: '#A54A1A', borderRadius: 3, borderWidth: 0 },
+        { label: '管理費用', data: CMP.map(m => W(m.mgmt)),      backgroundColor: '#EF9F27', borderRadius: 3, borderWidth: 0 },
+        { label: '營業淨利', data: CMP.map(m => W(m.opProfit)),  backgroundColor: '#378ADD', borderRadius: 3, borderWidth: 0 },
       ]
     },
     options: {
@@ -1214,14 +1370,16 @@ function renderQ1Chart() {
 
 /* ── Expense Cards ── */
 function renderExpenseCards() {
+  const mIdx          = monthNum(S.ym) - 1;
   const totalRev      = S.rev;
   const totalWage     = S.w6100 + S.w6201;
   const totalWageRate = totalWage / totalRev * 100;
   const cogsRate      = S.cogs / totalRev * 100;
   const mktRate       = S.mktPct;
-  const ytdMkt        = 1115215;  // Q1 累計廣告費（1+2+3月）
+  const ytdMkt        = CMP.slice(0, mIdx + 1).reduce((s, m) => s + m.mkt, 0);  // 1月~本月累計廣告費
   const ytdMktRate    = ytdMkt / COMPANY_MKT_BUDGET * 100;
   const remainMkt     = COMPANY_MKT_BUDGET - ytdMkt;
+  const remainMonths  = Math.max(12 - (mIdx + 1), 1);
 
   const wc = totalWageRate >= 30 ? 'neg' : totalWageRate >= 27 ? 'warn' : 'pos';
   const cc = cogsRate >= 35 ? 'neg' : cogsRate >= 32 ? 'warn' : 'pos';
@@ -1245,13 +1403,13 @@ function renderExpenseCards() {
       <div class="exp-label">廣告費率（6117）</div>
       <div class="exp-val ${mc}">${fmtPct(mktRate)}</div>
       <span class="tag ${tagClass(mc)}">${mktRate>=8?'超標':mktRate>=6?'超標':'正常'} 上限6%</span>
-      <div class="exp-sub" style="margin-top:8px">本月 ${fmtW(S.mkt)}｜Q1累計 ${fmtW(ytdMkt)}</div>
+      <div class="exp-sub" style="margin-top:8px">本月 ${fmtW(S.mkt)}｜1–${mIdx+1}月累計 ${fmtW(ytdMkt)}</div>
     </div>
     <div class="exp-card">
       <div class="exp-label">廣告費年度使用率</div>
       <div class="exp-val ${yc}">${fmtPct(ytdMktRate)}</div>
       <span class="tag ${tagClass(yc)}">預算 ${fmtW(COMPANY_MKT_BUDGET)}（6,500萬×6%）</span>
-      <div class="exp-sub" style="margin-top:8px">剩餘 ${fmtW(remainMkt)}，後9個月均攤 ${fmtW(remainMkt/9)}/月</div>
+      <div class="exp-sub" style="margin-top:8px">剩餘 ${fmtW(remainMkt)}，後${remainMonths}個月均攤 ${fmtW(remainMkt/remainMonths)}/月</div>
     </div>`;
 }
 
@@ -1260,8 +1418,9 @@ function renderAnomalies() {
   const anomalies = [];
 
   /* Company level */
+  const mktCats = [['媒體採買',S.mktMedia],['公關宣傳',S.mktPR],['商品拍攝',S.mktPhoto],['活動行銷',S.mktEvent],['廣告印刷',S.mktPrint]].sort((a,b)=>b[1]-a[1]);
   if (S.mktPct >= 8)
-    anomalies.push({ cls:'red', msg:`全公司廣告費率 ${fmtPct(S.mktPct)}，超標（上限6%）。主因：公關宣傳 ${fmtW(S.mktPR)}（+236% YOY）。` });
+    anomalies.push({ cls:'red', msg:`全公司廣告費率 ${fmtPct(S.mktPct)}，超標（上限6%）。最大項目：${mktCats[0][0]} ${fmtW(mktCats[0][1])}。` });
   else if (S.mktPct >= 6)
     anomalies.push({ cls:'yellow', msg:`全公司廣告費率 ${fmtPct(S.mktPct)}，接近上限6%。` });
 
@@ -1270,7 +1429,7 @@ function renderAnomalies() {
   else if (totalWageRate >= 27) anomalies.push({ cls:'yellow', msg:`全公司總人事率 ${fmtPct(totalWageRate)}，接近上限30%` });
 
   /* Per store */
-  STORES.forEach(st => {
+  if (S.storeData) STORES.forEach(st => {
     const d = S.storeData[st];
     if (!d) return;
     const ach = pct(d.rev, d.target);
@@ -1328,19 +1487,24 @@ async function loadHistoricalData() {
 }
 
 function mergeWithStatic(sheetRows) {
-  const filtered = sheetRows.filter(r => r.ym !== '2026/03');
-  STORES.forEach(st => {
-    const d = S.storeData[st];
-    if (!d) return;
-    filtered.push({
-      ym: '2026/03', store: st,
-      rev: d.rev, gpPct: d.gpPct,
-      wagePct: d.wPct || 0, rentPct: d.rPct || 0,
-      mktPct: d.mktPct || 0,
-      ni: d.pretax || 0, niPct: d.pretaxPct || 0,
-      tgt: d.target, achPct: pct(d.rev, d.target),
-      yoyRev: null, momRev: null,
-      isStatic: true,
+  /* 以本地已確認、含分店別的月份（3、4 月）覆寫 sheet 同月份，避免重複 */
+  const staticYMs = Object.keys(MONTHS).filter(k => MONTHS[k].storeData);
+  const filtered = sheetRows.filter(r => !staticYMs.includes(r.ym));
+  staticYMs.forEach(ym => {
+    const md = MONTHS[ym];
+    STORES.forEach(st => {
+      const d = md.storeData[st];
+      if (!d) return;
+      filtered.push({
+        ym, store: st,
+        rev: d.rev, gpPct: d.gpPct,
+        wagePct: d.wPct || 0, rentPct: d.rPct || 0,
+        mktPct: d.mktPct || 0,
+        ni: d.pretax || 0, niPct: d.pretaxPct || 0,
+        tgt: d.target, achPct: pct(d.rev, d.target),
+        yoyRev: null, momRev: null,
+        isStatic: true,
+      });
     });
   });
   return filtered;
@@ -1363,10 +1527,12 @@ function renderHistoricalCharts(raw) {
 
   const rows = mergeWithStatic(sheetRows);
 
-  /* Compute MOM for 2026/03 static rows from 2026/02 sheet data */
+  /* Compute MOM for static rows (3、4月) from previous month */
   rows.forEach(r => {
-    if (r.ym === '2026/03' && r.isStatic) {
-      const prev = rows.find(x => x.ym === '2026/02' && x.store === r.store);
+    if (r.isStatic && (r.momRev === null || r.momRev === undefined)) {
+      const [y, m] = r.ym.split('/').map(Number);
+      const pm = m === 1 ? `${y-1}/12` : `${y}/${String(m-1).padStart(2,'0')}`;
+      const prev = rows.find(x => x.ym === pm && x.store === r.store);
       if (prev && prev.rev) r.momRev = (r.rev - prev.rev) / prev.rev * 100;
     }
   });
