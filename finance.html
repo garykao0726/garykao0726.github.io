@@ -660,24 +660,26 @@ function showAccessDenied(email) {
     </div>`;
 }
 
-async function checkExecAccess(email) {
-  if (!email) return;
-  const em = email.toLowerCase();
-
-  // 優先查 GAS（admin.html 管理的即時名單）
+// 查詢單一 email 是否為授權主管：優先 GAS 即時名單，連不到才用靜態備用名單
+async function isFinanceExec(email) {
+  const em = (email || '').toLowerCase();
+  if (!em) return false;
   if (PERM_GAS_URL) {
     try {
       const res  = await fetch(`${PERM_GAS_URL}?action=checkPerm&email=${encodeURIComponent(em)}&page=finance`);
       const data = await res.json();
-      if (!data.allowed) showAccessDenied(em);
-      return;
+      return !!data.allowed;
     } catch(e) {
       console.warn('GAS 權限查詢失敗，改用靜態備用白名單', e);
     }
   }
+  return FINANCE_EXECS_FALLBACK.has(em);
+}
 
-  // GAS 未設定或連線失敗 → 靜態備用名單
-  if (!FINANCE_EXECS_FALLBACK.has(em)) showAccessDenied(em);
+async function checkExecAccess(email) {
+  if (!email) return;
+  const em = email.toLowerCase();
+  if (!(await isFinanceExec(em))) showAccessDenied(em);
 }
 
 // 情境 A：已有 session（重訪或同 tab 切換）
@@ -715,7 +717,7 @@ async function handleTokenResponse(resp) {
   const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
     headers: { Authorization: 'Bearer ' + accessToken }
   }).then(r => r.json());
-  if (FINANCE_EXECS.has((info.email||'').toLowerCase())) {
+  if (await isFinanceExec(info.email)) {
     grantAccess(info);
     renderStaticSections();
     loadHistoricalData();
