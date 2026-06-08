@@ -607,8 +607,13 @@ function renderYoyTable(){const lbs=['1','2','3','4','5','6','7','8','9','10','1
 function selectAnnualYear(y,btn){annualYr=y;document.querySelectorAll('.yr-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnnual();}
 function switchTab(tab,btn){document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.tab-panel').forEach(el=>el.classList.remove('active'));document.getElementById('panel-'+tab).classList.add('active');const extLinks=document.getElementById('ext-links');if(extLinks)extLinks.style.display=tab==='mgmt'?'none':'';if(tab==='monthly')renderMonthly();if(tab==='annual')renderAnnual();if(tab==='gbp')loadGbpData();if(tab==='mgmt')renderMgmt();}
 
+let _mgmtYm=null;
+function switchMgmtMonth(ym){ _mgmtYm=ym; renderMgmt(); }
 function renderMgmt(){
-  const d=FIN_DATA.MR;
+  const _MRM=FIN_DATA.MR_MONTHS||{};
+  const _keys=Object.keys(_MRM).sort();
+  if(!_mgmtYm||!_MRM[_mgmtYm]) _mgmtYm=_keys[_keys.length-1];
+  const d=_MRM[_mgmtYm];
   const el=document.getElementById('mgmt-content');
   if(!el||!d)return;
 
@@ -685,6 +690,67 @@ function renderMgmt(){
   const wageMoM = wagePrevMo ? (wageNow-wagePrevMo)/wagePrevMo*100 : null;
   const wageYoY = wagePrevYr ? (wageNow-wagePrevYr)/wagePrevYr*100 : null;
 
+  /* ── 月份切換器（每月存檔，舊月份保留查閱）── */
+  const mgmtNav = `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem">
+    <span style="font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-right:4px">月份存檔</span>`
+    + _keys.map(k=>{
+        const ml=parseInt(k.split('/')[1],10)+'月', on=k===_mgmtYm;
+        return `<button onclick="switchMgmtMonth('${k}')" style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;padding:6px 15px;border-radius:8px;cursor:pointer;border:1px solid ${on?'var(--green)':'var(--border2)'};background:${on?'var(--green)':'var(--surface)'};color:${on?'#fff':'var(--text-sub)'}">${ml}<span style="font-size:9px;opacity:.7;margin-left:5px">${k.split('/')[0]}</span></button>`;
+      }).join('') + `</div>`;
+
+  /* ── 表一：損益落後指標表（紅＝讓公司少賺的變化）── */
+  const moneyFmt = v => v==null?'—':fW(v);
+  const pctFmt   = v => v==null?'—':v.toFixed(1)+'%';
+  const ppChg = (now,prev) => {
+    if(prev==null||now==null) return '<span style="font-size:10px;color:var(--text-muted)">—</span>';
+    const dd=now-prev, bad=dd>0;   // 成本/費用率上升 = 壞
+    return `<span style="font-size:10px;font-family:'Space Mono',monospace;color:${bad?'var(--negative)':'var(--positive)'}">${dd>=0?'▲':'▼'} ${Math.abs(dd).toFixed(2)} pp</span>`;
+  };
+  const T1 = [
+    { k:'全通路業績', tgt:d.revTarget, now:d.rev, pm:d.prevMoRev, py:d.prevYrRev, fmt:moneyFmt, lower:false, ach:d.rev/d.revTarget*100, note:(d.notes&&d.notes.rev)||'' },
+    { k:'成本占比', tgt:d.cogsPctTarget, now:d.cogsPct, pm:d.cogsPctPrevMo, py:d.cogsPctPrevYr, fmt:pctFmt, lower:true, pp:true, achTxt:(d.cogsPct<=d.cogsPctTarget?'<span class="tp">✓達標</span>':'<span class="tn">✗超標</span>'), note:(d.notes&&d.notes.cogs)||'' },
+    { k:'廣告費（行銷＋媒體）', tgt:d.mktBudget, now:d.mktTotal, pm:(d.mktPrevMo??null), py:(d.mktPrevYr??null), fmt:moneyFmt, lower:true, ach:d.mktTotal/d.mktBudget*100, achLower:true, note:`拍攝/KOL ${fW(d.mktShoot)}＋媒體 ${fW(d.mktMedia)}` },
+    { k:'門市營運費用', tgt:null, now:d.opEx, pm:(d.opExPrevMo??null), py:(d.opExPrevYr??null), fmt:moneyFmt, lower:true, note:(d.notes&&d.notes.opEx)||'' },
+    { k:'總公司管理費用', tgt:null, now:d.mgmtEx, pm:(d.mgmtExPrevMo??null), py:(d.mgmtExPrevYr??null), fmt:moneyFmt, lower:true, note:(d.notes&&d.notes.mgmt)||'' },
+    { k:'淨利', tgt:d.niTarget, now:d.ni, pm:d.prevMoNI, py:d.prevYrNI, fmt:moneyFmt, lower:false, ach:d.ni/d.niTarget*100, note:(d.notes&&d.notes.ni)||'', strong:true },
+  ];
+  const t1Rows = T1.map(r=>{
+    const momCell = r.pp ? ppChg(r.now,r.pm) : (r.pm!=null ? chgSp(pctChg(r.now,r.pm), r.lower) : '<span style="font-size:10px;color:var(--text-muted)">—</span>');
+    const yoyCell = r.pp ? ppChg(r.now,r.py) : (r.py!=null ? chgSp(pctChg(r.now,r.py), r.lower) : '<span style="font-size:10px;color:var(--text-muted)">—</span>');
+    const achCell = r.achTxt!=null ? r.achTxt
+      : (r.ach!=null ? `<span style="font-weight:700;color:${r.achLower?(r.ach<=100?'var(--positive)':'var(--negative)'):achCol(r.ach)}">${r.ach.toFixed(1)}%</span>` : '—');
+    return `<tr${r.strong?' style="background:var(--surface2)"':''}>
+      <td class="td-s">${r.k}</td>
+      <td style="color:var(--text-muted)">${r.tgt!=null?r.fmt(r.tgt):'—'}</td>
+      <td style="font-weight:700">${r.fmt(r.now)}</td>
+      <td style="text-align:center">${achCell}</td>
+      <td style="color:var(--text-muted)">${r.pm!=null?r.fmt(r.pm):'—'}</td>
+      <td>${momCell}</td>
+      <td style="color:var(--text-muted)">${r.py!=null?r.fmt(r.py):'—'}</td>
+      <td>${yoyCell}</td>
+      <td style="font-family:'Noto Sans TC',sans-serif;font-size:10px;color:var(--text-sub);white-space:normal;max-width:210px;line-height:1.5">${r.note}</td>
+    </tr>`;
+  }).join('');
+
+  /* ── 表二：各通路淨利表 ── */
+  const niRow = (name,color,rev,target,ni,niPct,pmNI,pyNI,note,strong)=>{
+    const ach = target?rev/target*100:null;
+    const yoyCell = (pyNI!=null && pyNI<=0) ? '<span style="font-size:10px;color:var(--text-muted)">去年虧損</span>'
+      : (pyNI!=null ? chgSp(pctChg(ni,pyNI)) : '<span style="font-size:10px;color:var(--text-muted)">—</span>');
+    return `<tr${strong?' style="background:var(--surface2);font-weight:700"':''}>
+      <td class="td-s">${color?`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};margin-right:6px;vertical-align:middle"></span>`:''}${name}</td>
+      <td style="font-weight:700">${fW(rev)}</td>
+      <td style="text-align:center">${ach!=null?`<span class="${achCls(ach)}" style="font-weight:700">${ach.toFixed(1)}%</span>`:'—'}</td>
+      <td class="${niCls(ni)}" style="font-weight:700">${fW(ni)}</td>
+      <td class="${niCls(ni)}">${niPct!=null?niPct.toFixed(1)+'%':'—'}</td>
+      <td>${pmNI!=null?chgSp(pctChg(ni,pmNI)):'<span style="font-size:10px;color:var(--text-muted)">—</span>'}</td>
+      <td>${yoyCell}</td>
+      <td style="font-family:'Noto Sans TC',sans-serif;font-size:10px;color:var(--text-sub);white-space:normal;max-width:170px;line-height:1.5">${note||''}</td>
+    </tr>`;
+  };
+  const t2Total = niRow('門市＋官網（總計）',null,storeTotRev,storeTotTgt,storeTotNi,(storeTotRev?storeTotNi/storeTotRev*100:null),d.storeNiPrevMo,d.storeNiPrevYr,'',true);
+  const t2Stores = stores.map(st=>{const s=d.storeData[st];return s?niRow(st,sc[st],s.rev,s.target,s.ni,s.niPct,s.prevMoNI,s.prevYrNI,s.note||''):'';}).join('');
+
   el.innerHTML=`
   <div style="max-width:1400px;margin:0 auto;padding:1.75rem 2rem">
 
@@ -692,6 +758,38 @@ function renderMgmt(){
   <div style="background:#fffbe6;border:1px solid #d4a72c;border-radius:8px;padding:10px 16px;margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;font-family:'Space Mono',monospace;color:#b8860b">
     <span style="font-weight:700">⚠ ${d.ym} ${d.dataType}　·　財務報表預計隔月 20–25 日確認</span>
     <span style="opacity:.75">${d.note}</span>
+  </div>
+
+  <!-- 月份存檔切換 -->
+  ${mgmtNav}
+
+  <!-- 表一：損益落後指標表 -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-hdr">
+      <span class="card-lbl">📋 落後指標 ① 損益表</span>
+      <span class="card-badge">${d.ym} 管理帳估算（未稅）· 紅＝讓公司少賺的變化</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="ctbl">
+        <thead><tr><th>項目</th><th>KPI目標</th><th>本月數據</th><th>達標率</th><th>上月數據</th><th>MoM變化</th><th>去年同月</th><th>YoY變化</th><th>補充／討論</th></tr></thead>
+        <tbody>${t1Rows}</tbody>
+      </table>
+    </div>
+    <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 成本占比為百分點(pp)變化。費用科目（門市營運／管理）之上月、去年同月須相同口徑，於 data.js 補入 opExPrevMo 等欄位後自動顯示 MoM/YoY；門市人事費趨勢見下方專卡。</div>
+  </div>
+
+  <!-- 表二：各通路淨利表 -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-hdr">
+      <span class="card-lbl">📋 落後指標 ② 各通路淨利</span>
+      <span class="card-badge">${d.ym} 管理帳估算（未稅）</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="ctbl">
+        <thead><tr><th>稅前淨利</th><th>營業額</th><th>達成率</th><th>本月淨利</th><th>淨利率</th><th>MoM變化%</th><th>YoY變化%</th><th>補充／討論</th></tr></thead>
+        <tbody>${t2Total}${t2Stores}</tbody>
+      </table>
+    </div>
   </div>
 
   <!-- KPI row -->
@@ -839,30 +937,6 @@ function renderMgmt(){
         <span style="color:var(--border2)">|</span>
         <span>去年同月各店 ${d.storeNiPrevYr<0?'<span style="color:var(--negative)">'+fW(d.storeNiPrevYr)+'</span>':fW(d.storeNiPrevYr)}</span>
       </div>
-    </div>
-  </div>
-
-  <!-- Full detail table -->
-  <div class="card" style="margin-bottom:1.5rem">
-    <div class="card-hdr"><span class="card-lbl">各門市業績與損益明細</span><span class="card-badge">${d.ym} 管理帳估算（未稅）</span></div>
-    <div style="overflow-x:auto">
-      <table class="ctbl">
-        <thead><tr>
-          <th>門市</th><th>營收</th><th>月目標</th><th>達成率</th><th>MoM</th><th>YoY</th><th>淨利</th><th>淨利率</th><th>NI MoM</th><th>NI YoY</th>
-        </tr></thead>
-        <tbody>
-          ${storeRows}
-          <tr style="background:var(--surface2);font-weight:700">
-            <td class="td-s">合計</td>
-            <td>${fW(storeTotRev)}</td>
-            <td style="color:var(--text-muted)">${fW(storeTotTgt)}</td>
-            <td class="${achCls(totAch)}">${totAch.toFixed(1)}%</td>
-            <td colspan="2"></td>
-            <td class="${niCls(storeTotNi)}">${fW(storeTotNi)}</td>
-            <td colspan="3"></td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   </div>
 
