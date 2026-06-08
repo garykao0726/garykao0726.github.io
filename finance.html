@@ -157,11 +157,12 @@ const CMP = CMP_KEYS.map(k => MONTHS[k]);
 const PKG     = { '2026/01':105321, '2026/02':86556,  '2026/03':37740,  '2026/04':286662 };
 const PKG_PREV = { '2026/01':32191,  '2026/02':66224,  '2026/03':null,   '2026/04':25433  };
 (function deriveMonths(){
-  let cumRev = 0, cumNI = 0;
+  let cumRev = 0, cumNI = 0, cumOp = 0;
   CMP.forEach(m => {
-    cumRev += m.rev; cumNI += m.ni;
-    m.ytdRev = cumRev; m.ytdNI = cumNI;
+    cumRev += m.rev; cumNI += m.ni; cumOp += m.opProfit;
+    m.ytdRev = cumRev; m.ytdNI = cumNI; m.ytdOp = cumOp;
     m.ytdNIPct = cumRev ? cumNI / cumRev * 100 : 0;
+    m.ytdOpPct = cumRev ? cumOp / cumRev * 100 : 0;
     const mi = parseInt(m.ym.split('/')[1], 10) - 1;
     m.totalTarget = STORES.reduce((s, st) => s + (MONTHLY_TARGETS[st][mi] || 0) * 10000, 0);
     m.pkg = PKG[m.ym] || 0;
@@ -496,7 +497,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <div class="sensitive-notice">
       🔒 本頁資料屬機密，請勿截圖或轉發。目前登入帳號：<strong id="logged-email" style="margin-left:4px"></strong>
-      <span style="margin-left:auto;padding-left:12px;border-left:1px solid rgba(40,66,52,.15);white-space:nowrap">＊ 所有金額均為<strong>未稅</strong>（不含 5% 加值稅）</span>
+      <span style="margin-left:auto;padding-left:12px;border-left:1px solid rgba(40,66,52,.15)">＊ 所有金額均為<strong>未稅</strong>（不含 5% 加值稅）　｜　本頁<strong>淨利＝營業淨利</strong>（不含業外收入與費用、未扣所得稅）</span>
     </div>
 
     <!-- KPIs -->
@@ -589,7 +590,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
           </div>
         </div>
 
-        <div class="ach-donut-row-label">淨利額達成率（目標 = 月目標營收 × 8%）</div>
+        <div class="ach-donut-row-label">營業淨利額達成率（目標 = 月目標營收 × 8%；淨利＝營業淨利）</div>
         <div class="ach-metric-row">
           <div class="ach-primary">
             <div class="ach-donut-wrap"><canvas id="d-m-ni-st"></canvas><div class="ach-donut-center" id="dc-m-ni-st"></div></div>
@@ -621,7 +622,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
           </div>
         </div>
 
-        <div class="ach-donut-row-label">YTD 淨利額完成度（目標 = 全年目標營收 × 8%）</div>
+        <div class="ach-donut-row-label">YTD 營業淨利額完成度（目標 = 全年目標營收 × 8%）</div>
         <div class="ach-metric-row">
           <div class="ach-primary">
             <div class="ach-donut-wrap"><canvas id="d-y-ni-st"></canvas><div class="ach-donut-center" id="dc-y-ni-st"></div></div>
@@ -646,7 +647,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
           <th>月目標</th>
           <th>達成率</th>
           <th>差額</th>
-          <th>本月淨利　淨利率</th>
+          <th>本月營業淨利　淨利率</th>
           <th class="center">狀況</th>
         </tr></thead>
         <tbody id="store-snap-body"></tbody>
@@ -673,7 +674,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       <!-- Tab 1: Trend -->
       <div class="tab-panel active" id="tab-trend">
         <div class="chart-card">
-          <div class="chart-card-title">各店稅前損益率走勢（%，近 14 個月）— 虛線為 8% 目標</div>
+          <div class="chart-card-title">各店營業淨利率走勢（%，近 14 個月）— 虛線為 8% 目標</div>
           <div class="chart-legend" id="np-legend"></div>
           <div class="chart-wrap" style="height:220px"><canvas id="np-chart"></canvas></div>
         </div>
@@ -683,7 +684,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
           <div class="chart-wrap"><canvas id="rev-chart"></canvas></div>
         </div>
         <div class="chart-card">
-          <div class="chart-card-title">門市月別淨利詳細（金額 萬元 + 損益率 %）</div>
+          <div class="chart-card-title">門市月別營業淨利詳細（金額 萬元 + 營業淨利率 %）</div>
           <div class="store-btns" id="store-btns" style="margin-bottom:.75rem"></div>
           <div style="height:240px;position:relative"><canvas id="store-detail-chart"></canvas></div>
         </div>
@@ -706,7 +707,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
           </div>
         </div>
         <div class="chart-card" style="margin-top:1rem">
-          <div class="chart-card-title">近 6 個月各店月淨利比較（萬元）</div>
+          <div class="chart-card-title">近 6 個月各店月營業淨利比較（萬元）</div>
           <div class="chart-legend" id="ni6-legend"></div>
           <div class="chart-wrap"><canvas id="ni6-chart"></canvas></div>
         </div>
@@ -718,7 +719,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
           <table class="heatmap" id="heatmap-table"></table>
         </div>
         <div class="hist-note" style="margin-top:.5rem;font-size:11px">
-          顏色（稅前損益率）：🟩 ≥ 12% 優秀 ｜ 🟢 8–12% 達標 ｜ 🟡 5–8% 待改善 ｜ 🔴 &lt; 5% 警示　｜　* 標記為本月靜態數據
+          顏色（營業淨利率）：🟩 ≥ 12% 優秀 ｜ 🟢 8–12% 達標 ｜ 🟡 5–8% 待改善 ｜ 🔴 &lt; 5% 警示　｜　* 標記為本月靜態數據
         </div>
       </div>
     </div>
@@ -883,7 +884,7 @@ function renderMonthNav() {
   el.innerHTML = CMP.map(m => {
     const active = m.ym === CUR_YM ? ' active' : '';
     return `<button class="month-btn${active}" onclick="switchMonth('${m.ym}')">
-      ${m.label}<span class="mb-sub">淨利 ${(m.ni/10000).toFixed(0)}萬</span>
+      ${m.label}<span class="mb-sub">營業淨利 ${(m.opProfit/10000).toFixed(0)}萬</span>
     </button>`;
   }).join('');
 }
@@ -978,15 +979,14 @@ function renderAchievementCharts() {
   const storesMthNITgt  = storesMthTgt  * NI_TGT_RATE;
 
   /* ── 五店實績（從 storeData 加總；無資料則略過五店圈）── */
-  const storesRev    = hasStore ? STORES.reduce((s, st) => s + (S.storeData[st]?.rev    || 0), 0) : 0;
-  const storesPretax = hasStore ? STORES.reduce((s, st) => s + (S.storeData[st]?.pretax || 0), 0) : 0;
-  const niTaxAdj     = S.pretax > 0 ? S.ni / S.pretax : 1;   // 稅前→稅後 比例
-  const storesNI     = storesPretax * niTaxAdj;              // 五店估算稅後淨利
+  /* 淨利統一採「營業淨利」(opProfit，不含業外、未扣稅) */
+  const storesRev = hasStore ? STORES.reduce((s, st) => s + (S.storeData[st]?.rev      || 0), 0) : 0;
+  const storesOp  = hasStore ? STORES.reduce((s, st) => s + (S.storeData[st]?.opProfit || 0), 0) : 0;
 
   /* ── 五店 YTD 估算（按本月營收比例外推）── */
   const revRatio     = (hasStore && S.rev > 0) ? storesRev / S.rev : 1;
   const storesYtdRev = S.ytdRev * revRatio;
-  const storesYtdNI  = S.ytdNI  * revRatio;
+  const storesYtdOp  = S.ytdOp  * revRatio;
 
   const ytdLabel = `1–${mIdx + 1}月累計`;
 
@@ -996,16 +996,16 @@ function renderAchievementCharts() {
     `實績 ${fmtW(S.rev)}<br>月目標 ${fmtW(companyMthTgt)}`);
 
   drawAchText('dc-m-ni-co', 'dd-m-ni-co',
-    S.ni, companyMthNITgt,
-    `淨利 ${fmtW(S.ni)}<br>目標 ${fmtW(companyMthNITgt)}（${fmtW(companyMthTgt)} × 8%）`);
+    S.opProfit, companyMthNITgt,
+    `營業淨利 ${fmtW(S.opProfit)}<br>目標 ${fmtW(companyMthNITgt)}（${fmtW(companyMthTgt)} × 8%）`);
 
   if (hasStore) {
     drawAchDonut('d-m-rev-st', 'dc-m-rev-st', 'dd-m-rev-st',
       storesRev, storesMthTgt,
       `實績 ${fmtW(storesRev)}<br>月目標 ${fmtW(storesMthTgt)}`);
     drawAchDonut('d-m-ni-st', 'dc-m-ni-st', 'dd-m-ni-st',
-      storesNI, storesMthNITgt,
-      `淨利 ${fmtW(storesNI)}<br>目標 ${fmtW(storesMthNITgt)}（${fmtW(storesMthTgt)} × 8%）`);
+      storesOp, storesMthNITgt,
+      `營業淨利 ${fmtW(storesOp)}<br>目標 ${fmtW(storesMthNITgt)}（${fmtW(storesMthTgt)} × 8%）`);
   } else {
     drawAchNA('d-m-rev-st', 'dc-m-rev-st', 'dd-m-rev-st');
     drawAchNA('d-m-ni-st',  'dc-m-ni-st',  'dd-m-ni-st');
@@ -1020,16 +1020,16 @@ function renderAchievementCharts() {
     `${ytdLabel} ${fmtW(S.ytdRev)}<br>全年目標 ${fmtW(COMPANY_REV_TARGET)}`);
 
   drawAchText('dc-y-ni-co', 'dd-y-ni-co',
-    S.ytdNI, annualCompanyNITgt,
-    `YTD淨利 ${fmtW(S.ytdNI)}<br>年度目標 ${fmtW(annualCompanyNITgt)}（${fmtW(COMPANY_REV_TARGET)} × 8%）`);
+    S.ytdOp, annualCompanyNITgt,
+    `YTD營業淨利 ${fmtW(S.ytdOp)}<br>年度目標 ${fmtW(annualCompanyNITgt)}（${fmtW(COMPANY_REV_TARGET)} × 8%）`);
 
   if (hasStore) {
     drawAchDonut('d-y-rev-st', 'dc-y-rev-st', 'dd-y-rev-st',
       storesYtdRev, STORES_REV_TARGET,
       `${ytdLabel} ${fmtW(storesYtdRev)}　／　全年目標 ${fmtW(STORES_REV_TARGET)}`);
     drawAchDonut('d-y-ni-st', 'dc-y-ni-st', 'dd-y-ni-st',
-      storesYtdNI, annualStoresNITgt,
-      `YTD淨利 ${fmtW(storesYtdNI)}<br>年度淨利目標 ${fmtW(annualStoresNITgt)}（${fmtW(STORES_REV_TARGET)} × 8%）`);
+      storesYtdOp, annualStoresNITgt,
+      `YTD營業淨利 ${fmtW(storesYtdOp)}<br>年度淨利目標 ${fmtW(annualStoresNITgt)}（${fmtW(STORES_REV_TARGET)} × 8%）`);
   } else {
     drawAchNA('d-y-rev-st', 'dc-y-rev-st', 'dd-y-rev-st', '需分店別資料');
     drawAchNA('d-y-ni-st',  'dc-y-ni-st',  'dd-y-ni-st', '需分店別資料');
@@ -1037,10 +1037,10 @@ function renderAchievementCharts() {
 
   /* ── Layer 2: Store snapshot table ── */
   const snapRows = [
-    { name: '全公司', color: '#284234', rev: S.rev, tgt: companyMthTgt, ni: S.ni, niPct: S.niPct, co: true },
+    { name: '全公司', color: '#284234', rev: S.rev, tgt: companyMthTgt, ni: S.opProfit, niPct: S.opPct, co: true },
     ...(hasStore ? STORES.map(st => {
       const d = S.storeData[st];
-      return { name: st, color: STORE_COLORS[st], rev: d.rev, tgt: (MONTHLY_TARGETS[st][mIdx]||0)*10000, ni: d.pretax, niPct: d.pretaxPct, co: false };
+      return { name: st, color: STORE_COLORS[st], rev: d.rev, tgt: (MONTHLY_TARGETS[st][mIdx]||0)*10000, ni: d.opProfit, niPct: d.rev ? d.opProfit / d.rev * 100 : 0, co: false };
     }) : [])
   ];
 
@@ -1073,16 +1073,13 @@ function renderKPIs() {
   const revDelta    = hasYoY ? `YOY ${chg(S.yoyRevPct)}` : '去年同月資料待補';
   const revDeltaCls = hasYoY ? (S.yoyRevPct >= 0 ? 'pos' : 'neg') : 'warn';
 
-  /* KPI4：YTD 累計損益 + 同期 YoY */
+  /* KPI4：YTD 累計營業淨利。去年同期僅有「本期損益」可比，故標明基期、不混算 YoY% */
   let ytdDelta = `累計 ${mNum} 個月`, ytdCls = 'pos';
   if (hasYtdYoY) {
-    if (S.prevYtdNI > 0) {
-      const yoyYtdNI = pct(S.ytdNI - S.prevYtdNI, S.prevYtdNI);
-      ytdDelta = `YOY ${chg(yoyYtdNI)}（去年 ${(S.prevYtdNI/10000).toFixed(1)}萬）`;
-    } else {
-      ytdDelta = `去年同期 ${(S.prevYtdNI/10000).toFixed(1)}萬 → 今年由負轉正`;
-    }
-    ytdCls = (S.ytdNI >= S.prevYtdNI) ? 'pos' : 'neg';
+    ytdDelta = S.prevYtdNI >= 0
+      ? `去年同期本期損益 ${(S.prevYtdNI/10000).toFixed(1)}萬（基期）`
+      : `去年同期本期損益 ${(S.prevYtdNI/10000).toFixed(1)}萬（虧損）`;
+    ytdCls = (S.ytdOp >= 0) ? 'pos' : 'neg';
   }
 
   const kpis = [
@@ -1096,14 +1093,14 @@ function renderKPIs() {
       sub: '目標 100%',
       delta: hasYoY ? `去年同月 ${fmtW(S.prevRev)}` : '—', dCls: achColor(ach),
       accent: cSSColor(achColor(ach)) },
-    { label:'全公司本期損益率',
-      val: fmtPct(S.niPct),
-      sub: '目標 8%',
-      delta: `本月淨利 ${fmtW(S.ni)}`, dCls: npColor(S.niPct),
-      accent: cSSColor(npColor(S.niPct)) },
-    { label:`1–${mNum}月累計本期損益`,
-      val: fmtW(S.ytdNI),
-      sub: `累積損益率 ${fmtPct(S.ytdNIPct)}`,
+    { label:'全公司營業淨利率',
+      val: fmtPct(S.opPct),
+      sub: '目標 8%（不含業外）',
+      delta: `本月營業淨利 ${fmtW(S.opProfit)}`, dCls: npColor(S.opPct),
+      accent: cSSColor(npColor(S.opPct)) },
+    { label:`1–${mNum}月累計營業淨利`,
+      val: fmtW(S.ytdOp),
+      sub: `營業淨利率 ${fmtPct(S.ytdOpPct)}`,
       delta: ytdDelta, dCls: ytdCls,
       accent: '#284234' },
   ];
@@ -1217,14 +1214,14 @@ function renderStoreCards() {
     const ach = pct(d.rev, d.target);
     const barW = Math.min(ach, 115).toFixed(1);
     const ac  = achColor(ach);
-    const ptPct = d.pretaxPct;
-    const nc  = npColor(ptPct);
+    const opPct = d.rev ? d.opProfit / d.rev * 100 : 0;   // 營業淨利率（不含業外）
+    const nc  = npColor(opPct);
     const sc  = salColor(d.wPct);
     const rc  = rentColor(d.rPct);
     const mc  = mktColor(d.mktPct);
 
     const nonOpBadge = d.nonOpIn
-      ? `<div style="font-size:10px;color:var(--pos);margin-top:3px">含租賃收益 +${(d.nonOpIn/10000).toFixed(0)}萬</div>` : '';
+      ? `<div style="font-size:10px;color:var(--text-muted);margin-top:3px">另有租賃收益 +${(d.nonOpIn/10000).toFixed(0)}萬（業外，未計入營業淨利）</div>` : '';
     const partialBadge = d.partial
       ? `<div style="font-size:9px;color:var(--warn);margin-top:3px;line-height:1.4">⚠ ${d.partial}</div>` : '';
 
@@ -1242,12 +1239,12 @@ function renderStoreCards() {
         <span class="store-pl-val">${fmtPct(d.gpPct)}</span>
       </div>
       <div class="store-pl-row">
-        <span class="store-pl-label">稅前損益</span>
-        <span class="store-pl-val ${nc}">${fmtW(d.pretax)}</span>
+        <span class="store-pl-label">營業淨利</span>
+        <span class="store-pl-val ${nc}">${fmtW(d.opProfit)}</span>
       </div>
       <div class="store-pl-row">
-        <span class="store-pl-label">稅前損益率</span>
-        <span class="store-pl-val ${nc}">${fmtPct(ptPct)}</span>
+        <span class="store-pl-label">營業淨利率</span>
+        <span class="store-pl-val ${nc}">${fmtPct(opPct)}</span>
       </div>
       ${nonOpBadge}
       ${partialBadge}
@@ -1401,10 +1398,10 @@ function renderQ1Chart() {
   let niSub;
   if (S.prevYtdNI !== undefined) {
     niSub = S.prevYtdNI > 0
-      ? `損益率 ${fmtPct(S.ytdNIPct)} · 去年同期 ${fmtW(S.prevYtdNI)}`
-      : `損益率 ${fmtPct(S.ytdNIPct)} · 去年同期 ${fmtW(S.prevYtdNI)}（虧損）`;
+      ? `營業淨利率 ${fmtPct(S.ytdOpPct)} · 去年同期本期損益 ${fmtW(S.prevYtdNI)}`
+      : `營業淨利率 ${fmtPct(S.ytdOpPct)} · 去年同期本期損益 ${fmtW(S.prevYtdNI)}（虧損）`;
   } else {
-    niSub = `損益率 ${fmtPct(S.ytdNIPct)} · 去年同期待補`;
+    niSub = `營業淨利率 ${fmtPct(S.ytdOpPct)} · 去年同期待補`;
   }
 
   document.getElementById('q1-stats').innerHTML = `
@@ -1414,8 +1411,8 @@ function renderQ1Chart() {
       <div class="q1-stat-sub">${revSub}</div>
     </div>
     <div class="q1-stat">
-      <div class="q1-stat-label">1–${mIdx+1}月 累計本期損益</div>
-      <div class="q1-stat-val ${S.ytdNI >= 0 ? 'pos' : 'neg'}">${fmtW(S.ytdNI)}</div>
+      <div class="q1-stat-label">1–${mIdx+1}月 累計營業淨利</div>
+      <div class="q1-stat-val ${S.ytdOp >= 0 ? 'pos' : 'neg'}">${fmtW(S.ytdOp)}</div>
       <div class="q1-stat-sub">${niSub}</div>
     </div>
     <div class="q1-stat">
@@ -1519,12 +1516,12 @@ function buildInsights(ym) {
       const pkgYoY = (PKG['2026/01'] - PKG_PREV['2026/01']) / PKG_PREV['2026/01'] * 100;
       const sd = M.storeData;
       return [
-        { sev:'green', tag:'開局', title:'1 月是 Q1–Q2 體質最好的一個月 —— 五店全獲利、淨利率 20.4%',
-          body:`1 月營收 <b>${w(M.rev)}</b> 為前四個月最高，毛利率 65.0%、營業淨利率 19.7%，<b>五家門市＋電商全數獲利</b>，沒有任何一個通路虧損。這是後續 2–4 月再也沒出現過的均衡狀態，可作為「正常月」的對照基準。`,
-          data:`淨利率 ${M.niPct.toFixed(1)}%（去年同月 ${M.prevNiPct.toFixed(1)}%）｜中山稅前 ${sd['中山'].pretaxPct.toFixed(1)}%、東門 ${sd['東門'].pretaxPct.toFixed(1)}%` },
+        { sev:'green', tag:'開局', title:`1 月是 Q1–Q2 體質最好的一個月 —— 五店全獲利、營業淨利率 ${M.opPct.toFixed(1)}%`,
+          body:`1 月營收 <b>${w(M.rev)}</b> 為前四個月最高，毛利率 65.0%、營業淨利率 <b>${M.opPct.toFixed(1)}%</b>，<b>五家門市＋電商全數獲利</b>，沒有任何一個通路虧損。這是後續 2–4 月再也沒出現過的均衡狀態，可作為「正常月」的對照基準。`,
+          data:`營業淨利率 ${M.opPct.toFixed(1)}%（含業外與稅的本期損益率 ${M.niPct.toFixed(1)}%）｜中山 ${(sd['中山'].opProfit/sd['中山'].rev*100).toFixed(1)}%、東門 ${(sd['東門'].opProfit/sd['東門'].rev*100).toFixed(1)}%` },
 
         { sev:'green', tag:'通路', title:'電商在 1 月還是賺錢的（+7.5 萬）—— 之後才轉虧',
-          body:`電商（含官網）1 月營業淨利 <b>+${w(sd['電商'].opProfit)}</b>、淨利率 7.9%，廣告費率 15.2% 還撐得住。對照 2 月、4 月電商轉為大幅虧損，可見問題不是「電商天生賠錢」，而是<b>從 2 月起出了狀況</b>，值得回頭看 1→2 月電商發生了什麼變化。`,
+          body:`電商（含官網）1 月營業淨利 <b>+${w(sd['電商'].opProfit)}</b>、營業淨利率 ${(sd['電商'].opProfit/sd['電商'].rev*100).toFixed(1)}%，廣告費率 15.2% 還撐得住。對照 2 月、4 月電商轉為大幅虧損，可見問題不是「電商天生賠錢」，而是<b>從 2 月起出了狀況</b>，值得回頭看 1→2 月電商發生了什麼變化。`,
           data:`電商：營收 ${w(sd['電商'].rev)}｜毛利率 ${sd['電商'].gpPct.toFixed(1)}%｜廣告費率 ${sd['電商'].mktPct.toFixed(1)}%｜淨利 +${w(sd['電商'].opProfit)}` },
 
         { sev:'amber', tag:'隱形成本', title:'包裝費（5539）一開年就偏高 —— 1 月已 +227% YoY',
@@ -1543,12 +1540,12 @@ function buildInsights(ym) {
       const sd = M.storeData;
       return [
         { sev:'red', tag:'淡季', title:'2 月是典型淡季 —— 營收探底 534 萬、YoY −11%，獲利被壓到 10%',
-          body:`2 月營收 <b>${w(M.rev)}</b> 為前四個月最低（農曆春節工作天數少），YoY <b>${M.yoyRevPct.toFixed(1)}%</b>。淨利率從 1 月的 20.4% 腰斬到 <b>${M.niPct.toFixed(1)}%</b>。淡季本身可預期，但下面兩張卡顯示——問題是<b>固定成本在淡月撐不住</b>。`,
-          data:`營收 ${w(M.rev)}（YoY ${M.yoyRevPct.toFixed(1)}%）｜淨利率 ${M.niPct.toFixed(1)}%（1月 20.4%）` },
+          body:`2 月營收 <b>${w(M.rev)}</b> 為前四個月最低（農曆春節工作天數少），YoY <b>${M.yoyRevPct.toFixed(1)}%</b>。營業淨利率從 1 月的 19.7% 腰斬到 <b>${M.opPct.toFixed(1)}%</b>。淡季本身可預期，但下面兩張卡顯示——問題是<b>固定成本在淡月撐不住</b>。`,
+          data:`營收 ${w(M.rev)}（YoY ${M.yoyRevPct.toFixed(1)}%）｜營業淨利率 ${M.opPct.toFixed(1)}%（1月 19.7%）` },
 
         { sev:'red', tag:'固定成本', title:'淡月人事費率衝到 29.4% —— 損益兩平點被人事墊高',
           body:`營收掉、但薪資是固定的，總人事費率從 1 月的 23.0% 跳到 <b>${(wage/M.rev*100).toFixed(1)}%</b>。直接後果：<b>台中由盈轉虧（−3.5 萬）、東門淨利率僅 5.9%</b> 幾乎打平。淡月真正的風險不是營收低，而是固定成本（人事＋租金）吃光毛利。建議替每家店設「損益兩平所需營收」門檻，淡月提前示警。`,
-          data:`總人事費率 ${(wage/M.rev*100).toFixed(1)}%｜台中淨利 ${w(sd['台中'].opProfit)}（${sd['台中'].pretaxPct.toFixed(1)}%）、東門 ${sd['東門'].pretaxPct.toFixed(1)}%` },
+          data:`總人事費率 ${(wage/M.rev*100).toFixed(1)}%｜台中營業淨利 ${w(sd['台中'].opProfit)}（${(sd['台中'].opProfit/sd['台中'].rev*100).toFixed(1)}%）、東門 ${(sd['東門'].opProfit/sd['東門'].rev*100).toFixed(1)}%` },
 
         { sev:'amber', tag:'亮點', title:'毛利率逆勢拉到 67.9%（全期最高）—— 淡月反而沒亂打折',
           body:`雖然營收最差，2 月毛利率卻是四個月最高的 <b>${M.gpPct.toFixed(1)}%</b>（去年同月 ${M.prevGpPct.toFixed(1)}%）。代表淡月並沒有靠殺價衝量，產品結構/定價守得不錯。這是 2 月少數的正面訊號，值得肯定並維持。`,
@@ -1564,17 +1561,17 @@ function buildInsights(ym) {
     case '2026/03': {
       const sd = M.storeData;
       return [
-        { sev:'amber', tag:'基期', title:'3 月 YoY +18.9% 看似強勁 —— 其實是去年基期極低（去年3月淨利僅 5.6 萬）',
-          body:`3 月營收回升到 <b>${w(M.rev)}</b>、YoY <b>+${M.yoyRevPct.toFixed(1)}%</b>，數字漂亮。但去年 3 月本期損益只有 <b>${w(M.prevNI)}</b>（淨利率 0.98%），是被低基期放大的成長。別把這個 +18.9% 當成業績動能——4 月隨即回落到 −11%。建議用「近 3 個月移動平均」看趨勢，而非單月 YoY。`,
-          data:`營收 YoY +${M.yoyRevPct.toFixed(1)}%（去年3月淨利僅 ${w(M.prevNI)}、淨利率 ${M.prevNiPct.toFixed(1)}%）` },
+        { sev:'amber', tag:'基期', title:'3 月 YoY +18.9% 看似強勁 —— 其實是去年基期極低（去年3月本期損益僅 5.6 萬）',
+          body:`3 月營收回升到 <b>${w(M.rev)}</b>、YoY <b>+${M.yoyRevPct.toFixed(1)}%</b>，數字漂亮。但去年 3 月本期損益只有 <b>${w(M.prevNI)}</b>（本期損益率 0.98%），是被低基期放大的成長。別把這個 +18.9% 當成業績動能——4 月隨即回落到 −11%。建議用「近 3 個月移動平均」看趨勢，而非單月 YoY。`,
+          data:`營收 YoY +${M.yoyRevPct.toFixed(1)}%（去年3月本期損益僅 ${w(M.prevNI)}、本期損益率 ${M.prevNiPct.toFixed(1)}%）` },
 
         { sev:'red', tag:'廣告費', title:'廣告費首度破表 —— 3 月衝到 8.7%，主因公關費(PR)暴增到 21.3 萬',
           body:`廣告費率從 1 月 3.98%、2 月 4.66% 跳到 <b>${M.mktPct.toFixed(1)}%</b>（${w(M.mkt)}），首度突破 6% 上限。拆開來看，主因是<b>公關費 ${w(M.mktPR)}</b>（1 月 1.1 萬、2 月 2.9 萬），單月暴增。需釐清是特定檔期投放（網紅/媒體合作）還是常態化支出，並評估它帶回的營收是否划算。`,
           data:`廣告費率 ${M.mktPct.toFixed(1)}%（${w(M.mkt)}）｜其中公關費 ${w(M.mktPR)}（1月 1.1萬、2月 2.9萬）` },
 
         { sev:'green', tag:'通路', title:'電商回到獲利、五店全賺 —— Q1 最均衡的一個月',
-          body:`電商營業淨利回到 <b>+${w(sd['電商'].opProfit)}</b>（淨利率 7.6%，毛利率拉到 70.1%），五家門市也全數獲利。除了廣告費偏高之外，3 月是 Q1 通路結構最健康的一個月，可作為「廣告費若控回 6% 會長怎樣」的參考。`,
-          data:`電商淨利 +${w(sd['電商'].opProfit)}（毛利率 ${sd['電商'].gpPct.toFixed(1)}%）｜五店全數獲利` },
+          body:`電商營業淨利回到 <b>+${w(sd['電商'].opProfit)}</b>（營業淨利率 ${(sd['電商'].opProfit/sd['電商'].rev*100).toFixed(1)}%，毛利率拉到 70.1%），五家門市也全數獲利。除了廣告費偏高之外，3 月是 Q1 通路結構最健康的一個月，可作為「廣告費若控回 6% 會長怎樣」的參考。`,
+          data:`電商營業淨利 +${w(sd['電商'].opProfit)}（毛利率 ${sd['電商'].gpPct.toFixed(1)}%）｜五店全數獲利` },
 
         { sev:'neutral', tag:'稅務', title:'3 月所得稅跳到 17.6 萬 —— 拉低帳面淨利，屬正常季度提列',
           body:`本期所得稅由 1/2 月各 4.6 萬跳到 <b>${w(M.tax)}</b>，使本期損益（${w(M.ni)}）低於營業淨利（${w(M.opProfit)}）。這是季度結算提列、非營運惡化。追蹤獲利時建議看<b>營業淨利</b>，避免被稅費的時點差異干擾月與月的比較。`,
@@ -1602,7 +1599,7 @@ function buildInsights(ym) {
           body:`今年每月淨利都遠優於去年，但拆解後主因是<b>人事費大降</b>：4 月推銷薪資(6100) YoY <b>−26%</b>、管理薪資(6201) YoY <b>−37%</b>，兩者合計較去年同月少約 67 萬。同期營收在衰退，代表獲利成長並非來自業績，而是成本壓縮。若為人力縮編，須評估對門市服務與後續成長的衝擊；若去年有一次性獎金墊高基期，今年的「改善」會被高估。`,
           data:`4月總人事費 ${w(aprWage)}（佔營收 ${(aprWage/A.rev*100).toFixed(1)}%）　vs　去年同月 ≈ 210 萬` },
 
-        { sev:'amber', tag:'基期', title:'YTD 淨利 +514% 很漂亮，但去年基期極低（去年 4 月還虧損）',
+        { sev:'amber', tag:'基期', title:'YTD 本期損益 +514% 很漂亮，但去年基期極低（去年 4 月還虧損）',
           body:`1–4 月累計本期損益 <b>296.9 萬</b> vs 去年同期 <b>48.3 萬</b>，YoY +514%——這個倍數被低基期放大，去年 4 月單月就<b>虧損 54.3 萬</b>。對內外溝通建議同時看「絕對金額＋損益率」：今年 YTD <b>12.2%</b> vs 去年 <b>1.99%</b>，比成長倍數更能反映真實體質。`,
           data:`YTD 本期損益率：2026 = 12.2%　vs　2025 = 1.99%` },
 
@@ -1611,7 +1608,7 @@ function buildInsights(ym) {
           data:`官網營業淨利：1月 +0.1萬｜2月 −33.3萬｜4月 −15.0萬（線上廣告費率遠高於門市）` },
 
         { sev:'neutral', tag:'固定成本', title:'租金連年漲、營收卻持平／下滑 —— 損益兩平點被墊高',
-          body:`房租(6114) YoY 持續 +7~12%（中山漲租、東門漲租，另有園道支援住宿），加上 4 月折舊也 +10%。當營收走平而固定成本上升，淡月更易由盈轉虧（如台中 4 月稅前 −13%）。建議追蹤各店「租金率」與「損益兩平所需營收」門檻，作為展店／續約決策依據。`,
+          body:`房租(6114) YoY 持續 +7~12%（中山漲租、東門漲租，另有園道支援住宿），加上 4 月折舊也 +10%。當營收走平而固定成本上升，淡月更易由盈轉虧（如台中 4 月營業淨利率 −13%）。建議追蹤各店「租金率」與「損益兩平所需營收」門檻，作為展店／續約決策依據。`,
           data:`各店租金率(6114)：${CMP.map(m=>m.label+' '+m.rPct6114.toFixed(1)+'%').join('｜')}` },
       ];
     }
@@ -1712,19 +1709,20 @@ function renderAnomalies() {
       anomalies.push({ cls:'yellow', msg:`${st} 薪資率 ${fmtPct(d.wPct)}，超標` });
     if (d.mktPct >= 8)
       anomalies.push({ cls:'red', msg:`${st} 行銷率 ${fmtPct(d.mktPct)}，超標（電商廣告費係分攤計算）` });
-    if (npColor(d.pretaxPct) === 'neg')
-      anomalies.push({ cls:'red', msg:`${st} 稅前損益率 ${fmtPct(d.pretaxPct)}，嚴重低於目標8%` });
-    else if (npColor(d.pretaxPct) === 'warn')
-      anomalies.push({ cls:'yellow', msg:`${st} 稅前損益率 ${fmtPct(d.pretaxPct)}，低於目標8%` });
+    const dOpPct = d.rev ? d.opProfit / d.rev * 100 : 0;
+    if (npColor(dOpPct) === 'neg')
+      anomalies.push({ cls:'red', msg:`${st} 營業淨利率 ${fmtPct(dOpPct)}，嚴重低於目標8%` });
+    else if (npColor(dOpPct) === 'warn')
+      anomalies.push({ cls:'yellow', msg:`${st} 營業淨利率 ${fmtPct(dOpPct)}，低於目標8%` });
     if (ach < 70)
       anomalies.push({ cls:'red', msg:`${st} 達成率 ${fmtPct(ach)}，嚴重不足` });
     else if (ach < 85)
       anomalies.push({ cls:'yellow', msg:`${st} 達成率 ${fmtPct(ach)}，低於85%` });
   });
 
-  /* Positive: 本期損益 excellent */
+  /* Positive: 營業淨利 excellent */
   const good = [];
-  if (S.niPct >= 12) good.push(`本期損益率 ${fmtPct(S.niPct)}，大幅超越8%目標 ✅`);
+  if (S.opPct >= 12) good.push(`營業淨利率 ${fmtPct(S.opPct)}，大幅超越8%目標 ✅`);
   if (S.yoyRevPct >= 15) good.push(`YOY 營收成長 +${fmtPct(S.yoyRevPct)} ✅`);
 
   const el = document.getElementById('anomaly-list');
@@ -1773,7 +1771,8 @@ function mergeWithStatic(sheetRows) {
         rev: d.rev, gpPct: d.gpPct,
         wagePct: d.wPct || 0, rentPct: d.rPct || 0,
         mktPct: d.mktPct || 0,
-        ni: d.pretax || 0, niPct: d.pretaxPct || 0,
+        /* 走勢/熱力圖統一採營業淨利，與 2025 歷史資料(HIST=營業淨利)一致 */
+        ni: d.opProfit || 0, niPct: d.rev ? d.opProfit / d.rev * 100 : 0,
         tgt: d.target, achPct: pct(d.rev, d.target),
         yoyRev: null, momRev: null,
         isStatic: true,
@@ -1936,7 +1935,7 @@ function renderStoreDetail(st, trendYMs, trendLabels) {
       labels: trendLabels,
       datasets: [
         {
-          type: 'bar', label: '月淨利（萬）',
+          type: 'bar', label: '月營業淨利（萬）',
           data: vals.map(r => r ? W(r.ni) : null),
           backgroundColor: vals.map(r => r ? (r.niPct>=8?'rgba(40,66,52,.7)':r.niPct>=5?'rgba(139,174,85,.7)':'rgba(165,74,26,.7)') : 'transparent'),
           yAxisID: 'yL',
