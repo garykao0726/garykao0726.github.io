@@ -645,12 +645,16 @@ function renderMgmt(){
   const cogsN = normCogs(d.cogsPct, d.rev, d.ym);   // 平滑後本月成本占比
   const niN   = normNi(d.ni, d.ym);                  // 平滑後本月營業淨利（全公司一致用此）
   const niNPct = d.rev ? niN/d.rev*100 : 0;
+  /* 動態前月／去年同月 ym（給 normCogs/normNi 取對的包裝費）*/
+  const _yy=parseInt(d.ym.slice(0,4),10), _mm=parseInt(d.ym.slice(5,7),10);
+  const prevMoYm = _mm===1 ? `${_yy-1}/12` : `${_yy}/${String(_mm-1).padStart(2,'0')}`;
+  const prevYrYm = `${_yy-1}/${d.ym.slice(5,7)}`;
 
   const revAch=d.rev/d.revTarget*100;
   const revMoM=pctChg(d.rev,d.prevMoRev);
   const revYoY=pctChg(d.rev,d.prevYrRev);
-  const niMoM=pctChg(niN,normNi(d.prevMoNI,'2026/03'));
-  const niYoY=d.prevYrNI!==0?pctChg(niN,normNi(d.prevYrNI,'2025/04')):null;
+  const niMoM=pctChg(niN,normNi(d.prevMoNI,prevMoYm));
+  const niYoY=d.prevYrNI!==0?pctChg(niN,normNi(d.prevYrNI,prevYrYm)):null;
   const mktAch=d.mktTotal/d.mktBudget*100;
   const niAch=niN/d.niTarget*100;
 
@@ -725,12 +729,12 @@ function renderMgmt(){
   const niCalc = d.rev - 營業成本 - (d.mktShoot||0) - (d.mktMedia||0) - (d.opEx||0) - (d.mgmtEx||0);
   const T1 = [
     {k:'全通路業績', now:d.rev, pm:d.prevMoRev, py:d.prevYrRev, side:`達標 ${(d.rev/d.revTarget*100).toFixed(0)}%`, lower:false, note:(d.notes&&d.notes.rev)||''},
-    {k:'成本占比', now:cogsN, pm:normCogs(d.cogsPctPrevMo,d.prevMoRev,'2026/03'), py:normCogs(d.cogsPctPrevYr,d.prevYrRev,'2025/04'), pp:true, side:(cogsN<=d.cogsPctTarget?'<span class="tp">✓達標</span>':'<span class="tn">✗超標</span>'), note:(d.notes&&d.notes.cogs)||''},
+    {k:'成本占比', now:cogsN, pm:normCogs(d.cogsPctPrevMo,d.prevMoRev,prevMoYm), py:normCogs(d.cogsPctPrevYr,d.prevYrRev,prevYrYm), pp:true, side:(cogsN<=d.cogsPctTarget?'<span class="tp">✓達標</span>':'<span class="tn">✗超標</span>'), note:(d.notes&&d.notes.cogs)||''},
     {k:'總公司行銷費', now:d.mktShoot, pm:(d.mktShootPrevMo??null), py:(d.mktShootPrevYr??null), side:`占 ${(d.mktShoot/d.rev*100).toFixed(1)}%`, lower:true, note:'分攤：5通路各20%'},
     {k:'媒體採買', now:d.mktMedia, pm:(d.mktMediaPrevMo??null), py:(d.mktMediaPrevYr??null), side:`占 ${(d.mktMedia/d.rev*100).toFixed(1)}%`, lower:true, note:'電商60%／各店各10%'},
     {k:'門市營運費用', now:d.opEx, pm:(d.opExPrevMo??null), py:(d.opExPrevYr??null), side:`占 ${(d.opEx/d.rev*100).toFixed(1)}%`, lower:true, note:(d.notes&&d.notes.opEx)||''},
     {k:'總公司管理費用', now:d.mgmtEx, pm:(d.mgmtExPrevMo??null), py:(d.mgmtExPrevYr??null), side:`占 ${(d.mgmtEx/d.rev*100).toFixed(1)}%`, lower:true, note:(d.notes&&d.notes.mgmt)||''},
-    {k:'淨利（試算）', now:niN, pm:normNi(d.prevMoNI,'2026/03'), py:normNi(d.prevYrNI,'2025/04'), side:`達標 ${(niN/d.niTarget*100).toFixed(0)}%`, lower:false, niCalc:true, strong:true, note:(d.notes&&d.notes.ni)||''},
+    {k:'淨利（試算）', now:niN, pm:normNi(d.prevMoNI,prevMoYm), py:normNi(d.prevYrNI,prevYrYm), side:`達標 ${(niN/d.niTarget*100).toFixed(0)}%`, lower:false, niCalc:true, strong:true, note:(d.notes&&d.notes.ni)||''},
   ];
   const t1Rows = T1.map(r=>{
     const nowCell = r.pp ? r.now.toFixed(1)+'%' : fmtM(r.now);
