@@ -634,13 +634,25 @@ function renderMgmt(){
   const sc=FIN_DATA.STORE_COLORS;
   const dataTag = d.actual ? '損益表實際（未稅）' : '管理帳估算（未稅）';
 
+  /* ── 包裝費(5539)平滑：團塊型費用，月會用當年至今平均取代當月實際，反映真實營運體質 ── */
+  const PKGH = FIN_DATA.PKG_HISTORY||{};
+  const _pkgYtd = Object.keys(PKGH).filter(k=>k.slice(0,4)===d.ym.slice(0,4) && k<=d.ym).sort();
+  const pkgNorm = _pkgYtd.length ? Math.round(_pkgYtd.reduce((s,k)=>s+PKGH[k],0)/_pkgYtd.length) : 0;
+  const pkgOf = ym => PKGH[ym]||0;
+  const pkgActual = pkgOf(d.ym);
+  const normCogs = (rawPct, rev, ym) => rev ? (rev*rawPct/100 - pkgOf(ym) + pkgNorm)/rev*100 : rawPct;
+  const normNi   = (rawNi, ym) => rawNi + (pkgOf(ym) - pkgNorm);
+  const cogsN = normCogs(d.cogsPct, d.rev, d.ym);   // 平滑後本月成本占比
+  const niN   = normNi(d.ni, d.ym);                  // 平滑後本月營業淨利（全公司一致用此）
+  const niNPct = d.rev ? niN/d.rev*100 : 0;
+
   const revAch=d.rev/d.revTarget*100;
   const revMoM=pctChg(d.rev,d.prevMoRev);
   const revYoY=pctChg(d.rev,d.prevYrRev);
-  const niMoM=pctChg(d.ni,d.prevMoNI);
-  const niYoY=d.prevYrNI!==0?pctChg(d.ni,d.prevYrNI):null;
+  const niMoM=pctChg(niN,normNi(d.prevMoNI,'2026/03'));
+  const niYoY=d.prevYrNI!==0?pctChg(niN,normNi(d.prevYrNI,'2025/04')):null;
   const mktAch=d.mktTotal/d.mktBudget*100;
-  const niAch=d.ni/d.niTarget*100;
+  const niAch=niN/d.niTarget*100;
 
   const storeTotRev=stores.reduce((s,st)=>s+(d.storeData[st]?.rev||0),0);
   const storeTotTgt=stores.reduce((s,st)=>s+(d.storeData[st]?.target||0),0);
@@ -709,16 +721,16 @@ function renderMgmt(){
     const dd=now-prev;
     return `<span style="font-size:10px;font-family:'Space Mono',monospace;color:${dd>0?'var(--negative)':'var(--positive)'}">${dd>=0?'▲':'▼'} ${Math.abs(dd).toFixed(2)} pp</span>`;
   };
-  const 營業成本 = d.rev*d.cogsPct/100;
+  const 營業成本 = d.rev*cogsN/100;
   const niCalc = d.rev - 營業成本 - (d.mktShoot||0) - (d.mktMedia||0) - (d.opEx||0) - (d.mgmtEx||0);
   const T1 = [
     {k:'全通路業績', now:d.rev, pm:d.prevMoRev, py:d.prevYrRev, side:`達標 ${(d.rev/d.revTarget*100).toFixed(0)}%`, lower:false, note:(d.notes&&d.notes.rev)||''},
-    {k:'成本占比', now:d.cogsPct, pm:d.cogsPctPrevMo, py:d.cogsPctPrevYr, pp:true, side:(d.cogsPct<=d.cogsPctTarget?'<span class="tp">✓達標</span>':'<span class="tn">✗超標</span>'), note:(d.notes&&d.notes.cogs)||''},
+    {k:'成本占比', now:cogsN, pm:normCogs(d.cogsPctPrevMo,d.prevMoRev,'2026/03'), py:normCogs(d.cogsPctPrevYr,d.prevYrRev,'2025/04'), pp:true, side:(cogsN<=d.cogsPctTarget?'<span class="tp">✓達標</span>':'<span class="tn">✗超標</span>'), note:(d.notes&&d.notes.cogs)||''},
     {k:'總公司行銷費', now:d.mktShoot, pm:(d.mktShootPrevMo??null), py:(d.mktShootPrevYr??null), side:`占 ${(d.mktShoot/d.rev*100).toFixed(1)}%`, lower:true, note:'分攤：5通路各20%'},
     {k:'媒體採買', now:d.mktMedia, pm:(d.mktMediaPrevMo??null), py:(d.mktMediaPrevYr??null), side:`占 ${(d.mktMedia/d.rev*100).toFixed(1)}%`, lower:true, note:'電商60%／各店各10%'},
     {k:'門市營運費用', now:d.opEx, pm:(d.opExPrevMo??null), py:(d.opExPrevYr??null), side:`占 ${(d.opEx/d.rev*100).toFixed(1)}%`, lower:true, note:(d.notes&&d.notes.opEx)||''},
     {k:'總公司管理費用', now:d.mgmtEx, pm:(d.mgmtExPrevMo??null), py:(d.mgmtExPrevYr??null), side:`占 ${(d.mgmtEx/d.rev*100).toFixed(1)}%`, lower:true, note:(d.notes&&d.notes.mgmt)||''},
-    {k:'淨利（試算）', now:d.ni, pm:d.prevMoNI, py:d.prevYrNI, side:`達標 ${(d.ni/d.niTarget*100).toFixed(0)}%`, lower:false, niCalc:true, strong:true, note:(d.notes&&d.notes.ni)||''},
+    {k:'淨利（試算）', now:niN, pm:normNi(d.prevMoNI,'2026/03'), py:normNi(d.prevYrNI,'2025/04'), side:`達標 ${(niN/d.niTarget*100).toFixed(0)}%`, lower:false, niCalc:true, strong:true, note:(d.notes&&d.notes.ni)||''},
   ];
   const t1Rows = T1.map(r=>{
     const nowCell = r.pp ? r.now.toFixed(1)+'%' : fmtM(r.now);
@@ -728,7 +740,7 @@ function renderMgmt(){
     let yoyCell;
     if(r.niCalc && !(r.py>0)) yoyCell = r.now>0 ? '<span class="tp" style="font-size:10px;font-family:\'Space Mono\',monospace">▲ 轉盈</span>' : '<span class="tn" style="font-size:10px;font-family:\'Space Mono\',monospace">仍虧損</span>';
     else yoyCell = r.pp ? ppCell(r.now,r.py) : (r.py!=null ? chgSp(pctChg(r.now,r.py), r.lower) : '<span style="font-size:10px;color:var(--text-muted)">—</span>');
-    const nowColor = r.niCalc ? (d.ni>=0?'var(--positive)':'var(--negative)') : 'var(--text)';
+    const nowColor = r.niCalc ? (r.now>=0?'var(--positive)':'var(--negative)') : 'var(--text)';
     return `<tr${r.strong?' style="background:var(--surface2);font-weight:700"':''}>
       <td class="td-s">${r.k}</td>
       <td style="font-weight:700;color:${nowColor}">${nowCell}</td>
@@ -827,7 +839,7 @@ function renderMgmt(){
       </table>
     </div>
     <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.75">
-      <div><b>淨利（試算）算式</b>：全通路業績 −（業績×成本占比）− 總公司行銷費 − 媒體採買 − 門市營運費用 − 總公司管理費用 ＝ <b style="color:${d.ni>=0?'var(--positive)':'var(--negative)'}">${fW(niCalc)}</b>（${d.actual?'與損益表營業淨利一致':'與管理帳一致'}）。</div>
+      <div><b>淨利（試算）算式</b>：全通路業績 −（業績×成本占比）− 總公司行銷費 − 媒體採買 − 門市營運費用 − 總公司管理費用 ＝ <b style="color:${niN>=0?'var(--positive)':'var(--negative)'}">${fW(niCalc)}</b>。<b style="color:var(--rust)">成本占比/淨利已平滑包裝費</b>：本月實際包裝費 ${fW(pkgActual)}、當年至今均 ${fW(pkgNorm)}；帳上(損益表)營業淨利 ${fW(d.ni)}。</div>
       <div style="margin-top:3px">＊ 成本占比為百分點(pp)變化。費用列「上月／去年同月」取自損益表，未補齊者顯示「—」（於 data.js 補 mktMediaPrevMo、opExPrevYr 等欄位後自動顯示）。門市人事費趨勢另見下方專卡。</div>
     </div>
   </div>
@@ -844,6 +856,7 @@ function renderMgmt(){
         <tbody>${t2Total}${t2Stores}</tbody>
       </table>
     </div>
+    <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 各通路為<b>帳上實際</b>營業淨利（含當月實際包裝費）；表一／KPI 之公司淨利為<b>平滑包裝費後</b>（管理視角），故較各通路合計高約 ${fW((pkgActual-pkgNorm))}（包裝費為總公司採購 timing、不歸屬個別通路）。</div>
   </div>
 
   <!-- 各店保本：毛利 vs 主要成本（圖表）-->
@@ -874,11 +887,11 @@ function renderMgmt(){
       </div>
     </div>
     <div class="kc" style="--kc-color:var(--rust)">
-      <div class="kc-l">全公司淨利</div>
-      <div class="kc-v ${niCls(d.ni)}">${fW(d.ni)}</div>
+      <div class="kc-l">全公司淨利<span style="font-size:9px;color:var(--text-muted)">（平滑包裝費）</span></div>
+      <div class="kc-v ${niCls(niN)}">${fW(niN)}</div>
       <div class="kc-d">
-        <span class="delta ${d.niPct>=8?'pos':d.niPct>=4?'neu':'neg'}" style="font-size:11px">淨利率 ${d.niPct.toFixed(2)}%</span>
-        <span class="kc-vs">目標 8%</span>
+        <span class="delta ${niNPct>=8?'pos':niNPct>=4?'neu':'neg'}" style="font-size:11px">淨利率 ${niNPct.toFixed(2)}%</span>
+        <span class="kc-vs">帳上 ${fW(d.ni)}／目標 8%</span>
       </div>
       <div style="height:4px;background:var(--sand);border-radius:2px;margin-top:8px;overflow:hidden">
         <div style="height:100%;width:${Math.min(niAch>0?niAch:0,100).toFixed(1)}%;background:${achCol(niAch)};border-radius:2px"></div>
