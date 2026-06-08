@@ -650,8 +650,13 @@ function renderMgmt(){
   const prevMoYm = _mm===1 ? `${_yy-1}/12` : `${_yy}/${String(_mm-1).padStart(2,'0')}`;
   const prevYrYm = `${_yy-1}/${d.ym.slice(5,7)}`;
 
-  const incT = v => Math.round((v||0)*1.05);   // 未稅→含稅（營業額/達成率用；損益維持未稅）
-  const revAch=incT(d.rev)/d.revTarget*100;     // 達成率＝含稅營收÷含稅目標
+  const incT = v => Math.round((v||0)*1.05);   // 未稅→含稅（D26缺漏時的後備換算）
+  /* 各店含稅營業額：以「週報/月度數據 D26（含稅 POS）」為準（店長看的就是這個）；損益表只供損益分析 */
+  const D26KEY={'中山':'中山店','松菸':'松菸店','台中':'台中店','東門':'東門店','電商':'官網'};
+  const _moIdx=parseInt(d.ym.slice(5,7),10)-1;
+  const posRev = st => { const k=D26KEY[st], v=(typeof D26!=='undefined'&&D26[k]&&D26[k][_moIdx])?D26[k][_moIdx]*10000:0; return v>0?v:incT(d.storeData[st]?.rev||0); };
+  const posRevTot = stores.reduce((a,st)=>a+posRev(st),0);
+  const revAch=posRevTot/d.revTarget*100;       // 達成率＝含稅營收(週報)÷含稅目標
   const revMoM=pctChg(d.rev,d.prevMoRev);
   const revYoY=pctChg(d.rev,d.prevYrRev);
   const niMoM=pctChg(niN,normNi(d.prevMoNI,prevMoYm));
@@ -672,7 +677,7 @@ function renderMgmt(){
   const storeTotRev=stores.reduce((s,st)=>s+(d.storeData[st]?.rev||0),0);
   const storeTotTgt=stores.reduce((s,st)=>s+(d.storeData[st]?.target||0),0);
   const storeTotNi=stores.reduce((s,st)=>s+(d.storeData[st]?.ni||0),0);
-  const totAch=incT(storeTotRev)/storeTotTgt*100;   // 達成率＝含稅÷含稅目標
+  const totAch=posRevTot/storeTotTgt*100;   // 達成率＝含稅營收(週報)÷含稅目標
 
   /* store table rows */
   const storeRows=stores.map(st=>{
@@ -739,7 +744,7 @@ function renderMgmt(){
   const 營業成本 = d.rev*cogsN/100;
   const niCalc = d.rev - 營業成本 - (d.mktShoot||0) - (d.mktMedia||0) - (d.opEx||0) - (d.mgmtEx||0);
   const T1 = [
-    {k:'全通路業績', now:d.rev, pm:d.prevMoRev, py:d.prevYrRev, side:`達標 ${(incT(d.rev)/d.revTarget*100).toFixed(0)}%`, lower:false, note:`未稅；含稅 ${fW(incT(d.rev))}。${(d.notes&&d.notes.rev)||''}`},
+    {k:'全通路業績', now:d.rev, pm:d.prevMoRev, py:d.prevYrRev, side:`達標 ${(posRevTot/d.revTarget*100).toFixed(0)}%`, lower:false, note:`損益基礎未稅；業績含稅(週報) ${fW(posRevTot)}。${(d.notes&&d.notes.rev)||''}`},
     {k:'成本占比', now:cogsN, pm:normCogs(d.cogsPctPrevMo,d.prevMoRev,prevMoYm), py:normCogs(d.cogsPctPrevYr,d.prevYrRev,prevYrYm), pp:true, side:(cogsN<=d.cogsPctTarget?'<span class="tp">✓達標</span>':'<span class="tn">✗超標</span>'), note:(d.notes&&d.notes.cogs)||''},
     {k:'總公司行銷費', now:d.mktShoot, pm:(d.mktShootPrevMo??null), py:(d.mktShootPrevYr??null), side:`占 ${(d.mktShoot/d.rev*100).toFixed(1)}%`, lower:true, note:'分攤：5通路各20%'},
     {k:'媒體採買', now:d.mktMedia, pm:(d.mktMediaPrevMo??null), py:(d.mktMediaPrevYr??null), side:`占 ${(d.mktMedia/d.rev*100).toFixed(1)}%`, lower:true, note:'電商60%／各店各10%'},
@@ -769,13 +774,13 @@ function renderMgmt(){
   }).join('');
 
   /* ── 表二：各通路淨利表 ── */
-  const niRow = (name,color,rev,target,ni,niPct,pmNI,pyNI,note,strong)=>{
-    const ach = target?incT(rev)/target*100:null;   // 達成率＝含稅營收÷含稅目標
+  const niRow = (name,color,revInc,target,ni,niPct,pmNI,pyNI,note,strong)=>{
+    const ach = target?revInc/target*100:null;   // 達成率＝含稅營收(週報)÷含稅目標
     const yoyCell = (pyNI!=null && pyNI<=0) ? '<span style="font-size:10px;color:var(--text-muted)">去年虧損</span>'
       : (pyNI!=null ? chgSp(pctChg(ni,pyNI)) : '<span style="font-size:10px;color:var(--text-muted)">—</span>');
     return `<tr${strong?' style="background:var(--surface2);font-weight:700"':''}>
       <td class="td-s">${color?`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};margin-right:6px;vertical-align:middle"></span>`:''}${name}</td>
-      <td style="font-weight:700">${fW(incT(rev))}</td>
+      <td style="font-weight:700">${fW(revInc)}</td>
       <td style="text-align:center">${ach!=null?`<span class="${achCls(ach)}" style="font-weight:700">${ach.toFixed(1)}%</span>`:'—'}</td>
       <td class="${niCls(ni)}" style="font-weight:700">${fW(ni)}</td>
       <td class="${niCls(ni)}">${niPct!=null?niPct.toFixed(1)+'%':'—'}</td>
@@ -784,8 +789,8 @@ function renderMgmt(){
       <td style="font-family:'Noto Sans TC',sans-serif;font-size:10px;color:var(--text-sub);white-space:normal;max-width:170px;line-height:1.5">${note||''}</td>
     </tr>`;
   };
-  const t2Total = niRow('門市＋官網（總計）',null,storeTotRev,storeTotTgt,storeTotNi,(storeTotRev?storeTotNi/storeTotRev*100:null),d.storeNiPrevMo,d.storeNiPrevYr,'',true);
-  const t2Stores = stores.map(st=>{const s=d.storeData[st];return s?niRow(st,sc[st],s.rev,s.target,s.ni,s.niPct,s.prevMoNI,s.prevYrNI,s.note||''):'';}).join('');
+  const t2Total = niRow('門市＋官網（總計）',null,posRevTot,storeTotTgt,storeTotNi,(storeTotRev?storeTotNi/storeTotRev*100:null),d.storeNiPrevMo,d.storeNiPrevYr,'',true);
+  const t2Stores = stores.map(st=>{const s=d.storeData[st];return s?niRow(st,sc[st],posRev(st),s.target,s.ni,s.niPct,s.prevMoNI,s.prevYrNI,s.note||''):'';}).join('');
 
   /* ── 各店保本：毛利 vs 人事/租金/行銷/管理（圖表）──
      行銷 = 總公司行銷費(mktShoot)/5 + 媒體採買(mktMedia)分攤（電商60%、其他各10%）
@@ -888,8 +893,8 @@ function renderMgmt(){
   <!-- KPI row -->
   <div class="kpi4" style="margin-bottom:1.5rem">
     <div class="kc" style="--kc-color:var(--green)">
-      <div class="kc-l">全通路營收<span style="font-size:9px;color:var(--text-muted)">（含稅）</span></div>
-      <div class="kc-v">${fW(incT(d.rev))}</div>
+      <div class="kc-l">全通路營收<span style="font-size:9px;color:var(--text-muted)">（含稅·週報）</span></div>
+      <div class="kc-v">${fW(posRevTot)}</div>
       <div class="kc-d">
         <span class="delta ${achCls(revAch)}" style="font-size:11px">達成 ${revAch.toFixed(1)}%</span>
         <span class="kc-vs">目標 ${fW(d.revTarget)}</span>
@@ -964,7 +969,7 @@ function renderMgmt(){
       <div style="display:flex;flex-direction:column;gap:10px">
         ${stores.map(st=>{
           const s=d.storeData[st];if(!s)return'';
-          const ach=incT(s.rev)/s.target*100;
+          const ach=posRev(st)/s.target*100;
           const col=achCol(ach);
           const barW=Math.min(ach,120);
           const overBar=ach>100?`<div style="position:absolute;left:${(100/1.2).toFixed(1)}%;top:0;bottom:0;width:1.5px;background:var(--border2)"></div>`:'';
@@ -976,9 +981,9 @@ function renderMgmt(){
             <div style="position:relative;height:22px;background:var(--surface2);border-radius:4px;overflow:hidden">
               ${overBar}
               <div style="height:100%;width:${(barW/1.2).toFixed(1)}%;background:${col};border-radius:4px;display:flex;align-items:center;padding-left:8px;min-width:2px;transition:width .6s">
-                ${ach>=50?`<span style="font-family:'Space Mono',monospace;font-size:10px;color:#fff;white-space:nowrap">${fW(incT(s.rev))}</span>`:''}
+                ${ach>=50?`<span style="font-family:'Space Mono',monospace;font-size:10px;color:#fff;white-space:nowrap">${fW(posRev(st))}</span>`:''}
               </div>
-              ${ach<50?`<span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)">${fW(incT(s.rev))}</span>`:''}
+              ${ach<50?`<span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)">${fW(posRev(st))}</span>`:''}
             </div>
             <div style="display:flex;justify-content:space-between;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:2px">
               <span>目標 ${fW(s.target)}</span>
@@ -993,7 +998,7 @@ function renderMgmt(){
           </div>
           <div style="position:relative;height:22px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:4px">
             <div style="height:100%;width:${Math.min(totAch,100).toFixed(1)}%;background:${achCol(totAch)};border-radius:4px;display:flex;align-items:center;padding-left:8px">
-              <span style="font-family:'Space Mono',monospace;font-size:10px;color:#fff">${fW(incT(storeTotRev))}</span>
+              <span style="font-family:'Space Mono',monospace;font-size:10px;color:#fff">${fW(posRevTot)}</span>
             </div>
           </div>
           <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:2px">目標 ${fW(storeTotTgt)}</div>
