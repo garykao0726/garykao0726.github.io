@@ -664,6 +664,27 @@ function renderMgmt(){
     </tr>`;
   }).join('');
 
+  /* ── 門市人事費趨勢（本月估 vs 上月確認 vs 去年同月）── */
+  const _wIdx = parseInt(d.ym.split('/')[1],10) - 1;
+  const _wchg = pct => pct===null
+    ? '<span style="color:var(--text-muted)">—</span>'
+    : `<span style="font-family:'Space Mono',monospace;color:${Math.abs(pct)<2?'var(--text-muted)':'var(--text-sub)'}">${pct>=0?'▲':'▼'} ${Math.abs(pct).toFixed(1)}%</span>`;
+  const wageRows = stores.map(st=>{
+    const now = d.storeData[st]?.wageAmt;
+    if(now==null) return null;
+    const s3 = FIN_DATA.S.storeData[st];
+    const prevMo = s3 ? s3.wPct/100*s3.rev : null;          // 上月確認門市人事費 = wPct × 營收
+    const prevYr = FIN_DATA.HIST_2025_RAW[st] ? FIN_DATA.HIST_2025_RAW[st].wage[_wIdx] : null;
+    return { st, now, prevMo, prevYr,
+      mom: prevMo ? (now-prevMo)/prevMo*100 : null,
+      yoy: prevYr ? (now-prevYr)/prevYr*100 : null };
+  }).filter(Boolean);
+  const wageNow    = wageRows.reduce((s,r)=>s+r.now,0);
+  const wagePrevMo = wageRows.reduce((s,r)=>s+(r.prevMo||0),0);
+  const wagePrevYr = wageRows.reduce((s,r)=>s+(r.prevYr||0),0);
+  const wageMoM = wagePrevMo ? (wageNow-wagePrevMo)/wagePrevMo*100 : null;
+  const wageYoY = wagePrevYr ? (wageNow-wagePrevYr)/wagePrevYr*100 : null;
+
   el.innerHTML=`
   <div style="max-width:1400px;margin:0 auto;padding:1.75rem 2rem">
 
@@ -889,6 +910,42 @@ function renderMgmt(){
       <div style="margin-top:10px;font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted)">
         歷史均值參考 ${fW(d.opExRef)}（非目標）
       </div>
+    </div>
+  </div>
+
+  <!-- 門市人事費趨勢（固定成本變動可視化）-->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-hdr">
+      <span class="card-lbl">門市人事費趨勢</span>
+      <span class="card-badge">${d.ym} 估 · 對比上月確認 / 去年同月</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:baseline;margin-bottom:14px">
+      <div>
+        <div style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace">門市人事費合計（本月估）</div>
+        <div style="font-size:30px;font-family:'Space Mono',monospace;font-weight:700;color:var(--brown)">${fW(wageNow)}</div>
+      </div>
+      <div style="font-size:12px;font-family:'Space Mono',monospace;line-height:2">
+        <div>MoM ${_wchg(wageMoM)}　<span style="color:var(--text-muted)">上月確認 ${fW(wagePrevMo)}</span></div>
+        <div>YoY ${_wchg(wageYoY)}　<span style="color:var(--text-muted)">去年同月 ${fW(wagePrevYr)}</span></div>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="ctbl">
+        <thead><tr><th>門市</th><th>去年同月</th><th>上月確認</th><th>本月估</th><th>MoM</th><th>YoY</th></tr></thead>
+        <tbody>
+          ${wageRows.map(r=>`<tr>
+            <td class="td-s"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${sc[r.st]};margin-right:6px;vertical-align:middle"></span>${r.st}</td>
+            <td style="color:var(--text-muted)">${r.prevYr!=null?fW(r.prevYr):'—'}</td>
+            <td style="color:var(--text-muted)">${r.prevMo!=null?fW(r.prevMo):'—'}</td>
+            <td style="font-weight:700">${fW(r.now)}</td>
+            <td>${_wchg(r.mom)}</td>
+            <td>${_wchg(r.yoy)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted);line-height:1.7">
+      ＊ 門市人事費＝各店推銷人員薪資（不含總公司管理薪資）。上月確認以 2026/03 ERP 財報門市薪資（佔營收比×營收）估列、去年同月來自 2025 各店損益。人事屬固定成本，<b style="color:var(--text-sub)">下降須留意是否為縮編或影響門市服務</b>。
     </div>
   </div>
 
