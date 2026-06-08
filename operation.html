@@ -698,37 +698,45 @@ function renderMgmt(){
         return `<button onclick="switchMgmtMonth('${k}')" style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;padding:6px 15px;border-radius:8px;cursor:pointer;border:1px solid ${on?'var(--green)':'var(--border2)'};background:${on?'var(--green)':'var(--surface)'};color:${on?'#fff':'var(--text-sub)'}">${ml}<span style="font-size:9px;opacity:.7;margin-left:5px">${k.split('/')[0]}</span></button>`;
       }).join('') + `</div>`;
 
-  /* ── 表一：損益落後指標表（紅＝讓公司少賺的變化）── */
-  const moneyFmt = v => v==null?'—':fW(v);
-  const pctFmt   = v => v==null?'—':v.toFixed(1)+'%';
-  const ppChg = (now,prev) => {
+  /* ── 表一：損益試算表（淨利由各科目試算；MoM/YoY 取自損益表）──
+     淨利試算 = 業績 −(業績×成本占比)− 行銷 − 媒體 − 門市營運 − 管理
+     成本/費用列上月、去年同月為 MR 選填欄位（取自損益表），未填顯示「—」：
+       mktShootPrevMo/PrevYr、mktMediaPrevMo/PrevYr、opExPrevMo/PrevYr、mgmtExPrevMo/PrevYr */
+  const fmtM = v => v==null?'—':fW(v);
+  const ppCell = (now,prev) => {
     if(prev==null||now==null) return '<span style="font-size:10px;color:var(--text-muted)">—</span>';
-    const dd=now-prev, bad=dd>0;   // 成本/費用率上升 = 壞
-    return `<span style="font-size:10px;font-family:'Space Mono',monospace;color:${bad?'var(--negative)':'var(--positive)'}">${dd>=0?'▲':'▼'} ${Math.abs(dd).toFixed(2)} pp</span>`;
+    const dd=now-prev;
+    return `<span style="font-size:10px;font-family:'Space Mono',monospace;color:${dd>0?'var(--negative)':'var(--positive)'}">${dd>=0?'▲':'▼'} ${Math.abs(dd).toFixed(2)} pp</span>`;
   };
+  const 營業成本 = d.rev*d.cogsPct/100;
+  const niCalc = d.rev - 營業成本 - (d.mktShoot||0) - (d.mktMedia||0) - (d.opEx||0) - (d.mgmtEx||0);
   const T1 = [
-    { k:'全通路業績', tgt:d.revTarget, now:d.rev, pm:d.prevMoRev, py:d.prevYrRev, fmt:moneyFmt, lower:false, ach:d.rev/d.revTarget*100, note:(d.notes&&d.notes.rev)||'' },
-    { k:'成本占比', tgt:d.cogsPctTarget, now:d.cogsPct, pm:d.cogsPctPrevMo, py:d.cogsPctPrevYr, fmt:pctFmt, lower:true, pp:true, achTxt:(d.cogsPct<=d.cogsPctTarget?'<span class="tp">✓達標</span>':'<span class="tn">✗超標</span>'), note:(d.notes&&d.notes.cogs)||'' },
-    { k:'廣告費（行銷＋媒體）', tgt:d.mktBudget, now:d.mktTotal, pm:(d.mktPrevMo??null), py:(d.mktPrevYr??null), fmt:moneyFmt, lower:true, ach:d.mktTotal/d.mktBudget*100, achLower:true, note:`拍攝/KOL ${fW(d.mktShoot)}＋媒體 ${fW(d.mktMedia)}` },
-    { k:'門市營運費用', tgt:null, now:d.opEx, pm:(d.opExPrevMo??null), py:(d.opExPrevYr??null), fmt:moneyFmt, lower:true, note:(d.notes&&d.notes.opEx)||'' },
-    { k:'總公司管理費用', tgt:null, now:d.mgmtEx, pm:(d.mgmtExPrevMo??null), py:(d.mgmtExPrevYr??null), fmt:moneyFmt, lower:true, note:(d.notes&&d.notes.mgmt)||'' },
-    { k:'淨利', tgt:d.niTarget, now:d.ni, pm:d.prevMoNI, py:d.prevYrNI, fmt:moneyFmt, lower:false, ach:d.ni/d.niTarget*100, note:(d.notes&&d.notes.ni)||'', strong:true },
+    {k:'全通路業績', now:d.rev, pm:d.prevMoRev, py:d.prevYrRev, side:`達標 ${(d.rev/d.revTarget*100).toFixed(0)}%`, lower:false, note:(d.notes&&d.notes.rev)||''},
+    {k:'成本占比', now:d.cogsPct, pm:d.cogsPctPrevMo, py:d.cogsPctPrevYr, pp:true, side:(d.cogsPct<=d.cogsPctTarget?'<span class="tp">✓達標</span>':'<span class="tn">✗超標</span>'), note:(d.notes&&d.notes.cogs)||''},
+    {k:'總公司行銷費', now:d.mktShoot, pm:(d.mktShootPrevMo??null), py:(d.mktShootPrevYr??null), side:`占 ${(d.mktShoot/d.rev*100).toFixed(1)}%`, lower:true, note:'分攤：5通路各20%'},
+    {k:'媒體採買', now:d.mktMedia, pm:(d.mktMediaPrevMo??null), py:(d.mktMediaPrevYr??null), side:`占 ${(d.mktMedia/d.rev*100).toFixed(1)}%`, lower:true, note:'電商60%／各店各10%'},
+    {k:'門市營運費用', now:d.opEx, pm:(d.opExPrevMo??null), py:(d.opExPrevYr??null), side:`占 ${(d.opEx/d.rev*100).toFixed(1)}%`, lower:true, note:(d.notes&&d.notes.opEx)||''},
+    {k:'總公司管理費用', now:d.mgmtEx, pm:(d.mgmtExPrevMo??null), py:(d.mgmtExPrevYr??null), side:`占 ${(d.mgmtEx/d.rev*100).toFixed(1)}%`, lower:true, note:(d.notes&&d.notes.mgmt)||''},
+    {k:'淨利（試算）', now:d.ni, pm:d.prevMoNI, py:d.prevYrNI, side:`達標 ${(d.ni/d.niTarget*100).toFixed(0)}%`, lower:false, niCalc:true, strong:true, note:(d.notes&&d.notes.ni)||''},
   ];
   const t1Rows = T1.map(r=>{
-    const momCell = r.pp ? ppChg(r.now,r.pm) : (r.pm!=null ? chgSp(pctChg(r.now,r.pm), r.lower) : '<span style="font-size:10px;color:var(--text-muted)">—</span>');
-    const yoyCell = r.pp ? ppChg(r.now,r.py) : (r.py!=null ? chgSp(pctChg(r.now,r.py), r.lower) : '<span style="font-size:10px;color:var(--text-muted)">—</span>');
-    const achCell = r.achTxt!=null ? r.achTxt
-      : (r.ach!=null ? `<span style="font-weight:700;color:${r.achLower?(r.ach<=100?'var(--positive)':'var(--negative)'):achCol(r.ach)}">${r.ach.toFixed(1)}%</span>` : '—');
-    return `<tr${r.strong?' style="background:var(--surface2)"':''}>
+    const nowCell = r.pp ? r.now.toFixed(1)+'%' : fmtM(r.now);
+    const pmCell  = r.pp ? (r.pm!=null?r.pm.toFixed(1)+'%':'—') : (r.pm!=null?fmtM(r.pm):'—');
+    const pyCell  = r.pp ? (r.py!=null?r.py.toFixed(1)+'%':'—') : (r.py!=null?fmtM(r.py):'—');
+    const momCell = r.pp ? ppCell(r.now,r.pm) : (r.pm!=null ? chgSp(pctChg(r.now,r.pm), r.lower) : '<span style="font-size:10px;color:var(--text-muted)">—</span>');
+    let yoyCell;
+    if(r.niCalc && !(r.py>0)) yoyCell = r.now>0 ? '<span class="tp" style="font-size:10px;font-family:\'Space Mono\',monospace">▲ 轉盈</span>' : '<span class="tn" style="font-size:10px;font-family:\'Space Mono\',monospace">仍虧損</span>';
+    else yoyCell = r.pp ? ppCell(r.now,r.py) : (r.py!=null ? chgSp(pctChg(r.now,r.py), r.lower) : '<span style="font-size:10px;color:var(--text-muted)">—</span>');
+    const nowColor = r.niCalc ? (d.ni>=0?'var(--positive)':'var(--negative)') : 'var(--text)';
+    return `<tr${r.strong?' style="background:var(--surface2);font-weight:700"':''}>
       <td class="td-s">${r.k}</td>
-      <td style="color:var(--text-muted)">${r.tgt!=null?r.fmt(r.tgt):'—'}</td>
-      <td style="font-weight:700">${r.fmt(r.now)}</td>
-      <td style="text-align:center">${achCell}</td>
-      <td style="color:var(--text-muted)">${r.pm!=null?r.fmt(r.pm):'—'}</td>
+      <td style="font-weight:700;color:${nowColor}">${nowCell}</td>
+      <td style="text-align:center;font-size:11px;color:var(--text-sub)">${r.side}</td>
+      <td style="color:var(--text-muted)">${pmCell}</td>
       <td>${momCell}</td>
-      <td style="color:var(--text-muted)">${r.py!=null?r.fmt(r.py):'—'}</td>
+      <td style="color:var(--text-muted)">${pyCell}</td>
       <td>${yoyCell}</td>
-      <td style="font-family:'Noto Sans TC',sans-serif;font-size:10px;color:var(--text-sub);white-space:normal;max-width:210px;line-height:1.5">${r.note}</td>
+      <td style="font-family:'Noto Sans TC',sans-serif;font-size:10px;color:var(--text-sub);white-space:normal;max-width:190px;line-height:1.5">${r.note}</td>
     </tr>`;
   }).join('');
 
@@ -800,19 +808,22 @@ function renderMgmt(){
   <!-- 月份存檔切換 -->
   ${mgmtNav}
 
-  <!-- 表一：損益落後指標表 -->
+  <!-- 表一：損益試算表 -->
   <div class="card" style="margin-bottom:1.5rem">
     <div class="card-hdr">
-      <span class="card-lbl">📋 落後指標 ① 損益表</span>
+      <span class="card-lbl">📋 落後指標 ① 損益試算</span>
       <span class="card-badge">${d.ym} 管理帳估算（未稅）· 紅＝讓公司少賺的變化</span>
     </div>
     <div style="overflow-x:auto">
       <table class="ctbl">
-        <thead><tr><th>項目</th><th>KPI目標</th><th>本月數據</th><th>達標率</th><th>上月數據</th><th>MoM變化</th><th>去年同月</th><th>YoY變化</th><th>補充／討論</th></tr></thead>
+        <thead><tr><th>項目</th><th>本月</th><th>達標／占營收</th><th>上月</th><th>MoM</th><th>去年同月</th><th>YoY</th><th>補充／討論</th></tr></thead>
         <tbody>${t1Rows}</tbody>
       </table>
     </div>
-    <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 成本占比為百分點(pp)變化。費用科目（門市營運／管理）之上月、去年同月須相同口徑，於 data.js 補入 opExPrevMo 等欄位後自動顯示 MoM/YoY；門市人事費趨勢見下方專卡。</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.75">
+      <div><b>淨利（試算）算式</b>：全通路業績 −（業績×成本占比）− 總公司行銷費 − 媒體採買 − 門市營運費用 − 總公司管理費用 ＝ <b style="color:${d.ni>=0?'var(--positive)':'var(--negative)'}">${fW(niCalc)}</b>（與管理帳一致）。</div>
+      <div style="margin-top:3px">＊ 成本占比為百分點(pp)變化。費用列「上月／去年同月」取自損益表，未補齊者顯示「—」（於 data.js 補 mktMediaPrevMo、opExPrevYr 等欄位後自動顯示）。門市人事費趨勢另見下方專卡。</div>
+    </div>
   </div>
 
   <!-- 表二：各通路淨利表 -->
