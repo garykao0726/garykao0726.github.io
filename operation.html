@@ -632,6 +632,7 @@ function renderMgmt(){
 
   const stores=FIN_DATA.STORES;
   const sc=FIN_DATA.STORE_COLORS;
+  const dataTag = d.actual ? '損益表實際（未稅）' : '管理帳估算（未稅）';
 
   const revAch=d.rev/d.revTarget*100;
   const revMoM=pctChg(d.rev,d.prevMoRev);
@@ -800,10 +801,15 @@ function renderMgmt(){
   <div style="max-width:1400px;margin:0 auto;padding:1.75rem 2rem">
 
   <!-- Banner -->
-  <div style="background:#fffbe6;border:1px solid #d4a72c;border-radius:8px;padding:10px 16px;margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;font-family:'Space Mono',monospace;color:#b8860b">
-    <span style="font-weight:700">⚠ ${d.ym} ${d.dataType}　·　財務報表預計隔月 20–25 日確認</span>
-    <span style="opacity:.75">${d.note}</span>
-  </div>
+  ${d.actual
+    ? `<div style="background:#eaf5ee;border:1px solid #1a7a4a;border-radius:8px;padding:10px 16px;margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;font-family:'Space Mono',monospace;color:#1a7a4a">
+        <span style="font-weight:700">✓ ${d.ym} ${d.dataType}　·　損益表已結算，本表為實際值</span>
+        <span style="opacity:.75">${d.note}</span>
+      </div>`
+    : `<div style="background:#fffbe6;border:1px solid #d4a72c;border-radius:8px;padding:10px 16px;margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;font-family:'Space Mono',monospace;color:#b8860b">
+        <span style="font-weight:700">⚠ ${d.ym} ${d.dataType}　·　財務報表預計隔月 20–25 日確認</span>
+        <span style="opacity:.75">${d.note}</span>
+      </div>`}
 
   <!-- 月份存檔切換 -->
   ${mgmtNav}
@@ -812,7 +818,7 @@ function renderMgmt(){
   <div class="card" style="margin-bottom:1.5rem">
     <div class="card-hdr">
       <span class="card-lbl">📋 落後指標 ① 損益試算</span>
-      <span class="card-badge">${d.ym} 管理帳估算（未稅）· 紅＝讓公司少賺的變化</span>
+      <span class="card-badge">${d.ym} ${dataTag} · 紅＝讓公司少賺的變化</span>
     </div>
     <div style="overflow-x:auto">
       <table class="ctbl">
@@ -821,7 +827,7 @@ function renderMgmt(){
       </table>
     </div>
     <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.75">
-      <div><b>淨利（試算）算式</b>：全通路業績 −（業績×成本占比）− 總公司行銷費 − 媒體採買 − 門市營運費用 − 總公司管理費用 ＝ <b style="color:${d.ni>=0?'var(--positive)':'var(--negative)'}">${fW(niCalc)}</b>（與管理帳一致）。</div>
+      <div><b>淨利（試算）算式</b>：全通路業績 −（業績×成本占比）− 總公司行銷費 − 媒體採買 − 門市營運費用 − 總公司管理費用 ＝ <b style="color:${d.ni>=0?'var(--positive)':'var(--negative)'}">${fW(niCalc)}</b>（${d.actual?'與損益表營業淨利一致':'與管理帳一致'}）。</div>
       <div style="margin-top:3px">＊ 成本占比為百分點(pp)變化。費用列「上月／去年同月」取自損益表，未補齊者顯示「—」（於 data.js 補 mktMediaPrevMo、opExPrevYr 等欄位後自動顯示）。門市人事費趨勢另見下方專卡。</div>
     </div>
   </div>
@@ -830,7 +836,7 @@ function renderMgmt(){
   <div class="card" style="margin-bottom:1.5rem">
     <div class="card-hdr">
       <span class="card-lbl">📋 落後指標 ② 各通路淨利</span>
-      <span class="card-badge">${d.ym} 管理帳估算（未稅）</span>
+      <span class="card-badge">${d.ym} ${dataTag}</span>
     </div>
     <div style="overflow-x:auto">
       <table class="ctbl">
