@@ -560,7 +560,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     </div>
 
     <!-- 深入觀察 -->
-    <div class="sec" style="margin-top:1.75rem">深入觀察 — 值得拉出來討論（現行分析未涵蓋）</div>
+    <div class="sec" id="sec-insight" style="margin-top:1.75rem">深入觀察 — 值得拉出來討論（現行分析未涵蓋）</div>
     <div class="insight-list" id="insight-list"></div>
 
     <!-- Expense cards -->
@@ -908,6 +908,7 @@ function updateMonthLabels() {
   set('ach-ytd-hd', `年度完成進度（1–${mNum}月累計 / 全年目標）`);
   set('sec-mkt', `廣告費用分析（本月 ${fmtPct(S.mktPct)}${S.mktPct > 6 ? ' — 超出上限 6%' : ' — 控制於上限 6% 內'}）`);
   set('sec-store', S.storeData ? '各門市當月績效' : '各門市績效（本月僅有總公司合併損益，暫無分店別資料）');
+  set('sec-insight', `深入觀察 — ${y}年${mNum}月值得拉出來討論（現行分析未涵蓋）`);
 }
 
 function renderStaticSections() {
@@ -1502,45 +1503,133 @@ function renderCompareTable() {
   el.innerHTML = head + body;
 }
 
-/* ── 深入觀察（跨月、與所選月份無關，內容固定） ── */
+/* ── 深入觀察（每月一塊，逐月手寫；切月份即切換內容） ── */
+const w萬 = v => (v/10000).toFixed(1) + '萬';
+
+function buildInsights(ym) {
+  const w = w萬;
+  const M = MONTHS[ym];
+  if (!M) return [];
+
+  switch (ym) {
+
+    /* ───────── 1 月 ───────── */
+    case '2026/01': {
+      const wage = M.w6100 + M.w6201;
+      const pkgYoY = (PKG['2026/01'] - PKG_PREV['2026/01']) / PKG_PREV['2026/01'] * 100;
+      const sd = M.storeData;
+      return [
+        { sev:'green', tag:'開局', title:'1 月是 Q1–Q2 體質最好的一個月 —— 五店全獲利、淨利率 20.4%',
+          body:`1 月營收 <b>${w(M.rev)}</b> 為前四個月最高，毛利率 65.0%、營業淨利率 19.7%，<b>五家門市＋電商全數獲利</b>，沒有任何一個通路虧損。這是後續 2–4 月再也沒出現過的均衡狀態，可作為「正常月」的對照基準。`,
+          data:`淨利率 ${M.niPct.toFixed(1)}%（去年同月 ${M.prevNiPct.toFixed(1)}%）｜中山稅前 ${sd['中山'].pretaxPct.toFixed(1)}%、東門 ${sd['東門'].pretaxPct.toFixed(1)}%` },
+
+        { sev:'green', tag:'通路', title:'電商在 1 月還是賺錢的（+7.5 萬）—— 之後才轉虧',
+          body:`電商（含官網）1 月營業淨利 <b>+${w(sd['電商'].opProfit)}</b>、淨利率 7.9%，廣告費率 15.2% 還撐得住。對照 2 月、4 月電商轉為大幅虧損，可見問題不是「電商天生賠錢」，而是<b>從 2 月起出了狀況</b>，值得回頭看 1→2 月電商發生了什麼變化。`,
+          data:`電商：營收 ${w(sd['電商'].rev)}｜毛利率 ${sd['電商'].gpPct.toFixed(1)}%｜廣告費率 ${sd['電商'].mktPct.toFixed(1)}%｜淨利 +${w(sd['電商'].opProfit)}` },
+
+        { sev:'amber', tag:'隱形成本', title:'包裝費（5539）一開年就偏高 —— 1 月已 +227% YoY',
+          body:`包裝費 1 月 <b>${w(PKG['2026/01'])}</b>，比去年同月 ${w(PKG_PREV['2026/01'])} 高出 <b>+${pkgYoY.toFixed(0)}%</b>。這筆<b>併在營業成本裡、現行報表看不到</b>，但它從 1 月就墊高了成本，到 4 月更暴衝到 28.7 萬。建議從年初就把 5539 拉出來單獨追蹤，不要等到 4 月才發現。`,
+          data:`5539 包裝費：1月 ${w(PKG['2026/01'])}｜去年1月 ${w(PKG_PREV['2026/01'])}（+${pkgYoY.toFixed(0)}%）` },
+
+        { sev:'amber', tag:'人事', title:'總人事費率 23.0% —— 在獲利月就偏高，淡月會更吃緊',
+          body:`1 月在營收最高的情況下，總人事費（推銷+管理薪資）仍佔營收 <b>${(wage/M.rev*100).toFixed(1)}%</b>。人事是固定成本，營收一旦下滑（如 2 月）這個比率會立刻跳高（2 月衝到 29%）。1 月雖然好看，但人事費率已是需要盯住的結構性指標。`,
+          data:`1月總人事費 ${w(wage)}（${(wage/M.rev*100).toFixed(1)}%）　推銷薪資 ${M.wPct6100.toFixed(1)}% + 管理薪資 ${M.wPct6201.toFixed(1)}%` },
+      ];
+    }
+
+    /* ───────── 2 月 ───────── */
+    case '2026/02': {
+      const wage = M.w6100 + M.w6201;
+      const sd = M.storeData;
+      return [
+        { sev:'red', tag:'淡季', title:'2 月是典型淡季 —— 營收探底 534 萬、YoY −11%，獲利被壓到 10%',
+          body:`2 月營收 <b>${w(M.rev)}</b> 為前四個月最低（農曆春節工作天數少），YoY <b>${M.yoyRevPct.toFixed(1)}%</b>。淨利率從 1 月的 20.4% 腰斬到 <b>${M.niPct.toFixed(1)}%</b>。淡季本身可預期，但下面兩張卡顯示——問題是<b>固定成本在淡月撐不住</b>。`,
+          data:`營收 ${w(M.rev)}（YoY ${M.yoyRevPct.toFixed(1)}%）｜淨利率 ${M.niPct.toFixed(1)}%（1月 20.4%）` },
+
+        { sev:'red', tag:'固定成本', title:'淡月人事費率衝到 29.4% —— 損益兩平點被人事墊高',
+          body:`營收掉、但薪資是固定的，總人事費率從 1 月的 23.0% 跳到 <b>${(wage/M.rev*100).toFixed(1)}%</b>。直接後果：<b>台中由盈轉虧（−3.5 萬）、東門淨利率僅 5.9%</b> 幾乎打平。淡月真正的風險不是營收低，而是固定成本（人事＋租金）吃光毛利。建議替每家店設「損益兩平所需營收」門檻，淡月提前示警。`,
+          data:`總人事費率 ${(wage/M.rev*100).toFixed(1)}%｜台中淨利 ${w(sd['台中'].opProfit)}（${sd['台中'].pretaxPct.toFixed(1)}%）、東門 ${sd['東門'].pretaxPct.toFixed(1)}%` },
+
+        { sev:'amber', tag:'亮點', title:'毛利率逆勢拉到 67.9%（全期最高）—— 淡月反而沒亂打折',
+          body:`雖然營收最差，2 月毛利率卻是四個月最高的 <b>${M.gpPct.toFixed(1)}%</b>（去年同月 ${M.prevGpPct.toFixed(1)}%）。代表淡月並沒有靠殺價衝量，產品結構/定價守得不錯。這是 2 月少數的正面訊號，值得肯定並維持。`,
+          data:`毛利率 ${M.gpPct.toFixed(1)}%（1月 65.0%、去年2月 ${M.prevGpPct.toFixed(1)}%）` },
+
+        { sev:'neutral', tag:'資料缺口', title:'⚠️ 2 月電商數字不可直接判讀 —— ERP 部門表只有官網、缺電商平台',
+          body:`本月 ERP 部門比較表<b>只拆到官網、沒有電商平台（批發）那一塊</b>，所以「電商」被標記為 partial：帳面 ${w(sd['電商'].opProfit)} 虧損被放大、營收偏低，<b>不是真實全貌</b>。1/3/4 月都有完整電商拆分、只有 2 月缺。若日後補出 2 月完整部門表，這格可以更新。`,
+          data:`電商（partial）：僅官網 ${w(sd['電商'].rev)}，未含電商平台 → 虧損數字偏大、排除異常判讀` },
+      ];
+    }
+
+    /* ───────── 3 月 ───────── */
+    case '2026/03': {
+      const sd = M.storeData;
+      return [
+        { sev:'amber', tag:'基期', title:'3 月 YoY +18.9% 看似強勁 —— 其實是去年基期極低（去年3月淨利僅 5.6 萬）',
+          body:`3 月營收回升到 <b>${w(M.rev)}</b>、YoY <b>+${M.yoyRevPct.toFixed(1)}%</b>，數字漂亮。但去年 3 月本期損益只有 <b>${w(M.prevNI)}</b>（淨利率 0.98%），是被低基期放大的成長。別把這個 +18.9% 當成業績動能——4 月隨即回落到 −11%。建議用「近 3 個月移動平均」看趨勢，而非單月 YoY。`,
+          data:`營收 YoY +${M.yoyRevPct.toFixed(1)}%（去年3月淨利僅 ${w(M.prevNI)}、淨利率 ${M.prevNiPct.toFixed(1)}%）` },
+
+        { sev:'red', tag:'廣告費', title:'廣告費首度破表 —— 3 月衝到 8.7%，主因公關費(PR)暴增到 21.3 萬',
+          body:`廣告費率從 1 月 3.98%、2 月 4.66% 跳到 <b>${M.mktPct.toFixed(1)}%</b>（${w(M.mkt)}），首度突破 6% 上限。拆開來看，主因是<b>公關費 ${w(M.mktPR)}</b>（1 月 1.1 萬、2 月 2.9 萬），單月暴增。需釐清是特定檔期投放（網紅/媒體合作）還是常態化支出，並評估它帶回的營收是否划算。`,
+          data:`廣告費率 ${M.mktPct.toFixed(1)}%（${w(M.mkt)}）｜其中公關費 ${w(M.mktPR)}（1月 1.1萬、2月 2.9萬）` },
+
+        { sev:'green', tag:'通路', title:'電商回到獲利、五店全賺 —— Q1 最均衡的一個月',
+          body:`電商營業淨利回到 <b>+${w(sd['電商'].opProfit)}</b>（淨利率 7.6%，毛利率拉到 70.1%），五家門市也全數獲利。除了廣告費偏高之外，3 月是 Q1 通路結構最健康的一個月，可作為「廣告費若控回 6% 會長怎樣」的參考。`,
+          data:`電商淨利 +${w(sd['電商'].opProfit)}（毛利率 ${sd['電商'].gpPct.toFixed(1)}%）｜五店全數獲利` },
+
+        { sev:'neutral', tag:'稅務', title:'3 月所得稅跳到 17.6 萬 —— 拉低帳面淨利，屬正常季度提列',
+          body:`本期所得稅由 1/2 月各 4.6 萬跳到 <b>${w(M.tax)}</b>，使本期損益（${w(M.ni)}）低於營業淨利（${w(M.opProfit)}）。這是季度結算提列、非營運惡化。追蹤獲利時建議看<b>營業淨利</b>，避免被稅費的時點差異干擾月與月的比較。`,
+          data:`所得稅 ${w(M.tax)}（1/2月各 4.6萬）｜營業淨利 ${w(M.opProfit)} → 本期損益 ${w(M.ni)}` },
+      ];
+    }
+
+    /* ───────── 4 月 ───────── */
+    case '2026/04': {
+      const A = M;
+      const pkgApr = PKG['2026/04'];
+      const pkgAvg = (PKG['2026/01']+PKG['2026/02']+PKG['2026/03'])/3;
+      const pkgYoY = (pkgApr - PKG_PREV['2026/04']) / PKG_PREV['2026/04'] * 100;
+      const aprWage = A.w6100 + A.w6201;
+      return [
+        { sev:'red', tag:'毛利', title:'4 月包裝費暴衝，是毛利率掉到 63.6% 的隱形主因',
+          body:`包裝費（科目 5539，<b>目前併在營業成本裡看不到</b>）4 月衝到 <b>${w(pkgApr)}</b>，是 1–3 月平均 ${w(pkgAvg)} 的 <b>${(pkgApr/pkgAvg).toFixed(1)} 倍</b>、去年同月 ${w(PKG_PREV['2026/04'])} 的 <b>+${pkgYoY.toFixed(0)}%</b>。光這一項就多吃掉約 ${w(pkgApr-pkgAvg)} 毛利，把 4 月毛利率從常態 ~66% 壓到 63.6%。現行只看「商品成本率」總和，抓不到這筆。建議釐清是一次性備料（紙箱／提袋大量進貨）還是新包材常態化。`,
+          data:`5539 包裝費：1月 ${w(PKG['2026/01'])}｜2月 ${w(PKG['2026/02'])}｜3月 ${w(PKG['2026/03'])}｜4月 ${w(pkgApr)}` },
+
+        { sev:'red', tag:'營收', title:'營收動能由正轉負 —— YoY 從 +18.9%（3月）翻成 −11.2%（4月）',
+          body:`月營收 1→4 月為 <b>693 → 534 → 678 → 527 萬</b>，與去年同月比由正轉負。3 月看似強勁，主因是<b>去年 3 月基期極低</b>；4 月則明顯衰退。單看單月 YoY 容易誤判，建議改用「近 3 個月移動平均」與「對全年目標進度」追蹤。`,
+          data:`營收 YoY：${CMP.map(m=>m.label+' '+(m.yoyRevPct>=0?'+':'')+m.yoyRevPct.toFixed(1)+'%').join('｜')}` },
+
+        { sev:'amber', tag:'獲利品質', title:'獲利改善主要靠「省人事」，不是靠成長 —— 是縮編還是增效？',
+          body:`今年每月淨利都遠優於去年，但拆解後主因是<b>人事費大降</b>：4 月推銷薪資(6100) YoY <b>−26%</b>、管理薪資(6201) YoY <b>−37%</b>，兩者合計較去年同月少約 67 萬。同期營收在衰退，代表獲利成長並非來自業績，而是成本壓縮。若為人力縮編，須評估對門市服務與後續成長的衝擊；若去年有一次性獎金墊高基期，今年的「改善」會被高估。`,
+          data:`4月總人事費 ${w(aprWage)}（佔營收 ${(aprWage/A.rev*100).toFixed(1)}%）　vs　去年同月 ≈ 210 萬` },
+
+        { sev:'amber', tag:'基期', title:'YTD 淨利 +514% 很漂亮，但去年基期極低（去年 4 月還虧損）',
+          body:`1–4 月累計本期損益 <b>296.9 萬</b> vs 去年同期 <b>48.3 萬</b>，YoY +514%——這個倍數被低基期放大，去年 4 月單月就<b>虧損 54.3 萬</b>。對內外溝通建議同時看「絕對金額＋損益率」：今年 YTD <b>12.2%</b> vs 去年 <b>1.99%</b>，比成長倍數更能反映真實體質。`,
+          data:`YTD 本期損益率：2026 = 12.2%　vs　2025 = 1.99%` },
+
+        { sev:'amber', tag:'通路', title:'官網（電商）幾乎每月在虧 —— 結構性問題，非淡旺季',
+          body:`線上（官網）1 月僅打平（+0.06萬）、2 月虧 33.3 萬、4 月虧 15.0 萬。主因是線上要單獨吸收<b>廣告費（佔線上營收 16–24%）</b>＋系統費＋總部分攤，毛利撐不住；實體店則普遍獲利。建議把「線上獲利模型」單獨檢討（ROAS、客單價、分攤合理性），而非只看全公司廣告費率 6%。`,
+          data:`官網營業淨利：1月 +0.1萬｜2月 −33.3萬｜4月 −15.0萬（線上廣告費率遠高於門市）` },
+
+        { sev:'neutral', tag:'固定成本', title:'租金連年漲、營收卻持平／下滑 —— 損益兩平點被墊高',
+          body:`房租(6114) YoY 持續 +7~12%（中山漲租、東門漲租，另有園道支援住宿），加上 4 月折舊也 +10%。當營收走平而固定成本上升，淡月更易由盈轉虧（如台中 4 月稅前 −13%）。建議追蹤各店「租金率」與「損益兩平所需營收」門檻，作為展店／續約決策依據。`,
+          data:`各店租金率(6114)：${CMP.map(m=>m.label+' '+m.rPct6114.toFixed(1)+'%').join('｜')}` },
+      ];
+    }
+
+    default:
+      return [];
+  }
+}
+
 function renderInsights() {
   const el = document.getElementById('insight-list');
   if (!el) return;
-  const w = v => (v/10000).toFixed(1) + '萬';
-  const A = MONTHS['2026/04'];
-
-  const pkgApr = PKG['2026/04'];
-  const pkgAvg = (PKG['2026/01']+PKG['2026/02']+PKG['2026/03'])/3;
-  const pkgYoY = (pkgApr - PKG_PREV['2026/04']) / PKG_PREV['2026/04'] * 100;
-  const aprWage = A.w6100 + A.w6201;
-
-  const items = [
-    { sev:'red', tag:'毛利', title:'4 月包裝費暴衝，是毛利率掉到 63.6% 的隱形主因',
-      body:`包裝費（科目 5539，<b>目前併在營業成本裡看不到</b>）4 月衝到 <b>${w(pkgApr)}</b>，是 1–3 月平均 ${w(pkgAvg)} 的 <b>${(pkgApr/pkgAvg).toFixed(1)} 倍</b>、去年同月 ${w(PKG_PREV['2026/04'])} 的 <b>+${pkgYoY.toFixed(0)}%</b>。光這一項就多吃掉約 ${w(pkgApr-pkgAvg)} 毛利，把 4 月毛利率從常態 ~66% 壓到 63.6%。現行只看「商品成本率」總和，抓不到這筆。建議釐清是一次性備料（紙箱／提袋大量進貨）還是新包材常態化。`,
-      data:`5539 包裝費：1月 ${w(PKG['2026/01'])}｜2月 ${w(PKG['2026/02'])}｜3月 ${w(PKG['2026/03'])}｜4月 ${w(pkgApr)}` },
-
-    { sev:'red', tag:'營收', title:'營收動能由正轉負 —— YoY 從 +18.9%（3月）翻成 −11.2%（4月）',
-      body:`月營收 1→4 月為 <b>693 → 534 → 678 → 527 萬</b>，與去年同月比由正轉負。3 月看似強勁，主因是<b>去年 3 月基期極低</b>；4 月則明顯衰退。單看單月 YoY 容易誤判，建議改用「近 3 個月移動平均」與「對全年目標進度」追蹤。`,
-      data:`營收 YoY：${CMP.map(m=>m.label+' '+(m.yoyRevPct>=0?'+':'')+m.yoyRevPct.toFixed(1)+'%').join('｜')}` },
-
-    { sev:'amber', tag:'獲利品質', title:'獲利改善主要靠「省人事」，不是靠成長 —— 是縮編還是增效？',
-      body:`今年每月淨利都遠優於去年，但拆解後主因是<b>人事費大降</b>：4 月推銷薪資(6100) YoY <b>−26%</b>、管理薪資(6201) YoY <b>−37%</b>，兩者合計較去年同月少約 67 萬。同期營收在衰退，代表獲利成長並非來自業績，而是成本壓縮。若為人力縮編，須評估對門市服務與後續成長的衝擊；若去年有一次性獎金墊高基期，今年的「改善」會被高估。`,
-      data:`4月總人事費 ${w(aprWage)}（佔營收 ${(aprWage/A.rev*100).toFixed(1)}%）　vs　去年同月 ≈ 210 萬` },
-
-    { sev:'amber', tag:'基期', title:'YTD 淨利 +514% 很漂亮，但去年基期極低（去年 4 月還虧損）',
-      body:`1–4 月累計本期損益 <b>296.9 萬</b> vs 去年同期 <b>48.3 萬</b>，YoY +514%——這個倍數被低基期放大，去年 4 月單月就<b>虧損 54.3 萬</b>。對內外溝通建議同時看「絕對金額＋損益率」：今年 YTD <b>12.2%</b> vs 去年 <b>1.99%</b>，比成長倍數更能反映真實體質。`,
-      data:`YTD 本期損益率：2026 = 12.2%　vs　2025 = 1.99%` },
-
-    { sev:'amber', tag:'通路', title:'官網（電商）幾乎每月在虧 —— 結構性問題，非淡旺季',
-      body:`線上（官網）1 月僅打平（+0.06萬）、2 月虧 33.3 萬、4 月虧 15.0 萬。主因是線上要單獨吸收<b>廣告費（佔線上營收 16–24%）</b>＋系統費＋總部分攤，毛利撐不住；實體店則普遍獲利。建議把「線上獲利模型」單獨檢討（ROAS、客單價、分攤合理性），而非只看全公司廣告費率 6%。`,
-      data:`官網營業淨利：1月 +0.1萬｜2月 −33.3萬｜4月 −15.0萬（線上廣告費率遠高於門市）` },
-
-    { sev:'neutral', tag:'固定成本', title:'租金連年漲、營收卻持平／下滑 —— 損益兩平點被墊高',
-      body:`房租(6114) YoY 持續 +7~12%（中山漲租、東門漲租，另有園道支援住宿），加上 4 月折舊也 +10%。當營收走平而固定成本上升，淡月更易由盈轉虧（如台中 4 月稅前 −13%）。建議追蹤各店「租金率」與「損益兩平所需營收」門檻，作為展店／續約決策依據。`,
-      data:`各店租金率(6114)：${CMP.map(m=>m.label+' '+m.rPct6114.toFixed(1)+'%').join('｜')}` },
-  ];
-
-  const tagColor = { red:'#c0392b', amber:'#b07d12', neutral:'#8D5531' };
+  const items = buildInsights(S.ym);
+  if (!items.length) {
+    el.innerHTML = `<div style="padding:18px;color:var(--text-muted);font-size:13px;background:var(--surface);border:1px dashed var(--border2);border-radius:12px">本月尚未撰寫深入觀察。</div>`;
+    return;
+  }
+  const tagColor = { red:'#c0392b', amber:'#b07d12', neutral:'#8D5531', green:'#1a7a4a' };
   el.innerHTML = items.map(it => `
     <div class="insight" style="border-left-color:${tagColor[it.sev]}">
       <div class="insight-hd">
