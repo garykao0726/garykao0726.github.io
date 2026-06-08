@@ -222,7 +222,7 @@ MR_MONTHS: { '2026/04': {
   cogsPct:         32.5,  // 估：沿用3月毛利結構（無包裝費暴衝）
   cogsPctTarget:   34.0,
   cogsPctPrevMo:   36.41, // 2026/04 帳上
-  cogsPctPrevYr:   32.59, // 2025/05 帳上
+  cogsPctPrevYr:   32.80, // 2025/05 帳上（損益表）
 
   mktShoot:  280192, mktMedia: 309925, mktTotal: 590117, mktBudget: 347760,  // 估：沿用3月
   opEx:      1722475, mgmtEx: 1140879, opExTotal: 2863354, opExRef: 3622500, // 估：沿用3月
@@ -234,6 +234,8 @@ MR_MONTHS: { '2026/04': {
 
   mktShootPrevMo: 202876, mktMediaPrevMo: 223491,  // 上月＝2026/04 實際
   opExPrevMo:    1675378, mgmtExPrevMo:  1147788,
+  mktShootPrevYr: 73268,  mktMediaPrevYr: 285189,   // 去年同月＝2025/05 損益表（行銷費＝6117−媒體）
+  opExPrevYr:    1902587,  mgmtExPrevYr:  1288363,   // 門市營運＝推銷小計−廣告；管理＝管理小計
 
   storeNiPrevMo: 103303, storeNiPrevYr: -29253,
 
