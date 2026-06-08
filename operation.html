@@ -657,6 +657,16 @@ function renderMgmt(){
   const niYoY=d.prevYrNI!==0?pctChg(niN,normNi(d.prevYrNI,prevYrYm)):null;
   const mktAch=d.mktTotal/d.mktBudget*100;
   const niAch=niN/d.niTarget*100;
+  /* 廣告費 MoM/YoY ＋ 廣告ROI（營收÷廣告費，每1元廣告帶來幾元營收）*/
+  const mktPrevMo=(d.mktShootPrevMo!=null&&d.mktMediaPrevMo!=null)?d.mktShootPrevMo+d.mktMediaPrevMo:null;
+  const mktPrevYr=(d.mktShootPrevYr!=null&&d.mktMediaPrevYr!=null)?d.mktShootPrevYr+d.mktMediaPrevYr:null;
+  const mktMoM=mktPrevMo?pctChg(d.mktTotal,mktPrevMo):null;
+  const mktYoY=mktPrevYr?pctChg(d.mktTotal,mktPrevYr):null;
+  const roi=d.mktTotal?d.rev/d.mktTotal:null;
+  const roiPrevMo=(mktPrevMo&&d.prevMoRev)?d.prevMoRev/mktPrevMo:null;
+  const roiPrevYr=(mktPrevYr&&d.prevYrRev)?d.prevYrRev/mktPrevYr:null;
+  const roiMoM=(roi&&roiPrevMo)?pctChg(roi,roiPrevMo):null;
+  const roiYoY=(roi&&roiPrevYr)?pctChg(roi,roiPrevYr):null;
 
   const storeTotRev=stores.reduce((s,st)=>s+(d.storeData[st]?.rev||0),0);
   const storeTotTgt=stores.reduce((s,st)=>s+(d.storeData[st]?.target||0),0);
@@ -916,7 +926,19 @@ function renderMgmt(){
       <div style="height:4px;background:var(--sand);border-radius:2px;margin-top:8px;overflow:hidden">
         <div style="height:100%;width:${Math.min(mktAch,100).toFixed(1)}%;background:${mktAch<=100?'var(--positive)':'var(--negative)'};border-radius:2px"></div>
       </div>
-      <div style="margin-top:8px;font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted)">
+      <div style="margin-top:8px;display:flex;gap:12px;font-size:10px;font-family:'Space Mono',monospace">
+        <span>MoM ${mktMoM!=null?chgSp(mktMoM):'<span style="color:var(--text-muted)">—</span>'}</span>
+        <span>YoY ${mktYoY!=null?chgSp(mktYoY):'<span style="color:var(--text-muted)">—</span>'}</span>
+      </div>
+      <div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);display:flex;justify-content:space-between;align-items:baseline">
+        <span style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace">廣告ROI<span style="font-size:8px"> 營收÷廣告費</span></span>
+        <span style="font-family:'Space Mono',monospace;font-weight:700;font-size:13px;color:var(--green)">${roi!=null?roi.toFixed(1)+'x':'—'}</span>
+      </div>
+      <div style="margin-top:3px;display:flex;gap:12px;font-size:10px;font-family:'Space Mono',monospace">
+        <span>MoM ${roiMoM!=null?chgSp(roiMoM):'<span style="color:var(--text-muted)">—</span>'}</span>
+        <span>YoY ${roiYoY!=null?chgSp(roiYoY):'<span style="color:var(--text-muted)">—</span>'}</span>
+      </div>
+      <div style="margin-top:6px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted)">
         拍攝/KOL ${fW2(d.mktShoot)}　＋　媒體 ${fW2(d.mktMedia)}
       </div>
     </div>
