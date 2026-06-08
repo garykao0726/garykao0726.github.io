@@ -751,6 +751,43 @@ function renderMgmt(){
   const t2Total = niRow('門市＋官網（總計）',null,storeTotRev,storeTotTgt,storeTotNi,(storeTotRev?storeTotNi/storeTotRev*100:null),d.storeNiPrevMo,d.storeNiPrevYr,'',true);
   const t2Stores = stores.map(st=>{const s=d.storeData[st];return s?niRow(st,sc[st],s.rev,s.target,s.ni,s.niPct,s.prevMoNI,s.prevYrNI,s.note||''):'';}).join('');
 
+  /* ── 各店保本：毛利 vs 人事/租金/行銷/管理（圖表）──
+     行銷 = 總公司行銷費(mktShoot)/5 + 媒體採買(mktMedia)分攤（電商60%、其他各10%）
+     管理 = 總公司管理費(mgmtEx)/5；毛利 = 營收×毛利率 */
+  const beMktAlloc = st => (d.mktShoot||0)/5 + (st==='電商' ? (d.mktMedia||0)*0.6 : (d.mktMedia||0)*0.1);
+  const COSTC = { 人事:'#8D5531', 租金:'#CFA294', 行銷:'#5a8a6e', 管理:'#b09a88' };
+  const GPC = '#284234';
+  const beItems = stores.map(st=>{
+    const s=d.storeData[st]; if(!s) return null;
+    const gp=s.rev*s.gpPct/100;
+    const c={ 人事:s.wageAmt||0, 租金:s.rentAmt||0, 行銷:beMktAlloc(st), 管理:(d.mgmtEx||0)/5 };
+    const cost=c.人事+c.租金+c.行銷+c.管理;
+    return { st, gp, c, cost, slack:gp-cost };
+  }).filter(Boolean);
+  const beMax = Math.max(...beItems.map(b=>Math.max(b.gp,b.cost)), 1);
+  const beLegend = `<div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px;font-size:10px;font-family:'Space Mono',monospace;color:var(--text-sub)">`
+    + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${GPC};margin-right:4px;vertical-align:middle"></span>毛利</span>`
+    + Object.entries(COSTC).map(([k,c])=>`<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${c};margin-right:4px;vertical-align:middle"></span>${k}</span>`).join('')
+    + `</div>`;
+  const beChart = beItems.map(b=>{
+    const segs=Object.entries(b.c).map(([k,v])=>`<div style="width:${(v/beMax*100).toFixed(2)}%;background:${COSTC[k]};height:100%" title="${k} ${fW(v)}"></div>`).join('');
+    const pos=b.slack>=0;
+    return `<div style="margin-bottom:15px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+        <span style="font-weight:700;font-size:13px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${sc[b.st]};margin-right:6px;vertical-align:middle"></span>${b.st}</span>
+        <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">毛利 <b style="color:${GPC}">${fW(b.gp)}</b> − 成本 ${fW(b.cost)} = <b style="color:${pos?'var(--positive)':'var(--negative)'}">${pos?'餘裕 ':'缺口 '}${fW(Math.abs(b.slack))}</b></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="width:30px;font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-align:right;flex-shrink:0">毛利</span>
+        <div style="flex:1;height:17px;background:var(--surface2);border-radius:3px;overflow:hidden"><div style="width:${(b.gp/beMax*100).toFixed(2)}%;height:100%;background:${GPC};border-radius:3px"></div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="width:30px;font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-align:right;flex-shrink:0">成本</span>
+        <div style="flex:1;height:17px;background:var(--surface2);border-radius:3px;overflow:hidden;display:flex">${segs}</div>
+      </div>
+    </div>`;
+  }).join('');
+
   el.innerHTML=`
   <div style="max-width:1400px;margin:0 auto;padding:1.75rem 2rem">
 
@@ -790,6 +827,17 @@ function renderMgmt(){
         <tbody>${t2Total}${t2Stores}</tbody>
       </table>
     </div>
+  </div>
+
+  <!-- 各店保本：毛利 vs 主要成本（圖表）-->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-hdr">
+      <span class="card-lbl">🎯 各店保本 · 毛利 vs 主要成本</span>
+      <span class="card-badge">${d.ym} · 毛利能否覆蓋 人事／租金／行銷／管理</span>
+    </div>
+    ${beLegend}
+    ${beChart}
+    <div style="margin-top:6px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 毛利＝營收×毛利率；人事＝各店薪資、租金＝各店租金；行銷＝總公司行銷費÷5＋媒體採買分攤（電商60%、其他各10%）；管理＝總公司管理費用÷5。毛利長於成本＝覆蓋四項主要成本後仍有餘裕（未含刷卡費、包裝、水電等雜項，故餘裕非等於淨利）。</div>
   </div>
 
   <!-- KPI row -->
