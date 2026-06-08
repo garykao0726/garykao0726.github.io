@@ -797,17 +797,29 @@ window.addEventListener('load', () => {
 });
 
 async function handleTokenResponse(resp) {
-  document.getElementById('loading-auth').style.display = 'none';
-  if (resp.error) { document.getElementById('signin-btn').style.display = 'flex'; return; }
+  const la = document.getElementById('loading-auth');
+  if (resp.error) {
+    la.style.display = 'none';
+    document.getElementById('signin-btn').style.display = 'flex';
+    return;
+  }
+  // 登入成功 → 全程顯示進度，避免等 GAS 查權限時畫面看起來像當掉
+  la.textContent = '登入成功，正在驗證權限…';
+  la.style.display = 'block';
   accessToken = resp.access_token;
   const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
     headers: { Authorization: 'Bearer ' + accessToken }
   }).then(r => r.json());
   if (await isFinanceExec(info.email)) {
+    la.textContent = '驗證通過，載入財務資料中…';
     grantAccess(info);
     renderStaticSections();
     loadHistoricalData();
+    la.style.display = 'none';
+    la.textContent = '驗證中…';
   } else {
+    la.style.display = 'none';
+    la.textContent = '驗證中…';
     document.getElementById('denied-email').textContent = info.email;
     document.getElementById('denied-msg').style.display = 'block';
     document.getElementById('signin-btn').style.display = 'flex';
