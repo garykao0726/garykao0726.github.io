@@ -792,44 +792,38 @@ function renderMgmt(){
   const t2Total = niRow('門市＋官網（總計）',null,posRevTot,storeTotTgt,storeTotNi,(storeTotRev?storeTotNi/storeTotRev*100:null),d.storeNiPrevMo,d.storeNiPrevYr,'',true);
   const t2Stores = stores.map(st=>{const s=d.storeData[st];return s?niRow(st,sc[st],posRev(st),s.target,s.ni,s.niPct,s.prevMoNI,s.prevYrNI,s.note||''):'';}).join('');
 
-  /* ── 各店保本堆疊圖：毛利 vs 全部費用（人事/租金/行銷/管理/其他），缺口＝淨利 ──
-     行銷 = 總公司行銷費/5 + 媒體採買分攤(電商60%/其他10%)；管理 = 總公司管理費/5
-     其他 = 全部費用(毛利−淨利) − 上述四項（刷卡/包裝/水電等）
-     損益平衡點 = 淨利為0所需營業額(含稅) = 本月營業額×(1−淨利/毛利) */
+  /* ── 各店保本：單一條「營業額＝各項成本＋淨利」(未稅·損益結構) ──
+     一條 = 營業成本(COGS)＋人事＋租金＋行銷＋管理＋其他(刷卡/包裝/水電)＋淨利(綠)
+     行銷=總公司行銷費/5+媒體分攤(電商60%/其他10%)；管理=總公司管理費/5
+     黑線＝營業額；成本超過營業額(線左)就是虧損；損益平衡點=淨利為0所需營業額(未稅) */
   const beMktAlloc = st => (d.mktShoot||0)/5 + (st==='電商' ? (d.mktMedia||0)*0.6 : (d.mktMedia||0)*0.1);
-  const COSTC = { 人事:'#8D5531', 租金:'#CFA294', 行銷:'#5a8a6e', 管理:'#b09a88', 其他:'#d8c4b0' };
-  const GPC = '#284234';
+  const COSTC = { 營業成本:'#6b4226', 人事:'#8D5531', 租金:'#CFA294', 行銷:'#5a8a6e', 管理:'#b09a88', 其他:'#d8c4b0' };
+  const NIC = '#1a7a4a';
+  const beOrder = ['營業成本','人事','租金','行銷','管理','其他'];
   const beItems = stores.map(st=>{
     const s=d.storeData[st]; if(!s) return null;
     const gp = s.rev*s.gpPct/100;
     const c4 = { 人事:s.wageAmt||0, 租金:s.rentAmt||0, 行銷:beMktAlloc(st), 管理:(d.mgmtEx||0)/5 };
-    const totalCost = gp - s.ni;                 // 全部費用 = 毛利 − 淨利
-    const other = Math.max(0, totalCost - (c4.人事+c4.租金+c4.行銷+c4.管理));
-    const revInc = posRev(st);
-    const be = Math.round(revInc*(1 - (gp?s.ni/gp:0)));   // 損益平衡點（含稅）
-    return { st, gp, c:{...c4, 其他:other}, totalCost, ni:s.ni, be };
+    const other = Math.max(0, (gp-s.ni) - (c4.人事+c4.租金+c4.行銷+c4.管理));
+    const segs = { 營業成本: s.rev-gp, ...c4, 其他:other };
+    const be = Math.round(s.rev - (s.gpPct?s.ni/(s.gpPct/100):0));   // 損益平衡點（未稅）
+    return { st, rev:s.rev, ni:s.ni, be, totalCost:s.rev-s.ni, segs };
   }).filter(Boolean);
-  const beMax = Math.max(...beItems.map(b=>Math.max(b.gp,b.totalCost)),1);
+  const beMax = Math.max(...beItems.map(b=>Math.max(b.rev,b.totalCost)),1);
   const beLegend = `<div style="display:flex;flex-wrap:wrap;gap:13px;margin-bottom:16px;font-size:10px;font-family:'Space Mono',monospace;color:var(--text-sub)">`
-    + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${GPC};margin-right:4px;vertical-align:middle"></span>毛利</span>`
-    + Object.entries(COSTC).map(([k,c])=>`<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${c};margin-right:4px;vertical-align:middle"></span>${k}</span>`).join('')
-    + `</div>`;
+    + beOrder.map(k=>`<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${COSTC[k]};margin-right:4px;vertical-align:middle"></span>${k}</span>`).join('')
+    + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${NIC};margin-right:4px;vertical-align:middle"></span>淨利</span>`
+    + `<span><span style="display:inline-block;width:2px;height:11px;background:rgba(0,0,0,.55);margin-right:4px;vertical-align:middle"></span>營業額</span></div>`;
   const beChart = beItems.map(b=>{
-    const segs=Object.entries(b.c).map(([k,v])=>`<div style="width:${(v/beMax*100).toFixed(2)}%;background:${COSTC[k]};height:100%" title="${k} ${fW(v)}"></div>`).join('');
-    const pos=b.ni>=0;
-    return `<div style="margin-bottom:15px">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+    let segs = beOrder.map(k=>`<div style="width:${(b.segs[k]/beMax*100).toFixed(2)}%;background:${COSTC[k]};height:100%" title="${k} ${fW(b.segs[k])}"></div>`).join('');
+    if(b.ni>=0) segs += `<div style="width:${(b.ni/beMax*100).toFixed(2)}%;background:${NIC};height:100%" title="淨利 ${fW(b.ni)}"></div>`;
+    const pos=b.ni>=0, markerPct=(b.rev/beMax*100).toFixed(2);
+    return `<div style="margin-bottom:13px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;flex-wrap:wrap;gap:4px">
         <span style="font-weight:700;font-size:13px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${sc[b.st]};margin-right:6px;vertical-align:middle"></span>${b.st}</span>
-        <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">毛利 <b style="color:${GPC}">${fW(b.gp)}</b>　淨利 <b style="color:${pos?'var(--positive)':'var(--negative)'}">${fW(b.ni)}</b>　損益平衡點 <b style="color:var(--text-sub)">${fW(b.be)}</b></span>
+        <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">營業額 <b style="color:var(--text)">${fW(b.rev)}</b>　淨利 <b style="color:${pos?'var(--positive)':'var(--negative)'}">${fW(b.ni)}</b>　損益平衡點 <b style="color:var(--text-sub)">${fW(b.be)}</b></span>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        <span style="width:30px;font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-align:right;flex-shrink:0">毛利</span>
-        <div style="flex:1;height:17px;background:var(--surface2);border-radius:3px;overflow:hidden"><div style="width:${(b.gp/beMax*100).toFixed(2)}%;height:100%;background:${GPC};border-radius:3px"></div></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="width:30px;font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-align:right;flex-shrink:0">費用</span>
-        <div style="flex:1;height:17px;background:var(--surface2);border-radius:3px;overflow:hidden;display:flex">${segs}</div>
-      </div>
+      <div style="position:relative;height:20px;background:var(--surface2);border-radius:3px;overflow:hidden;display:flex">${segs}<div style="position:absolute;left:calc(${markerPct}% - 1px);top:0;bottom:0;width:2px;background:rgba(0,0,0,.55)" title="營業額 ${fW(b.rev)}"></div></div>
     </div>`;
   }).join('');
 
@@ -886,12 +880,12 @@ function renderMgmt(){
   <!-- 各店保本堆疊圖：費用 + 淨利 + 損益平衡點 -->
   <div class="card" style="margin-bottom:1.5rem">
     <div class="card-hdr">
-      <span class="card-lbl">🎯 各店保本 · 費用／淨利／損益平衡點</span>
-      <span class="card-badge">${d.ym}${d.actual?'':' 估算'} · 毛利覆蓋全部費用後＝淨利</span>
+      <span class="card-lbl">🎯 各店保本 · 營業額＝成本＋淨利</span>
+      <span class="card-badge">${d.ym}${d.actual?'':' 估算'} · 未稅損益結構</span>
     </div>
     ${beLegend}
     ${beChart}
-    <div style="margin-top:6px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 費用條＝人事＋租金＋行銷＋管理＋其他(刷卡/包裝/水電等)＝<b>全部費用</b>；毛利條長於費用條的部分就是<b>淨利</b>（費用超過毛利＝虧損）。<b>損益平衡點</b>＝淨利為0所需營業額(含稅)。行銷＝總公司行銷費÷5＋媒體分攤；管理＝總公司管理費÷5。</div>
+    <div style="margin-top:6px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 一條＝營業額(未稅)＝營業成本＋人事＋租金＋行銷＋管理＋其他(刷卡/包裝/水電)＋<b style="color:#1a7a4a">淨利</b>。<b>黑線＝營業額</b>：成本填到黑線內、剩下綠色就是淨利；成本超過黑線(線右)＝虧損(無綠色)。<b>損益平衡點</b>＝淨利為0所需營業額。行銷＝總公司行銷費÷5＋媒體分攤；管理＝總公司管理費÷5。</div>
   </div>
 
   <!-- KPI row -->
