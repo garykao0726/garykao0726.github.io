@@ -943,7 +943,7 @@ function renderMgmt(){
         <span>YoY ${roiYoY!=null?chgSp(roiYoY):'<span style="color:var(--text-muted)">—</span>'}</span>
       </div>
       <div style="margin-top:6px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted)">
-        拍攝/KOL ${fW2(d.mktShoot)}　＋　媒體 ${fW2(d.mktMedia)}
+        行銷費 ${fW2(d.mktShoot)}　＋　媒體 ${fW2(d.mktMedia)}
       </div>
     </div>
     <div class="kc" style="--kc-color:var(--brown)">
@@ -1070,7 +1070,7 @@ function renderMgmt(){
     </div>
     <div class="card">
       <div class="card-lbl" style="margin-bottom:14px">廣告費明細</div>
-      ${[{l:'拍攝／KOL',v:d.mktShoot},{l:'媒體採買',v:d.mktMedia},{l:'合計',v:d.mktTotal,bold:true}].map(r=>`
+      ${[{l:'總公司行銷費',v:d.mktShoot},{l:'媒體採買',v:d.mktMedia},{l:'合計',v:d.mktTotal,bold:true}].map(r=>`
         <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;font-family:'Space Mono',monospace${r.bold?';font-weight:700;color:var(--rust)':''}">
           <span>${r.l}</span><span>${fW2(r.v)}</span>
         </div>`).join('')}
