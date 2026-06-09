@@ -792,25 +792,45 @@ function renderMgmt(){
   const t2Total = niRow('門市＋官網（總計）',null,posRevTot,storeTotTgt,storeTotNi,(storeTotRev?storeTotNi/storeTotRev*100:null),d.storeNiPrevMo,d.storeNiPrevYr,'',true);
   const t2Stores = stores.map(st=>{const s=d.storeData[st];return s?niRow(st,sc[st],posRev(st),s.target,s.ni,s.niPct,s.prevMoNI,s.prevYrNI,s.note||''):'';}).join('');
 
-  /* ── 各店損益平衡點 · 淨利估算 ──
-     損益平衡點 = 淨利為0所需營業額 = 本月營業額 ×(1−安全邊際)；安全邊際 = 淨利÷毛利 */
-  const beRows = stores.map(st=>{
+  /* ── 各店保本堆疊圖：毛利 vs 全部費用（人事/租金/行銷/管理/其他），缺口＝淨利 ──
+     行銷 = 總公司行銷費/5 + 媒體採買分攤(電商60%/其他10%)；管理 = 總公司管理費/5
+     其他 = 全部費用(毛利−淨利) − 上述四項（刷卡/包裝/水電等）
+     損益平衡點 = 淨利為0所需營業額(含稅) = 本月營業額×(1−淨利/毛利) */
+  const beMktAlloc = st => (d.mktShoot||0)/5 + (st==='電商' ? (d.mktMedia||0)*0.6 : (d.mktMedia||0)*0.1);
+  const COSTC = { 人事:'#8D5531', 租金:'#CFA294', 行銷:'#5a8a6e', 管理:'#b09a88', 其他:'#d8c4b0' };
+  const GPC = '#284234';
+  const beItems = stores.map(st=>{
     const s=d.storeData[st]; if(!s) return null;
-    const gp = s.rev*s.gpPct/100;             // 毛利（未稅）
-    const margin = gp ? s.ni/gp : 0;          // 安全邊際 = 淨利/毛利
-    const revInc = posRev(st);                 // 本月營業額（含稅，週報）
-    const be = Math.round(revInc*(1-margin));  // 損益平衡點（含稅）
-    return { st, ni:s.ni, revInc, be, margin };
+    const gp = s.rev*s.gpPct/100;
+    const c4 = { 人事:s.wageAmt||0, 租金:s.rentAmt||0, 行銷:beMktAlloc(st), 管理:(d.mgmtEx||0)/5 };
+    const totalCost = gp - s.ni;                 // 全部費用 = 毛利 − 淨利
+    const other = Math.max(0, totalCost - (c4.人事+c4.租金+c4.行銷+c4.管理));
+    const revInc = posRev(st);
+    const be = Math.round(revInc*(1 - (gp?s.ni/gp:0)));   // 損益平衡點（含稅）
+    return { st, gp, c:{...c4, 其他:other}, totalCost, ni:s.ni, be };
   }).filter(Boolean);
-  const beTableRows = beRows.map(r=>{
-    const ok=r.ni>=0;
-    return `<tr>
-      <td class="td-s"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${sc[r.st]};margin-right:6px;vertical-align:middle"></span>${r.st}</td>
-      <td style="font-weight:700;color:${ok?'var(--text)':'var(--negative)'}">${fW(r.be)}</td>
-      <td>${fW(r.revInc)}</td>
-      <td class="${niCls(r.ni)}" style="font-weight:700">${fW(r.ni)}</td>
-      <td class="${r.margin>=0?'tp':'tn'}" style="font-weight:700">${(r.margin>=0?'+':'')+(r.margin*100).toFixed(0)}%</td>
-    </tr>`;
+  const beMax = Math.max(...beItems.map(b=>Math.max(b.gp,b.totalCost)),1);
+  const beLegend = `<div style="display:flex;flex-wrap:wrap;gap:13px;margin-bottom:16px;font-size:10px;font-family:'Space Mono',monospace;color:var(--text-sub)">`
+    + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${GPC};margin-right:4px;vertical-align:middle"></span>毛利</span>`
+    + Object.entries(COSTC).map(([k,c])=>`<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${c};margin-right:4px;vertical-align:middle"></span>${k}</span>`).join('')
+    + `</div>`;
+  const beChart = beItems.map(b=>{
+    const segs=Object.entries(b.c).map(([k,v])=>`<div style="width:${(v/beMax*100).toFixed(2)}%;background:${COSTC[k]};height:100%" title="${k} ${fW(v)}"></div>`).join('');
+    const pos=b.ni>=0;
+    return `<div style="margin-bottom:15px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+        <span style="font-weight:700;font-size:13px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${sc[b.st]};margin-right:6px;vertical-align:middle"></span>${b.st}</span>
+        <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">毛利 <b style="color:${GPC}">${fW(b.gp)}</b>　淨利 <b style="color:${pos?'var(--positive)':'var(--negative)'}">${fW(b.ni)}</b>　損益平衡點 <b style="color:var(--text-sub)">${fW(b.be)}</b></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="width:30px;font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-align:right;flex-shrink:0">毛利</span>
+        <div style="flex:1;height:17px;background:var(--surface2);border-radius:3px;overflow:hidden"><div style="width:${(b.gp/beMax*100).toFixed(2)}%;height:100%;background:${GPC};border-radius:3px"></div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="width:30px;font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-align:right;flex-shrink:0">費用</span>
+        <div style="flex:1;height:17px;background:var(--surface2);border-radius:3px;overflow:hidden;display:flex">${segs}</div>
+      </div>
+    </div>`;
   }).join('');
 
   el.innerHTML=`
@@ -863,19 +883,15 @@ function renderMgmt(){
     <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 各通路為<b>帳上實際</b>營業淨利（含當月實際包裝費）；表一／KPI 之公司淨利為<b>平滑包裝費後</b>（管理視角），故較各通路合計高約 ${fW((pkgActual-pkgNorm))}（包裝費為總公司採購 timing、不歸屬個別通路）。</div>
   </div>
 
-  <!-- 各店損益平衡點 · 淨利估算 -->
+  <!-- 各店保本堆疊圖：費用 + 淨利 + 損益平衡點 -->
   <div class="card" style="margin-bottom:1.5rem">
     <div class="card-hdr">
-      <span class="card-lbl">🎯 各店損益平衡點 · 淨利估算</span>
-      <span class="card-badge">${d.ym}${d.actual?'':' 估算'} · 達淨利正值所需最低營業額</span>
+      <span class="card-lbl">🎯 各店保本 · 費用／淨利／損益平衡點</span>
+      <span class="card-badge">${d.ym}${d.actual?'':' 估算'} · 毛利覆蓋全部費用後＝淨利</span>
     </div>
-    <div style="overflow-x:auto">
-      <table class="ctbl">
-        <thead><tr><th>門市</th><th>損益平衡點<br><span style="font-weight:400;text-transform:none">最低營業額·含稅</span></th><th>本月營業額<br><span style="font-weight:400;text-transform:none">含稅</span></th><th>淨利估算<br><span style="font-weight:400;text-transform:none">未稅</span></th><th>安全邊際</th></tr></thead>
-        <tbody>${beTableRows}</tbody>
-      </table>
-    </div>
-    <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ <b>損益平衡點</b>＝淨利為 0 所需的營業額（含稅）；本月營業額低於此線該店即虧損。<b>安全邊際</b>＝營業額還能掉多少% 才到平衡點（＝淨利÷毛利）。淨利估算為未稅、營業額為含稅。</div>
+    ${beLegend}
+    ${beChart}
+    <div style="margin-top:6px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 費用條＝人事＋租金＋行銷＋管理＋其他(刷卡/包裝/水電等)＝<b>全部費用</b>；毛利條長於費用條的部分就是<b>淨利</b>（費用超過毛利＝虧損）。<b>損益平衡點</b>＝淨利為0所需營業額(含稅)。行銷＝總公司行銷費÷5＋媒體分攤；管理＝總公司管理費÷5。</div>
   </div>
 
   <!-- KPI row -->
