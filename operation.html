@@ -1108,40 +1108,52 @@ function renderMgmt(){
   </div>
 
   <!-- Store charts + table -->
-  <div class="g2" style="margin-bottom:1.5rem">
-    <!-- Revenue vs Target bar -->
+  <div style="display:flex;flex-direction:column;gap:1.5rem;margin-bottom:1.5rem">
+    <!-- 各門市業績達成率（週報卡片風格：整店卡＋進度條＋雙圓環）-->
     <div class="card">
       <div class="card-hdr">
         <span class="card-lbl">各門市業績達成率<span style="font-size:9px;color:var(--text-muted)">（含稅）</span></span>
-        <span class="card-badge">本月 ${d.ym} ｜ 累計 1–${_moIdx+1}月</span>
+        <span class="card-badge">本月 ${d.ym} ｜ 累計 1–${_moIdx+1}月 ｜ 左環本月·右環累計</span>
       </div>
-      <div style="display:flex;gap:14px;justify-content:space-around;font-size:9px;color:var(--text-muted);font-family:'Noto Sans TC',sans-serif;margin-bottom:8px">
-        <span><b style="color:var(--text-sub)">本月</b> 達成率（環填到 ${d.ym}）</span>
-        <span><b style="color:var(--text-sub)">累計</b> 年度達成率（1–${_moIdx+1}月）</span>
-        <span style="font-family:'Space Mono',monospace"><span style="color:var(--positive)">●</span>≥100 <span style="color:#F57C00">●</span>85-99 <span style="color:var(--negative)">●</span>&lt;85</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        ${stores.map(st=>{
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${stores.map((st,i)=>{
           const s=d.storeData[st];if(!s)return'';
           const ach=posRev(st)/s.target*100, yA=ytdAch(st);
-          return`<div style="display:flex;align-items:center;gap:12px;padding:5px 0;border-bottom:1px solid var(--border)">
-            <span style="width:42px;flex-shrink:0;font-size:12px;font-weight:700;color:${sc[st]}"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${sc[st]};margin-right:4px;vertical-align:middle"></span>${st}</span>
-            <div style="text-align:center;flex-shrink:0">${mkDonut(ach,52)}<div style="font-size:8px;color:var(--text-muted);margin-top:1px">本月</div></div>
-            <div style="text-align:center;flex-shrink:0">${mkDonut(yA,52)}<div style="font-size:8px;color:var(--text-muted);margin-top:1px">累計</div></div>
-            <div style="flex:1;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);line-height:1.6">
-              <div>本月 <b style="color:var(--text-sub)">${fW(posRev(st))}</b> / ${fW(s.target)}</div>
-              <div>累計 <b style="color:var(--text-sub)">${fW(ytdActual(st))}</b> / ${fW(ytdTarget(st))}</div>
-              <div>MoM ${chgSp(pctChg(s.rev,s.prevMoRev))}　YoY ${chgSp(pctChg(s.rev,s.prevYrRev))}</div>
+          const col=achColor(ach), lbl=achLabel(ach), urg=ach<55;
+          const mom=pctChg(s.rev,s.prevMoRev), yoy=pctChg(s.rev,s.prevYrRev);
+          const pills=[
+            statPill(yA>=100?'good':yA>=85?'warn':'bad','累計達成', yA.toFixed(1)+'%'),
+            statPill('neu','累計營收', fW(ytdActual(st)), fW(ytdTarget(st))),
+            statPill(mom>=0?'good':'bad','MoM', pctTxt(mom)),
+            statPill(yoy>=0?'good':'bad','YoY', pctTxt(yoy)),
+          ].join('');
+          return`<div class="sr" style="cursor:default">
+            <div class="sr-top">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <div class="sr-name" style="color:${sc[st]}">${S_EMO[i]} ${st}</div>
+                <div class="sr-status${urg?' urgent':''}" style="background:${col}1a;color:${col}">${lbl} ${ach.toFixed(1)}%</div>
+              </div>
+              <div class="sr-rev">本月 ${fW(posRev(st))} / 目標 ${fW(s.target)}</div>
+            </div>
+            <div class="prog"><div class="prog-bar" style="width:${Math.min(ach,100)}%;background:${col}"></div></div>
+            <div class="sr-body">
+              <div class="sr-pills">${pills}</div>
+              <div class="sr-rings">${miniRing(ach,'本月')}${miniRing(yA,'累計')}</div>
             </div>
           </div>`;
         }).join('')}
-        <div style="display:flex;align-items:center;gap:12px;padding:8px 0 2px;border-top:2px solid var(--border2)">
-          <span style="width:42px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--text)">五通路</span>
-          <div style="text-align:center;flex-shrink:0">${mkDonut(totAch,56)}<div style="font-size:8px;color:var(--text-muted);margin-top:1px">本月</div></div>
-          <div style="text-align:center;flex-shrink:0">${mkDonut(ytdAchTot,56)}<div style="font-size:8px;color:var(--text-muted);margin-top:1px">累計</div></div>
-          <div style="flex:1;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);line-height:1.6">
-            <div>本月 <b style="color:var(--text-sub)">${fW(posRevTot)}</b> / ${fW(storeTotTgt)}</div>
-            <div>累計 <b style="color:var(--text-sub)">${fW(ytdActualTot)}</b> / ${fW(ytdTargetTot)}</div>
+        <div class="sr" style="cursor:default;background:var(--surface);border-color:var(--border2)">
+          <div class="sr-top">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <div class="sr-name">🏬 五通路合計</div>
+              <div class="sr-status" style="background:${achColor(totAch)}1a;color:${achColor(totAch)}">${achLabel(totAch)} ${totAch.toFixed(1)}%</div>
+            </div>
+            <div class="sr-rev">本月 ${fW(posRevTot)} / 目標 ${fW(storeTotTgt)}</div>
+          </div>
+          <div class="prog"><div class="prog-bar" style="width:${Math.min(totAch,100)}%;background:${achColor(totAch)}"></div></div>
+          <div class="sr-body">
+            <div class="sr-pills">${statPill(ytdAchTot>=100?'good':ytdAchTot>=85?'warn':'bad','累計達成',ytdAchTot.toFixed(1)+'%')}${statPill('neu','累計營收',fW(ytdActualTot),fW(ytdTargetTot))}</div>
+            <div class="sr-rings">${miniRing(totAch,'本月')}${miniRing(ytdAchTot,'累計')}</div>
           </div>
         </div>
       </div>
