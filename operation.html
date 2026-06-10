@@ -838,6 +838,7 @@ function renderMgmt(){
   /* ── 店長行動建議：依達成率／淨利率／毛利率／費用占比自動判讀「做對的事 vs 要檢討」 ── */
   const beMap={}; beItems.forEach(b=>beMap[b.st]=b.be);
   const pctTxt=(v,dp=0)=>v==null?'—':(v>=0?'+':'')+v.toFixed(dp)+'%';
+  const RT = FIN_DATA.RATIO_TARGETS||{gpPct:66,niPct:8,wagePct:14,rentPct:10};   // 目標比例門檻（超過/未達提醒）
   const actionCards = stores.map(st=>{
     const s=d.storeData[st]; if(!s) return '';
     const isShop = st!=='電商';
@@ -883,24 +884,29 @@ function renderMgmt(){
     else if(niPct>=8){status='🟡 獲利·業績未達';scol='#C77B0A';}
     else {status='🟠 業績獲利雙弱';scol='var(--rust)';}
 
+    /* 🚩 對比今年目標比例：毛利/淨利為下限(低於=未達)、人事/租金為上限(高於=超標) */
+    const tgt=[];
+    if(gp<RT.gpPct) tgt.push(`毛利率 <b>${gp.toFixed(1)}%</b> ＜目標 ${RT.gpPct}%（差 ${(RT.gpPct-gp).toFixed(1)}pp）`);
+    if(niPct<RT.niPct) tgt.push(`淨利率 <b>${niPct.toFixed(1)}%</b> ＜目標 ${RT.niPct}%（差 ${(RT.niPct-niPct).toFixed(1)}pp）`);
+    if(isShop&&wagePct!=null&&wagePct>RT.wagePct) tgt.push(`人事費占比 <b>${wagePct.toFixed(1)}%</b> ＞目標 ${RT.wagePct}%（超 ${(wagePct-RT.wagePct).toFixed(1)}pp）`);
+    if(rentPct!=null&&rentPct>RT.rentPct) tgt.push(`租金占比 <b>${rentPct.toFixed(1)}%</b> ＞目標 ${RT.rentPct}%（超 ${(rentPct-RT.rentPct).toFixed(1)}pp）`);
+    const tgtHtml = tgt.length ? `<div style="margin-top:8px;font-size:10.5px;font-family:'Noto Sans TC',sans-serif;line-height:1.55;color:var(--negative)"><b>🚩 超出今年目標比例：</b>${tgt.join('；')}</div>` : `<div style="margin-top:8px;font-size:10.5px;font-family:'Noto Sans TC',sans-serif;color:var(--positive)">🚩 各項比例均達今年目標</div>`;
+
     const good=[];
     if(ach!=null&&ach>=100) good.push(`業績達標 <b>${ach.toFixed(0)}%</b>，來客／轉換到位`);
     if(niPct>=15) good.push(`淨利率 <b>${niPct.toFixed(1)}%</b> 優，成本控管紮實`);
-    else if(niPct>=8) good.push(`淨利率 <b>${niPct.toFixed(1)}%</b> 健康`);
-    if(gp>=67) good.push(`毛利率 <b>${gp.toFixed(1)}%</b> 佳，少折扣／高價品賣得動`);
+    else if(niPct>=RT.niPct) good.push(`淨利率 <b>${niPct.toFixed(1)}%</b> 達標（≥${RT.niPct}%）`);
+    if(gp>=RT.gpPct) good.push(`毛利率 <b>${gp.toFixed(1)}%</b> 達標（≥${RT.gpPct}%），少折扣／高價品賣得動`);
     if(rYoY!=null&&rYoY>=10) good.push(`營收 YoY <b>${pctTxt(rYoY)}</b>，成長動能強`);
     if(nMoM!=null&&nMoM>=15&&ni>0) good.push(`淨利較上月 <b>${pctTxt(nMoM)}</b>，持續向上`);
-    if(isShop&&wagePct!=null&&wagePct<13) good.push(`人事費占比 <b>${wagePct.toFixed(1)}%</b> 控得好`);
+    if(isShop&&wagePct!=null&&wagePct<=RT.wagePct) good.push(`人事費占比 <b>${wagePct.toFixed(1)}%</b> ≤目標 ${RT.wagePct}%，控得好`);
     if(margin!=null&&margin>=20) good.push(`安全邊際 <b>${margin.toFixed(0)}%</b>，抗淡季能力足`);
 
     const bad=[];
     if(ach!=null&&ach<100) bad.push(`業績差目標 <b>${gap.toFixed(1)}萬</b>（達成 ${ach.toFixed(0)}%）— 缺口在來客還是客單？`);
     if(niPct<0) bad.push(`淨利 <b>${fW(ni)}</b> 為負 — 距損益平衡點 ${fW(be)} 還差 <b>${beGap.toFixed(1)}萬</b>，先衝量`);
-    else if(niPct<8) bad.push(`淨利率僅 <b>${niPct.toFixed(1)}%</b> 偏薄 — 毛利被費用吃掉，逐項看哪裡高`);
-    if(gp<64) bad.push(`毛利率 <b>${gp.toFixed(1)}%</b> 偏低 — 檢視折扣力度與低毛利品占比`);
-    if(isShop&&wagePct!=null&&wagePct>16) bad.push(`人事費占營收 <b>${wagePct.toFixed(1)}%</b> 偏高 — 班表與人均產值檢討`);
-    if(rentPct!=null&&rentPct>13) bad.push(`租金占比 <b>${rentPct.toFixed(1)}%</b> 偏重 — 須靠衝高營收稀釋`);
     if(rMoM!=null&&rMoM<-10) bad.push(`營收較上月 <b>${pctTxt(rMoM)}</b> — 留意客流／淡季`);
+    /* 毛利/淨利/人事/租金 vs 目標 → 改由下方 🚩 量化對標，不在此重複 */
 
     let act;
     if(niPct<0) act=`首要把營業額衝到損益平衡點 <b>${fW(be)}</b>（差 ${beGap.toFixed(1)}萬）即轉正；同步檢視最大的費用項`;
@@ -917,8 +923,9 @@ function renderMgmt(){
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:11px;font-family:'Noto Sans TC',sans-serif;line-height:1.5">
         <div><div style="font-weight:700;color:var(--positive);margin-bottom:3px;font-size:10px">✅ 做對的事</div><ul style="margin:0;padding-left:16px">${li(good,'本月亮點較少，先補右側項目')}</ul></div>
-        <div><div style="font-weight:700;color:var(--rust);margin-bottom:3px;font-size:10px">⚠️ 要檢討／加強</div><ul style="margin:0;padding-left:16px">${li(bad,'各項健康，無明顯缺口')}</ul></div>
+        <div><div style="font-weight:700;color:var(--rust);margin-bottom:3px;font-size:10px">⚠️ 要檢討／加強</div><ul style="margin:0;padding-left:16px">${li(bad,'業績與營收面無明顯缺口')}</ul></div>
       </div>
+      ${tgtHtml}
       ${caHtml}
       <div style="margin-top:9px;padding-top:8px;border-top:1px dashed var(--border2);font-size:11px;font-family:'Noto Sans TC',sans-serif"><b style="color:${scol}">🎯 本月行動：</b>${act}</div>
     </div>`;
@@ -991,7 +998,7 @@ function renderMgmt(){
       <span class="card-lbl">🧭 各店長行動建議</span>
       <span class="card-badge">${d.ym} ${dataTag}</span>
     </div>
-    <div style="font-size:11px;color:var(--text-muted);font-family:'Noto Sans TC',sans-serif;margin-bottom:12px;line-height:1.6">依各店達成率／淨利率／毛利率／費用占比自動判讀：<b style="color:var(--positive)">做對的事</b>＝繼續強化、把它變成 SOP；<b style="color:var(--rust)">要檢討</b>＝這個月沒做到的地方。${d.actual?'':'（估算月，數字待損益表結算後校正）'}</div>
+    <div style="font-size:11px;color:var(--text-muted);font-family:'Noto Sans TC',sans-serif;margin-bottom:12px;line-height:1.6">依各店達成率／淨利率／毛利率／費用占比自動判讀：<b style="color:var(--positive)">做對的事</b>＝繼續強化、把它變成 SOP；<b style="color:var(--rust)">要檢討</b>＝這個月沒做到的地方；<b style="color:var(--negative)">🚩</b>＝超出今年目標比例。<span style="color:var(--text-sub)">今年目標：毛利率≥${RT.gpPct}%、淨利率≥${RT.niPct}%、人事費≤${RT.wagePct}%、租金≤${RT.rentPct}%（占未稅營收）。</span>${d.actual?'':'（估算月，數字待損益表結算後校正）'}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(335px,1fr));gap:12px">${actionCards}</div>
   </div>
 
