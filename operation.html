@@ -846,6 +846,29 @@ function renderMgmt(){
     const rYoY=s.prevYrRev?pctChg(rev,s.prevYrRev):null;
     const nMoM=s.prevMoNI?pctChg(ni,s.prevMoNI):null;
 
+    /* 相關費用(人事/租金)的 MoM/YoY 特別高低提醒 */
+    const _ciIdx=parseInt(d.ym.slice(5,7),10)-1;
+    const _pmSD=(FIN_DATA.MR_MONTHS[prevMoYm]||{}).storeData||{};
+    const _s3=FIN_DATA.S.storeData[st], _hist=FIN_DATA.HIST_2025_RAW[st];
+    const costTrend=(label,nowV,pm,py)=>{
+      if(nowV==null||nowV===0) return null;
+      const mom=pm?(nowV-pm)/pm*100:null, yoy=py?(nowV-py)/py*100:null;
+      const hiY=yoy!=null&&Math.abs(yoy)>=18, hiM=mom!=null&&Math.abs(mom)>=15;
+      if(!hiY&&!hiM) return null;
+      const parts=[]; if(hiY)parts.push(`YoY ${pctTxt(yoy)}`); if(hiM)parts.push(`MoM ${pctTxt(mom)}`);
+      const upWarn=(hiY&&yoy>0&&rYoY!=null&&yoy>rYoY+8)||(hiM&&mom>0&&rMoM!=null&&mom>rMoM+8);
+      const allDown=(hiY?yoy<0:true)&&(hiM?mom<0:true);
+      let kind,tail;
+      if(upWarn){kind='warn';tail='增速超過營收、占比升高 → 留意人力／合約';}
+      else if(allDown){kind='ok';tail='成本縮減';}
+      else{kind='note';tail='與營收同步、占比尚穩';}
+      return {txt:`${label} ${parts.join('／')} — ${tail}`,kind};
+    };
+    const _wPM=_pmSD[st]?_pmSD[st].wageAmt:(_s3?_s3.wPct/100*_s3.rev:null);
+    const _rPM=_pmSD[st]?_pmSD[st].rentAmt:(_s3?_s3.rPct/100*_s3.rev:null);
+    const costAlerts=[ costTrend('人事費',s.wageAmt,_wPM,_hist?_hist.wage[_ciIdx]:null), costTrend('租金',s.rentAmt,_rPM,_hist?_hist.rent[_ciIdx]:null) ].filter(Boolean);
+    const caHtml = costAlerts.length ? `<div style="margin-top:8px;font-size:10.5px;font-family:'Noto Sans TC',sans-serif;line-height:1.55">`+costAlerts.map(a=>`<div style="color:${a.kind==='warn'?'var(--negative)':a.kind==='ok'?'var(--positive)':'var(--text-sub)'}">💰 ${a.txt}</div>`).join('')+`</div>` : '';
+
     let status,scol;
     if(niPct<0){status='🔴 虧損待補';scol='var(--negative)';}
     else if(ach!=null&&ach>=100&&niPct>=8){status='🟢 達標獲利';scol='var(--positive)';}
@@ -889,6 +912,7 @@ function renderMgmt(){
         <div><div style="font-weight:700;color:var(--positive);margin-bottom:3px;font-size:10px">✅ 做對的事</div><ul style="margin:0;padding-left:16px">${li(good,'本月亮點較少，先補右側項目')}</ul></div>
         <div><div style="font-weight:700;color:var(--rust);margin-bottom:3px;font-size:10px">⚠️ 要檢討／加強</div><ul style="margin:0;padding-left:16px">${li(bad,'各項健康，無明顯缺口')}</ul></div>
       </div>
+      ${caHtml}
       <div style="margin-top:9px;padding-top:8px;border-top:1px dashed var(--border2);font-size:11px;font-family:'Noto Sans TC',sans-serif"><b style="color:${scol}">🎯 本月行動：</b>${act}</div>
     </div>`;
   }).join('');
