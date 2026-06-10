@@ -629,6 +629,17 @@ function renderMgmt(){
   const achCls=p=>p>=100?'tp':p>=80?'':'tn';
   const niCls=n=>n>=0?'tp':'tn';
   const achCol=p=>p>=100?'var(--positive)':p>=85?'#F57C00':'var(--negative)';
+  /* SVG 達成率圓環（inline 小圖）：環填到 min(pct,100)%，中央顯示實際%，配色同 achCol */
+  const mkDonut=(pct,size)=>{
+    if(pct==null) return `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:11px">—</div>`;
+    const sw=Math.max(5,Math.round(size*0.12)), r=(size-sw)/2-1, c=2*Math.PI*r, cx=(size/2).toFixed(1);
+    const fill=(Math.max(0,Math.min(pct,100))/100*c).toFixed(2), col=achCol(pct);
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block">
+      <circle cx="${cx}" cy="${cx}" r="${r.toFixed(1)}" fill="none" stroke="var(--surface2)" stroke-width="${sw}"/>
+      <circle cx="${cx}" cy="${cx}" r="${r.toFixed(1)}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${fill} ${c.toFixed(2)}" transform="rotate(-90 ${cx} ${cx})"/>
+      <text x="${cx}" y="${cx}" text-anchor="middle" dominant-baseline="central" style="font-family:'Space Mono',monospace;font-weight:700;font-size:${Math.round(size*0.23)}px;fill:${col}">${pct.toFixed(0)}%</text>
+    </svg>`;
+  };
 
   const stores=FIN_DATA.STORES;
   const sc=FIN_DATA.STORE_COLORS;
@@ -1104,57 +1115,33 @@ function renderMgmt(){
         <span class="card-lbl">各門市業績達成率<span style="font-size:9px;color:var(--text-muted)">（含稅）</span></span>
         <span class="card-badge">本月 ${d.ym} ｜ 累計 1–${_moIdx+1}月</span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;gap:14px;justify-content:space-around;font-size:9px;color:var(--text-muted);font-family:'Noto Sans TC',sans-serif;margin-bottom:8px">
+        <span><b style="color:var(--text-sub)">本月</b> 達成率（環填到 ${d.ym}）</span>
+        <span><b style="color:var(--text-sub)">累計</b> 年度達成率（1–${_moIdx+1}月）</span>
+        <span style="font-family:'Space Mono',monospace"><span style="color:var(--positive)">●</span>≥100 <span style="color:#F57C00">●</span>85-99 <span style="color:var(--negative)">●</span>&lt;85</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
         ${stores.map(st=>{
           const s=d.storeData[st];if(!s)return'';
-          const ach=posRev(st)/s.target*100;
-          const col=achCol(ach);
-          const barW=Math.min(ach,120);
-          const yA=ytdAch(st);
-          const overBar=ach>100?`<div style="position:absolute;left:${(100/1.2).toFixed(1)}%;top:0;bottom:0;width:1.5px;background:var(--border2)"></div>`:'';
-          return`<div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
-              <span style="font-size:12px;font-weight:700;color:${sc[st]}">${st}</span>
-              <span style="font-family:'Space Mono',monospace;font-size:11px">
-                <span style="color:var(--text-muted)">本月</span> <b style="color:${col}">${ach.toFixed(1)}%</b>
-                <span style="color:var(--border2)">｜</span>
-                <span style="color:var(--text-muted)">累計</span> <b style="color:${yA!=null?achCol(yA):'var(--text-muted)'}">${yA!=null?yA.toFixed(1)+'%':'—'}</b>
-              </span>
-            </div>
-            <div style="position:relative;height:22px;background:var(--surface2);border-radius:4px;overflow:hidden">
-              ${overBar}
-              <div style="height:100%;width:${(barW/1.2).toFixed(1)}%;background:${col};border-radius:4px;display:flex;align-items:center;padding-left:8px;min-width:2px;transition:width .6s">
-                ${ach>=50?`<span style="font-family:'Space Mono',monospace;font-size:10px;color:#fff;white-space:nowrap">${fW(posRev(st))}</span>`:''}
-              </div>
-              ${ach<50?`<span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted)">${fW(posRev(st))}</span>`:''}
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:2px">
-              <span>本月目標 ${fW(s.target)}</span>
-              <span>MoM ${chgSp(pctChg(s.rev,s.prevMoRev))}　YoY ${chgSp(pctChg(s.rev,s.prevYrRev))}</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-sub);margin-top:2px;padding-top:3px;border-top:1px dotted var(--border)">
-              <span>年度累計 <b>${fW(ytdActual(st))}</b> / 目標 ${fW(ytdTarget(st))}</span>
-              <span>1–${_moIdx+1}月</span>
+          const ach=posRev(st)/s.target*100, yA=ytdAch(st);
+          return`<div style="display:flex;align-items:center;gap:12px;padding:5px 0;border-bottom:1px solid var(--border)">
+            <span style="width:42px;flex-shrink:0;font-size:12px;font-weight:700;color:${sc[st]}"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${sc[st]};margin-right:4px;vertical-align:middle"></span>${st}</span>
+            <div style="text-align:center;flex-shrink:0">${mkDonut(ach,52)}<div style="font-size:8px;color:var(--text-muted);margin-top:1px">本月</div></div>
+            <div style="text-align:center;flex-shrink:0">${mkDonut(yA,52)}<div style="font-size:8px;color:var(--text-muted);margin-top:1px">累計</div></div>
+            <div style="flex:1;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);line-height:1.6">
+              <div>本月 <b style="color:var(--text-sub)">${fW(posRev(st))}</b> / ${fW(s.target)}</div>
+              <div>累計 <b style="color:var(--text-sub)">${fW(ytdActual(st))}</b> / ${fW(ytdTarget(st))}</div>
+              <div>MoM ${chgSp(pctChg(s.rev,s.prevMoRev))}　YoY ${chgSp(pctChg(s.rev,s.prevYrRev))}</div>
             </div>
           </div>`;
         }).join('')}
-        <div style="border-top:2px solid var(--border2);padding-top:8px">
-          <div style="display:flex;justify-content:space-between;align-items:baseline">
-            <span style="font-size:12px;font-weight:700;color:var(--text)">五通路合計</span>
-            <span style="font-family:'Space Mono',monospace;font-size:11px">
-              <span style="color:var(--text-muted)">本月</span> <b style="color:${achCol(totAch)};font-size:13px">${totAch.toFixed(1)}%</b>
-              <span style="color:var(--border2)">｜</span>
-              <span style="color:var(--text-muted)">累計</span> <b style="color:${ytdAchTot!=null?achCol(ytdAchTot):'var(--text-muted)'};font-size:13px">${ytdAchTot!=null?ytdAchTot.toFixed(1)+'%':'—'}</b>
-            </span>
-          </div>
-          <div style="position:relative;height:22px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:4px">
-            <div style="height:100%;width:${Math.min(totAch,100).toFixed(1)}%;background:${achCol(totAch)};border-radius:4px;display:flex;align-items:center;padding-left:8px">
-              <span style="font-family:'Space Mono',monospace;font-size:10px;color:#fff">${fW(posRevTot)}</span>
-            </div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:2px">
-            <span>本月目標 ${fW(storeTotTgt)}</span>
-            <span>年度累計 ${fW(ytdActualTot)} / 目標 ${fW(ytdTargetTot)}</span>
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0 2px;border-top:2px solid var(--border2)">
+          <span style="width:42px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--text)">五通路</span>
+          <div style="text-align:center;flex-shrink:0">${mkDonut(totAch,56)}<div style="font-size:8px;color:var(--text-muted);margin-top:1px">本月</div></div>
+          <div style="text-align:center;flex-shrink:0">${mkDonut(ytdAchTot,56)}<div style="font-size:8px;color:var(--text-muted);margin-top:1px">累計</div></div>
+          <div style="flex:1;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);line-height:1.6">
+            <div>本月 <b style="color:var(--text-sub)">${fW(posRevTot)}</b> / ${fW(storeTotTgt)}</div>
+            <div>累計 <b style="color:var(--text-sub)">${fW(ytdActualTot)}</b> / ${fW(ytdTargetTot)}</div>
           </div>
         </div>
       </div>
