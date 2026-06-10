@@ -857,7 +857,7 @@ function renderMgmt(){
       </table>
     </div>
     <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.75">
-      <div><b>淨利（試算）算式</b>：全通路業績 −（業績×成本占比）− 總公司行銷費 − 媒體採買 − 門市營運費用 − 總公司管理費用 ＝ <b style="color:${niN>=0?'var(--positive)':'var(--negative)'}">${fW(niCalc)}</b>。<b style="color:var(--rust)">成本占比/淨利已平滑包裝費</b>：本月實際包裝費 ${fW(pkgActual)}、當年至今均 ${fW(pkgNorm)}；帳上(損益表)營業淨利 ${fW(d.ni)}。</div>
+      <div><b>淨利（試算）算式</b>：全通路業績 −（業績×成本占比）− 總公司行銷費 − 媒體採買 − 門市營運費用 − 總公司管理費用 ＝ <b style="color:${niN>=0?'var(--positive)':'var(--negative)'}">${fW(niCalc)}</b>。<b style="color:var(--rust)">成本占比/淨利已平滑包裝費</b>：本月實際包裝費 ${fW(pkgActual)}、當年至今均 ${fW(pkgNorm)}；${d.actual?'帳上(損益表)':'估算'}營業淨利 ${fW(d.ni)}。</div>
       <div style="margin-top:3px">＊ 成本占比為百分點(pp)變化。費用列「上月／去年同月」取自損益表，未補齊者顯示「—」（於 data.js 補 mktMediaPrevMo、opExPrevYr 等欄位後自動顯示）。門市人事費趨勢另見下方專卡。</div>
     </div>
   </div>
@@ -874,7 +874,7 @@ function renderMgmt(){
         <tbody>${t2Total}${t2Stores}</tbody>
       </table>
     </div>
-    <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 各通路為<b>帳上實際</b>營業淨利（含當月實際包裝費）；表一／KPI 之公司淨利為<b>平滑包裝費後</b>（管理視角），故較各通路合計高約 ${fW((pkgActual-pkgNorm))}（包裝費為總公司採購 timing、不歸屬個別通路）。</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 各通路為${d.actual?'<b>帳上實際</b>營業淨利（含當月實際包裝費）':'<b>估算</b>營業淨利（營收採本月、成本結構沿用前月，待損益表結算換實際）'}；表一／KPI 之公司淨利為<b>平滑包裝費後</b>（管理視角），故較各通路合計高約 ${fW((pkgActual-pkgNorm))}（包裝費為總公司採購 timing、不歸屬個別通路）。</div>
   </div>
 
   <!-- 各店保本堆疊圖：費用 + 淨利 + 損益平衡點 -->
@@ -909,7 +909,7 @@ function renderMgmt(){
       <div class="kc-v ${niCls(niN)}">${fW(niN)}</div>
       <div class="kc-d">
         <span class="delta ${niNPct>=8?'pos':niNPct>=4?'neu':'neg'}" style="font-size:11px">淨利率 ${niNPct.toFixed(2)}%</span>
-        <span class="kc-vs">帳上 ${fW(d.ni)}／目標 8%</span>
+        <span class="kc-vs">${d.actual?'帳上':'估算'} ${fW(d.ni)}／目標 8%</span>
       </div>
       <div style="height:4px;background:var(--sand);border-radius:2px;margin-top:8px;overflow:hidden">
         <div style="height:100%;width:${Math.min(niAch>0?niAch:0,100).toFixed(1)}%;background:${achCol(niAch)};border-radius:2px"></div>
