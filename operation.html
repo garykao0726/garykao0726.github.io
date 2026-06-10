@@ -809,21 +809,22 @@ function renderMgmt(){
     const be = Math.round(s.rev - (s.gpPct?s.ni/(s.gpPct/100):0));   // 損益平衡點（未稅）
     return { st, rev:s.rev, ni:s.ni, be, totalCost:s.rev-s.ni, segs };
   }).filter(Boolean);
-  const beMax = Math.max(...beItems.map(b=>Math.max(b.rev,b.totalCost)),1);
+  const beMax = Math.max(...beItems.map(b=>Math.max(b.rev,b.totalCost,b.be)),1);
   const beLegend = `<div style="display:flex;flex-wrap:wrap;gap:13px;margin-bottom:16px;font-size:10px;font-family:'Space Mono',monospace;color:var(--text-sub)">`
     + beOrder.map(k=>`<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${COSTC[k]};margin-right:4px;vertical-align:middle"></span>${k}</span>`).join('')
     + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${NIC};margin-right:4px;vertical-align:middle"></span>淨利</span>`
-    + `<span><span style="display:inline-block;width:2px;height:11px;background:rgba(0,0,0,.55);margin-right:4px;vertical-align:middle"></span>營業額</span></div>`;
+    + `<span><span style="display:inline-block;width:16px;height:0;border-top:2px solid rgba(0,0,0,.65);margin-right:4px;vertical-align:middle"></span>營業額(黑實線)</span>`
+    + `<span><span style="display:inline-block;width:16px;height:0;border-top:2px dashed #A54A1A;margin-right:4px;vertical-align:middle"></span>損益平衡點(橘虛線)</span></div>`;
   const beChart = beItems.map(b=>{
     let segs = beOrder.map(k=>`<div style="width:${(b.segs[k]/beMax*100).toFixed(2)}%;background:${COSTC[k]};height:100%" title="${k} ${fW(b.segs[k])}"></div>`).join('');
     if(b.ni>=0) segs += `<div style="width:${(b.ni/beMax*100).toFixed(2)}%;background:${NIC};height:100%" title="淨利 ${fW(b.ni)}"></div>`;
-    const pos=b.ni>=0, markerPct=(b.rev/beMax*100).toFixed(2);
+    const pos=b.ni>=0, markerPct=(b.rev/beMax*100).toFixed(2), bePct=(b.be/beMax*100).toFixed(2);
     return `<div style="margin-bottom:13px">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;flex-wrap:wrap;gap:4px">
         <span style="font-weight:700;font-size:13px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${sc[b.st]};margin-right:6px;vertical-align:middle"></span>${b.st}</span>
-        <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">營業額 <b style="color:var(--text)">${fW(b.rev)}</b>　淨利 <b style="color:${pos?'var(--positive)':'var(--negative)'}">${fW(b.ni)}</b>　損益平衡點 <b style="color:var(--text-sub)">${fW(b.be)}</b></span>
+        <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">營業額 <b style="color:var(--text)">${fW(b.rev)}</b>　淨利 <b style="color:${pos?'var(--positive)':'var(--negative)'}">${fW(b.ni)}</b>　損益平衡點 <b style="color:var(--rust)">${fW(b.be)}</b></span>
       </div>
-      <div style="position:relative;height:20px;background:var(--surface2);border-radius:3px;overflow:hidden;display:flex">${segs}<div style="position:absolute;left:calc(${markerPct}% - 1px);top:0;bottom:0;width:2px;background:rgba(0,0,0,.55)" title="營業額 ${fW(b.rev)}"></div></div>
+      <div style="position:relative;height:20px;background:var(--surface2);border-radius:3px;overflow:hidden;display:flex">${segs}<div style="position:absolute;left:calc(${markerPct}% - 1px);top:0;bottom:0;width:2px;background:rgba(0,0,0,.65);box-shadow:0 0 0 1px rgba(255,255,255,.5);z-index:2" title="營業額 ${fW(b.rev)}"></div><div style="position:absolute;left:calc(${bePct}% - 1px);top:0;bottom:0;width:2px;background:repeating-linear-gradient(to bottom,#A54A1A 0 3px,transparent 3px 5px);box-shadow:0 0 0 1px rgba(255,255,255,.65);z-index:3" title="損益平衡點 ${fW(b.be)}"></div></div>
     </div>`;
   }).join('');
 
@@ -885,7 +886,7 @@ function renderMgmt(){
     </div>
     ${beLegend}
     ${beChart}
-    <div style="margin-top:6px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 一條＝營業額(未稅)＝營業成本＋人事＋租金＋行銷＋管理＋其他(刷卡/包裝/水電)＋<b style="color:#1a7a4a">淨利</b>。<b>黑線＝營業額</b>：成本填到黑線內、剩下綠色就是淨利；成本超過黑線(線右)＝虧損(無綠色)。<b>損益平衡點</b>＝淨利為0所需營業額。行銷＝總公司行銷費÷5＋媒體分攤；管理＝總公司管理費÷5。</div>
+    <div style="margin-top:6px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 一條＝營業額(未稅)＝營業成本＋人事＋租金＋行銷＋管理＋其他(刷卡/包裝/水電)＋<b style="color:#1a7a4a">淨利</b>。<b>黑實線＝營業額</b>：成本填到黑線內、剩下綠色就是淨利；成本超過黑線(線右)＝虧損(無綠色)。<b style="color:var(--rust)">橘虛線＝損益平衡點</b>＝淨利為0所需營業額；<b>黑線與橘線的距離＝安全邊際</b>（賺錢店橘線在黑線左邊、可掉多少營業額才到平衡；虧損店橘線在黑線右邊、還差多少才轉正）。行銷＝總公司行銷費÷5＋媒體分攤；管理＝總公司管理費÷5。</div>
   </div>
 
   <!-- KPI row -->
