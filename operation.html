@@ -759,6 +759,31 @@ function renderMgmt(){
     {k:'總公司管理費用', now:d.mgmtEx, pm:(d.mgmtExPrevMo??null), py:(d.mgmtExPrevYr??null), side:`占 ${(d.mgmtEx/d.rev*100).toFixed(1)}%`, lower:true, note:(d.notes&&d.notes.mgmt)||''},
     {k:'淨利（試算）', now:niN, pm:normNi(d.prevMoNI,prevMoYm), py:normNi(d.prevYrNI,prevYrYm), side:`達標 ${(niN/d.niTarget*100).toFixed(0)}%`, lower:false, niCalc:true, strong:true, note:(d.notes&&d.notes.ni)||''},
   ];
+  /* ── 費用結構 vs 2026 目標（公司層級對標，占營收）── */
+  const _RTc = FIN_DATA.RATIO_TARGETS||{};
+  const _mktPctNow=d.mktTotal/d.rev*100, _sellPctNow=(d.opEx+d.mktTotal)/d.rev*100, _mgmtPctNow=d.mgmtEx/d.rev*100;
+  const scoreItems=[
+    {l:'成本',v:cogsN,t:(_RTc.cogsPct??34),dir:'max'},
+    {l:'毛利',v:100-cogsN,t:(_RTc.gpPct??66),dir:'min'},
+    {l:'行銷(廣告)',v:_mktPctNow,t:(_RTc.mktPct??6),dir:'max'},
+    {l:'推銷含行銷',v:_sellPctNow,t:(_RTc.sellPct??37),dir:'max'},
+    {l:'管理',v:_mgmtPctNow,t:(_RTc.mgmtPct??20.5),dir:'max'},
+    {l:'淨利',v:niNPct,t:(_RTc.niPct??8),dir:'min'},
+  ];
+  const scoreChips = scoreItems.map(it=>{
+    const ok=it.dir==='max'?it.v<=it.t:it.v>=it.t;
+    const col=ok?'var(--positive)':'var(--negative)';
+    return `<div style="border:1px solid ${ok?'var(--border)':'var(--negative)'};border-radius:7px;padding:6px 11px;background:${ok?'var(--surface)':'#fdf0ec'};min-width:92px">
+      <div style="font-size:9px;color:var(--text-muted);font-family:'Noto Sans TC',sans-serif">${it.l}</div>
+      <div style="font-family:'Space Mono',monospace;font-weight:700;font-size:14px;color:${col}">${it.v.toFixed(1)}% ${ok?'✓':'✗'}</div>
+      <div style="font-size:8.5px;color:var(--text-muted);font-family:'Space Mono',monospace">目標 ${it.dir==='max'?'≤':'≥'}${it.t}%</div>
+    </div>`;
+  }).join('');
+  const _scoreOver = scoreItems.filter(it=>it.dir==='max'?it.v>it.t:it.v<it.t).length;
+  const scoreCard = `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+    <div style="font-size:10px;font-weight:700;color:var(--text-sub);margin-bottom:7px">費用結構 vs 2026 目標 <span style="font-weight:400;color:var(--text-muted)">（占營收；✓達標 ✗超標）</span>${_scoreOver?`<span style="color:var(--negative);font-weight:700"> · ${_scoreOver} 項超標</span>`:`<span style="color:var(--positive);font-weight:700"> · 全達標</span>`}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">${scoreChips}</div>
+  </div>`;
   const t1Rows = T1.map(r=>{
     const nowCell = r.pp ? r.now.toFixed(1)+'%' : fmtM(r.now);
     const pmCell  = r.pp ? (r.pm!=null?r.pm.toFixed(1)+'%':'—') : (r.pm!=null?fmtM(r.pm):'—');
@@ -964,6 +989,7 @@ function renderMgmt(){
       <div><b>淨利（試算）算式</b>：全通路業績 −（業績×成本占比）− 總公司行銷費 − 媒體採買 − 門市營運費用 − 總公司管理費用 ＝ <b style="color:${niN>=0?'var(--positive)':'var(--negative)'}">${fW(niCalc)}</b>。<b style="color:var(--rust)">成本占比/淨利已平滑包裝費</b>：本月實際包裝費 ${fW(pkgActual)}、當年至今均 ${fW(pkgNorm)}；${d.actual?'帳上(損益表)':'估算'}營業淨利 ${fW(d.ni)}。</div>
       <div style="margin-top:3px">＊ 成本占比為百分點(pp)變化。費用列「上月／去年同月」取自損益表，未補齊者顯示「—」（於 data.js 補 mktMediaPrevMo、opExPrevYr 等欄位後自動顯示）。門市人事費趨勢另見下方專卡。</div>
     </div>
+    ${scoreCard}
   </div>
 
   <!-- 表二：各通路淨利表 -->
