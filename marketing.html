@@ -1017,6 +1017,7 @@ function renderSocial(){
 // ===== 月度觀察（自動彙整 + 規則式洞察）=====
 const EC_TARGET_M=[125,115,115,100,100,90,90,90,100,115,115,125]; // 電商月目標（萬）
 const ROAS_TGT=4.5;
+const AD_MIN_SPEND=5000; // 月廣告花費低於此值視為「未實際投放」，ROAS 失真不採計（避免除以趨近零產生 870 之類假象）
 let MONTHLY={},MONTHLY_KEYS=[],CUR_MYM=null;
 
 function _prevYm(ym){const[y,m]=ym.split('/').map(Number);const pm=m===1?12:m-1,py=m===1?y-1:y;return py+'/'+String(pm).padStart(2,'0');}
@@ -1048,6 +1049,7 @@ function buildMonthly(rows){
     M.siteCVR=M.cvrN?M.cvrSum/M.cvrN:0;M.cartRate=M.cartN?M.cartSum/M.cartN:0;M.refundRate=M.refN?M.refSum/M.refN:0;
     M.aov=M.ecOrders>0?Math.round(M.ecRev/M.ecOrders):0;M.social=M.ig+M.fb+M.line;
     M.hasRev=M.ecRev>0&&M.ecOrders>0;M.revReliable=M.hasRev&&M.days>=28&&M.ecOrders>=80;
+    M.adActive=M.adSpendRaw>=AD_MIN_SPEND;
   });
   const now=new Date(),curYm=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0');
   MONTHLY=byM;MONTHLY_KEYS=Object.keys(byM).filter(k=>k!==curYm&&byM[k].days>=20).sort();
@@ -1080,7 +1082,7 @@ function renderMonthly(){
     '工作階段':{v:_mf(M.sessions),delta:P?_pc(M.sessions,P.sessions):null,vs:yoyTxt,color:'#284234'},
     '新用戶':{v:_mf(M.newUsers),delta:P?_pc(M.newUsers,P.newUsers):null,vs:'vs 上月',color:'#5a8a6e'},
     '廣告花費':{v:'NT$'+_mf(M.adSpend),delta:P?_pc(M.adSpend,P.adSpend):null,vs:'含 15% 服務費',color:'#A54A1A'},
-    '廣告 ROAS':{v:M.roas.toFixed(2),delta:(P&&P.roas>0)?Math.round((M.roas-P.roas)*100)/100:null,vs:'目標 '+ROAS_TGT,color:M.roas>=ROAS_TGT?'#1a7a4a':'#c0392b'},
+    '廣告 ROAS':M.adActive?{v:M.roas.toFixed(2),delta:(P&&P.adActive)?Math.round((M.roas-P.roas)*100)/100:null,vs:'目標 '+ROAS_TGT,color:M.roas>=ROAS_TGT?'#1a7a4a':'#c0392b'}:{v:'—',delta:null,vs:'本月幾乎無投放',color:'#b09a88'},
     '官網營收':kRev,
     '訂單數':kOrd
   });
@@ -1090,7 +1092,7 @@ function renderMonthly(){
   const mom={
     sessions:{label:'工作階段',cur:M.sessions,prev:P?P.sessions:null,fmt:fmtNum},
     adSpend:{label:'廣告花費',cur:M.adSpend,prev:P?P.adSpend:null,fmt:fmtRev},
-    roas:{label:'廣告 ROAS',cur:M.roas,prev:(P&&P.roas>0)?P.roas:null,fmt:v=>v.toFixed(2)},
+    roas:{label:'廣告 ROAS',cur:M.adActive?M.roas:null,prev:(P&&P.adActive)?P.roas:null,fmt:v=>v.toFixed(2)},
     social:{label:'社群 Sessions',cur:M.social,prev:(P&&P.social>0)?P.social:null,fmt:fmtNum}
   };
   if(M.revReliable&&P&&P.revReliable)mom.ecRev={label:'官網營收',cur:M.ecRev,prev:P.ecRev,fmt:fmtRev};
@@ -1114,8 +1116,9 @@ function renderMonthlyCmp(elId,items,isYoY){
   el.innerHTML=Object.values(items).map(v=>{
     const fmt=v.fmt||(x=>String(x));
     const curStr=(v.cur==null)?'—':fmt(v.cur);
-    if(v.prev==null||v.prev===0){
-      return `<div class="cmp"><div class="cmp-l">${v.label}<span class="cmp-l-tag">${tag}</span></div><div class="cmp-row"><span class="cmp-cur">${curStr}</span></div><div class="cmp-pending">${isYoY?'去年同月無資料':'上月無資料'}</div></div>`;
+    if(v.cur==null||v.prev==null||v.prev===0){
+      const msg=v.cur==null?'本月無資料':(isYoY?'去年同月無資料':'上月無資料');
+      return `<div class="cmp"><div class="cmp-l">${v.label}<span class="cmp-l-tag">${tag}</span></div><div class="cmp-row"><span class="cmp-cur">${curStr}</span></div><div class="cmp-pending">${msg}</div></div>`;
     }
     const pct=Math.round((v.cur-v.prev)/v.prev*1000)/10;
     return `<div class="cmp"><div class="cmp-l">${v.label}<span class="cmp-l-tag">${tag}</span></div><div class="cmp-row"><span class="cmp-cur">${curStr}</span> ${deltaHTML(pct)}</div><div class="cmp-prev">${prevLabel}：${fmt(v.prev)}</div></div>`;
@@ -1127,7 +1130,7 @@ function renderMonthlyTrend(){
   if(el._chartInst)el._chartInst.destroy();
   el._chartInst=new Chart(el,{data:{labels:ks.map(k=>{const[y,m]=k.split('/');return(y==='2026'?'':y.slice(2)+'/')+(+m)+'月';}),datasets:[
     {type:'bar',label:'Sessions',data:ks.map(k=>MONTHLY[k].sessions),backgroundColor:'rgba(40,66,52,.55)',yAxisID:'y',order:2},
-    {type:'line',label:'廣告 ROAS',data:ks.map(k=>MONTHLY[k].roas||null),borderColor:'#A54A1A',backgroundColor:'#A54A1A',tension:.3,pointRadius:4,borderWidth:2,yAxisID:'y1',order:1,spanGaps:true}
+    {type:'line',label:'廣告 ROAS',data:ks.map(k=>MONTHLY[k].adActive?MONTHLY[k].roas:null),borderColor:'#A54A1A',backgroundColor:'#A54A1A',tension:.3,pointRadius:4,borderWidth:2,yAxisID:'y1',order:1,spanGaps:true}
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Space Mono',size:11}}}},scales:{y:{position:'left',ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{color:'rgba(40,66,52,.05)'}},y1:{position:'right',min:0,ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}},x:{ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}}}}});
 }
 
@@ -1152,8 +1155,8 @@ function buildMktInsights(M,P,Y){
     const sev=momS<=-10?'amber':momS>=10?'green':'neutral';
     out.push({sev,tag:'流量',title:`${mo}流量 ${f(M.sessions)}（MoM ${momS>0?'+':''}${momS}%）`,body:`工作階段${momS>=0?'成長':'下滑'} ${Math.abs(momS)}%`+(yoyS!=null?`，YoY ${yoyS>0?'+':''}${yoyS}%`:'')+'。',data:`sessions ${f(M.sessions)} ｜ 上月 ${f(P.sessions)}`});
   }
-  if(M.adSpendRaw>0){
-    const roasMo=(P&&P.roas>0)?pc(M.roas,P.roas):null,spendMo=P?pc(M.adSpendRaw,P.adSpendRaw):null;
+  if(M.adActive){
+    const roasMo=(P&&P.adActive&&P.roas>0)?pc(M.roas,P.roas):null,spendMo=(P&&P.adActive)?pc(M.adSpendRaw,P.adSpendRaw):null;
     const sev=M.roas<ROAS_TGT*0.7?'red':M.roas<ROAS_TGT?'amber':'green';
     let body=`整體廣告 ROAS ${M.roas.toFixed(2)}，目標 ${ROAS_TGT}。`;
     if(roasMo!=null)body+=`較上月 ${P.roas.toFixed(2)}（${roasMo>0?'+':''}${roasMo}%）。`;
