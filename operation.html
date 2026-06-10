@@ -427,10 +427,11 @@ const STORE_BENCHMARKS={
 const SHEET_ID='17hTgCpF0mBTHf3RcnDmRFrJMeLBn3nRdTMuG8l58QjY';
 const D25={'中山店':[148,141,131,103,131,98,121,112,117,138,161,160],'松菸店':[136,119,138,119,108,89,87,91,122,139,174,160],'台中店':[110,98,75,59,64,78,60,88,76,100,113,126],'東門店':[117,105,96,75,84,90,66,89,81,111,130,172],'官網':[128,79,97,70,70,60,74,77,67,100,101,105]};
 let D26={'中山店':[185,0,0,0,0,0,0,0,0,0,0,0],'松菸店':[163,0,0,0,0,0,0,0,0,0,0,0],'台中店':[133,0,0,0,0,0,0,0,0,0,0,0],'東門店':[145,0,0,0,0,0,0,0,0,0,0,0],'官網':[130,0,0,0,0,0,0,0,0,0,0,0]};
+let MOPS={};  // 月度營運：MOPS[店名][月-1]={visitors,vNew,vOld,vRep,txn,tNew,tOld,ticket,conv,rev,orders,sessions,gaConv}（月會卡用）
 let WK={};STORES.forEach(s=>WK[s]={rev:0,tgt:0,vis:0,conv:0,ticket:0,newTxn:0,oldTxn:0,repVis:0,repConv:0,weekOrders:0,mtdRev:0,monthTarget:0,monthAch:0,newMembers:0,wkSessions:0,wkUsers:0,wkGaConv:0,moSessions:0,moUsers:0});
 let allWk={};STORES.forEach(s=>allWk[s]=[]);
 let _gvizSeq=0;function loadGviz(sheetName){return new Promise((resolve,reject)=>{const cb='_gvizCb'+(++_gvizSeq);window[cb]=function(resp){delete window[cb];const rows=(resp.table.rows||[]).map(r=>(r.c||[]).map(cell=>cell?cell.v:null));resolve(rows);};const s=document.createElement('script');s.onerror=()=>reject(new Error('Load failed: '+sheetName));s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}`;document.head.appendChild(s);});}
-async function loadData(){try{const [wkRows,moRows]=await Promise.all([loadGviz('週報數據'),loadGviz('月度數據')]);const _now=new Date();const _daysInMo=new Date(_now.getFullYear(),_now.getMonth()+1,0).getDate();const _weeksInMo=_daysInMo/7;wkRows.forEach(r=>{const s=r[2];if(!s||!WK[s])return;const sb=STORE_BENCHMARKS[s];const tk=sb?sb.ticket:TARGET_TICKET;const cv=sb?sb.conv:TARGET_CONV;WK[s].rev=r[3]||0;WK[s].tgt=r[4]||0;WK[s].vis=r[6]||0;WK[s].newVis=r[7]||0;WK[s].oldVis=r[8]||0;WK[s].repVis=r[9]||0;WK[s].newTxn=r[10]||0;WK[s].oldTxn=r[11]||0;WK[s].ticket=r[13]||0;WK[s].conv=r[14]||0;WK[s].mtdRev=r[15]||0;WK[s].monthTarget=r[16]||0;WK[s].monthAch=r[17]||0;WK[s].weekOrders=r[18]||0;WK[s].repConv=r[19]||0;WK[s].newMembers=r[20]||0;WK[s].wkSessions=r[21]||0;WK[s].wkUsers=r[22]||0;WK[s].wkGaConv=r[23]||0;WK[s].moSessions=r[24]||0;WK[s].moUsers=r[25]||0;WK[s].visTgt=WK[s].monthTarget>0?Math.round(WK[s].monthTarget/tk/cv/_weeksInMo):0;const _p=String(r[1]||'');const _sp=_p.split('~')[0].trim().split('/');const _mo=_sp.length>=2?parseInt(_sp[1]):0;const _he={period:_p,month:_mo,rev:r[3]||0,tgt:r[4]||0,vis:r[6]||0,repVis:r[9]||0,newTxn:r[10]||0,oldTxn:r[11]||0,ticket:r[13]||0,conv:r[14]||0,weekOrders:r[18]||0,repConv:r[19]||0,mtdRev:r[15]||0,monthTarget:r[16]||0};const _ei=allWk[s].findIndex(e=>e.period===_p);if(_ei>=0)allWk[s][_ei]=_he;else allWk[s].push(_he);});moRows.forEach(r=>{const yr=Number(r[0]),mo=Number(r[1]),s=r[2],rev=r[3];if(yr===2026&&mo>=1&&mo<=12&&D26[s])D26[s][mo-1]=Math.round((rev||0)/10000);});const wkLabel=wkRows[0]?wkRows[0][1]||'':'';if(wkLabel)document.getElementById('wk-date').textContent=wkLabel;const updTime=wkRows[0]?wkRows[0][0]||'':'';document.getElementById('data-tag').textContent=updTime?'更新 '+updTime:'LIVE DATA';}catch(e){console.error('Dashboard data load error',e);document.getElementById('data-tag').textContent='載入失敗';}renderWeekly();}
+async function loadData(){try{const [wkRows,moRows,opRows]=await Promise.all([loadGviz('週報數據'),loadGviz('月度數據'),loadGviz('月度營運').catch(()=>[])]);opRows.forEach(r=>{const yr=Number(r[0]),mo=Number(r[1]),s=r[2];if(yr===2026&&mo>=1&&mo<=12&&s){if(!MOPS[s])MOPS[s]=[];MOPS[s][mo-1]={visitors:+r[3]||0,vNew:+r[4]||0,vOld:+r[5]||0,vRep:+r[6]||0,txn:+r[7]||0,tNew:+r[8]||0,tOld:+r[9]||0,ticket:+r[10]||0,conv:+r[11]||0,rev:+r[12]||0,orders:+r[13]||0,sessions:+r[14]||0,gaConv:+r[15]||0};}});const _now=new Date();const _daysInMo=new Date(_now.getFullYear(),_now.getMonth()+1,0).getDate();const _weeksInMo=_daysInMo/7;wkRows.forEach(r=>{const s=r[2];if(!s||!WK[s])return;const sb=STORE_BENCHMARKS[s];const tk=sb?sb.ticket:TARGET_TICKET;const cv=sb?sb.conv:TARGET_CONV;WK[s].rev=r[3]||0;WK[s].tgt=r[4]||0;WK[s].vis=r[6]||0;WK[s].newVis=r[7]||0;WK[s].oldVis=r[8]||0;WK[s].repVis=r[9]||0;WK[s].newTxn=r[10]||0;WK[s].oldTxn=r[11]||0;WK[s].ticket=r[13]||0;WK[s].conv=r[14]||0;WK[s].mtdRev=r[15]||0;WK[s].monthTarget=r[16]||0;WK[s].monthAch=r[17]||0;WK[s].weekOrders=r[18]||0;WK[s].repConv=r[19]||0;WK[s].newMembers=r[20]||0;WK[s].wkSessions=r[21]||0;WK[s].wkUsers=r[22]||0;WK[s].wkGaConv=r[23]||0;WK[s].moSessions=r[24]||0;WK[s].moUsers=r[25]||0;WK[s].visTgt=WK[s].monthTarget>0?Math.round(WK[s].monthTarget/tk/cv/_weeksInMo):0;const _p=String(r[1]||'');const _sp=_p.split('~')[0].trim().split('/');const _mo=_sp.length>=2?parseInt(_sp[1]):0;const _he={period:_p,month:_mo,rev:r[3]||0,tgt:r[4]||0,vis:r[6]||0,repVis:r[9]||0,newTxn:r[10]||0,oldTxn:r[11]||0,ticket:r[13]||0,conv:r[14]||0,weekOrders:r[18]||0,repConv:r[19]||0,mtdRev:r[15]||0,monthTarget:r[16]||0};const _ei=allWk[s].findIndex(e=>e.period===_p);if(_ei>=0)allWk[s][_ei]=_he;else allWk[s].push(_he);});moRows.forEach(r=>{const yr=Number(r[0]),mo=Number(r[1]),s=r[2],rev=r[3];if(yr===2026&&mo>=1&&mo<=12&&D26[s])D26[s][mo-1]=Math.round((rev||0)/10000);});const wkLabel=wkRows[0]?wkRows[0][1]||'':'';if(wkLabel)document.getElementById('wk-date').textContent=wkLabel;const updTime=wkRows[0]?wkRows[0][0]||'':'';document.getElementById('data-tag').textContent=updTime?'更新 '+updTime:'LIVE DATA';}catch(e){console.error('Dashboard data load error',e);document.getElementById('data-tag').textContent='載入失敗';}renderWeekly();}
 const HEATMAP={'週一':[18,22,31,28,42,55,60,48,35,20],'週二':[15,20,28,35,48,58,65,50,38,22],'週三':[20,25,33,30,45,52,58,45,32,18],'週四':[22,28,36,40,55,65,70,60,42,25],'週五':[28,35,45,55,72,88,95,80,58,35],'週六':[42,58,72,85,95,105,110,98,75,48],'週日':[38,55,68,78,88,98,100,90,68,42]};
 const WK8=[1388,1412,1395,1440,1455,1460,1478,1459];
 const WK8L=['W9','W10','W11','W12','W13','W14','W15','W16'];
@@ -674,6 +675,8 @@ function renderMgmt(){
   const ytdActualTot = stores.reduce((a,st)=>a+ytdActual(st),0);
   const ytdTargetTot = stores.reduce((a,st)=>a+ytdTarget(st),0);
   const ytdAchTot = ytdTargetTot?ytdActualTot/ytdTargetTot*100:null;
+  /* 月度營運（來客/成交/客單/維修/新舊客；電商:訂單/流量/GA轉換）取選定月 */
+  const mopsOf = st => { const k=D26KEY[st]; return (typeof MOPS!=='undefined'&&MOPS[k]&&MOPS[k][_moIdx])?MOPS[k][_moIdx]:null; };
   const revAch=posRevTot/d.revTarget*100;       // 達成率＝含稅營收(週報)÷含稅目標
   const revMoM=pctChg(d.rev,d.prevMoRev);
   const revYoY=pctChg(d.rev,d.prevYrRev);
@@ -1121,12 +1124,39 @@ function renderMgmt(){
           const ach=posRev(st)/s.target*100, yA=ytdAch(st);
           const col=achColor(ach), lbl=achLabel(ach), urg=ach<55;
           const mom=pctChg(s.rev,s.prevMoRev), yoy=pctChg(s.rev,s.prevYrRev);
-          const pills=[
-            statPill(yA>=100?'good':yA>=85?'warn':'bad','累計達成', yA.toFixed(1)+'%'),
-            statPill('neu','累計營收', fW(ytdActual(st)), fW(ytdTarget(st))),
-            statPill(mom>=0?'good':'bad','MoM', pctTxt(mom)),
-            statPill(yoy>=0?'good':'bad','YoY', pctTxt(yoy)),
-          ].join('');
+          const k=D26KEY[st], sb=STORE_BENCHMARKS[k];
+          const m=mopsOf(st), isWeb=st==='電商';
+          let pills;
+          if(m){
+            const tot=(m.tNew||0)+(m.tOld||0);
+            const nr=tot>0?Math.round(m.tNew/tot*100):0;
+            if(isWeb){
+              pills=[
+                m.orders?statPill('neu','訂單',m.orders+'筆'):'',
+                m.sessions?statPill('neu','流量',fw(m.sessions)):'',
+                m.gaConv?statPill(m.gaConv>=.03?'good':m.gaConv>=.015?'warn':'bad','GA轉換',(m.gaConv*100).toFixed(2)+'%'):'',
+                m.ticket?statPill(ticketStatus(m.ticket,true),'客單','$'+fw(m.ticket)):'',
+                tot?statPill('good','新客',nr+'%'):'',
+                tot?statPill('neu','回購',(100-nr)+'%'):'',
+              ].filter(Boolean).join('');
+            } else {
+              pills=[
+                m.visitors?statPill('neu','來客',m.visitors+'人'):'',
+                m.conv?statPill(convStatus(m.conv,k),'成交率',(m.conv*100).toFixed(0)+'%',sb?(sb.conv*100).toFixed(0)+'%':null):'',
+                m.ticket?statPill(ticketStatus(m.ticket,k),'客單','$'+fw(m.ticket),sb?'$'+fw(sb.ticket):null):'',
+                m.vRep?statPill('neu','維修',m.vRep+'人'):'',
+                tot?statPill('good','新客',nr+'%'):'',
+                tot?statPill('neu','回購',(100-nr)+'%'):'',
+              ].filter(Boolean).join('');
+            }
+          } else {
+            pills=[
+              statPill(yA>=100?'good':yA>=85?'warn':'bad','累計達成', yA.toFixed(1)+'%'),
+              statPill('neu','累計營收', fW(ytdActual(st)), fW(ytdTarget(st))),
+              statPill(mom>=0?'good':'bad','MoM', pctTxt(mom)),
+              statPill(yoy>=0?'good':'bad','YoY', pctTxt(yoy)),
+            ].join('');
+          }
           return`<div class="sr" style="cursor:default">
             <div class="sr-top">
               <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -1139,6 +1169,10 @@ function renderMgmt(){
             <div class="sr-body">
               <div class="sr-pills">${pills}</div>
               <div class="sr-rings">${miniRing(ach,'本月')}${miniRing(yA,'累計')}</div>
+            </div>
+            <div style="margin-top:7px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);display:flex;gap:14px;flex-wrap:wrap">
+              <span>累計 ${fW(ytdActual(st))}/${fW(ytdTarget(st))}（${yA!=null?yA.toFixed(0):'—'}%）</span>
+              <span>MoM ${chgSp(mom)}</span><span>YoY ${chgSp(yoy)}</span>${m?'':'<span style="color:var(--rust)">·營運資料待月度營運表</span>'}
             </div>
           </div>`;
         }).join('')}
