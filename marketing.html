@@ -121,8 +121,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <button class="tab active" onclick="switchTab('overview',this)">📊 流量總覽</button>
   <button class="tab" onclick="switchTab('monthly',this)">📈 月度觀察</button>
   <button class="tab" onclick="switchTab('ads',this)">💰 廣告成效</button>
-  <button class="tab" onclick="switchTab('revenue',this)">🛒 電商營收</button>
-  <button class="tab" onclick="switchTab('social',this)">📱 社群流量</button>
   <button class="tab" onclick="switchTab('seo',this)">🔍 SEO 監控</button>
 </nav>
 
@@ -163,6 +161,18 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <div class="card">
     <div class="card-hdr"><span class="card-lbl">流量來源 vs 轉換明細</span><span class="card-badge">含 ROAS / CVR</span></div>
     <div style="overflow-x:auto"><table class="ctbl" id="tbl-channel"></table></div>
+  </div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">電商轉換</div>
+    <div class="sec-date">本週達成 · 月累計</div>
+  </div>
+  <div class="kpi3" id="revenue-week-kpi"></div>
+  <div class="kpi4" id="revenue-kpi" style="margin-top:1rem"></div>
+  <div class="card" style="margin-top:1rem">
+    <div class="card-hdr"><span class="card-lbl">本月通路占比</span><span class="card-badge">線上電商</span></div>
+    <div class="ch200"><canvas id="ch-channel-mix"></canvas></div>
+    <div class="legend" id="ch-mix-legend"></div>
   </div>
 </div>
 
@@ -296,44 +306,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div class="sec-title">社群廣告流量</div>
     <div class="sec-date">本週</div>
   </div>
-  <div class="card">
-    <div class="card-hdr"><span class="card-lbl">IG / FB / LINE 加總</span><span class="card-badge">sessions · 營收 · CVR</span></div>
-    <div style="overflow-x:auto"><table class="ctbl" id="tbl-ads-social"></table></div>
-  </div>
-</div>
-
-<!-- ============ 電商營收 ============ -->
-<div class="tab-panel" id="panel-revenue">
-  <div class="sec-hdr">
-    <div class="sec-title">本週達成</div>
-    <div class="sec-date">vs 週目標</div>
-  </div>
-  <div class="kpi3" id="revenue-week-kpi"></div>
-
-  <div class="sec-hdr" style="margin-top:1.5rem">
-    <div class="sec-title">本月電商</div>
-    <div class="sec-date">月累計</div>
-  </div>
-  <div class="kpi4" id="revenue-kpi"></div>
-
-  <div class="card">
-    <div class="card-hdr"><span class="card-lbl">本月通路占比</span><span class="card-badge">線上電商</span></div>
-    <div class="ch200"><canvas id="ch-channel-mix"></canvas></div>
-    <div class="legend" id="ch-mix-legend"></div>
-  </div>
-</div>
-
-<!-- ============ 社群流量 ============ -->
-<div class="tab-panel" id="panel-social">
-  <div class="sec-hdr">
-    <div class="sec-title">社群來源流量</div>
-    <div class="sec-date">本週</div>
-  </div>
-  <div class="kpi3" id="social-kpi"></div>
-
+  <div class="kpi3" id="social-kpi" style="margin-bottom:1rem"></div>
   <div class="card">
     <div class="card-hdr"><span class="card-lbl">IG / FB / LINE 比較</span><span class="card-badge">sessions · CVR · 轉換金額</span></div>
-    <div style="overflow-x:auto"><table class="ctbl" id="tbl-social"></table></div>
+    <div style="overflow-x:auto"><table class="ctbl" id="tbl-ads-social"></table></div>
   </div>
 </div>
 
@@ -846,6 +822,8 @@ function renderOverview(){
   new Chart(document.getElementById('ch-channel'),{type:'doughnut',data:{labels:MOCK.channels.map(c=>c.name),datasets:[{data:MOCK.channels.map(c=>c.sessions),backgroundColor:colors,borderWidth:3,borderColor:'#fff'}]},options:{cutout:'58%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed.toLocaleString()} (${(ctx.parsed/MOCK.channels.reduce((s,c)=>s+c.sessions,0)*100).toFixed(1)}%)`}}}}});
   document.getElementById('ch-channel-legend').innerHTML=MOCK.channels.map((c,i)=>`<div class="leg-i"><div class="leg-dot" style="background:${colors[i]}"></div>${c.name}</div>`).join('');
 
+  renderRevenue();
+
   // 來源明細 table（簡化：4 欄，拿掉「購買」— 那欄目前無資料來源；ROAS 只有付費 channel 才顯示）
   const totalChSess = MOCK.channels.reduce((s,c)=>s+c.sessions,0) || 1;
   document.getElementById('tbl-channel').innerHTML=`<thead><tr><th>來源</th><th>Sessions</th><th>佔比</th><th>營收</th><th>ROAS</th></tr></thead><tbody>${MOCK.channels.map(c=>{
@@ -859,6 +837,7 @@ function renderOverview(){
 }
 
 // ----- Ads -----
+const SOCIAL_LABELS={ig:'Instagram',fb:'Facebook',line:'LINE'};
 const ADS_KPI_LABELS={totalSpend:'總花費',totalROAS:'整體 ROAS',paidCVR:'付費 CVR',totalConv:'轉換數'};
 const META_LABELS={spend:'Meta 花費',roas:'Meta ROAS',ctr:'Meta CTR'};
 const GOOGLE_LABELS={spend:'Google 花費',roas:'Google ROAS',ctr:'Google CTR'};
@@ -884,6 +863,8 @@ function renderAdMonth(){
 }
 
 function renderAdsSocial(){
+  if (MOCK.social && MOCK.social.kpi)
+    renderKPIs('social-kpi', Object.fromEntries(Object.entries(MOCK.social.kpi).map(([k,v])=>[SOCIAL_LABELS[k]||k,v])));
   const rows = MOCK.social && MOCK.social.table;
   if (!rows || !rows.length) return;
   const totalSessions = rows.reduce((s,r)=>s+r.sessions,0);
@@ -1020,12 +1001,6 @@ function renderRevenue(){
   document.getElementById('ch-mix-legend').innerHTML=MOCK.revenue.mix.map((m,i)=>`<div class="leg-i"><div class="leg-dot" style="background:${mixColors[i]}"></div>${m.name} (${(m.val/total*100).toFixed(0)}%)</div>`).join('');
 }
 
-// ----- Social -----
-const SOCIAL_LABELS={ig:'Instagram',fb:'Facebook',line:'LINE'};
-function renderSocial(){
-  renderKPIs('social-kpi',Object.fromEntries(Object.entries(MOCK.social.kpi).map(([k,v])=>[SOCIAL_LABELS[k]||k,v])));
-  document.getElementById('tbl-social').innerHTML=`<thead><tr><th>平台</th><th>Sessions</th><th>CVR</th><th>轉換金額</th></tr></thead><tbody>${MOCK.social.table.map(s=>`<tr><td class="td-s"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color};margin-right:8px"></span>${s.name}</td><td>${fmt(s.sessions)}</td><td>${s.cvr}</td><td>NT$${fmt(s.revenue)}</td></tr>`).join('')}</tbody>`;
-}
 
 // ===== 月度觀察（自動彙整 + 規則式洞察）=====
 const EC_TARGET_M=[125,115,115,100,100,90,90,90,100,115,115,125]; // 電商月目標（萬）
@@ -1271,8 +1246,7 @@ function switchTab(tab,btn){
     if(tab==='overview')renderOverview();
     if(tab==='monthly')renderMonthly();
     if(tab==='ads')renderAds();
-    if(tab==='revenue')renderRevenue();
-    if(tab==='social')renderSocial();
+
     RENDERED[tab]=true;
   }
 }
