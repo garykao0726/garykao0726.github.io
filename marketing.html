@@ -200,6 +200,19 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div class="sec-date">規則式分析 · 隨資料每月更新</div>
   </div>
   <div id="monthly-insights" style="display:flex;flex-direction:column;gap:12px"></div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">廣告費率 × 全通路營收</div>
+    <div class="sec-date">正相關分析 · 近 12 月</div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span class="card-lbl">月廣告花費 vs 全通路營收（含服費）</span><span class="card-badge">廣告費率趨勢</span></div>
+    <div class="ch240"><canvas id="ch-monthly-adrate"></canvas></div>
+  </div>
+  <div class="card" style="margin-top:1rem">
+    <div class="card-hdr"><span class="card-lbl">月度廣告費率明細</span><span class="card-badge">廣告費 ÷ 電商 ｜ 廣告費 ÷ 全通路</span></div>
+    <div style="overflow-x:auto"><table class="ctbl" id="tbl-monthly-adrate"></table></div>
+  </div>
 </div>
 
 <!-- ============ 廣告成效 ============ -->
@@ -791,7 +804,7 @@ async function loadData(){
     const d=processMarketingData(rows);
     if(!d){banner.innerHTML='⚠️ 資料格式異常，顯示示意數據。';return;}
     applyWeeklyOverrides(d, weeklyRows, monthlyRows);
-    buildMonthly(rows); if(RENDERED.monthly)renderMonthly();
+    buildMonthly(rows, monthlyRows); if(RENDERED.monthly)renderMonthly();
     Object.assign(MOCK,{overview:d.overview,channels:d.channels,trafficTrend:d.trafficTrend,ads:d.ads,revenue:d.revenue,social:d.social,mom:d.mom,yoy:d.yoy,adYear:d.adYear,adMonth:d.adMonth,weekRev:d.weekRev,weekAch:d.weekAch});
     banner.style.cssText='background:#e8f5e9;border-color:#4caf50;color:#2e7d32;border-radius:8px;padding:10px 16px;margin-bottom:1.25rem;display:flex;align-items:center;gap:12px;font-size:11px;font-family:\'Space Mono\',monospace';
     const src = weeklyRows ? '週報數據' : '行銷儀錶板數據';
@@ -1025,8 +1038,23 @@ function _yoyYm(ym){const[y,m]=ym.split('/').map(Number);return(y-1)+'/'+String(
 function _pc(c,p){return p>0?Math.round((c-p)/p*1000)/10:null;}
 const _mf=v=>Math.round(v).toLocaleString();
 
+// 月度全通路營收（從 月度數據 tab，所有門市+官網加總）
+let MONTHLY_TOTAL_REV={};
+function buildMonthlyTotalRev(monthlyRows){
+  if(!monthlyRows||!monthlyRows.length)return;
+  const n=v=>Number(v)||0,byM={};
+  monthlyRows.slice(1).forEach(r=>{
+    const y=String(r[0]||'').trim(),m=String(r[1]||'').trim(),rev=n(r[12]);
+    if(!y||!m||!rev)return;
+    const ym=y+'/'+m.padStart(2,'0');
+    byM[ym]=(byM[ym]||0)+rev;
+  });
+  MONTHLY_TOTAL_REV=byM;
+}
+
 // 把每日 row 依 YYYY/MM 彙整成各月份指標。完整月份 = 非「進行中當月」且 ≥20 天。
-function buildMonthly(rows){
+function buildMonthly(rows, monthlyRows){
+  buildMonthlyTotalRev(monthlyRows);
   const n=v=>Number(v)||0,byM={};
   rows.forEach(r=>{
     const d=parseDate_(r[0]); if(!d||isNaN(d))return;
@@ -1050,6 +1078,9 @@ function buildMonthly(rows){
     M.aov=M.ecOrders>0?Math.round(M.ecRev/M.ecOrders):0;M.social=M.ig+M.fb+M.line;
     M.hasRev=M.ecRev>0&&M.ecOrders>0;M.revReliable=M.hasRev&&M.days>=28&&M.ecOrders>=80;
     M.adActive=M.adSpendRaw>=AD_MIN_SPEND;
+    M.totalRev=MONTHLY_TOTAL_REV[M.ym]||0;
+    M.adRateEC=M.ecRev>0?Math.round(M.adSpend/M.ecRev*1000)/10:null;
+    M.adRateTotal=M.totalRev>0?Math.round(M.adSpend/M.totalRev*1000)/10:null;
   });
   const now=new Date(),curYm=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0');
   MONTHLY=byM;MONTHLY_KEYS=Object.keys(byM).filter(k=>k!==curYm&&byM[k].days>=20).sort();
@@ -1108,6 +1139,7 @@ function renderMonthly(){
   renderMonthlyTrend();
   renderMonthlyChannel(M);
   renderMonthlyInsights(buildMktInsights(M,P,Y));
+  renderMonthlyAdRate();
 }
 
 function renderMonthlyCmp(elId,items,isYoY){
@@ -1194,6 +1226,38 @@ function renderMonthlyInsights(items){
   if(!items.length){el.innerHTML='<div style="padding:18px;color:var(--text-muted);font-size:13px;background:var(--surface);border:1px dashed var(--border2);border-radius:10px">本月資料尚不足以產生觀察。</div>';return;}
   const C={red:'#c0392b',amber:'#b07d12',green:'#1a7a4a',neutral:'#8D5531'};
   el.innerHTML=items.map(it=>`<div class="insight" style="border-left-color:${C[it.sev]}"><div class="insight-hd"><span class="insight-tag" style="background:${C[it.sev]}">${it.tag}</span><span class="insight-title">${it.title}</span></div><div class="insight-body">${it.body}</div><div class="insight-data">${it.data}</div></div>`).join('');
+}
+
+function renderMonthlyAdRate(){
+  const ks=MONTHLY_KEYS.slice(-12);
+  const el=document.getElementById('ch-monthly-adrate');
+  if(!el)return;
+  if(el._chartInst)el._chartInst.destroy();
+  const fmtNT=v=>'NT$'+Math.round(v).toLocaleString();
+  const labels=ks.map(k=>{const[y,m]=k.split('/');return(y==='2026'?'':y.slice(2)+'/')+(+m)+'月';});
+  const adSpend=ks.map(k=>MONTHLY[k].adSpend||0);
+  const totalRev=ks.map(k=>MONTHLY[k].totalRev||0);
+  const adRateTotal=ks.map(k=>MONTHLY[k].adRateTotal);
+  const adRateEC=ks.map(k=>MONTHLY[k].adRateEC);
+  el._chartInst=new Chart(el,{data:{labels,datasets:[
+    {type:'bar',label:'全通路營收',data:totalRev,backgroundColor:'rgba(40,66,52,.18)',borderColor:'rgba(40,66,52,.4)',borderWidth:1,yAxisID:'y',order:3},
+    {type:'bar',label:'廣告花費（含服費）',data:adSpend,backgroundColor:'rgba(165,74,26,.75)',yAxisID:'y',order:2},
+    {type:'line',label:'廣告費率-全通路（%）',data:adRateTotal,borderColor:'#1877F2',backgroundColor:'#1877F2',tension:.3,pointRadius:5,borderWidth:2,yAxisID:'y1',order:1,spanGaps:true},
+    {type:'line',label:'廣告費率-電商（%）',data:adRateEC,borderColor:'#E2A24A',backgroundColor:'#E2A24A',tension:.3,pointRadius:4,borderWidth:2,borderDash:[4,3],yAxisID:'y1',order:1,spanGaps:true}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{font:{family:'Space Mono',size:10}}},tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;if(ctx.dataset.yAxisID==='y1')return` ${ctx.dataset.label}: ${v!=null?v.toFixed(1)+'%':'—'}`;return` ${ctx.dataset.label}: ${fmtNT(v)}`;}}}},scales:{y:{position:'left',ticks:{font:{family:'Space Mono',size:10},color:'#b09a88',callback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1000).toFixed(0)+'K':v},grid:{color:'rgba(40,66,52,.05)'}},y1:{position:'right',min:0,suggestedMax:25,ticks:{font:{family:'Space Mono',size:10},color:'#b09a88',callback:v=>v+'%'},grid:{display:false}},x:{ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}}}}});
+
+  // 明細表
+  const tbl=document.getElementById('tbl-monthly-adrate');
+  if(!tbl)return;
+  const AD_RATE_TARGET=6;
+  tbl.innerHTML=`<thead><tr><th>月份</th><th>全通路營收</th><th>電商營收</th><th>廣告花費</th><th>費率/全通路</th><th>費率/電商</th><th>ROAS</th></tr></thead><tbody>${ks.map(k=>{
+    const M=MONTHLY[k];
+    const rateT=M.adRateTotal,rateE=M.adRateEC;
+    const rtCls=rateT!=null?(rateT>AD_RATE_TARGET?'style="color:#c0392b;font-weight:700"':'style="color:#1a7a4a;font-weight:700"'):'';
+    const reCls=rateE!=null?(rateE>20?'style="color:#c0392b;font-weight:700"':'style="color:#1a7a4a"'):'';
+    const roas=M.adActive?M.roas.toFixed(2):'—';
+    return`<tr><td class="td-s">${k.replace('/','-')}</td><td>${M.totalRev>0?'NT$'+Math.round(M.totalRev/10000)+'萬':'—'}</td><td>${M.ecRev>0?'NT$'+Math.round(M.ecRev/10000)+'萬':'—'}</td><td>${M.adActive?'NT$'+Math.round(M.adSpend).toLocaleString():'—'}</td><td ${rtCls}>${rateT!=null?rateT.toFixed(1)+'%':'—'}</td><td ${reCls}>${rateE!=null?rateE.toFixed(1)+'%':'—'}</td><td>${roas}</td></tr>`;
+  }).join('')}</tbody>`;
 }
 
 // ===== Tab switcher（lazy render） =====
