@@ -1043,7 +1043,7 @@ let MONTHLY_TOTAL_REV={};
 function buildMonthlyTotalRev(monthlyRows){
   if(!monthlyRows||!monthlyRows.length)return;
   const n=v=>Number(v)||0,byM={};
-  monthlyRows.slice(1).forEach(r=>{
+  monthlyRows.forEach(r=>{
     const y=String(r[0]||'').trim(),m=String(r[1]||'').trim(),rev=n(r[12]);
     if(!y||!m||!rev)return;
     const ym=y+'/'+m.padStart(2,'0');
