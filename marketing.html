@@ -171,7 +171,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <div class="kpi3" id="revenue-week-kpi"></div>
   <div class="kpi4" id="revenue-kpi" style="margin-top:1rem"></div>
   <div class="card" style="margin-top:1rem">
-    <div class="card-hdr"><span class="card-lbl">本月通路占比</span><span class="card-badge">線上電商</span></div>
+    <div class="card-hdr"><span class="card-lbl">本月通路占比</span><span class="card-badge">Sessions 流量</span></div>
     <div class="ch200"><canvas id="ch-channel-mix"></canvas></div>
     <div class="legend" id="ch-mix-legend"></div>
   </div>
@@ -617,6 +617,9 @@ function processMarketingData(rows){
   // 電商
   const tmRev=sum(revBase,23),tmOrders=sum(revBase,24),tmAov=tmOrders>0?Math.round(tmRev/tmOrders):0,tmRefund=avg(revBase,25);
   const EC_T=[125,115,115,100,100,90,90,90,100,115,115,125],moTarget=EC_T[mo]*10000,moAch=moTarget>0?Math.round(tmRev/moTarget*100):0;
+  // 通路占比用 sessions（GA4 revenue 歸因不準，sessions 最可靠）
+  const mixPSess=sum(revBase,8),mixPSoSess=sum(revBase,10),mixKol=sum(revBase,37);
+  const mixDirect=sum(revBase,12),mixRef=sum(revBase,13),mixOrgSess=sum(revBase,7);
   const mixPS=sum(revBase,9),mixPSo=sum(revBase,11),mixOrg=Math.max(0,tmRev-mixPS-mixPSo);
   // 社群
   const ig0=sum(tw,14),ig1=sum(lw,14),fb0=sum(tw,17),fb1=sum(lw,17),ln0=sum(tw,20),ln1=sum(lw,20);
@@ -725,7 +728,7 @@ function processMarketingData(rows){
     ].filter(c=>c.sessions>0).sort((a,b)=>b.sessions-a.sessions),
     trafficTrend:{labels:last14.map(r=>{const d=parseDate_(r[0]);return d?(d.getMonth()+1)+'/'+(d.getDate()):'';}),data:last14.map(r=>n(r[2]))},
     ads:{summary:{totalSpend:{v:'NT$'+Math.round(totalSpend*AD_SERVICE_FEE_RATE).toLocaleString(),delta:pct(totalSpend,lwTotalSpend),vs:'vs 上週（含服務費）',color:'#A54A1A'},totalROAS:{v:totalRoas.toFixed(2),delta:Math.round((totalRoas-lwTotalRoas)*100)/100,vs:'目標 4.5',color:totalRoas>=4.5?'#1a7a4a':'#b8860b'},paidCVR:{v:paidCvr.toFixed(2)+'%',delta:Math.round((paidCvr-lwPaidCvr)*100)/100,vs:'目標 0.59%',color:'#5a8a6e'},totalConv:{v:twOrders+' 筆',delta:pct(twOrders,lwOrders),vs:'vs 上週',color:'#284234'}},meta:{spend:{v:'NT$'+Math.round(mSpend*AD_SERVICE_FEE_RATE).toLocaleString(),delta:pct(mSpend,lmSpend),vs:'vs 上週（含服務費）',color:'#1877F2'},roas:{v:mRoas.toFixed(2),delta:Math.round((mRoas-lmRoas)*100)/100,vs:'目標 4.5',color:mRoas>=4.5?'#1a7a4a':'#b8860b'},ctr:{v:mCtr.toFixed(2)+'%',delta:Math.round((mCtr-lmCtr)*100)/100,vs:'vs 上週',color:'#A54A1A'}},google:{spend:{v:'NT$'+Math.round(gSpend*AD_SERVICE_FEE_RATE).toLocaleString(),delta:pct(gSpend,lgSpend),vs:'vs 上週（含服務費）',color:'#4285F4'},roas:{v:gRoas.toFixed(2),delta:Math.round((gRoas-lgRoas)*100)/100,vs:'目標 4.5',color:gRoas>=4.5?'#1a7a4a':'#b8860b'},ctr:{v:gCtr.toFixed(2)+'%',delta:Math.round((gCtr-lgCtr)*100)/100,vs:'vs 上週',color:'#A54A1A'}},trend:{labels:aTrend.labels,spend:aTrend.spend,roas:aTrend.roas}},
-    revenue:{kpi:{weekRev:{v:'NT$'+Math.round(twRev).toLocaleString(),delta:null,vs:'本週達成 '+weekAch+'%',color:'#1a7a4a'},monthRev:{v:'NT$'+Math.round(tmRev).toLocaleString(),delta:null,vs:'月目標達成 '+moAch+'%',color:'#284234'},orders:{v:String(tmOrders),delta:null,vs:'本月累計',color:'#5a8a6e'},aov:{v:'NT$'+tmAov.toLocaleString(),delta:null,vs:'平均客單',color:'#A54A1A'},returnRate:{v:tmRefund.toFixed(1)+'%',delta:null,vs:'退貨率',color:'#8D5531'}},mix:[{name:'付費搜尋',val:Math.round(mixPS)},{name:'付費社群',val:Math.round(mixPSo)},{name:'自然/其他',val:Math.max(0,Math.round(tmRev-mixPS-mixPSo))}].filter(m=>m.val>0)},
+    revenue:{kpi:{weekRev:{v:'NT$'+Math.round(twRev).toLocaleString(),delta:null,vs:'本週達成 '+weekAch+'%',color:'#1a7a4a'},monthRev:{v:'NT$'+Math.round(tmRev).toLocaleString(),delta:null,vs:'月目標達成 '+moAch+'%',color:'#284234'},orders:{v:String(tmOrders),delta:null,vs:'本月累計',color:'#5a8a6e'},aov:{v:'NT$'+tmAov.toLocaleString(),delta:null,vs:'平均客單',color:'#A54A1A'},returnRate:{v:tmRefund.toFixed(1)+'%',delta:null,vs:'退貨率',color:'#8D5531'}},mix:[{name:'自然搜尋',val:mixOrgSess},{name:'付費社群',val:mixPSoSess},{name:'KOL',val:mixKol},{name:'直接',val:mixDirect},{name:'付費搜尋',val:mixPSess},{name:'推薦',val:mixRef}].filter(m=>m.val>0)},
     social:{kpi:{ig:{v:ig0.toLocaleString(),delta:pct(ig0,ig1),vs:'sessions / 本週',color:'#E1306C'},fb:{v:fb0.toLocaleString(),delta:pct(fb0,fb1),vs:'sessions / 本週',color:'#1877F2'},line:{v:ln0.toLocaleString(),delta:pct(ln0,ln1),vs:'sessions / 本週',color:'#06C755'}},table:[{name:'IG (instagram)',sessions:ig0,cvr:igCvr.toFixed(3)+'%',revenue:sum(tw,16),color:'#E1306C'},{name:'FB (facebook)',sessions:fb0,cvr:fbCvr.toFixed(3)+'%',revenue:sum(tw,19),color:'#1877F2'},{name:'LINE (line.me)',sessions:ln0,cvr:lnCvr.toFixed(3)+'%',revenue:sum(tw,22),color:'#06C755'}]}
   };
 }
@@ -1036,7 +1039,7 @@ function renderRevenue(){
 
   const mixColors=['#A54A1A','#284234','#5a8a6e','#8D5531','#CFA294'];
   const total=MOCK.revenue.mix.reduce((s,m)=>s+m.val,0);
-  new Chart(document.getElementById('ch-channel-mix'),{type:'doughnut',data:{labels:MOCK.revenue.mix.map(m=>m.name),datasets:[{data:MOCK.revenue.mix.map(m=>m.val),backgroundColor:mixColors,borderWidth:3,borderColor:'#fff'}]},options:{cutout:'58%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: NT$${Math.round(ctx.parsed).toLocaleString()} (${(ctx.parsed/total*100).toFixed(1)}%)`}}}}});
+  new Chart(document.getElementById('ch-channel-mix'),{type:'doughnut',data:{labels:MOCK.revenue.mix.map(m=>m.name),datasets:[{data:MOCK.revenue.mix.map(m=>m.val),backgroundColor:mixColors,borderWidth:3,borderColor:'#fff'}]},options:{cutout:'58%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${Math.round(ctx.parsed).toLocaleString()} sessions (${(ctx.parsed/total*100).toFixed(1)}%)`}}}}});
   document.getElementById('ch-mix-legend').innerHTML=MOCK.revenue.mix.map((m,i)=>`<div class="leg-i"><div class="leg-dot" style="background:${mixColors[i]}"></div>${m.name} (${(m.val/total*100).toFixed(0)}%)</div>`).join('');
 }
 
