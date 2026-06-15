@@ -1045,17 +1045,19 @@ function _pc(c,p){return p>0?Math.round((c-p)/p*1000)/10:null;}
 const _mf=v=>Math.round(v).toLocaleString();
 
 // 月度全通路營收（從 月度數據 tab，所有門市+官網加總）
-let MONTHLY_TOTAL_REV={};
+// MONTHLY_EC_REV_OVERRIDE = 月度數據「官網」欄的 ERP 電商月營收，供 GA4 未完整月份補入
+let MONTHLY_TOTAL_REV={},MONTHLY_EC_REV_OVERRIDE={};
 function buildMonthlyTotalRev(monthlyRows){
   if(!monthlyRows||!monthlyRows.length)return;
-  const n=v=>Number(v)||0,byM={};
+  const n=v=>Number(v)||0,byM={},ecM={};
   monthlyRows.forEach(r=>{
-    const y=String(r[0]||'').trim(),m=String(r[1]||'').trim(),rev=n(r[3]);
+    const y=String(r[0]||'').trim(),m=String(r[1]||'').trim(),store=String(r[2]||'').trim(),rev=n(r[3]);
     if(!y||!m||!rev)return;
     const ym=y+'/'+m.padStart(2,'0');
     byM[ym]=(byM[ym]||0)+rev;
+    if(store==='官網')ecM[ym]=(ecM[ym]||0)+rev; // ERP 電商月營收
   });
-  MONTHLY_TOTAL_REV=byM;
+  MONTHLY_TOTAL_REV=byM;MONTHLY_EC_REV_OVERRIDE=ecM;
 }
 
 // 把每日 row 依 YYYY/MM 彙整成各月份指標。完整月份 = 非「進行中當月」且 ≥20 天。
@@ -1085,7 +1087,13 @@ function buildMonthly(rows, monthlyRows){
     M.hasRev=M.ecRev>0&&M.ecOrders>0;M.revReliable=M.hasRev&&M.days>=28&&M.ecOrders>=80;
     M.adActive=M.adSpendRaw>=AD_MIN_SPEND;
     M.totalRev=MONTHLY_TOTAL_REV[M.ym]||0;
-    M.adRateEC=M.ecRev>0?Math.round(M.adSpend/M.ecRev*1000)/10:null;
+    // 電商營收：GA4 可靠時用 GA4；否則用月度數據「官網」ERP 數字（標記 ecRevIsERP）
+    if(!M.revReliable&&MONTHLY_EC_REV_OVERRIDE[M.ym]){
+      M.ecRevERP=MONTHLY_EC_REV_OVERRIDE[M.ym];M.ecRevIsERP=true;
+    }else{M.ecRevERP=M.revReliable?M.ecRev:0;M.ecRevIsERP=false;}
+    // adRateEC：用可靠電商營收計算（GA4 不可靠時才用 ERP；完全沒資料則 null）
+    const _ecForRate=M.revReliable?M.ecRev:(M.ecRevERP||0);
+    M.adRateEC=_ecForRate>0?Math.round(M.adSpend/_ecForRate*1000)/10:null;
     M.adRateTotal=M.totalRev>0?Math.round(M.adSpend/M.totalRev*1000)/10:null;
   });
   const now=new Date(),curYm=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0');
@@ -1259,10 +1267,15 @@ function renderMonthlyAdRate(){
   tbl.innerHTML=`<thead><tr><th>月份</th><th>全通路營收</th><th>電商營收</th><th>廣告花費</th><th>費率/全通路</th><th>費率/電商</th><th>ROAS</th></tr></thead><tbody>${ks.map(k=>{
     const M=MONTHLY[k];
     const rateT=M.adRateTotal,rateE=M.adRateEC;
-    const rtCls=rateT!=null?(rateT>AD_RATE_TARGET?'style="color:#c0392b;font-weight:700"':'style="color:#1a7a4a;font-weight:700"'):'';
-    const reCls=rateE!=null?(rateE>20?'style="color:#c0392b;font-weight:700"':'style="color:#1a7a4a"'):'';
+    // 全通路費率：≤6% 綠、6–8% 黃、>8% 紅
+    const rtCls=rateT==null?'':(rateT>8?'style="color:#c0392b;font-weight:700"':rateT>AD_RATE_TARGET?'style="color:#b8860b;font-weight:700"':'style="color:#1a7a4a;font-weight:700"');
+    // 電商費率：≤20% 綠、20–25% 黃、>25% 紅
+    const reCls=rateE==null?'':(rateE>25?'style="color:#c0392b;font-weight:700"':rateE>20?'style="color:#b8860b;font-weight:700"':'style="color:#1a7a4a"');
     const roas=M.adActive?M.roas.toFixed(2):'—';
-    return`<tr><td class="td-s">${k.replace('/','-')}</td><td>${M.totalRev>0?'NT$'+Math.round(M.totalRev/10000)+'萬':'—'}</td><td>${M.ecRev>0?'NT$'+Math.round(M.ecRev/10000)+'萬':'—'}</td><td>${M.adActive?'NT$'+Math.round(M.adSpend).toLocaleString():'—'}</td><td ${rtCls}>${rateT!=null?rateT.toFixed(1)+'%':'—'}</td><td ${reCls}>${rateE!=null?rateE.toFixed(1)+'%':'—'}</td><td>${roas}</td></tr>`;
+    // 電商營收顯示：GA4 可靠 > ERP 補入（標 ERP）> --
+    const ecRevDisp=M.revReliable?'NT$'+Math.round(M.ecRev/10000)+'萬'
+      :(M.ecRevIsERP?'NT$'+Math.round(M.ecRevERP/10000)+'萬 <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;padding:1px 4px;border-radius:3px;font-family:Space Mono,monospace">ERP</span>':'—');
+    return`<tr><td class="td-s">${k.replace('/','-')}</td><td>${M.totalRev>0?'NT$'+Math.round(M.totalRev/10000)+'萬':'—'}</td><td>${ecRevDisp}</td><td>${M.adActive?'NT$'+Math.round(M.adSpend).toLocaleString():'—'}</td><td ${rtCls}>${rateT!=null?rateT.toFixed(1)+'%':'—'}</td><td ${reCls}>${rateE!=null?rateE.toFixed(1)+'%':'—'}</td><td>${roas}</td></tr>`;
   }).join('')}</tbody>`;
 }
 
