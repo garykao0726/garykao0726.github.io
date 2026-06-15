@@ -122,6 +122,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <button class="tab" onclick="switchTab('monthly',this)">📈 月度觀察</button>
   <button class="tab" onclick="switchTab('ads',this)">💰 廣告成效</button>
   <button class="tab" onclick="switchTab('seo',this)">🔍 SEO 監控</button>
+  <button class="tab" onclick="switchTab('goals',this)">🎯 年度目標</button>
 </nav>
 
 <div class="container">
@@ -313,6 +314,24 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
 </div>
 
+<!-- ============ 年度目標 ============ -->
+<div class="tab-panel" id="panel-goals">
+  <div class="sec-hdr">
+    <div class="sec-title">2026 年度行銷目標</div>
+    <div class="sec-date" id="goals-date">YTD 進度</div>
+  </div>
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-hdr"><span class="card-lbl">警訊標準一覽</span><span class="card-badge">2026 年度設定</span></div>
+    <div style="overflow-x:auto"><table class="ctbl" id="goals-standards"></table></div>
+  </div>
+  <div id="goals-kpi"></div>
+  <div class="sec-hdr" style="margin-top:1.5rem">
+    <div class="sec-title">目標可行性評估</div>
+    <div class="sec-date">依現有 YTD 資料推算全年走向</div>
+  </div>
+  <div id="goals-feasibility" style="display:flex;flex-direction:column;gap:12px;margin-bottom:1.25rem"></div>
+</div>
+
 <!-- ============ SEO 監控（嵌入 seo.html）============ -->
 <div class="tab-panel" id="panel-seo">
   <div class="sec-hdr">
@@ -338,24 +357,36 @@ setInterval(tick,1000);tick();
 // ===== 目標清單（集中管理）=====
 // upper:true → 越低越好（如退貨率、購物車放棄率），達成判定反向
 const TARGETS = {
-  siteCVR:        { val: 0.35, unit: '%',  label: '整站 CVR 目標' },
-  cartAbandon:    { val: 70,   unit: '%',  label: '購物車放棄上限', upper: true },
-  totalROAS:      { val: 4.5,  unit: '',   label: 'ROAS 目標' },
-  paidCVR:        { val: 0.59, unit: '%',  label: '付費 CVR 目標' },
-  metaROAS:       { val: 4.5,  unit: '',   label: 'Meta ROAS 目標' },
-  googleROAS:     { val: 4.5,  unit: '',   label: 'Google ROAS 目標' },
-  kolROAS:        { val: 3.0,  unit: '',   label: 'KOL ROAS 目標' },
-  monthRev:       [1250,1150,1150,1000,1000,900,900,900,1000,1150,1150,1250], // 萬 / 月
-  aov:            { val: 11250, unit:'NT$',label: 'AOV 目標' },
-  refundRate:     { val: 5,    unit: '%',  label: '退貨率上限',     upper: true },
-  whereOringoPv:  { val: 1200, unit: '',   label: '林果在哪裡 PV/週' }
+  siteCVR:          { val: 0.35,   unit: '%',  label: '整站 CVR 目標（年均）' },
+  cartAbandon:      { val: 70,     unit: '%',  label: '購物車放棄上限', upper: true },
+  totalROAS:        { val: 4.5,    unit: '',   label: '廣告 ROAS 目標（Meta+Google GA4）' }, // 廣告歸因 ROAS
+  siteROAS:         { val: 7.5,    unit: '',   label: '全站 ROAS 目標（電商營收/廣告花費）' },
+  paidCVR:          { val: 0.59,   unit: '%',  label: '付費 CVR 目標' },
+  metaROAS:         { val: 4.5,    unit: '',   label: 'Meta ROAS 目標' },
+  googleROAS:       { val: 4.5,    unit: '',   label: 'Google ROAS 目標' },
+  kolROAS:          { val: 3.0,    unit: '',   label: 'KOL ROAS 目標' },
+  annualOrders:     { val: 2500,   unit: '筆', label: '年訂單數目標' },
+  annualPaidTraffic:{ val: 340000, unit: '',   label: '年度廣告流量目標（sessions）' },
+  annualOrganic:    { val: 277645, unit: '',   label: '年度自然搜尋流量目標' },
+  annualKOL:        { val: 19550,  unit: '',   label: 'KOL 年度導流目標（sessions）' },
+  annualSocial:     { val: 110500, unit: '',   label: '社群年度流量目標（sessions）' },
+  organicRevShare:  { val: 30,     unit: '%',  label: 'SEO 自然搜尋營收佔比目標' },
+  kolCPC:           { val: 3,      unit: 'NT$',label: 'KOL 廣告 CPC 目標', upper: true },
+  shootBudget:      { val: 724000, unit: 'NT$',label: '視覺拍攝年度預算上限', upper: true },
+  adRateTotal:      { val: 6,      unit: '%',  label: '廣告費率上限（/全通路）', upper: true },
+  adRateEC:         { val: 20,     unit: '%',  label: '廣告費率上限（/電商）', upper: true },
+  monthRev:         [1250,1150,1150,1000,1000,900,900,900,1000,1150,1150,1250], // 萬 / 月
+  aov:              { val: 11250, unit:'NT$',  label: 'AOV 目標' },
+  refundRate:       { val: 5,    unit: '%',    label: '退貨率上限', upper: true },
+  whereOringoPv:    { val: 1200, unit: '',     label: '林果在哪裡 PV/週' }
 };
 
 // 年度廣告預算（按月，單位：元）+ 代理商服務費率
 // budget 已是「含服務費的最終目標」；GA / Meta / Google 抓到的廣告花費要 ×SERVICE_FEE_RATE 換算實際支出
-const AD_BUDGET_MONTHLY = [200010,200010,177960,118500,148560,142680,107400,113700,139020,186780,189720,201480];
+// 年度廣告預算 221 萬（含 15% 代理服費），依季節性分配
+const AD_BUDGET_MONTHLY = [229500,229500,204200,136000,170500,163700,123300,130500,159600,214400,217800,231200];
 const AD_SERVICE_FEE_RATE = 1.15;
-const AD_YEAR_BUDGET = AD_BUDGET_MONTHLY.reduce((s,v)=>s+v,0); // 1,925,820
+const AD_YEAR_BUDGET = AD_BUDGET_MONTHLY.reduce((s,v)=>s+v,0); // 2,210,200 ≈ 221萬
 
 // 達成率：actual vs target
 // 一般類（越高越好）：pct = actual/target，≥100% 達標
@@ -780,7 +811,7 @@ async function loadData(){
     const d=processMarketingData(rows);
     if(!d){banner.innerHTML='⚠️ 資料格式異常，顯示示意數據。';return;}
     applyWeeklyOverrides(d, weeklyRows, monthlyRows);
-    buildMonthly(rows, monthlyRows); if(RENDERED.monthly)renderMonthly();
+    buildMonthly(rows, monthlyRows); if(RENDERED.monthly)renderMonthly(); if(RENDERED.goals)renderGoals();
     Object.assign(MOCK,{overview:d.overview,channels:d.channels,trafficTrend:d.trafficTrend,ads:d.ads,revenue:d.revenue,social:d.social,mom:d.mom,yoy:d.yoy,adYear:d.adYear,adMonth:d.adMonth,weekRev:d.weekRev,weekAch:d.weekAch});
     banner.style.cssText='background:#e8f5e9;border-color:#4caf50;color:#2e7d32;border-radius:8px;padding:10px 16px;margin-bottom:1.25rem;display:flex;align-items:center;gap:12px;font-size:11px;font-family:\'Space Mono\',monospace';
     const src = weeklyRows ? '週報數據' : '行銷儀錶板數據';
@@ -1034,7 +1065,7 @@ function buildMonthly(rows, monthlyRows){
   rows.forEach(r=>{
     const d=parseDate_(r[0]); if(!d||isNaN(d))return;
     const ym=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0');
-    const M=byM[ym]||(byM[ym]={ym,y:d.getFullYear(),m:d.getMonth()+1,days:0,sessions:0,newUsers:0,wherePv:0,cvrSum:0,cvrN:0,cartSum:0,cartN:0,ecRev:0,ecOrders:0,refSum:0,refN:0,metaSp:0,metaCv:0,gSp:0,gCv:0,organic:0,paidSearch:0,paidSocial:0,direct:0,referral:0,kol:0,ig:0,fb:0,line:0,igRev:0,fbRev:0,lineRev:0});
+    const M=byM[ym]||(byM[ym]={ym,y:d.getFullYear(),m:d.getMonth()+1,days:0,sessions:0,newUsers:0,wherePv:0,cvrSum:0,cvrN:0,cartSum:0,cartN:0,ecRev:0,ecOrders:0,refSum:0,refN:0,metaSp:0,metaCv:0,gSp:0,gCv:0,organic:0,paidSearch:0,paidSocial:0,direct:0,referral:0,kol:0,ig:0,fb:0,line:0,igRev:0,fbRev:0,lineRev:0,organicRev:0});
     M.days++;M.sessions+=n(r[2]);M.newUsers+=n(r[3]);M.wherePv+=n(r[6]);
     if(n(r[4])>0){M.cvrSum+=n(r[4]);M.cvrN++;}
     if(n(r[5])>0){M.cartSum+=n(r[5]);M.cartN++;}
@@ -1042,7 +1073,7 @@ function buildMonthly(rows, monthlyRows){
     if(n(r[25])>0){M.refSum+=n(r[25]);M.refN++;}
     M.metaSp+=n(r[26]);M.metaCv+=n(r[29]);M.gSp+=n(r[30]);M.gCv+=n(r[33]);
     M.organic+=n(r[7]);M.paidSearch+=n(r[8]);M.paidSocial+=n(r[10]);M.direct+=n(r[12]);M.referral+=n(r[13]);M.kol+=n(r[37]);
-    M.ig+=n(r[14]);M.fb+=n(r[17]);M.line+=n(r[20]);M.igRev+=n(r[16]);M.fbRev+=n(r[19]);M.lineRev+=n(r[22]);
+    M.ig+=n(r[14]);M.fb+=n(r[17]);M.line+=n(r[20]);M.igRev+=n(r[16]);M.fbRev+=n(r[19]);M.lineRev+=n(r[22]);M.organicRev+=n(r[34]);
   });
   Object.values(byM).forEach(M=>{
     M.adSpendRaw=M.metaSp+M.gSp;M.adSpend=Math.round(M.adSpendRaw*AD_SERVICE_FEE_RATE);M.adCv=M.metaCv+M.gCv;
@@ -1235,8 +1266,194 @@ function renderMonthlyAdRate(){
   }).join('')}</tbody>`;
 }
 
+// ===== 年度目標進度 =====
+function buildAnnualProgress(){
+  const yr=new Date().getFullYear();
+  const ytdKeys=MONTHLY_KEYS.filter(k=>k.startsWith(yr+'/'));
+  if(!ytdKeys.length)return null;
+  let sessions=0,paid=0,organic=0,kol=0,social=0,orders=0,adSpendRaw=0,adCv=0,ecRev=0,totalRev=0,orgRev=0;
+  let cvrWt=0,cvrD=0;
+  ytdKeys.forEach(k=>{
+    const M=MONTHLY[k];
+    sessions+=M.sessions;paid+=(M.paidSearch||0)+(M.paidSocial||0);organic+=M.organic||0;
+    kol+=M.kol||0;social+=M.social||0;adSpendRaw+=M.adSpendRaw||0;adCv+=M.adCv||0;totalRev+=M.totalRev||0;
+    if(M.revReliable){orders+=M.ecOrders;ecRev+=M.ecRev;orgRev+=M.organicRev||0;}
+    if(M.cvrN>0){cvrWt+=M.siteCVR*M.days;cvrD+=M.days;}
+  });
+  const mo=ytdKeys.length;
+  return{mo,sessions,paid,organic,kol,social,orders,ecRev,orgRev,totalRev,
+    adSpend:Math.round(adSpendRaw*AD_SERVICE_FEE_RATE),adSpendRaw,
+    adsROAS:adSpendRaw>0?Math.round(adCv/adSpendRaw*100)/100:0,
+    siteROAS:adSpendRaw>0&&ecRev>0?Math.round(ecRev/adSpendRaw*100)/100:0,
+    avgCVR:cvrD>0?cvrWt/cvrD:0,
+    orgShare:ecRev>0?Math.round(orgRev/ecRev*1000)/10:0};
+}
+
+function renderGoals(){
+  const p=buildAnnualProgress();
+  const dEl=document.getElementById('goals-date');
+  if(dEl&&p)dEl.textContent=`YTD ${p.mo} 個月 · 尚餘 ${12-p.mo} 個月（2026）`;
+
+  // 警訊標準表
+  const stdEl=document.getElementById('goals-standards');
+  if(stdEl)stdEl.innerHTML=`<thead><tr><th>指標</th><th>年度目標</th><th>黃警閾值</th><th>紅警閾值</th><th>說明</th></tr></thead><tbody>
+    <tr><td class="td-s">廣告 ROAS</td><td>≥ 4.5</td><td>3.5–4.49</td><td>&lt; 3.5</td><td>Meta+Google GA4 轉換歸因</td></tr>
+    <tr><td class="td-s">全站 ROAS</td><td>≥ 7.5</td><td>6.0–7.49</td><td>&lt; 6.0</td><td>電商月營收 ÷ 廣告花費（未含服費）</td></tr>
+    <tr><td class="td-s">整站 CVR</td><td>≥ 0.35%</td><td>0.28–0.34%</td><td>&lt; 0.28%</td><td>GA4 整站電商轉換率（年均值）</td></tr>
+    <tr><td class="td-s">廣告費率 / 全通路</td><td>≤ 6%</td><td>6–8%</td><td>&gt; 8%</td><td>廣告花費（含服費）÷ 全通路月營收</td></tr>
+    <tr><td class="td-s">廣告費率 / 電商</td><td>≤ 20%</td><td>20–25%</td><td>&gt; 25%</td><td>廣告花費（含服費）÷ 電商月營收</td></tr>
+    <tr><td class="td-s">廣告年度預算</td><td>≤ 221萬</td><td>210–221萬</td><td>&gt; 221萬</td><td>含 15% 代理服務費，超支即警示</td></tr>
+    <tr><td class="td-s">廣告流量</td><td>≥ 340,000 人次</td><td>YTD 進度 65–79%</td><td>YTD 進度 &lt; 65%</td><td>Paid Search + Paid Social sessions 年度合計</td></tr>
+    <tr><td class="td-s">自然搜尋流量</td><td>≥ 277,645 人次</td><td>YTD 進度 65–79%</td><td>YTD 進度 &lt; 65%</td><td>Organic Search sessions 年度合計（SEO）</td></tr>
+    <tr><td class="td-s">SEO 營收佔比</td><td>≥ 30%</td><td>20–29%</td><td>&lt; 20%</td><td>自然搜尋轉換營收 ÷ 電商總營收</td></tr>
+    <tr><td class="td-s">KOL 年度導流</td><td>≥ 19,550 人次</td><td>YTD 進度 65–79%</td><td>YTD 進度 &lt; 65%</td><td>KOL sessions 年度合計</td></tr>
+    <tr><td class="td-s">社群年度流量</td><td>≥ 110,500 人次</td><td>YTD 進度 65–79%</td><td>YTD 進度 &lt; 65%</td><td>IG + FB + LINE sessions 年度合計，目標佔總流量 13%</td></tr>
+    <tr><td class="td-s">年訂單數</td><td>≥ 2,500 筆</td><td>2,000–2,499</td><td>&lt; 2,000</td><td>電商（GA4 完整追蹤月份），客單目標 NT$6,800</td></tr>
+    <tr><td class="td-s">視覺拍攝預算</td><td>≤ 72.4萬</td><td>60–72.4萬</td><td>&gt; 72.4萬</td><td>年度累計拍攝費（需手動記錄）</td></tr>
+  </tbody>`;
+
+  const kpiEl=document.getElementById('goals-kpi');
+  if(!p){
+    if(kpiEl)kpiEl.innerHTML='<div style="padding:18px;color:var(--text-muted);font-size:13px;background:var(--surface);border:1px dashed var(--border2);border-radius:10px">資料載入後自動產生目標進度。</div>';
+    document.getElementById('goals-feasibility').innerHTML='';return;
+  }
+
+  const pace=p.mo/12;
+
+  // 目標進度卡（isRatio→直接比；cumulative→比 actual vs target*pace）
+  function gKpi(lbl,actual,target,unit,isRatio,upper,note){
+    const effTgt=isRatio?target:target*pace;
+    const rawPct=effTgt>0?actual/effTgt:0;
+    const pct=Math.round(rawPct*100);
+    let cls;
+    if(upper){cls=pct<=100?'tgt-good':pct<=115?'tgt-warn':'tgt-bad';}
+    else{cls=pct>=100?'tgt-good':pct>=75?'tgt-warn':'tgt-bad';}
+    const color=cls==='tgt-good'?'var(--positive)':cls==='tgt-warn'?'#b8860b':'var(--negative)';
+    const barW=Math.min(pct,150)/1.5;
+    const dv=typeof actual==='number'?(actual>=10000?Math.round(actual).toLocaleString():actual<10?actual.toFixed(2):actual.toFixed(0)):String(actual);
+    const dt=typeof target==='number'?(target>=10000?target.toLocaleString():target<10?target.toFixed(1):String(target)):String(target);
+    return`<div class="kc" style="--kc-color:${color}">
+      <div class="kc-l">${lbl}</div>
+      <div class="kc-v" style="font-size:17px">${dv}${unit?'<span style="font-size:10px;font-weight:400;margin-left:3px">'+unit+'</span>':''}</div>
+      <div class="kc-d"><span class="kc-vs">目標 ${dt}${unit?' '+unit:''}</span></div>
+      <div class="kc-tgt">
+        <span class="kc-tgt-pill ${cls}">${pct}%</span>
+        <div class="kc-tgt-bar"><div class="kc-tgt-bar-fg ${cls}-bar" style="width:${barW}%"></div></div>
+        ${!isRatio?`<span style="font-size:9px;color:var(--text-muted)">進度基準 ${Math.round(pace*100)}%</span>`:''}
+      </div>
+      ${note?`<div style="font-size:9px;color:var(--text-muted);margin-top:5px;line-height:1.4">${note}</div>`:''}
+    </div>`;
+  }
+
+  kpiEl.innerHTML=`
+    <div class="sec-hdr" style="margin-top:0;margin-bottom:.75rem"><div class="sec-title">電商表現</div></div>
+    <div class="kpi4">
+      ${gKpi('整站 CVR（月均）',parseFloat(p.avgCVR.toFixed(2)),0.35,'%',true,false,'目標 0.35%（較基準 0.25% 成長 +40%）')}
+      ${gKpi('年訂單數（YTD）',p.orders,2500,'筆',false,false,p.orders>0?'僅含 GA4 完整追蹤月份（≥80 筆/月）':'GA4 電商追蹤 2026/04 中旬才啟用')}
+      ${gKpi('廣告 ROAS（YTD 加權）',p.adsROAS,4.5,'',true,false,'GA4 轉換值 ÷ 廣告花費（Meta+Google）')}
+      ${gKpi('全站 ROAS（YTD）',p.siteROAS,7.5,'',true,false,'電商實際營收 ÷ 廣告花費（未含服費）')}
+    </div>
+    <div class="sec-hdr" style="margin-top:1.25rem;margin-bottom:.75rem"><div class="sec-title">廣告流量 & 預算</div></div>
+    <div class="kpi4">
+      ${gKpi('廣告流量（YTD）',p.paid,340000,'人次',false,false,'Paid Search + Paid Social sessions，目標佔總流量 40%')}
+      ${gKpi('廣告預算使用（YTD）',Math.round(p.adSpend/10000),221,'萬',false,true,'含 15% 代理服費，超支即警示')}
+      ${gKpi('自然搜尋流量（YTD）',p.organic,277645,'人次',false,false,'Organic Search sessions（SEO 目標 YoY +25%）')}
+      ${gKpi('SEO 營收佔比',p.orgShare,30,'%',true,false,p.orgShare>0?'自然搜尋 GA4 轉換值 ÷ 電商總營收':'GA4 追蹤月份不足，僅供參考')}
+    </div>
+    <div class="sec-hdr" style="margin-top:1.25rem;margin-bottom:.75rem"><div class="sec-title">KOL & 社群流量</div></div>
+    <div class="kpi3">
+      ${gKpi('KOL 導流（YTD）',p.kol,19550,'人次',false,false,'KOL referral sessions，目標 CPC ≤ NT$3')}
+      ${gKpi('社群流量（YTD）',p.social,110500,'人次',false,false,'IG + FB + LINE sessions，目標佔總流量 13%')}
+      ${gKpi('社群月均 Sessions',Math.round(p.social/(p.mo||1)),Math.round(110500/12),'人/月',true,false,'年目標 110,500 ÷ 12 ≈ '+Math.round(110500/12).toLocaleString()+' 人次/月')}
+    </div>`;
+
+  renderGoalsFeasibility(p,pace);
+}
+
+function renderGoalsFeasibility(p,pace){
+  const el=document.getElementById('goals-feasibility');if(!el)return;
+  const C={red:'#c0392b',amber:'#b07d12',green:'#1a7a4a',neutral:'#8D5531'};
+  const out=[];
+  const proj=v=>Math.round(v/p.mo*12); // 推估全年
+
+  // ROAS
+  if(p.adsROAS>0){
+    const sev=p.adsROAS>=4.5?'green':p.adsROAS>=3.5?'amber':'red';
+    out.push({sev,tag:'廣告 ROAS',
+      title:`廣告 ROAS 目標 4.5：${p.adsROAS>=4.5?'✅ 已達標':'⚠️ YTD '+p.adsROAS.toFixed(2)+'，落後 '+(Math.round((4.5-p.adsROAS)/4.5*100))+'%'}`,
+      body:`YTD ${p.mo} 個月加權廣告 ROAS ${p.adsROAS.toFixed(2)}（目標 4.5）。`+(p.adsROAS<3.5?'嚴重落後，建議立即重整投放受眾、暫停低效廣告組，並提升落頁體驗。':p.adsROAS<4.5?'略低於目標，建議優化 Meta 受眾擴充策略與 Google 出價模式（tROAS）。':'維持現有效率即可達成年度目標。'),
+      data:`YTD 廣告花費 NT$${Math.round(p.adSpend).toLocaleString()}（含服費）｜全站 ROAS ${p.siteROAS.toFixed(2)}（目標 7.5）`});
+  }
+
+  // CVR
+  if(p.avgCVR>0){
+    const sev=p.avgCVR>=0.35?'green':p.avgCVR>=0.28?'amber':'red';
+    const gap=Math.round((0.35-p.avgCVR)/0.25*100);
+    out.push({sev,tag:'整站 CVR',
+      title:`CVR 目標 0.35%：${p.avgCVR>=0.35?'✅ 已達標':'⚠️ 現況 '+p.avgCVR.toFixed(2)+'%，需再提升 '+Math.round((0.35-p.avgCVR)/p.avgCVR*100)+'%'}`,
+      body:`YTD 月均整站 CVR ${p.avgCVR.toFixed(2)}%，起始基準 0.25%，年度目標 0.35%（+40%）。`+(p.avgCVR<0.35?'建議優先優化：①商品頁圖文一致性 ②結帳流程簡化 ③再行銷受眾強化。':''),
+      data:`目標 0.35% · 2025 基準 0.25% · 年訂單目標 2,500 筆`});
+  }
+
+  // Orders
+  if(p.orders>0){
+    const ann=proj(p.orders);
+    const sev=ann>=2500?'green':ann>=2000?'amber':'red';
+    out.push({sev,tag:'年訂單數',
+      title:`年訂單目標 2,500 筆：${ann>=2500?'✅ 推估可達':'⚠️ 依目前速度推估全年 '+ann.toLocaleString()+' 筆'}`,
+      body:`YTD ${p.mo} 個月共 ${p.orders.toLocaleString()} 筆（月均 ${Math.round(p.orders/p.mo)} 筆），依速度推估全年 ${ann.toLocaleString()} 筆（目標 2,500）。`,
+      data:`僅計入 GA4 完整電商追蹤月份（≥80 筆/月）`});
+  }
+
+  // Paid traffic
+  if(p.paid>0){
+    const ann=proj(p.paid);
+    const sev=ann>=340000?'green':ann>=270000?'amber':'red';
+    out.push({sev,tag:'廣告流量',
+      title:`廣告流量目標 340,000：${ann>=340000?'✅ 推估可達':'⚠️ 推估全年 '+ann.toLocaleString()+' 人次'}`,
+      body:`YTD Paid sessions ${p.paid.toLocaleString()}，月均 ${Math.round(p.paid/p.mo).toLocaleString()}，推估全年 ${ann.toLocaleString()}（目標 340,000 · 佔總流量 40%）。目前廣告流量佔比 ${p.sessions>0?Math.round(p.paid/p.sessions*100)+'%':'—'}。`,
+      data:`目標：廣告流量 340,000｜自然流量 277,645｜社群 110,500｜KOL 19,550`});
+  }
+
+  // Organic
+  if(p.organic>0){
+    const ann=proj(p.organic);
+    const sev=ann>=277645?'green':ann>=222000?'amber':'red';
+    out.push({sev,tag:'自然搜尋流量',
+      title:`SEO 目標 277,645：${ann>=277645?'✅ 推估可達':'⚠️ 推估全年 '+ann.toLocaleString()}`,
+      body:`YTD 自然搜尋 ${p.organic.toLocaleString()} sessions，推估全年 ${ann.toLocaleString()}（目標 277,645 · YoY +25%）。`+(p.orgShare>0?` SEO 營收佔比 ${p.orgShare.toFixed(1)}%（目標 ≥30%）。`:''),
+      data:`SEO 年度預算建議搭配內容行銷，提升高意圖長尾關鍵字排名`});
+  }
+
+  // Social
+  if(p.social>0){
+    const ann=proj(p.social);
+    const sev=ann>=110500?'green':ann>=88000?'amber':'red';
+    out.push({sev,tag:'社群流量',
+      title:`社群目標 110,500：${ann>=110500?'✅ 推估可達':'⚠️ 推估全年 '+ann.toLocaleString()}`,
+      body:`YTD IG+FB+LINE 共 ${p.social.toLocaleString()} sessions（月均 ${Math.round(p.social/p.mo).toLocaleString()}），推估全年 ${ann.toLocaleString()}（目標 110,500 · 佔總流量 13%）。`,
+      data:`社群流量目標佔比 13%；目前佔比 ${p.sessions>0?Math.round(p.social/p.sessions*100)+'%':'—'}`});
+  }
+
+  // Ad budget
+  {
+    const annPace=proj(p.adSpend);
+    const over=p.adSpend>AD_YEAR_BUDGET;
+    const annOver=annPace>AD_YEAR_BUDGET;
+    const sev=annOver?'red':annPace>AD_YEAR_BUDGET*0.95?'amber':'green';
+    out.push({sev,tag:'廣告預算',
+      title:`廣告預算 221萬：${annOver?'⚠️ 推估超支 NT$'+(Math.round((annPace-AD_YEAR_BUDGET)/10000))+'萬':'✅ 推估在預算內'}`,
+      body:`YTD 廣告花費 NT$${Math.round(p.adSpend/10000)}萬（含服費），推估全年 NT$${Math.round(annPace/10000)}萬（預算 221萬）。`,
+      data:`視覺拍攝上限 72.4萬（需手動記錄）｜KOL CPC 目標 ≤ NT$3`});
+  }
+
+  const rank={red:0,amber:1,green:2,neutral:3};
+  out.sort((a,b)=>rank[a.sev]-rank[b.sev]);
+  el.innerHTML=out.map(it=>`<div class="insight" style="border-left-color:${C[it.sev]}"><div class="insight-hd"><span class="insight-tag" style="background:${C[it.sev]}">${it.tag}</span><span class="insight-title">${it.title}</span></div><div class="insight-body">${it.body}</div><div class="insight-data">${it.data}</div></div>`).join('');
+}
+
 // ===== Tab switcher（lazy render） =====
-const RENDERED={overview:false,monthly:false,ads:false,revenue:false,social:false};
+const RENDERED={overview:false,monthly:false,ads:false,revenue:false,social:false,goals:false};
 function switchTab(tab,btn){
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
   btn.classList.add('active');
@@ -1246,6 +1463,7 @@ function switchTab(tab,btn){
     if(tab==='overview')renderOverview();
     if(tab==='monthly')renderMonthly();
     if(tab==='ads')renderAds();
+    if(tab==='goals')renderGoals();
 
     RENDERED[tab]=true;
   }
