@@ -799,11 +799,19 @@ function applyWeeklyOverrides(d, weeklyRows, monthlyRows) {
 async function loadData(){
   const banner=document.getElementById('data-status-banner');
   try{
-    const [rows, weeklyRows, monthlyRows] = await Promise.all([
+    const [rows, weeklyRows, monthlyRows, erpRows] = await Promise.all([
       loadGviz('行銷儀錶板數據'),
       loadGviz('週報數據').catch(() => null),
-      loadGviz('月度數據').catch(() => null)
+      loadGviz('月度數據').catch(() => null),
+      loadGviz('行銷費用月表').catch(() => null)
     ]);
+    // 解析 ERP 廣告費明細 → ERP_AD_MAP[ym]
+    ERP_AD_MAP={};
+    if(erpRows){erpRows.slice(1).forEach(r=>{
+      const ym=String(r[0]||'').trim();if(!ym)return;
+      const shoot=Number(r[1])||0,mediaErp=Number(r[2])||0,print=Number(r[3])||0,event=Number(r[4])||0,pr=Number(r[5])||0;
+      ERP_AD_MAP[ym]={shoot,media:mediaErp,print,event,pr,nonMedia:shoot+print+event+pr};
+    });}
     if(!rows||!rows.length){
       banner.innerHTML='⚠️ 「行銷儀錶板數據」工作表尚無資料。請在 GAS 執行 <b>initMarketingSheet()</b>，再執行 <b>testPullDaily()</b>。目前顯示示意數據。';
       return;
@@ -1047,6 +1055,7 @@ const _mf=v=>Math.round(v).toLocaleString();
 // 月度全通路營收（從 月度數據 tab，所有門市+官網加總）
 // MONTHLY_EC_REV_OVERRIDE = 月度數據「官網」欄的 ERP 電商月營收，供 GA4 未完整月份補入
 let MONTHLY_TOTAL_REV={},MONTHLY_EC_REV_OVERRIDE={};
+let ERP_AD_MAP={}; // {ym: {shoot,media,print,event,pr,nonMedia}}
 function buildMonthlyTotalRev(monthlyRows){
   if(!monthlyRows||!monthlyRows.length)return;
   const n=v=>Number(v)||0,byM={},ecM={};
@@ -1093,8 +1102,13 @@ function buildMonthly(rows, monthlyRows){
     }else{M.ecRevERP=M.revReliable?M.ecRev:0;M.ecRevIsERP=false;}
     // adRateEC：用可靠電商營收計算（GA4 不可靠時才用 ERP；完全沒資料則 null）
     const _ecForRate=M.revReliable?M.ecRev:(M.ecRevERP||0);
-    M.adRateEC=_ecForRate>0?Math.round(M.adSpend/_ecForRate*1000)/10:null;
-    M.adRateTotal=M.totalRev>0?Math.round(M.adSpend/M.totalRev*1000)/10:null;
+    // 廣告費合計 = API 媒體採買 + ERP 非媒體項目（拍攝+印刷+活動+公關）
+    const erp=ERP_AD_MAP[M.ym]||null;
+    M.erpNonMedia=erp?(erp.shoot+erp.print+erp.event+erp.pr):0;
+    M.totalAdCost=M.adSpend+M.erpNonMedia; // 真正的廣告費率分子
+    M.erpLoaded=!!erp;
+    M.adRateEC=_ecForRate>0?Math.round(M.totalAdCost/_ecForRate*1000)/10:null;
+    M.adRateTotal=M.totalRev>0?Math.round(M.totalAdCost/M.totalRev*1000)/10:null;
   });
   const now=new Date(),curYm=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0');
   MONTHLY=byM;MONTHLY_KEYS=Object.keys(byM).filter(k=>k!==curYm&&byM[k].days>=20).sort();
@@ -1250,12 +1264,15 @@ function renderMonthlyAdRate(){
   const fmtNT=v=>'NT$'+Math.round(v).toLocaleString();
   const labels=ks.map(k=>{const[y,m]=k.split('/');return(y==='2026'?'':y.slice(2)+'/')+(+m)+'月';});
   const adSpend=ks.map(k=>MONTHLY[k].adSpend||0);
+  const erpNonMedia=ks.map(k=>MONTHLY[k].erpNonMedia||0);
+  const totalAdCost=ks.map(k=>MONTHLY[k].totalAdCost||0);
   const totalRev=ks.map(k=>MONTHLY[k].totalRev||0);
   const adRateTotal=ks.map(k=>MONTHLY[k].adRateTotal);
   const adRateEC=ks.map(k=>MONTHLY[k].adRateEC);
   el._chartInst=new Chart(el,{data:{labels,datasets:[
     {type:'bar',label:'全通路營收',data:totalRev,backgroundColor:'rgba(40,66,52,.18)',borderColor:'rgba(40,66,52,.4)',borderWidth:1,yAxisID:'y',order:3},
-    {type:'bar',label:'廣告花費（含服費）',data:adSpend,backgroundColor:'rgba(165,74,26,.75)',yAxisID:'y',order:2},
+    {type:'bar',label:'媒體採買（含服費）',data:adSpend,backgroundColor:'rgba(165,74,26,.75)',yAxisID:'y',order:2,stack:'ad'},
+    {type:'bar',label:'ERP非媒體（拍攝+公關等）',data:erpNonMedia,backgroundColor:'rgba(207,162,148,.7)',yAxisID:'y',order:2,stack:'ad'},
     {type:'line',label:'廣告費率-全通路（%）',data:adRateTotal,borderColor:'#1877F2',backgroundColor:'#1877F2',tension:.3,pointRadius:5,borderWidth:2,yAxisID:'y1',order:1,spanGaps:true},
     {type:'line',label:'廣告費率-電商（%）',data:adRateEC,borderColor:'#E2A24A',backgroundColor:'#E2A24A',tension:.3,pointRadius:4,borderWidth:2,borderDash:[4,3],yAxisID:'y1',order:1,spanGaps:true}
   ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{font:{family:'Space Mono',size:10}}},tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;if(ctx.dataset.yAxisID==='y1')return` ${ctx.dataset.label}: ${v!=null?v.toFixed(1)+'%':'—'}`;return` ${ctx.dataset.label}: ${fmtNT(v)}`;}}}},scales:{y:{position:'left',ticks:{font:{family:'Space Mono',size:10},color:'#b09a88',callback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1000).toFixed(0)+'K':v},grid:{color:'rgba(40,66,52,.05)'}},y1:{position:'right',min:0,suggestedMax:25,ticks:{font:{family:'Space Mono',size:10},color:'#b09a88',callback:v=>v+'%'},grid:{display:false}},x:{ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}}}}});
@@ -1264,18 +1281,18 @@ function renderMonthlyAdRate(){
   const tbl=document.getElementById('tbl-monthly-adrate');
   if(!tbl)return;
   const AD_RATE_TARGET=6;
-  tbl.innerHTML=`<thead><tr><th>月份</th><th>全通路營收</th><th>電商營收</th><th>廣告花費</th><th>費率/全通路</th><th>費率/電商</th><th>ROAS</th></tr></thead><tbody>${ks.map(k=>{
+  tbl.innerHTML=`<thead><tr><th>月份</th><th>全通路營收</th><th>電商營收</th><th>媒體採買(API)</th><th>拍攝+公關等(ERP)</th><th>廣告費合計</th><th>費率/全通路</th><th>費率/電商</th><th>ROAS</th></tr></thead><tbody>${ks.map(k=>{
     const M=MONTHLY[k];
     const rateT=M.adRateTotal,rateE=M.adRateEC;
-    // 全通路費率：≤6% 綠、6–8% 黃、>8% 紅
     const rtCls=rateT==null?'':(rateT>8?'style="color:#c0392b;font-weight:700"':rateT>AD_RATE_TARGET?'style="color:#b8860b;font-weight:700"':'style="color:#1a7a4a;font-weight:700"');
-    // 電商費率：≤20% 綠、20–25% 黃、>25% 紅
     const reCls=rateE==null?'':(rateE>25?'style="color:#c0392b;font-weight:700"':rateE>20?'style="color:#b8860b;font-weight:700"':'style="color:#1a7a4a"');
     const roas=M.adActive?M.roas.toFixed(2):'—';
-    // 電商營收顯示：GA4 可靠 > ERP 補入（標 ERP）> --
     const ecRevDisp=M.revReliable?'NT$'+Math.round(M.ecRev/10000)+'萬'
       :(M.ecRevIsERP?'NT$'+Math.round(M.ecRevERP/10000)+'萬 <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;padding:1px 4px;border-radius:3px;font-family:Space Mono,monospace">ERP</span>':'—');
-    return`<tr><td class="td-s">${k.replace('/','-')}</td><td>${M.totalRev>0?'NT$'+Math.round(M.totalRev/10000)+'萬':'—'}</td><td>${ecRevDisp}</td><td>${M.adActive?'NT$'+Math.round(M.adSpend).toLocaleString():'—'}</td><td ${rtCls}>${rateT!=null?rateT.toFixed(1)+'%':'—'}</td><td ${reCls}>${rateE!=null?rateE.toFixed(1)+'%':'—'}</td><td>${roas}</td></tr>`;
+    const erpBadge=M.erpLoaded?'':'<span style="font-size:9px;background:#fff3e0;color:#e65100;padding:1px 4px;border-radius:3px;font-family:Space Mono,monospace">無ERP</span>';
+    const nonMediaDisp=M.erpLoaded?'NT$'+Math.round(M.erpNonMedia).toLocaleString():erpBadge;
+    const totalDisp=M.adActive?(M.erpLoaded?'NT$'+Math.round(M.totalAdCost).toLocaleString():'NT$'+Math.round(M.adSpend).toLocaleString()+' +?'):'—';
+    return`<tr><td class="td-s">${k.replace('/','-')}</td><td>${M.totalRev>0?'NT$'+Math.round(M.totalRev/10000)+'萬':'—'}</td><td>${ecRevDisp}</td><td>${M.adActive?'NT$'+Math.round(M.adSpend).toLocaleString():'—'}</td><td>${nonMediaDisp}</td><td>${totalDisp}</td><td ${rtCls}>${rateT!=null?rateT.toFixed(1)+'%':'—'}</td><td ${reCls}>${rateE!=null?rateE.toFixed(1)+'%':'—'}</td><td>${roas}</td></tr>`;
   }).join('')}</tbody>`;
 }
 
