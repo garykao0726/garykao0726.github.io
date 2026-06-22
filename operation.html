@@ -1519,7 +1519,7 @@ function renderGbpCards(data){
         <div style="text-align:right">
           <div class="sc-kpi-l" style="margin-bottom:2px">累積評價數</div>
           <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--text)">${d.reviews} 則</div>
-          <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--positive);margin-top:1px">+${d.weeklyReviews} 本週</div>
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:${d.monthlyReviews>=10?'var(--positive)':'var(--text-muted)'};margin-top:1px">+${d.monthlyReviews} 本月${d.monthlyReviews>=10?' ✅':''}</div>
         </div>
       </div>
     </div>`;
@@ -1543,7 +1543,8 @@ function renderGbpReviews(data){
         <div style="font-family:'Space Mono',monospace;font-size:28px;font-weight:700;color:var(--rust);line-height:1">${d.rating}</div>
         <div style="font-size:15px;margin:5px 0 2px">${gbpStars(d.rating)}</div>
         <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted)">${d.reviews} 則評價</div>
-        <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--positive);margin-top:3px">+${d.weeklyReviews} 本週新增</div>
+        <div style="font-size:10px;font-family:'Space Mono',monospace;color:${d.monthlyReviews>=10?'var(--positive)':'var(--text-muted)'};margin-top:3px">+${d.monthlyReviews} 本月新增${d.monthlyReviews>=10?' ✅':''}</div>
+        <div style="font-size:9px;color:var(--text-muted);margin-top:2px">五星新評 月目標 10 則${d.monthlyReviews>=10?'　達標':`　${d.monthlyReviews}/10`}</div>
         <div class="prog" style="margin-top:10px"><div class="prog-bar" style="width:${pct}%;background:${GBP_COL[i]}"></div></div>
       </div>`;
     }).join('')
