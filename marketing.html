@@ -224,6 +224,25 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div class="card-hdr"><span class="card-lbl">月度廣告費率明細</span><span class="card-badge">廣告費 ÷ 電商 ｜ 廣告費 ÷ 全通路</span></div>
     <div style="overflow-x:auto"><table class="ctbl" id="tbl-monthly-adrate"></table></div>
   </div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">行銷費用甜蜜點分析</div>
+    <div class="sec-date">邊際效益 · 找出費率拐點 · 財務會議用</div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">廣告費率 vs 營收成長率（MoM）</span><span class="card-badge">每點=1個月</span></div>
+      <div class="ch240"><canvas id="ch-sweetspot-growth"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">廣告花費 vs ROAS（邊際效益遞減）</span><span class="card-badge">每點=1個月</span></div>
+      <div class="ch240"><canvas id="ch-sweetspot-roas"></canvas></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:1rem">
+    <div class="card-hdr"><span class="card-lbl">甜蜜點建議</span><span class="card-badge">自動計算</span></div>
+    <div id="sweetspot-summary" style="padding:14px 4px;font-size:13px;line-height:1.8;color:var(--text)"></div>
+  </div>
 </div>
 
 <!-- ============ 廣告成效 ============ -->
@@ -1297,6 +1316,72 @@ function renderMonthlyAdRate(){
     const totalDisp=M.adActive?(M.erpLoaded?'NT$'+Math.round(M.totalAdCost).toLocaleString():'NT$'+Math.round(M.adSpend).toLocaleString()+' +?'):'—';
     return`<tr><td class="td-s">${k.replace('/','-')}</td><td>${M.totalRev>0?'NT$'+Math.round(M.totalRev/10000)+'萬':'—'}</td><td>${ecRevDisp}</td><td>${M.adActive?'NT$'+Math.round(M.adSpend).toLocaleString():'—'}</td><td>${nonMediaDisp}</td><td>${totalDisp}</td><td ${rtCls}>${rateT!=null?rateT.toFixed(1)+'%':'—'}</td><td ${reCls}>${rateE!=null?rateE.toFixed(1)+'%':'—'}</td><td>${roas}</td></tr>`;
   }).join('')}</tbody>`;
+  renderSweetSpot();
+}
+
+// 簡單線性迴歸：回傳 {slope, intercept, r}（皮爾森相關係數）
+function linReg_(pts){
+  const n=pts.length;if(n<2)return{slope:0,intercept:0,r:0};
+  const sx=pts.reduce((s,p)=>s+p.x,0),sy=pts.reduce((s,p)=>s+p.y,0);
+  const mx=sx/n,my=sy/n;
+  let sxy=0,sxx=0,syy=0;
+  pts.forEach(p=>{sxy+=(p.x-mx)*(p.y-my);sxx+=(p.x-mx)**2;syy+=(p.y-my)**2;});
+  const slope=sxx>0?sxy/sxx:0,intercept=my-slope*mx;
+  const r=(sxx>0&&syy>0)?sxy/Math.sqrt(sxx*syy):0;
+  return{slope,intercept,r};
+}
+
+function renderSweetSpot(){
+  const ks=MONTHLY_KEYS.slice(-16).filter(k=>MONTHLY[k].adActive&&MONTHLY[k].totalRev>0&&MONTHLY[k].erpLoaded);
+  const elG=document.getElementById('ch-sweetspot-growth'),elR=document.getElementById('ch-sweetspot-roas');
+  const sumEl=document.getElementById('sweetspot-summary');
+  if(!elG||!elR||!sumEl)return;
+  if(elG._chartInst)elG._chartInst.destroy();
+  if(elR._chartInst)elR._chartInst.destroy();
+  if(ks.length<4){sumEl.innerHTML='<span style="color:var(--text-muted)">資料月份不足（需至少4個月含ERP費用），暫無法分析。</span>';return;}
+
+  // 1) 廣告費率(全通路) vs 營收 MoM 成長率
+  const growthPts=[];
+  ks.forEach(k=>{
+    const pk=_prevYm(k);const P=MONTHLY[pk];const M=MONTHLY[k];
+    if(!P||!P.totalRev||M.adRateTotal==null)return;
+    const mom=_pc(M.totalRev,P.totalRev);
+    if(mom==null)return;
+    growthPts.push({x:M.adRateTotal,y:mom,ym:k});
+  });
+  const regG=linReg_(growthPts);
+  elG._chartInst=new Chart(elG,{type:'scatter',data:{datasets:[
+    {label:'月資料點',data:growthPts,backgroundColor:'#1877F2',pointRadius:5},
+    ...(growthPts.length>=3?[{label:'趨勢線',type:'line',data:(()=>{const xs=growthPts.map(p=>p.x);const x0=Math.min(...xs),x1=Math.max(...xs);return[{x:x0,y:regG.slope*x0+regG.intercept},{x:x1,y:regG.slope*x1+regG.intercept}];})(),borderColor:'rgba(165,74,26,.6)',borderWidth:2,borderDash:[5,3],pointRadius:0,fill:false}]:[])
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw.ym?` ${ctx.raw.ym}：費率${ctx.raw.x.toFixed(1)}% / MoM ${ctx.raw.y.toFixed(1)}%`:''}}},scales:{x:{title:{display:true,text:'廣告費率/全通路（%）',font:{size:10}},ticks:{font:{size:10}}},y:{title:{display:true,text:'營收 MoM 成長率（%）',font:{size:10}},ticks:{font:{size:10}}}}}});
+
+  // 2) 廣告花費(合計) vs ROAS
+  const roasPts=ks.filter(k=>MONTHLY[k].roas>0).map(k=>({x:MONTHLY[k].totalAdCost,y:MONTHLY[k].roas,ym:k}));
+  const regR=linReg_(roasPts);
+  elR._chartInst=new Chart(elR,{type:'scatter',data:{datasets:[
+    {label:'月資料點',data:roasPts,backgroundColor:'#E2A24A',pointRadius:5},
+    ...(roasPts.length>=3?[{label:'趨勢線',type:'line',data:(()=>{const xs=roasPts.map(p=>p.x);const x0=Math.min(...xs),x1=Math.max(...xs);return[{x:x0,y:regR.slope*x0+regR.intercept},{x:x1,y:regR.slope*x1+regR.intercept}];})(),borderColor:'rgba(28,122,74,.6)',borderWidth:2,borderDash:[5,3],pointRadius:0,fill:false}]:[])
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw.ym?` ${ctx.raw.ym}：花費NT$${Math.round(ctx.raw.x).toLocaleString()} / ROAS ${ctx.raw.y.toFixed(2)}`:''}}},scales:{x:{title:{display:true,text:'廣告費合計（NT$）',font:{size:10}},ticks:{font:{size:10}}},y:{title:{display:true,text:'ROAS',font:{size:10}},ticks:{font:{size:10}}}}}});
+
+  // 3) 文字建議：相關係數 + 依費率分組看 ROAS/MoM 平均，找出費率越高 ROAS 反而下滑的分界點
+  const sorted=[...ks].sort((a,b)=>MONTHLY[a].adRateTotal-MONTHLY[b].adRateTotal);
+  const mid=Math.ceil(sorted.length/2);
+  const lowGroup=sorted.slice(0,mid),highGroup=sorted.slice(mid);
+  const avg=(arr,f)=>arr.length?arr.reduce((s,k)=>s+f(MONTHLY[k]),0)/arr.length:0;
+  const lowRate=avg(lowGroup,M=>M.adRateTotal),highRate=avg(highGroup,M=>M.adRateTotal);
+  const lowRoas=avg(lowGroup,M=>M.roas),highRoas=avg(highGroup,M=>M.roas);
+  const rTxt=regG.r;
+  const corrTxt=Math.abs(rTxt)<0.2?'幾乎無相關':Math.abs(rTxt)<0.4?'弱相關':Math.abs(rTxt)<0.6?'中度相關':'高度相關';
+  const dirTxt=rTxt>0?'正相關（費率越高、營收成長越快）':'負相關（費率越高、營收成長反而趨緩）';
+  let verdict;
+  if(highRoas<lowRoas*0.85){
+    verdict=`⚠️ 費率較高的月份（平均 ${highRate.toFixed(1)}%）ROAS 反而比費率較低的月份（平均 ${lowRate.toFixed(1)}%）低 ${Math.round((1-highRoas/lowRoas)*100)}%，顯示<b>邊際效益遞減</b>——超過約 ${lowRate.toFixed(1)}–${highRate.toFixed(1)}% 區間後，多花的預算換來的轉換效率下降。建議甜蜜點落在 <b>${lowRate.toFixed(1)}% 附近</b>，超過後應檢視投放策略而非單純加碼。`;
+  }else if(highRoas>lowRoas*1.15){
+    verdict=`✅ 費率較高月份（平均 ${highRate.toFixed(1)}%）ROAS 反而較高，目前花費區間內<b>尚未出現邊際效益遞減</b>，加碼預算可能仍有效率空間（需留意樣本月數有限，建議持續累積資料驗證）。`;
+  }else{
+    verdict=`目前 ROAS 在低費率組（${lowRate.toFixed(1)}%）與高費率組（${highRate.toFixed(1)}%）差異不大，<b>尚未看出明顯拐點</b>，現行費率區間大致在合理範圍內，建議持續監測。`;
+  }
+  sumEl.innerHTML=`<div>費率 vs 營收成長率：<b>${corrTxt}</b>，${dirTxt}（r=${rTxt.toFixed(2)}，樣本 ${growthPts.length} 月）。</div><div style="margin-top:6px">${verdict}</div><div style="margin-top:6px;color:var(--text-muted);font-size:11px">＊樣本量小（${ks.length}個月），結論為方向性參考，非統計顯著驗證。建議累積至 24 個月以上再做預算決策依據。</div>`;
 }
 
 // ===== 年度目標進度 =====
