@@ -337,7 +337,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div id="gbp-review-overview"></div>
   </div>
   <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-hdr"><span class="card-lbl">本月店員行動指標</span><span class="card-badge">近兩個月（60 天）</span></div>
+    <div class="card-hdr"><span class="card-lbl">本月店員行動指標</span><span class="card-badge">近 30 天滾動</span></div>
     <div id="gbp-actions"></div>
   </div>
   <div class="g2" style="margin-bottom:1.25rem">
@@ -1493,10 +1493,12 @@ function renderGbpActions(data){
   </table></div>`;
 }
 function renderGbpCards(data){
+  const maxRev=Math.max(0,...data.map(d=>d.monthlyReviews||0));
   document.getElementById('gbp-cards').innerHTML=data.map((d,i)=>{
     const total=d.search+d.map,mapPct=Math.round(d.map/total*100),sPct=100-mapPct;
+    const isLeader=maxRev>0&&(d.monthlyReviews||0)===maxRev;
     return`<div class="store-card" style="--sc-color:${GBP_COL[i]}">
-      <div class="sc-name">${GBP_EMO[i]} ${d.store}</div>
+      <div class="sc-name">${GBP_EMO[i]} ${d.store}${isLeader?' 👑':''}</div>
       <div class="sc-grid">
         <div class="sc-kpi sc-kpi-main"><div class="sc-kpi-l">總曝光次數</div><div class="sc-kpi-v">${total.toLocaleString('zh-TW')}</div></div>
         <div class="sc-kpi"><div class="sc-kpi-l">搜尋曝光</div><div class="sc-kpi-v">${d.search.toLocaleString('zh-TW')}</div></div>
@@ -1519,7 +1521,7 @@ function renderGbpCards(data){
         <div style="text-align:right">
           <div class="sc-kpi-l" style="margin-bottom:2px">累積評價數</div>
           <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--text)">${d.reviews} 則</div>
-          <div style="font-family:'Space Mono',monospace;font-size:10px;color:${d.monthlyReviews>=10?'var(--positive)':'var(--text-muted)'};margin-top:1px">+${d.monthlyReviews} 本月${d.monthlyReviews>=10?' ✅':''}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:${d.monthlyReviews>=10?'var(--positive)':'var(--text-muted)'};margin-top:1px">+${d.monthlyReviews} 本月${d.monthlyReviews>=10?' ✅':''}${isLeader?' 👑':''}</div>
         </div>
       </div>
     </div>`;
@@ -1532,20 +1534,23 @@ function renderGbpTrend(data,labels){
   gbpTrendChart=new Chart(el,{type:'line',data:{labels:weekLabels,datasets:data.map((d,i)=>({label:d.store,data:d.wTrend.map((s,j)=>s+(d.mTrend[j]||0)),borderColor:GBP_COL[i],backgroundColor:GBP_COL[i]+'18',borderWidth:2,pointRadius:3,pointBackgroundColor:GBP_COL[i],fill:false,tension:.4}))},options:cOpts()});
   document.getElementById('gbp-trend-legend').innerHTML=data.map((d,i)=>`<div class="leg-i"><div class="leg-dot" style="background:${GBP_COL[i]}"></div>${d.store}</div>`).join('');
 }
+const GBP_MONTHLY_REVIEW_GOAL=10;
 function renderGbpReviews(data){
-  const maxR=Math.max(...data.map(d=>d.reviews));
+  const maxRev=Math.max(0,...data.map(d=>d.monthlyReviews||0));
   document.getElementById('gbp-review-overview').innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">${
     data.map((d,i)=>{
-      const pct=Math.round(d.reviews/maxR*100);
+      const goalPct=Math.min(100,Math.round((d.monthlyReviews||0)/GBP_MONTHLY_REVIEW_GOAL*100));
+      const hit=d.monthlyReviews>=GBP_MONTHLY_REVIEW_GOAL;
+      const isLeader=maxRev>0&&(d.monthlyReviews||0)===maxRev;
       const shortName=d.store.replace('台北','').replace('台中園道','台中');
       return`<div style="text-align:center;padding:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px;border-top:3px solid ${GBP_COL[i]}">
-        <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:10px">${GBP_EMO[i]} ${shortName}</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:10px">${GBP_EMO[i]} ${shortName}${isLeader?' 👑':''}</div>
         <div style="font-family:'Space Mono',monospace;font-size:28px;font-weight:700;color:var(--rust);line-height:1">${d.rating}</div>
         <div style="font-size:15px;margin:5px 0 2px">${gbpStars(d.rating)}</div>
         <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted)">${d.reviews} 則評價</div>
-        <div style="font-size:10px;font-family:'Space Mono',monospace;color:${d.monthlyReviews>=10?'var(--positive)':'var(--text-muted)'};margin-top:3px">+${d.monthlyReviews} 本月新增${d.monthlyReviews>=10?' ✅':''}</div>
-        <div style="font-size:9px;color:var(--text-muted);margin-top:2px">五星新評 月目標 10 則${d.monthlyReviews>=10?'　達標':`　${d.monthlyReviews}/10`}</div>
-        <div class="prog" style="margin-top:10px"><div class="prog-bar" style="width:${pct}%;background:${GBP_COL[i]}"></div></div>
+        <div style="font-size:10px;font-family:'Space Mono',monospace;color:${hit?'var(--positive)':'var(--text-muted)'};margin-top:3px">+${d.monthlyReviews} 本月新增${hit?' ✅':''}${isLeader?' 👑':''}</div>
+        <div style="font-size:9px;color:var(--text-muted);margin-top:2px">五星新評 月目標 10 則　${hit?'達標':`${d.monthlyReviews}/10`}</div>
+        <div class="prog" style="margin-top:10px"><div class="prog-bar" style="width:${goalPct}%;background:${hit?'var(--positive)':GBP_COL[i]}"></div></div>
       </div>`;
     }).join('')
   }</div>`;
