@@ -1571,5 +1571,85 @@ function renderGbpRank(data){
 (function tick(){const n=new Date();document.getElementById('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>('0'+v).slice(-2)).join(':');setTimeout(tick,1000);})();
 loadData();
 </script>
+<script>
+/* ===== GBP 月維度切換（讀 GBP月數據，覆蓋原本的週快照）===== */
+let GBP_MONTHS={},GBP_MKEYS=[],GBP_SNAP={},GBP_CUR_M='';
+function _gbpPick(a,b){return (a!==''&&a!=null)?a:((b!==''&&b!=null)?b:0);}
+function gbpMonthData(ym){
+  return GBP_STORES.map(name=>{
+    const m=(GBP_MONTHS[ym]&&GBP_MONTHS[ym][name])||{};
+    const s=(GBP_SNAP&&GBP_SNAP[name])||{};
+    return {store:name,
+      search:+m.search||0,map:+m.map||0,nav:+m.nav||0,phone:+m.phone||0,web:+m.web||0,
+      rating:+_gbpPick(m.rating,s.rating)||0, reviews:+_gbpPick(m.reviews,s.reviews)||0,
+      monthlyReviews:(m.newReviews!==''&&m.newReviews!=null)?+m.newReviews:0,
+      photos:+_gbpPick(m.photos,s.photos)||0, weeklyPhotos:0, monthlyPhotos:0,
+      updateRate:+_gbpPick(m.updateRate,s.updateRate)||0, monthlyPost:(+_gbpPick(m.updateRate,s.updateRate)||0)>0};
+  });
+}
+function gbpSnapData(){
+  return GBP_STORES.map(name=>{
+    const s=(GBP_SNAP&&GBP_SNAP[name])||{};
+    return {store:name,search:0,map:0,nav:0,phone:0,web:0,
+      rating:+s.rating||0,reviews:+s.reviews||0,
+      monthlyReviews:(s.newReviews!==''&&s.newReviews!=null)?+s.newReviews:0,
+      photos:+s.photos||0,weeklyPhotos:0,monthlyPhotos:0,updateRate:+s.updateRate||0,monthlyPost:(+s.updateRate||0)>0};
+  });
+}
+function _ensureGbpSwitch(){
+  if(document.getElementById('gbp-month-switch'))return;
+  const bar=document.createElement('div');bar.id='gbp-month-switch';
+  bar.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem';
+  const cards=document.getElementById('gbp-cards');
+  cards.parentNode.insertBefore(bar,cards);
+}
+function renderGbpSwitcher(){
+  _ensureGbpSwitch();
+  document.getElementById('gbp-month-switch').innerHTML=GBP_MKEYS.map(k=>{
+    const mm=parseInt(k.split('/')[1],10),active=k===GBP_CUR_M;
+    return `<button onclick="switchGbpMonth('${k}')" style="font-family:'Space Mono',monospace;font-size:13px;padding:6px 15px;border-radius:8px;cursor:pointer;transition:.15s;border:1px solid ${active?'#284234':'var(--border)'};background:${active?'#284234':'#fff'};color:${active?'#E2CEB9':'var(--text-sub)'};font-weight:${active?700:400}">${mm}月</button>`;
+  }).join('');
+}
+function switchGbpMonth(ym){
+  GBP_CUR_M=ym;renderGbpSwitcher();
+  const data=gbpMonthData(ym),mm=parseInt(ym.split('/')[1],10);
+  const hasTraffic=data.some(d=>d.search>0);
+  document.getElementById('gbp-period').textContent=mm+'月 門市流量'+(hasTraffic?'':'（本月累積中）')+'　·　評價為目前值';
+  renderGbpCards(data);renderGbpRank(data);
+}
+function renderGbpTrendMonthly(){
+  const tks=GBP_MKEYS.filter(k=>GBP_STORES.some(s=>GBP_MONTHS[k][s]&&(+GBP_MONTHS[k][s].search)>0));
+  const labels=tks.map(k=>parseInt(k.split('/')[1],10)+'月');
+  const tdata=GBP_STORES.map(name=>({store:name,
+    wTrend:tks.map(k=>(GBP_MONTHS[k][name]&&+GBP_MONTHS[k][name].search)||0),
+    mTrend:tks.map(k=>(GBP_MONTHS[k][name]&&+GBP_MONTHS[k][name].map)||0)}));
+  renderGbpTrend(tdata,labels);
+}
+loadGbpData=async function(){
+  if(window._gbpMLoaded)return;window._gbpMLoaded=true;
+  try{
+    const rows=await loadGviz('GBP月數據');
+    if(!rows||!rows.length){renderGbpWithMock&&renderGbpWithMock(true);return;}
+    const M={};
+    rows.forEach(r=>{
+      const ym=String(r[1]||'').trim(),nm=String(r[2]||'').trim();
+      if(!ym||!nm)return;
+      (M[ym]=M[ym]||{})[nm]={search:+r[3]||0,map:+r[4]||0,nav:+r[5]||0,phone:+r[6]||0,web:+r[7]||0,
+        rating:r[8],reviews:r[9],newReviews:r[10],photos:r[11],updateRate:r[13]};
+    });
+    GBP_MONTHS=M;GBP_MKEYS=Object.keys(M).sort();
+    if(!GBP_MKEYS.length){renderGbpWithMock&&renderGbpWithMock(true);return;}
+    const snapKey=[...GBP_MKEYS].reverse().find(k=>GBP_STORES.some(s=>M[k][s]&&M[k][s].rating!==''&&M[k][s].rating!=null));
+    GBP_SNAP=snapKey?M[snapKey]:{};
+    GBP_CUR_M=[...GBP_MKEYS].reverse().find(k=>GBP_STORES.some(s=>M[k][s]&&(+M[k][s].search)>0))||GBP_MKEYS[GBP_MKEYS.length-1];
+    // 隱藏需週資料的「導航 vs 來客」卡；趨勢卡改標題為月度
+    const corr=document.getElementById('gbp-corr-charts');if(corr&&corr.closest('.card'))corr.closest('.card').style.display='none';
+    const tc=document.getElementById('gbp-trend-chart');if(tc&&tc.closest('.card')){const lbl=tc.closest('.card').querySelector('.card-lbl');if(lbl)lbl.textContent='各店月度曝光趨勢';const bd=tc.closest('.card').querySelector('.card-badge');if(bd)bd.textContent='搜尋+地圖合計';}
+    const ac=document.getElementById('gbp-actions');if(ac&&ac.closest('.card')){const bd=ac.closest('.card').querySelector('.card-badge');if(bd)bd.textContent='目前現況';}
+    renderGbpReviews(gbpSnapData());renderGbpActions(gbpSnapData());renderGbpTrendMonthly();
+    switchGbpMonth(GBP_CUR_M);
+  }catch(e){console.error('loadGbpMonthly',e);renderGbpWithMock&&renderGbpWithMock(true);}
+};
+</script>
 </body>
 </html>
