@@ -1583,8 +1583,11 @@ function gbpMonthData(ym){
       search:+m.search||0,map:+m.map||0,nav:+m.nav||0,phone:+m.phone||0,web:+m.web||0,
       rating:+_gbpPick(m.rating,s.rating)||0, reviews:+_gbpPick(m.reviews,s.reviews)||0,
       monthlyReviews:(m.newReviews!==''&&m.newReviews!=null)?+m.newReviews:0,
-      photos:+_gbpPick(m.photos,s.photos)||0, weeklyPhotos:0, monthlyPhotos:0,
-      updateRate:+_gbpPick(m.updateRate,s.updateRate)||0, monthlyPost:(+_gbpPick(m.updateRate,s.updateRate)||0)>0};
+      photos:(m.photos!==''&&m.photos!=null)?+m.photos:(+s.photos||0),
+      weeklyPhotos:(m.newPhotos!==''&&m.newPhotos!=null)?+m.newPhotos:0,
+      monthlyPhotos:(m.newPhotos!==''&&m.newPhotos!=null)?+m.newPhotos:0,
+      updateRate:(m.updateRate!==''&&m.updateRate!=null)?+m.updateRate:0,
+      monthlyPost:((m.updateRate!==''&&m.updateRate!=null)?+m.updateRate:0)>0};
   });
 }
 function gbpSnapData(){
@@ -1636,7 +1639,7 @@ loadGbpData=async function(){
       const ym=String(r[1]||'').trim(),nm=String(r[2]||'').trim();
       if(!ym||!nm)return;
       (M[ym]=M[ym]||{})[nm]={search:+r[3]||0,map:+r[4]||0,nav:+r[5]||0,phone:+r[6]||0,web:+r[7]||0,
-        rating:r[8],reviews:r[9],newReviews:r[10],photos:r[11],updateRate:r[13]};
+        rating:r[8],reviews:r[9],newReviews:r[10],photos:r[11],newPhotos:r[12],updateRate:r[13]};
     });
     GBP_MONTHS=M;GBP_MKEYS=Object.keys(M).sort();
     if(!GBP_MKEYS.length){renderGbpWithMock&&renderGbpWithMock(true);return;}
