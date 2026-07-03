@@ -1614,8 +1614,8 @@ function switchGbpMonth(ym){
   GBP_CUR_M=ym;renderGbpSwitcher();
   const data=gbpMonthData(ym),mm=parseInt(ym.split('/')[1],10);
   const hasTraffic=data.some(d=>d.search>0);
-  document.getElementById('gbp-period').textContent=mm+'月 門市流量'+(hasTraffic?'':'（本月累積中）')+'　·　評價為目前值';
-  renderGbpCards(data);renderGbpRank(data);
+  document.getElementById('gbp-period').textContent=mm+'月 門市流量 · 評價'+(hasTraffic?'':'（流量本月累積中）');
+  renderGbpCards(data);renderGbpRank(data);renderGbpReviews(data);
 }
 function renderGbpTrendMonthly(){
   const tks=GBP_MKEYS.filter(k=>GBP_STORES.some(s=>GBP_MONTHS[k][s]&&(+GBP_MONTHS[k][s].search)>0));
@@ -1646,7 +1646,7 @@ loadGbpData=async function(){
     const corr=document.getElementById('gbp-corr-charts');if(corr&&corr.closest('.card'))corr.closest('.card').style.display='none';
     const tc=document.getElementById('gbp-trend-chart');if(tc&&tc.closest('.card')){const lbl=tc.closest('.card').querySelector('.card-lbl');if(lbl)lbl.textContent='各店月度曝光趨勢';const bd=tc.closest('.card').querySelector('.card-badge');if(bd)bd.textContent='搜尋+地圖合計';}
     const ac=document.getElementById('gbp-actions');if(ac&&ac.closest('.card')){const bd=ac.closest('.card').querySelector('.card-badge');if(bd)bd.textContent='目前現況';}
-    renderGbpReviews(gbpSnapData());renderGbpActions(gbpSnapData());renderGbpTrendMonthly();
+    renderGbpActions(gbpSnapData());renderGbpTrendMonthly();
     switchGbpMonth(GBP_CUR_M);
   }catch(e){console.error('loadGbpMonthly',e);renderGbpWithMock&&renderGbpWithMock(true);}
 };
