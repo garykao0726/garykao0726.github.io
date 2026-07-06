@@ -1638,8 +1638,54 @@ function gbpMonthData(ym){
       weeklyPhotos:(m.newPhotos!==''&&m.newPhotos!=null)?+m.newPhotos:0,
       monthlyPhotos:(m.newPhotos!==''&&m.newPhotos!=null)?+m.newPhotos:0,
       updateRate:(m.updateRate!==''&&m.updateRate!=null)?+m.updateRate:0,
-      monthlyPost:((m.updateRate!==''&&m.updateRate!=null)?+m.updateRate:0)>0};
+      monthlyPost:((m.updateRate!==''&&m.updateRate!=null)?+m.updateRate:0)>0,
+      replyRate:(m.replyRate!==''&&m.replyRate!=null)?+m.replyRate:0};
   });
+}
+// ── AI 就緒分數：5 面向各 20 分，總 0–100（做越多越高的領先指標）──
+function gbpAiScore(d){
+  const s1=d.rating>=4.8?20:d.rating>=4.6?16:d.rating>=4.3?12:d.rating>0?8:0;
+  const s2=Math.min((d.monthlyReviews||0)/10,1)*20;
+  const s3=Math.min((d.replyRate||0)/100,1)*20;
+  const s4=Math.min((d.weeklyPhotos||0)/4,1)*20;
+  const s5=d.updateRate>=100?20:(d.updateRate>0?10:0);
+  return {total:Math.round(s1+s2+s3+s4+s5),dims:[
+    {k:'星等',v:s1,max:20,hint:'維持 4.8★ 以上'},
+    {k:'新評',v:s2,max:20,hint:'鼓勵客人留 5 星評價（目標 10/月）'},
+    {k:'回覆',v:s3,max:20,hint:'回覆更多評價（目前回覆率 '+(d.replyRate||0)+'%）'},
+    {k:'新照片',v:s4,max:20,hint:'每月上傳門市照片（目標 4 張）'},
+    {k:'貼文',v:s5,max:20,hint:'本月發至少 1 篇 Google 貼文'},
+  ]};
+}
+function _ensureGbpAi(){
+  if(document.getElementById('gbp-ai-score'))return;
+  const wrap=document.createElement('div');wrap.id='gbp-ai-wrap';wrap.style.cssText='margin-bottom:1.25rem';
+  wrap.innerHTML='<div class="card"><div class="card-hdr"><span class="card-lbl">🤖 AI 就緒分數</span><span class="card-badge">被 AI／在地搜尋帶到的經營力</span></div>'
+    +'<div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.85rem;padding:0 .1rem;line-height:1.5">分數越高＝商家經營越完整，越容易被 Google 在地結果與 AI 摘要「關聯」到。這是<b>「你在商家做得越多、分數越高」</b>的領先指標（非實際 AI 排名）。每月做這些事就會加分。</div>'
+    +'<div id="gbp-ai-score" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem"></div></div>';
+  const cards=document.getElementById('gbp-cards');cards.parentNode.insertBefore(wrap,cards);
+}
+function renderGbpAiScore(data){
+  _ensureGbpAi();
+  document.getElementById('gbp-ai-score').innerHTML=data.map((d,i)=>{
+    const sc=gbpAiScore(d);
+    const col=sc.total>=75?'#2d7a45':sc.total>=50?'#b87a00':'#b03020';
+    const lvl=sc.total>=75?'優秀':sc.total>=50?'尚可':'待加強';
+    const bars=sc.dims.map(dm=>{
+      const pct=Math.round(dm.v/dm.max*100),bc=pct>=80?'#2d7a45':pct>=40?'#b87a00':'#b03020';
+      return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
+        +'<span style="width:40px;font-size:10px;color:var(--text-sub)">'+dm.k+'</span>'
+        +'<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+bc+'"></div></div>'
+        +'<span style="width:22px;font-size:10px;text-align:right;font-family:\'Space Mono\',monospace;color:var(--text-muted)">'+Math.round(dm.v)+'</span></div>';
+    }).join('');
+    const tips=sc.dims.filter(dm=>dm.v<dm.max*0.999).sort((a,b)=>(a.v/a.max)-(b.v/b.max)).slice(0,2).map(dm=>'· '+dm.hint).join('<br>');
+    return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;border-top:3px solid '+GBP_COL[i]+';padding:.9rem">'
+      +'<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:4px">'+GBP_EMO[i]+' '+d.store.replace('台北','').replace('台中園道','台中')+'</div>'
+      +'<div style="display:flex;align-items:baseline;gap:5px;margin-bottom:8px"><span style="font-family:\'Space Mono\',monospace;font-size:30px;font-weight:700;color:'+col+';line-height:1">'+sc.total+'</span><span style="font-size:11px;color:var(--text-muted)">/100</span><span style="margin-left:auto;font-size:10px;font-weight:700;color:'+col+'">'+lvl+'</span></div>'
+      +bars
+      +'<div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);font-size:10px;color:var(--text-sub);line-height:1.55">'+(tips?'<b style="color:var(--rust)">本月加分：</b><br>'+tips:'✅ 各項到位，維持！')+'</div>'
+      +'</div>';
+  }).join('');
 }
 function gbpSnapData(){
   return GBP_STORES.map(name=>{
@@ -1669,7 +1715,7 @@ function switchGbpMonth(ym){
   const data=gbpMonthData(ym),mm=parseInt(ym.split('/')[1],10);
   const hasTraffic=data.some(d=>d.search>0);
   document.getElementById('gbp-period').textContent=mm+'月 門市流量 · 評價'+(hasTraffic?'':'（流量本月累積中）');
-  renderGbpCards(data);renderGbpRank(data);renderGbpReviews(data);renderGbpActions(data);
+  renderGbpAiScore(data);renderGbpCards(data);renderGbpRank(data);renderGbpReviews(data);renderGbpActions(data);
   const ac=document.getElementById('gbp-actions');if(ac&&ac.closest('.card')){const bd=ac.closest('.card').querySelector('.card-badge');if(bd)bd.textContent=mm+'月';}
 }
 function renderGbpTrendMonthly(){
@@ -1690,7 +1736,7 @@ loadGbpData=async function(){
       const ym=String(r[1]||'').trim(),nm=String(r[2]||'').trim();
       if(!ym||!nm)return;
       (M[ym]=M[ym]||{})[nm]={search:+r[3]||0,map:+r[4]||0,nav:+r[5]||0,phone:+r[6]||0,web:+r[7]||0,
-        rating:r[8],reviews:r[9],newReviews:r[10],photos:r[11],newPhotos:r[12],updateRate:r[13],newFive:r[14]};
+        rating:r[8],reviews:r[9],newReviews:r[10],photos:r[11],newPhotos:r[12],updateRate:r[13],newFive:r[14],replyRate:r[15]};
     });
     GBP_MONTHS=M;GBP_MKEYS=Object.keys(M).sort();
     if(!GBP_MKEYS.length){renderGbpWithMock&&renderGbpWithMock(true);return;}
