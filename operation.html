@@ -1639,17 +1639,20 @@ function gbpMonthData(ym){
       monthlyPhotos:(m.newPhotos!==''&&m.newPhotos!=null)?+m.newPhotos:0,
       updateRate:(m.updateRate!==''&&m.updateRate!=null)?+m.updateRate:0,
       monthlyPost:((m.updateRate!==''&&m.updateRate!=null)?+m.updateRate:0)>0,
-      replyRate:(m.replyRate!==''&&m.replyRate!=null)?+m.replyRate:0};
+      replyRate:(m.replyRate===''||m.replyRate==null)?null:+m.replyRate};
   });
 }
-// ── AI 就緒分數：5 面向各 20 分，總 0–100（做越多越高的領先指標）──
+// ── AI 就緒分數：4 面向各 25 分（做越多越高的領先指標）；回覆率用「本月」──
 function gbpAiScore(d){
-  // 4 面向各 25 分（拿掉星等，只看可經營的動作）；bar 顯示真實數量
-  const nf=+d.monthlyReviews||0, rr=+d.replyRate||0, np=+d.weeklyPhotos||0, post=d.updateRate>=100;
-  const s2=Math.min(nf/10,1)*25, s3=Math.min(rr/100,1)*25, s4=Math.min(np/4,1)*25, s5=post?25:0;
-  return {total:Math.round(s2+s3+s4+s5),dims:[
+  const nf=+d.monthlyReviews||0, np=+d.weeklyPhotos||0, post=d.updateRate>=100;
+  const rrNA=(d.replyRate===null||d.replyRate===undefined); // 本月無評價→回覆率不適用
+  const rr=rrNA?0:+d.replyRate;
+  const s2=Math.min(nf/10,1)*25, s4=Math.min(np/4,1)*25, s5=post?25:0;
+  const s3=rrNA?0:Math.min(rr/100,1)*25;
+  const denom=rrNA?75:100;                    // 無評價時回覆項不計，其餘 3 項換算滿分
+  return {total:Math.round((s2+s3+s4+s5)/denom*100),dims:[
     {k:'五星新評',pct:Math.min(nf/10,1)*100,label:nf+' 則',full:nf>=10,hint:'鼓勵客人留 5 星評價（目標 10/月，現 '+nf+' 則）'},
-    {k:'評價回覆',pct:rr,label:rr+'%',full:rr>=100,hint:'回覆更多評價（目前 '+rr+'%）'},
+    {k:'評價回覆',pct:rrNA?0:rr,label:rrNA?'—':rr+'%',full:!rrNA&&rr>=100,na:rrNA,hint:'回覆本月的新評價（目前 '+rr+'%）'},
     {k:'新照片',pct:Math.min(np/4,1)*100,label:np+' 張',full:np>=4,hint:'每月上傳門市照片（目標 4 張，現 '+np+' 張）'},
     {k:'貼文',pct:post?100:0,label:post?'已發布':'未發布',full:post,hint:'本月發至少 1 篇 Google 貼文'},
   ]};
@@ -1669,13 +1672,13 @@ function renderGbpAiScore(data){
     const col=sc.total>=75?'#2d7a45':sc.total>=50?'#b87a00':'#b03020';
     const lvl=sc.total>=75?'優秀':sc.total>=50?'尚可':'待加強';
     const bars=sc.dims.map(dm=>{
-      const pct=Math.round(dm.pct),bc=dm.full?'#2d7a45':pct>=40?'#b87a00':'#b03020';
+      const pct=Math.round(dm.pct),bc=dm.na?'var(--border2)':(dm.full?'#2d7a45':pct>=40?'#b87a00':'#b03020');
       return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'
         +'<span style="width:52px;font-size:10px;color:var(--text-sub)">'+dm.k+'</span>'
-        +'<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+bc+'"></div></div>'
+        +'<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:'+(dm.na?0:pct)+'%;height:100%;background:'+bc+'"></div></div>'
         +'<span style="width:40px;font-size:10px;text-align:right;font-family:\'Space Mono\',monospace;color:var(--text-muted)">'+dm.label+'</span></div>';
     }).join('');
-    const tips=sc.dims.filter(dm=>!dm.full).sort((a,b)=>a.pct-b.pct).slice(0,2).map(dm=>'· '+dm.hint).join('<br>');
+    const tips=sc.dims.filter(dm=>!dm.full&&!dm.na).sort((a,b)=>a.pct-b.pct).slice(0,2).map(dm=>'· '+dm.hint).join('<br>');
     return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;border-top:3px solid '+GBP_COL[i]+';padding:.9rem">'
       +'<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:4px">'+GBP_EMO[i]+' '+d.store.replace('台北','').replace('台中園道','台中')+'</div>'
       +'<div style="display:flex;align-items:baseline;gap:5px;margin-bottom:8px"><span style="font-family:\'Space Mono\',monospace;font-size:30px;font-weight:700;color:'+col+';line-height:1">'+sc.total+'</span><span style="font-size:11px;color:var(--text-muted)">/100</span><span style="margin-left:auto;font-size:10px;font-weight:700;color:'+col+'">'+lvl+'</span></div>'
