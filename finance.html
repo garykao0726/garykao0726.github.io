@@ -161,7 +161,10 @@ const MONTHS = {
     opProfit:738338, opPct:12.15,
     nonOpIn:65038, nonOpOut:37135,
     pretax:766241, tax:157706, ni:608535, niPct:10.01,
-    /* ⚠️ 去年同期(2025/05)資料待補：Drive 尚未上傳「同期比較」報表，故 prev* 從缺，YoY 顯示待補 */
+    /* 去年同期 2025/05（來源：Drive 損益表_202505；去年5月為虧損月）+ 累計 */
+    prevRev:4804243, prevNI:-348671, yoyRevPct:26.52,
+    prevYtdRev:29069808, prevYtdNI:134689,
+    prevGpPct:67.20, prevSellPct:47.06, prevMgmtPct:26.82, prevNiPct:-7.26,
     storeData: {
       '電商': { rev:989880,  cogs:293325, gp:696555,  gpPct:70.37, wPct:5.10,  rPct:0,     mktPct:12.71, opProfit:96942,  pretax:96942,  pretaxPct:9.79,  target:1000000 },
       '中山': { rev:1604119, cogs:487773, gp:1116346, gpPct:69.59, wPct:14.32, rPct:8.10,  mktPct:1.30,  opProfit:311038, nonOpIn:60000, pretax:371038, pretaxPct:23.13, target:1400000 },
@@ -177,7 +180,7 @@ const CMP_KEYS = ['2026/01','2026/02','2026/03','2026/04','2026/05'];
 const CMP = CMP_KEYS.map(k => MONTHS[k]);
 /* 包裝費（5539，原併入營業成本，單獨追蹤）與去年同期包裝費 */
 const PKG     = { '2026/01':105321, '2026/02':86556,  '2026/03':37740,  '2026/04':286662, '2026/05':95843 };
-const PKG_PREV = { '2026/01':32191,  '2026/02':66224,  '2026/03':null,   '2026/04':25433,  '2026/05':null  };
+const PKG_PREV = { '2026/01':32191,  '2026/02':66224,  '2026/03':null,   '2026/04':25433,  '2026/05':52411 };
 (function deriveMonths(){
   let cumRev = 0, cumNI = 0, cumOp = 0;
   CMP.forEach(m => {
@@ -1662,9 +1665,9 @@ function buildInsights(ym) {
           body:`中山營業淨利 <b>${w(sd['中山'].opProfit)}</b>（${opPct('中山').toFixed(1)}%）持續扛起全公司；電商回到 <b>+${w(sd['電商'].opProfit)}</b>（${opPct('電商').toFixed(1)}%），官網廣告費率 ${sd['電商'].mktPct.toFixed(1)}% 雖仍偏高但已獲利。五通路 5 月全數轉正，是繼 1 月、3 月之後第三個「全賺」的月份。`,
           data:`各店營業淨利率：中山 ${opPct('中山').toFixed(1)}%｜松菸 ${opPct('松菸').toFixed(1)}%｜東門 ${opPct('東門').toFixed(1)}%｜台中 ${opPct('台中').toFixed(1)}%｜電商 ${opPct('電商').toFixed(1)}%` },
 
-        { sev:'neutral', tag:'資料缺口', title:'⚠️ 5 月「去年同期」尚未上傳 —— YoY 對比暫顯示待補',
-          body:`本月只放了<b>損益表</b>與<b>部門比較</b>兩份報表，還沒有 2025/05 的「同期比較」報表，因此 KPI 的 YoY 成長率、去年基期、去年累計等對比目前顯示「待補」。把 5 月的同期比較報表丟進 Drive 資料夾後，再補上 prev* 欄位即可完整（做法同 1–4 月）。`,
-          data:`待補欄位：prevRev／prevNI／yoyRevPct／prevYtd*／prevGpPct 等去年同期資料` },
+        { sev:'green', tag:'YoY', title:`對比去年 5 月大逆轉 —— 去年還虧 34.9 萬，今年淨賺、營收 +${M.yoyRevPct.toFixed(1)}%`,
+          body:`去年 5 月是<b>虧損月</b>（本期損益 −34.9 萬、營業淨利 −32.1 萬、營業淨利率 −6.7%），今年 5 月營收 <b>${w(M.rev)}</b>（YoY <b>+${M.yoyRevPct.toFixed(1)}%</b>）、本期損益翻正到 <b>+${w(M.ni)}</b>。改善來自三塊：毛利率 +1.3pp（${M.prevGpPct.toFixed(1)}%→${M.gpPct.toFixed(1)}%）、推銷費率大降（去年 47.1%→今年 40.6%，主要是人事）、營收本身放量。<b>唯一逆風是廣告費率從 7.5% 拉到 12.3%</b>——去年同月才 35.8 萬、今年 74.6 萬，翻了一倍多，更凸顯本月最該檢視的就是這筆投放的回報。`,
+          data:`YoY：營收 ${w(M.prevRev)}→${w(M.rev)}（+${M.yoyRevPct.toFixed(1)}%）｜本期損益 ${w(M.prevNI)}→+${w(M.ni)}｜毛利率 ${M.prevGpPct.toFixed(1)}%→${M.gpPct.toFixed(1)}%｜廣告費率 7.5%→${M.mktPct.toFixed(1)}%` },
       ];
     }
 
