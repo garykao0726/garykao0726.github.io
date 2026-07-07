@@ -245,10 +245,30 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     </div>
   </div>
 
+  <!-- 即時月度新舊客（live：月度營運） -->
+  <div class="sec-hdr">
+    <div class="sec-title">即時月度新舊客</div>
+    <div class="sec-date" id="live-no-date">載入中… · 來源：月度營運（即時）</div>
+  </div>
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-hdr">
+      <span class="card-lbl">新客 vs 回購 月趨勢</span>
+      <span class="card-badge">成交筆數 · 環比上月 · 自動更新</span>
+    </div>
+    <div style="display:flex;gap:16px;margin-bottom:.5rem;font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted)">
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#A54A1A;margin-right:5px;vertical-align:middle"></span>新客</span>
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#CFA294;margin-right:5px;vertical-align:middle"></span>回購</span>
+    </div>
+    <div id="live-no-head" style="font-size:.82rem;margin-bottom:.55rem;line-height:1.5"></div>
+    <div style="position:relative;height:260px"><canvas id="live-no-chart"></canvas></div>
+    <div id="live-no-note" style="font-size:.72rem;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:.4rem"></div>
+    <div id="live-no-stores" style="margin-top:.9rem"></div>
+  </div>
+
   <!-- 新客 vs 回流客 逐年成長 -->
   <div class="sec-hdr">
     <div class="sec-title">新客 vs 回流客｜逐年成長趨勢</div>
-    <div class="sec-date">Y2 vs Y3 同期比較</div>
+    <div class="sec-date">Y2 vs Y3 同期比較 ｜ 資料截至 2026/04（逐筆訂單快照）</div>
   </div>
   <div class="card" style="margin-bottom:1.25rem">
     <div class="card-hdr">
@@ -491,6 +511,50 @@ const YEAR_LABEL = DATA.meta.years;
 
 let currentYear = 'Y3';
 let charts = {};
+
+// ===== 即時月度新舊客（來源：月度營運 sheet，即時、自動更新） =====
+const LIVE_SHEET_ID='17hTgCpF0mBTHf3RcnDmRFrJMeLBn3nRdTMuG8l58QjY';
+const LIVE_STORES=['中山店','松菸店','台中店','東門店','官網'];
+const LIVE_EMO={'中山店':'🏙️','松菸店':'🌿','台中店':'🏔️','東門店':'🚪','官網':'🌐'};
+const LIVE_COL={'中山店':'#284234','松菸店':'#5a8a6e','台中店':'#A54A1A','東門店':'#8D5531','官網':'#CFA294'};
+let LIVE_MOPS={}, _lgSeq=0;
+function liveGviz(sheetName){return new Promise((resolve,reject)=>{const cb='_lgCb'+(++_lgSeq);window[cb]=function(resp){delete window[cb];const rows=(resp.table.rows||[]).map(r=>(r.c||[]).map(c=>c?c.v:null));resolve(rows);};const s=document.createElement('script');s.onerror=()=>reject(new Error('load fail: '+sheetName));s.src=`https://docs.google.com/spreadsheets/d/${LIVE_SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}`;document.head.appendChild(s);});}
+async function loadLiveNewOld(){
+  try{
+    const rows=await liveGviz('月度營運');
+    LIVE_MOPS={};
+    rows.forEach(r=>{const yr=Number(r[0]),mo=Number(r[1]),s=r[2];if(yr===2026&&mo>=1&&mo<=12&&s){if(!LIVE_MOPS[s])LIVE_MOPS[s]=[];LIVE_MOPS[s][mo-1]={tNew:+r[8]||0,tOld:+r[9]||0};}});
+    renderLiveNewOld();
+  }catch(e){console.error('live new/old load fail',e);const n=document.getElementById('live-no-note');if(n)n.textContent='即時資料載入失敗（月度營運 sheet）';const d=document.getElementById('live-no-date');if(d)d.textContent='載入失敗 · 來源：月度營運';}
+}
+function renderLiveNewOld(){
+  const headEl=document.getElementById('live-no-head'),noteEl=document.getElementById('live-no-note'),stEl=document.getElementById('live-no-stores'),dateEl=document.getElementById('live-no-date');
+  const mo=[];
+  for(let m=1;m<=12;m++){let nw=0,od=0,has=false;LIVE_STORES.forEach(s=>{const e=LIVE_MOPS[s]&&LIVE_MOPS[s][m-1];if(e){nw+=e.tNew||0;od+=e.tOld||0;if((e.tNew||0)+(e.tOld||0)>0)has=true;}});if(has)mo.push({m,nw,od});}
+  if(!mo.length){if(noteEl)noteEl.textContent='月度營運表尚無 2026 新舊客資料';return;}
+  const labels=mo.map(o=>o.m+'月'),newArr=mo.map(o=>o.nw),oldArr=mo.map(o=>o.od);
+  const arrow=v=>v==null?'—':(v>=0?'▲+':'▼')+Math.abs(v).toFixed(0)+'%';
+  const col=v=>v==null?'var(--text-muted)':(v>=0?'var(--positive)':'var(--negative)');
+  const mom=(arr,i)=>i>0&&arr[i-1]>0?(arr[i]-arr[i-1])/arr[i-1]*100:null;
+  const li=mo.length-1, isPartial=mo[li].m===(new Date().getMonth()+1), dashLast=li;
+  const ptBg=base=>labels.map((_,i)=>(isPartial&&i===dashLast)?'#fff':base);
+  const seg={borderDash:c=>(isPartial&&c.p1DataIndex===dashLast)?[5,4]:undefined};
+  if(charts.liveNo)charts.liveNo.destroy();
+  charts.liveNo=new Chart(document.getElementById('live-no-chart'),{type:'line',data:{labels,datasets:[
+    {label:'新客',data:newArr,borderColor:'#A54A1A',backgroundColor:'rgba(165,74,26,.06)',borderWidth:2.5,pointRadius:4,pointBackgroundColor:ptBg('#A54A1A'),pointBorderColor:'#A54A1A',tension:.3,fill:false,segment:seg},
+    {label:'回購',data:oldArr,borderColor:'#CFA294',backgroundColor:'rgba(207,162,148,.08)',borderWidth:2.5,pointRadius:4,pointBackgroundColor:ptBg('#CFA294'),pointBorderColor:'#CFA294',tension:.3,fill:false,segment:seg}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'rgba(40,66,52,.15)',borderWidth:1,titleColor:'#284234',bodyColor:'#8D5531',titleFont:{family:'Space Mono',size:11},bodyFont:{family:'Space Mono',size:11},padding:10,cornerRadius:8,callbacks:{label:ctx=>{const arr=ctx.datasetIndex===0?newArr:oldArr;const d=mom(arr,ctx.dataIndex);const p=(isPartial&&ctx.dataIndex===dashLast)?'（進行中）':(d==null?'':`（環比 ${d>=0?'▲+':'▼'}${Math.abs(d).toFixed(0)}%）`);return `${ctx.dataset.label} ${ctx.parsed.y} 筆`+p;}}}},scales:{x:{grid:{color:'rgba(40,66,52,.05)'},ticks:{color:'#b09a88',font:{family:'Space Mono',size:10}}},y:{beginAtZero:true,grid:{color:'rgba(40,66,52,.05)'},ticks:{color:'#b09a88',font:{family:'Space Mono',size:10}}}}}});
+  const hi=(isPartial&&li>0)?li-1:li, nMom=mom(newArr,hi), oMom=mom(oldArr,hi), cur=mo[hi];
+  const partTag=isPartial?`　<span style="color:var(--text-muted)">·${mo[li].m}月進行中（累計 新客${mo[li].nw}／回購${mo[li].od}）</span>`:'';
+  headEl.innerHTML=hi>0
+    ?`<b>${cur.m}月</b>　新客 <b style="font-family:'Space Mono',monospace">${cur.nw}</b> 筆 <span style="color:${col(nMom)};font-family:'Space Mono',monospace">${arrow(nMom)}</span>　｜　回購 <b style="font-family:'Space Mono',monospace">${cur.od}</b> 筆 <span style="color:${col(oMom)};font-family:'Space Mono',monospace">${arrow(oMom)}</span>　<span style="color:var(--text-muted)">（環比上月）</span>${partTag}`
+    :`<b>${cur.m}月</b>　新客 <b style="font-family:'Space Mono',monospace">${cur.nw}</b> 筆　｜　回購 <b style="font-family:'Space Mono',monospace">${cur.od}</b> 筆　<span style="color:var(--text-muted)">（僅一個月資料，環比待下月）</span>${partTag}`;
+  if(dateEl)dateEl.textContent=`2026 年月度 · 最新 ${mo[li].m} 月${isPartial?'（進行中）':''} · 來源：月度營運（即時）`;
+  noteEl.textContent='資料來源：月度營運表（各店新客/回購成交筆數加總，即時自動更新）'+(isPartial?'；進行中月份以虛線標示，不計入環比':'');
+  const curM=cur.m,prvM=hi>0?mo[hi-1].m:0;
+  stEl.innerHTML=`<div style="font-size:.72rem;color:var(--text-muted);font-family:'Space Mono',monospace;margin-bottom:.45rem">各店 ${curM}月 新客成交（環比上月）</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:8px">`+
+    LIVE_STORES.map(s=>{const c=(LIVE_MOPS[s]&&LIVE_MOPS[s][curM-1])?(LIVE_MOPS[s][curM-1].tNew||0):0;const p=(prvM&&LIVE_MOPS[s]&&LIVE_MOPS[s][prvM-1])?(LIVE_MOPS[s][prvM-1].tNew||0):0;const d=p>0?(c-p)/p*100:null;return `<div style="padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:600;color:${LIVE_COL[s]}">${LIVE_EMO[s]} ${s}</span><span style="font-family:'Space Mono',monospace;font-size:12px"><b>${c}</b> 筆 <span style="color:${col(d)}">${arrow(d)}</span></span></div>`;}).join('')+`</div>`;
+}
 
 // --- Top KPI with YoY comparison ---
 function renderTopKpi(){
@@ -1073,6 +1137,7 @@ renderRFM();
 renderFlow();
 renderHeatmap();
 renderThresholdTable();
+loadLiveNewOld();
 updateClock();
 setInterval(updateClock, 1000);
 </script>
