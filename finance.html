@@ -1475,6 +1475,8 @@ function renderAdEffect() {
   const labels = series.map(d => d.ym.replace('20','').replace('/','/'));
   const adPct  = series.map(d => +(d.mkt / d.rev * 100).toFixed(2));
   const opPct  = series.map(d => +(d.opProfit / d.rev * 100).toFixed(2));
+  /* 2025/07 為嘖嘖募資專案，費用(4–7月)與募資款(5–7月)集中認列於當月，非常態月度操作，不納入 mROAS 判讀 */
+  const anomalyIdx = series.findIndex(d => d.ym === '2025/07');
 
   /* YoY 增量（只取今年、去年同月都有資料的月份） */
   const pairs = [];
@@ -1518,11 +1520,14 @@ function renderAdEffect() {
       { type:'line', label:'6%上限', data:labels.map(()=>6), borderColor:'#b09a88',
         borderDash:[5,4], borderWidth:1.5, pointRadius:0, order:1 },
       { type:'bar', label:'廣告費率', data:adPct, borderRadius:3, order:2,
-        backgroundColor: adPct.map(v => v > 6 ? '#EF9F27' : 'rgba(239,159,39,.4)') },
+        backgroundColor: adPct.map((v,i) => i === anomalyIdx ? '#b09a88' : v > 6 ? '#EF9F27' : 'rgba(239,159,39,.4)') },
     ]},
     options: {
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => c.dataset.label+': '+c.parsed.y.toFixed(1)+'%' } } },
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{
+        label: c => c.dataset.label+': '+c.parsed.y.toFixed(1)+'%',
+        afterLabel: c => c.dataIndex === anomalyIdx && c.datasetIndex === 2 ? '⚠ 嘖嘖募資專案，費用/募資款集中認列於本月，非常態' : ''
+      } } },
       scales:{
         x:{ grid:{display:false}, ticks:{ color:'#b09a88', font:{size:10}, autoSkip:false, maxRotation:45 } },
         y:{ grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{size:11}, callback:v=>v+'%' } }
@@ -1598,7 +1603,8 @@ function renderAdEffect() {
           ①<b>全年平均</b>維持 6–8% 護欄（8% 是上限不是新目標）。
           ②<b>單月要超過 6%</b>：檔期需預估 mROAS ≥ ${GATE_ROAS.toFixed(1)}（門檻高於損益兩平 ${BREAKEVEN_ROAS.toFixed(2)}，因 YoY 估計含自然成長、偏樂觀）。
           ③<b>事後驗證</b>：檔期實際 mROAS &lt; ${BREAKEVEN_ROAS.toFixed(2)} 者，同型式下次停損。
-          ④檔期集中在有需求的月份（3–5、10–12 月）；<b>切勿淡季硬灌</b>——2025/07 花 17.9% 仍虧損是最貴的教訓。
+          ④檔期集中在有需求的月份（3–5、10–12 月），廣告投放與獲利應落在同一時間軸內才可比較。
+          ⑤<span style="color:var(--text-muted)">註：2025/07 廣告費率 17.9% 是嘖嘖募資專案的會計認列月份（4–7月費用、5–7月募資款集中記在7月），非常態月度操作，不適用於本頁 mROAS 比較邏輯，圖表僅陳列不作教訓解讀。</span>
         </div>
         <div class="insight-data">${passTxt}</div>
       </div>`;
