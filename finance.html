@@ -43,6 +43,27 @@ const COMPANY_NI_TARGET  = 6400000;
 const ANNUAL_MKT_BASE    = 65000000;  // 廣告費預算基準收入：6,500萬
 const COMPANY_MKT_BUDGET = 3900000;   // 年度廣告費預算：6,500萬 × 6% = 390萬
 
+/* ── 廣告費效益分析：2025 逐月公司級（來源：總公司_2025年度損益表_月份比較，已對帳
+      全年 rev 69,025,980／mkt 5,379,107(7.79%)／營業淨利 1,406,129）── */
+const HIST_CO_2025 = [
+  { ym:'2025/01', rev:6620786, mkt:317870,  opProfit:576032 },
+  { ym:'2025/02', rev:6010360, mkt:330949,  opProfit:494471 },
+  { ym:'2025/03', rev:5697649, mkt:395855,  opProfit:74410 },
+  { ym:'2025/04', rev:5936770, mkt:267864,  opProfit:-503272 },
+  { ym:'2025/05', rev:4804243, mkt:358457,  opProfit:-320907 },
+  { ym:'2025/06', rev:4554681, mkt:288854,  opProfit:-580970 },
+  { ym:'2025/07', rev:6005784, mkt:1077015, opProfit:-197539 },
+  { ym:'2025/08', rev:4917834, mkt:377261,  opProfit:-287962 },
+  { ym:'2025/09', rev:4578507, mkt:549588,  opProfit:-707320 },
+  { ym:'2025/10', rev:5925124, mkt:461363,  opProfit:128392 },
+  { ym:'2025/11', rev:6634521, mkt:527241,  opProfit:1034141 },
+  { ym:'2025/12', rev:7339721, mkt:426790,  opProfit:1696653 },
+];
+/* 邊際貢獻率 = 毛利率66% − 隨營收變動的推銷費(刷卡/運費/包裝/抽成 ~4%) */
+const CONTRIB_MARGIN  = 0.62;
+const BREAKEVEN_ROAS  = 1 / CONTRIB_MARGIN;   // ≈1.61：每1元廣告至少帶回的營收
+const GATE_ROAS       = 2.0;                  // 單月放行門檻（留安全邊際，因YoY估計偏樂觀）
+
 /* ════ 月度財報資料（來源：ERP 損益月份比較表／同期比較表／部門比較表，2026-06-06）════
  *  全公司損益：1–4 月皆完整；分店別（storeData）與去年同期（prev*）目前僅 3、4 月有來源。
  *  1–2 月僅有總公司合併損益，分店別資料留待 ERP 補出。 */
@@ -567,6 +588,39 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       </div>
     </div>
 
+    <!-- 廣告費效益分析（mROAS 門檻管理） -->
+    <div class="sec" style="margin-top:1.75rem">廣告費效益分析 — 從「6% 死線」到「mROAS 門檻」</div>
+    <div class="adfx-kpis" id="adfx-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1rem"></div>
+    <div class="chart-card">
+      <div class="chart-card-title" id="adfx-trend-title">廣告費率 vs 營業淨利率（2025/01 起）— 費率本身不預測獲利</div>
+      <div class="chart-legend">
+        <div class="leg-item"><div class="leg-dot" style="background:#EF9F27"></div>廣告費率（柱，深色=超過6%）</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#1D9E75"></div>營業淨利率（線）</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#b09a88"></div>6% 上限（虛線）</div>
+      </div>
+      <div class="chart-wrap" style="height:280px"><canvas id="adfx-trend-chart"></canvas></div>
+    </div>
+    <div class="two-col">
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title" id="adfx-yoy-title">YoY 增量實驗 — 每多花 1 元廣告換到多少營收</div>
+        <div class="chart-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#BA7517"></div>Δ廣告費（萬）</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#378ADD"></div>Δ營收（萬）</div>
+        </div>
+        <div class="chart-wrap-sm" style="height:230px"><canvas id="adfx-yoy-chart"></canvas></div>
+      </div>
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">情境敏感度 — 相對「守6%」的全年損益差（萬）</div>
+        <div class="chart-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#c0392b"></div>效率劣化 1.2</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#1D9E75"></div>維持觀測值</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#639922"></div>優質檔期 3.0</div>
+        </div>
+        <div class="chart-wrap-sm" style="height:230px"><canvas id="adfx-scen-chart"></canvas></div>
+      </div>
+    </div>
+    <div class="insight-list" id="adfx-rule" style="margin-top:1rem"></div>
+
     <!-- Monthly Comparison -->
     <div class="sec" style="margin-top:1.75rem" id="sec-cmp">月份損益比較（2026年1–4月）</div>
     <div class="q1-stats" id="q1-stats"></div>
@@ -944,6 +998,7 @@ function renderStaticSections() {
   renderWaterfall();
   renderStoreCards();
   renderMktBreakdown();
+  renderAdEffect();
   renderQ1Chart();
   renderCompareTable();
   renderInsights();
@@ -1407,6 +1462,147 @@ function renderMktBreakdown() {
       }
     }
   });
+}
+
+/* ── 廣告費效益分析（mROAS 門檻管理）──
+   邏輯：①費率與獲利無簡單相關（17+月全貌）②YoY 同月增量＝控制季節性的自然實驗
+   ③加碼是否划算取決於邊際 ROAS 是否 ≥ 損益兩平 1/邊際貢獻率 ── */
+function renderAdEffect() {
+  const mIdx = monthNum(S.ym) - 1;
+
+  /* 全序列 = 2025 全年 + 2026 已有月份 */
+  const series = HIST_CO_2025.concat(CMP.map(m => ({ ym:m.ym, rev:m.rev, mkt:m.mkt, opProfit:m.opProfit })));
+  const labels = series.map(d => d.ym.replace('20','').replace('/','/'));
+  const adPct  = series.map(d => +(d.mkt / d.rev * 100).toFixed(2));
+  const opPct  = series.map(d => +(d.opProfit / d.rev * 100).toFixed(2));
+
+  /* YoY 增量（只取今年、去年同月都有資料的月份） */
+  const pairs = [];
+  CMP.forEach(m => {
+    const prev = HIST_CO_2025.find(h => monthNum(h.ym) === monthNum(m.ym));
+    if (!prev) return;
+    const dAd  = m.mkt - prev.mkt;
+    const dRev = m.rev - prev.rev;
+    pairs.push({ mon: monthNum(m.ym), dAd, dRev, roas: dAd > 0 ? dRev / dAd : null });
+  });
+  const totDAd  = pairs.reduce((s,p) => s + p.dAd, 0);
+  const totDRev = pairs.reduce((s,p) => s + p.dRev, 0);
+  const obsRoas = totDAd > 0 ? totDRev / totDAd : null;
+  const netContrib = totDRev * CONTRIB_MARGIN - totDAd;   // YTD 加碼淨貢獻
+
+  /* KPI 列 */
+  const kpiEl = document.getElementById('adfx-kpis');
+  if (kpiEl) {
+    const kpi = (label, val, sub, cls='') => `
+      <div class="mkt-compare-card"><div class="mkt-compare-label">${label}</div>
+      <div class="mkt-compare-val ${cls}">${val}</div><div class="mkt-compare-sub">${sub}</div></div>`;
+    kpiEl.innerHTML =
+      kpi('損益兩平 mROAS', BREAKEVEN_ROAS.toFixed(2), '每1元廣告至少帶回的營收') +
+      kpi('觀測 mROAS（YTD YoY）', obsRoas === null ? '—' : obsRoas.toFixed(2),
+          `多花 ${fmtW(totDAd)} → 多做 ${fmtW(totDRev)}`,
+          obsRoas === null ? '' : obsRoas >= GATE_ROAS ? 'pos' : obsRoas >= BREAKEVEN_ROAS ? 'warn' : 'neg') +
+      kpi('單月放行門檻', '≥ ' + GATE_ROAS.toFixed(1), '預估達標才准超過 6%') +
+      kpi('YTD 加碼淨貢獻', (netContrib >= 0 ? '+' : '') + fmtW(netContrib),
+          `= Δ營收 × ${(CONTRIB_MARGIN*100).toFixed(0)}% − Δ廣告費`,
+          netContrib >= 0 ? 'pos' : 'neg');
+  }
+
+  /* 圖 A：費率(柱) vs 營業淨利率(線) + 6% 虛線 */
+  const tEl = document.getElementById('adfx-trend-title');
+  if (tEl) tEl.textContent = `廣告費率 vs 營業淨利率（2025/01–${S.ym}）— 費率本身不預測獲利`;
+  mkChart('adfx-trend-chart', {
+    type: 'bar',
+    data: { labels, datasets: [
+      { type:'line', label:'營業淨利率', data:opPct, borderColor:'#1D9E75', backgroundColor:'#1D9E75',
+        pointRadius:3, borderWidth:2, tension:.25, order:0 },
+      { type:'line', label:'6%上限', data:labels.map(()=>6), borderColor:'#b09a88',
+        borderDash:[5,4], borderWidth:1.5, pointRadius:0, order:1 },
+      { type:'bar', label:'廣告費率', data:adPct, borderRadius:3, order:2,
+        backgroundColor: adPct.map(v => v > 6 ? '#EF9F27' : 'rgba(239,159,39,.4)') },
+    ]},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => c.dataset.label+': '+c.parsed.y.toFixed(1)+'%' } } },
+      scales:{
+        x:{ grid:{display:false}, ticks:{ color:'#b09a88', font:{size:10}, autoSkip:false, maxRotation:45 } },
+        y:{ grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{size:11}, callback:v=>v+'%' } }
+      }
+    }
+  });
+
+  /* 圖 B：YoY 增量實驗 */
+  const yEl = document.getElementById('adfx-yoy-title');
+  if (yEl) yEl.textContent = `YoY 增量實驗（2026 vs 2025 同月，1–${mIdx+1}月）`;
+  const yoyLabels = pairs.map(p => {
+    const r = p.dAd <= 0 ? '減碼' : (p.roas < 0 ? 'ROAS <0' : 'ROAS ' + p.roas.toFixed(1));
+    return [`${p.mon}月`, r];
+  }).concat([[ '合計', obsRoas === null ? '—' : 'ROAS ' + obsRoas.toFixed(2) ]]);
+  mkChart('adfx-yoy-chart', {
+    type: 'bar',
+    data: { labels: yoyLabels, datasets: [
+      { label:'Δ廣告費', data: pairs.map(p=>W(p.dAd)).concat([W(totDAd)]),  backgroundColor:'#BA7517', borderRadius:3 },
+      { label:'Δ營收',   data: pairs.map(p=>W(p.dRev)).concat([W(totDRev)]), backgroundColor:'#378ADD', borderRadius:3 },
+    ]},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => c.dataset.label+': '+(c.parsed.y<0?'−':'+')+Math.abs(c.parsed.y).toFixed(1)+'萬' } } },
+      scales:{
+        x:{ grid:{display:false}, ticks:{ color:'#b09a88', font:{size:10}, autoSkip:false, maxRotation:0 } },
+        y:{ grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{size:11}, callback:v=>v+'萬' } }
+      }
+    }
+  });
+
+  /* 圖 C：情境敏感度（全年營收推估 = ytdRev ÷ 2025同期佔比） */
+  const last = CMP[CMP.length-1];
+  const prevShare = HIST_CO_2025.slice(0, monthNum(last.ym)).reduce((s,h)=>s+h.rev,0)
+                  / HIST_CO_2025.reduce((s,h)=>s+h.rev,0);
+  const annualRevEst = last.ytdRev / prevShare;
+  const midRoas = obsRoas === null ? GATE_ROAS : obsRoas;
+  const scenRates = [0.075, 0.08];
+  const scenLabels = scenRates.map(r => [`放寬到 ${(r*100).toFixed(1)}%`, `多花 ${fmtW((r-0.06)*annualRevEst)}`]);
+  const scen = roas => scenRates.map(r => +W((r-0.06)*annualRevEst * (CONTRIB_MARGIN*roas - 1)).toFixed(0));
+  mkChart('adfx-scen-chart', {
+    type: 'bar',
+    data: { labels: scenLabels, datasets: [
+      { label:'效率劣化 mROAS 1.2',                    data: scen(1.2),     backgroundColor:'#c0392b', borderRadius:3 },
+      { label:`維持觀測值 mROAS ${midRoas.toFixed(2)}`, data: scen(midRoas), backgroundColor:'#1D9E75', borderRadius:3 },
+      { label:'優質檔期 mROAS 3.0',                    data: scen(3.0),     backgroundColor:'#639922', borderRadius:3 },
+    ]},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => c.dataset.label+': '+(c.parsed.y<0?'−':'+')+Math.abs(c.parsed.y)+'萬' } } },
+      scales:{
+        x:{ grid:{display:false}, ticks:{ color:'#b09a88', font:{size:10}, autoSkip:false, maxRotation:0 } },
+        y:{ grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{size:11}, callback:v=>(v<0?'−':'+')+Math.abs(v)+'萬' } }
+      }
+    }
+  });
+
+  /* 判讀卡：兩層制規則 */
+  const ruleEl = document.getElementById('adfx-rule');
+  if (ruleEl) {
+    const passTxt = obsRoas === null ? '今年尚無加碼月份'
+      : obsRoas >= GATE_ROAS
+        ? `目前 YTD 觀測 mROAS ${obsRoas.toFixed(2)} ≥ ${GATE_ROAS.toFixed(1)}，加碼淨貢獻 ${(netContrib>=0?'+':'')}${fmtW(netContrib)}——超標的錢整體有賺`
+        : obsRoas >= BREAKEVEN_ROAS
+          ? `目前 YTD 觀測 mROAS ${obsRoas.toFixed(2)} 介於損益兩平與門檻之間——勉強打平，需檢視個別檔期`
+          : `目前 YTD 觀測 mROAS ${obsRoas.toFixed(2)} 低於損益兩平 ${BREAKEVEN_ROAS.toFixed(2)}——超標的錢在虧損，立即檢討`;
+    ruleEl.innerHTML = `
+      <div class="insight" style="border-left-color:#8D5531">
+        <div class="insight-hd">
+          <span class="insight-tag" style="background:#8D5531">管理規則</span>
+          <span class="insight-title">兩層制：全年護欄 6–8% ＋ 單月 mROAS 門檻</span>
+        </div>
+        <div class="insight-body">
+          ①<b>全年平均</b>維持 6–8% 護欄（8% 是上限不是新目標）。
+          ②<b>單月要超過 6%</b>：檔期需預估 mROAS ≥ ${GATE_ROAS.toFixed(1)}（門檻高於損益兩平 ${BREAKEVEN_ROAS.toFixed(2)}，因 YoY 估計含自然成長、偏樂觀）。
+          ③<b>事後驗證</b>：檔期實際 mROAS &lt; ${BREAKEVEN_ROAS.toFixed(2)} 者，同型式下次停損。
+          ④檔期集中在有需求的月份（3–5、10–12 月）；<b>切勿淡季硬灌</b>——2025/07 花 17.9% 仍虧損是最貴的教訓。
+        </div>
+        <div class="insight-data">${passTxt}</div>
+      </div>`;
+  }
 }
 
 /* ── Monthly Comparison Chart ── */
