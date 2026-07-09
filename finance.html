@@ -621,6 +621,18 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       <div class="chart-card-title" id="adfx-score-title">逐月檢視：這個月有沒有多花錢？多花的錢有沒有換到利潤？</div>
       <div id="adfx-scorecard" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;margin-top:12px"></div>
     </div>
+    <div class="chart-card">
+      <div class="chart-card-title">ROAS ／ mROAS 逐月數值</div>
+      <div id="adfx-formula-box" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11.5px;line-height:1.9;color:var(--text-sub)">
+        <div><b style="color:var(--text)">ROAS</b> ＝ 當月營收 ÷ 當月廣告費——衡量這個月整體廣告效率，但會把「沒花廣告也會有」的自然營收也算進去，數字容易偏高，<b>不適合單獨拿來判斷加不加碼</b>。</div>
+        <div><b style="color:var(--text)">mROAS</b>（邊際ROAS）＝ Δ營收（今年－去年同月）÷ Δ廣告費（今年－去年同月）——只算「多花的這筆錢，多換到多少營收」，排除掉本來就會有的基礎營收，是判斷加碼划不划算<b>更乾淨的指標</b>。</div>
+        <div>損益兩平 mROAS ＝ 1 ÷ 邊際貢獻率(62%) ≈ <b style="color:var(--text)">1.61</b>（低於這個數字，多花的廣告費就是在虧錢）；建議放行門檻 <b style="color:var(--text)">2.0</b>（留安全邊際）。</div>
+      </div>
+      <div class="cmp-table-wrap">
+        <table class="cmp-table" id="adfx-roas-table"></table>
+      </div>
+      <div style="font-size:10.5px;color:var(--text-muted);margin-top:6px">＊2025/07 為嘖嘖募資專案（費用與募資款集中認列於當月），非常態月度操作，不列入 mROAS 判讀。</div>
+    </div>
     <div class="insight-list" id="adfx-rule" style="margin-top:1rem"></div>
 
     <!-- 策略提醒（固定區塊，與月份切換無關，永遠顯示最新狀態） -->
@@ -1600,6 +1612,30 @@ function renderAdEffect() {
         <div style="font-size:10px;color:${ok?'#2e6b10':'#a32d2d'};line-height:1.5">多花${fmtW(p.dAd)}<br>${ok?'多賺':'虧了'}${fmtW(Math.abs(net))}</div>
       </div>`;
     }).join('');
+  }
+
+  /* ROAS／mROAS 逐月數值表：ROAS 每月都能算，mROAS 只有「今年多花錢」的月份才有意義 */
+  const roasTableEl = document.getElementById('adfx-roas-table');
+  if (roasTableEl) {
+    const pairByMon = {};
+    pairs.forEach(p => { pairByMon[p.mon] = p; });
+    const head = `<thead><tr><th>月份</th><th>廣告費率</th><th>ROAS<br><span style="font-size:9px;font-weight:400">營收÷廣告費</span></th><th>mROAS<br><span style="font-size:9px;font-weight:400">Δ營收÷Δ廣告費</span></th></tr></thead>`;
+    const rows = series.map((d, i) => {
+      const [y, mm] = d.ym.split('/');
+      const roas = d.mkt > 0 ? d.rev / d.mkt : null;
+      const adPctV = (d.mkt / d.rev * 100);
+      const isCurYear = y === '2026';
+      const p = isCurYear ? pairByMon[parseInt(mm, 10)] : null;
+      let mroasCell;
+      if (i === anomalyIdx) mroasCell = `<span style="color:var(--text-muted)">不適用＊</span>`;
+      else if (!p) mroasCell = `<span style="color:var(--text-muted)">—</span>`;
+      else if (p.dAd <= 0) mroasCell = `<span style="color:var(--text-muted)">減碼</span>`;
+      else if (p.roas === null || p.roas < 0) mroasCell = `<span class="neg">&lt; 0</span>`;
+      else mroasCell = `<span class="${p.roas >= GATE_ROAS ? 'pos' : p.roas >= BREAKEVEN_ROAS ? 'warn' : 'neg'}">${p.roas.toFixed(2)}</span>`;
+      const cur = d.ym === S.ym ? ' cur' : '';
+      return `<tr><td class="row-label${cur}">${y}/${mm}</td><td class="${cur}">${adPctV.toFixed(1)}%</td><td class="${cur}">${roas===null?'—':roas.toFixed(2)}</td><td class="${cur}">${mroasCell}</td></tr>`;
+    }).join('');
+    roasTableEl.innerHTML = head + `<tbody>${rows}</tbody>`;
   }
 
   /* 判讀卡：白話版管理規則 */
