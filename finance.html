@@ -623,6 +623,31 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     </div>
     <div class="insight-list" id="adfx-rule" style="margin-top:1rem"></div>
 
+    <!-- 策略提醒（固定區塊，與月份切換無關，永遠顯示最新狀態） -->
+    <div class="sec" style="margin-top:1.75rem">策略提醒 — 全年配速與風險關注（不隨月份切換變動）</div>
+    <div class="two-col">
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">年度目標配速</div>
+        <div id="strat-target" style="font-size:13px;line-height:1.8"></div>
+      </div>
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">淡旺季提醒（依 2025 全年走勢）</div>
+        <div id="strat-season" style="display:flex;gap:4px;margin:8px 0"></div>
+        <div id="strat-season-note" style="font-size:12px;color:var(--text-muted);line-height:1.6"></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">風險關注清單</div>
+      <div id="strat-risks" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div class="insight" style="border-left-color:#8D5531">
+      <div class="insight-hd">
+        <span class="insight-tag" style="background:#8D5531">獲利品質</span>
+        <span class="insight-title">別讓省成本的慣性，延續到最需要人力的旺季</span>
+      </div>
+      <div class="insight-body">今年獲利改善主要來自人事費下降，不是營收成長。旺季（10–12月）來臨前，建議檢視人力是否足以承接業績，避免省成本的慣性讓最重要的檔期反而人手不足。</div>
+    </div>
+
     <!-- Monthly Comparison -->
     <div class="sec" style="margin-top:1.75rem" id="sec-cmp">月份損益比較（2026年1–4月）</div>
     <div class="q1-stats" id="q1-stats"></div>
@@ -1002,6 +1027,7 @@ function renderStaticSections() {
   renderStoreCards();
   renderMktBreakdown();
   renderAdEffect();
+  renderStrategyOverview();
   renderQ1Chart();
   renderCompareTable();
   renderInsights();
@@ -1600,6 +1626,82 @@ function renderAdEffect() {
           </div>
         </div>
       </div>`;
+  }
+}
+
+/* ── 策略提醒（固定區塊：完全從 CMP/HIST_CO_2025 算，不讀 S，切月份分頁不會變）── */
+function renderStrategyOverview() {
+  const last = CMP[CMP.length - 1];
+  const elapsedMonths = monthNum(last.ym);
+
+  /* 年度目標配速：用去年同期營收佔全年比重外推，對照含B2B的公司年度目標 */
+  const prevSum = HIST_CO_2025.slice(0, elapsedMonths).reduce((s,h) => s + h.rev, 0);
+  const prevFullYear = HIST_CO_2025.reduce((s,h) => s + h.rev, 0);
+  const prevShare = prevFullYear ? prevSum / prevFullYear : 0;
+  const annualRevEst = prevShare ? last.ytdRev / prevShare : null;
+  const targetEl = document.getElementById('strat-target');
+  if (targetEl && annualRevEst) {
+    const achPct = annualRevEst / COMPANY_REV_TARGET * 100;
+    const gap = COMPANY_REV_TARGET - annualRevEst;
+    const cls = achPct >= 100 ? 'pos' : achPct >= 95 ? 'warn' : 'neg';
+    const remainMonths = Math.max(12 - elapsedMonths, 1);
+    const row = (label, val, valCls='') => `<div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:var(--text-muted)">${label}</span><b class="${valCls}">${val}</b></div>`;
+    targetEl.innerHTML =
+      row(`YTD累計營收（1–${elapsedMonths}月）`, fmtW(last.ytdRev)) +
+      row('推估全年營收（依去年同期佔比外推）', fmtW(annualRevEst)) +
+      row('全年目標（含B2B）', fmtW(COMPANY_REV_TARGET)) +
+      `<div style="border-top:1px solid var(--border);margin-top:4px;padding-top:4px"></div>` +
+      row('推估達成率', achPct.toFixed(1) + '%', cls) +
+      row(gap >= 0 ? '缺口' : '超前', fmtW(Math.abs(gap)), cls) +
+      (gap > 0 ? `<div style="margin-top:8px;color:var(--text-muted);font-size:11px">剩餘 ${remainMonths} 個月平均每月要多做 ${fmtW(gap / remainMonths)}，才補得回缺口——建議集中在旺季衝刺。</div>` : '');
+  }
+
+  /* 淡旺季提醒：用 2025 每月營業淨利率標色，標出目前所在月份 */
+  const seasonEl = document.getElementById('strat-season');
+  const seasonNoteEl = document.getElementById('strat-season-note');
+  if (seasonEl) {
+    seasonEl.innerHTML = HIST_CO_2025.map(h => {
+      const pct = h.rev ? h.opProfit / h.rev * 100 : 0;
+      const cls = pct >= 8 ? '#639922' : pct >= 0 ? '#EF9F27' : '#c0392b';
+      const isCur = monthNum(h.ym) === elapsedMonths;
+      return `<div style="flex:1;text-align:center">
+        <div style="height:36px;border-radius:4px;background:${cls};opacity:${isCur?1:.5}${isCur?';box-shadow:0 0 0 2px var(--text) inset':''}"></div>
+        <div style="font-size:9px;margin-top:3px;color:var(--text-muted)">${monthNum(h.ym)}月${isCur?'◀現在':''}</div>
+      </div>`;
+    }).join('');
+  }
+  if (seasonNoteEl) {
+    const weakMonths = HIST_CO_2025.filter(h => h.opProfit < 0).map(h => monthNum(h.ym) + '月');
+    const strongMonths = HIST_CO_2025.filter(h => h.rev && h.opProfit / h.rev >= 0.10).map(h => monthNum(h.ym) + '月');
+    seasonNoteEl.innerHTML = `依去年走勢，<b style="color:var(--neg)">${weakMonths.join('、') || '（無）'}</b> 是虧損月，淡季別硬砸廣告；<b style="color:var(--pos)">${strongMonths.join('、') || '（無）'}</b> 是全年收成期，資源建議往後面集中。`;
+  }
+
+  /* 風險關注：台中／電商 近 3 個月平均（自動隨月份增加更新，不寫死特定月份） */
+  const riskEl = document.getElementById('strat-risks');
+  if (riskEl) {
+    const recent = CMP.slice(-3).filter(m => m.storeData);
+    const avgOf = (st, pick) => {
+      const vals = recent.filter(m => m.storeData[st]).map(m => pick(m.storeData[st]));
+      return vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : null;
+    };
+    const items = [];
+    const tzOp = avgOf('台中', d => d.opProfit), tzW = avgOf('台中', d => d.wPct);
+    if (tzOp !== null) {
+      const bad = tzOp < 0 || tzW >= 17;
+      items.push({ bad, name: '台中店',
+        msg: `近${recent.length}個月平均營業淨利 ${(tzOp>=0?'+':'')+fmtW(tzOp)}、薪資率 ${tzW.toFixed(1)}%（其他店多在8–14%）——${bad?'持續偏弱，建議旺季前檢討排班與人力結構':'表現穩定'}` });
+    }
+    const ecOp = avgOf('電商', d => d.opProfit), ecMkt = avgOf('電商', d => d.mktPct);
+    if (ecOp !== null) {
+      const bad = ecOp < 0 || ecMkt >= 15;
+      items.push({ bad, name: '電商（官網＋電商平台）',
+        msg: `近${recent.length}個月平均營業淨利 ${(ecOp>=0?'+':'')+fmtW(ecOp)}、廣告費率 ${ecMkt.toFixed(1)}%（是店面的10倍以上）——${bad?'獲利不穩定，建議做一次頻道級廣告投放檢討':'表現穩定'}` });
+    }
+    riskEl.innerHTML = items.map(it => `
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:${it.bad?'#fcebeb':'#eaf3de'}">
+        <span style="font-size:16px">${it.bad?'🔴':'🟢'}</span>
+        <div><b style="font-size:12px">${it.name}</b><div style="font-size:11px;color:${it.bad?'#a32d2d':'#2e6b10'};margin-top:2px;line-height:1.6">${it.msg}</div></div>
+      </div>`).join('') || '<div style="font-size:12px;color:var(--text-muted)">目前資料不足以評估</div>';
   }
 }
 
