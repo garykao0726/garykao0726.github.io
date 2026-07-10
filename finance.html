@@ -82,9 +82,13 @@ const FALLBACK_MONTHS = {
     opProfit:1368291, opPct:19.73,
     nonOpIn:131580, nonOpOut:41477,
     pretax:1458394, tax:46000, ni:1412394, niPct:20.37,
-    /* 去年同期 2025/01 + 累計 */
-    prevRev:6620786, prevNI:520778, yoyRevPct:4.75,
-    prevYtdRev:6620786, prevYtdNI:520778,
+    /* 去年同期 2025/01 + 累計
+       ★ prevRev/prevYtdRev/yoyRevPct 已扣除誠品生活裕隆城（非常態店鋪，2025/09撤櫃）：
+         2025年1-8月「總公司」ERP數字原始仍含裕隆城營收，未扣會低估2026年真實成長。
+         原始值：01=6,620,786(不變,已是1月無YTD差異)。扣除方式與細節見 memory: project_yulon_store_yoy_gap
+         prevNI/prevYtdNI/prevNiPct 尚未修正（無裕隆城成本結構無法拆分），YoY淨利數字僅供參考 */
+    prevRev:6095306, prevNI:520778, yoyRevPct:13.78,
+    prevYtdRev:6095306, prevYtdNI:520778,
     prevGpPct:65.69, prevSellPct:35.92, prevMgmtPct:21.07, prevNiPct:7.87,
     storeData: {
       '電商': { rev:942026,  cogs:328236, gp:613790,  gpPct:65.16, wPct:6.49,  rPct:0,    mktPct:15.23, opProfit:74511,  pretax:74511,  pretaxPct:7.91,  target:1250000 },
@@ -108,8 +112,8 @@ const FALLBACK_MONTHS = {
     nonOpIn:90146, nonOpOut:40511,
     pretax:585846, tax:46000, ni:539846, niPct:10.10,
     /* 去年同期 2025/02 + 累計 */
-    prevRev:6010360, prevNI:450087, yoyRevPct:-11.07,
-    prevYtdRev:12631146, prevYtdNI:970865,
+    prevRev:5598612, prevNI:450087, yoyRevPct:-4.52,  // 已扣裕隆城，原始6,010,360
+    prevYtdRev:11693918, prevYtdNI:970865,
     prevGpPct:65.72, prevSellPct:36.69, prevMgmtPct:20.80, prevNiPct:7.49,
     /* 2 月部門報表僅含官網（無電商平台拆分），故「電商」標記 partial */
     storeData: {
@@ -134,8 +138,8 @@ const FALLBACK_MONTHS = {
     nonOpIn:82271, nonOpOut:41880,
     pretax:1114142, tax:176000, ni:938142, niPct:13.85,
     /* 去年同期 2025/03 + 累計 */
-    prevRev:5697649, prevNI:55790, yoyRevPct:18.92,
-    prevYtdRev:18328795, prevYtdNI:1026655,
+    prevRev:5176446, prevNI:55790, yoyRevPct:30.89,  // 已扣裕隆城，原始5,697,649
+    prevYtdRev:16870364, prevYtdNI:1026655,
     prevGpPct:65.01, prevSellPct:41.28, prevMgmtPct:22.42, prevNiPct:0.98,
     storeData: {
       '電商': { rev:1078725, cogs:322218, gp:756507, gpPct:70.13, wPct:5.67,  rPct:0,    mktPct:16.51, opProfit:82159,  pretax:82159,  pretaxPct:7.62,  target:1150000 },
@@ -159,8 +163,8 @@ const FALLBACK_MONTHS = {
     nonOpIn:71676, nonOpOut:38586,
     pretax:136268, tax:58000, ni:78268, niPct:1.48,
     /* 去年同期 2025/04（去年 4 月為虧損 -54.3萬）+ 累計 */
-    prevRev:5936770, prevNI:-543295, yoyRevPct:-11.18,
-    prevYtdRev:24265565, prevYtdNI:483360,
+    prevRev:5523612, prevNI:-543295, yoyRevPct:-4.54,  // 已扣裕隆城，原始5,936,770
+    prevYtdRev:22393976, prevYtdNI:483360,
     prevGpPct:57.56, prevSellPct:38.26, prevMgmtPct:27.77, prevNiPct:-9.15,
     storeData: {
       '電商': { rev:796289,  cogs:288247, gp:508042, gpPct:63.80, wPct:8.23,  rPct:0,     mktPct:16.63, opProfit:-84182,  pretax:-84182,  pretaxPct:-10.57, target:1000000 },
@@ -184,8 +188,8 @@ const FALLBACK_MONTHS = {
     nonOpIn:65038, nonOpOut:37135,
     pretax:766241, tax:157706, ni:608535, niPct:10.01,
     /* 去年同期 2025/05（來源：Drive 損益表_202505；去年5月為虧損月）+ 累計 */
-    prevRev:4804243, prevNI:-348671, yoyRevPct:26.52,
-    prevYtdRev:29069808, prevYtdNI:134689,
+    prevRev:4303159, prevNI:-348671, yoyRevPct:41.25,  // 已扣裕隆城，原始4,804,243
+    prevYtdRev:26697135, prevYtdNI:134689,
     prevGpPct:67.20, prevSellPct:47.06, prevMgmtPct:26.82, prevNiPct:-7.26,
     storeData: {
       '電商': { rev:989880,  cogs:293325, gp:696555,  gpPct:70.37, wPct:5.10,  rPct:0,     mktPct:12.71, opProfit:96942,  pretax:96942,  pretaxPct:9.79,  target:1000000 },

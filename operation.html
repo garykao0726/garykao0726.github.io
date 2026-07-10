@@ -506,6 +506,26 @@ function renderMonthlyStoreCards(m){
     const p=tgt>0?Math.round(rev/tgt*100):0,c=achColor(p);
     const yoy=rev25>0?((rev-rev25)/rev25*100).toFixed(1):null;
     const revFmt=rev>=100?rev+'萬':'NT$'+fw(rev*10000);
+    /* 來客/成交率/客單（月度營運 MOPS，選定月份）：診斷業績缺口是來客還是客單問題，非臆測 */
+    const mo=(typeof MOPS!=='undefined'&&MOPS[s]&&MOPS[s][m-1])?MOPS[s][m-1]:null;
+    const isWeb=s==='官網';
+    let opsPills='';
+    if(mo){
+      const tot=(mo.tNew||0)+(mo.tOld||0), nr=tot>0?Math.round(mo.tNew/tot*100):0;
+      const pills=isWeb?[
+        mo.orders?statPill('neu','訂單',mo.orders+'筆'):'',
+        mo.sessions?statPill('neu','流量',fw(mo.sessions)):'',
+        mo.gaConv?statPill(mo.gaConv>=.03?'good':mo.gaConv>=.015?'warn':'bad','GA轉換',(mo.gaConv*100).toFixed(2)+'%'):'',
+        mo.ticket?statPill(ticketStatus(mo.ticket,true),'客單','$'+fw(mo.ticket)):'',
+      ]:[
+        mo.visitors?statPill('neu','來客',mo.visitors+'人'):'',
+        mo.conv?statPill(convStatus(mo.conv,s),'成交率',(mo.conv*100).toFixed(0)+'%'):'',
+        mo.ticket?statPill(ticketStatus(mo.ticket,s),'客單','$'+fw(mo.ticket)):'',
+        tot?statPill('neu','新客',nr+'%'):'',
+      ];
+      const filled=pills.filter(Boolean).join('');
+      if(filled) opsPills=`<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px;display:flex;flex-wrap:wrap;gap:5px">${filled}</div>`;
+    }
     return`<div class="wkc" style="--wkc-col:${S_COL[i]}">
       <div class="wkc-name">${S_EMO[i]} ${s}</div>
       <div class="wkc-pct" style="color:${c}">${p}%</div>
@@ -515,6 +535,7 @@ function renderMonthlyStoreCards(m){
         <span style="font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted)">vs 去年 ${fw(rev25)}萬</span>
         <span style="font-size:12px;font-family:'Space Mono',monospace;font-weight:700;color:${parseFloat(yoy)>=0?'var(--positive)':'var(--negative)'}">${parseFloat(yoy)>=0?'▲ +':'▼ '}${Math.abs(yoy)}%</span>
       </div>`:''}
+      ${opsPills}
     </div>`;
   }).join('')+`</div>`;
 }
@@ -993,7 +1014,30 @@ function renderMgmt(){
     if(margin!=null&&margin>=20) good.push(`安全邊際 <b>${margin.toFixed(0)}%</b>，抗淡季能力足`);
 
     const bad=[];
-    if(ach!=null&&ach<100) bad.push(`業績差目標 <b>${gap.toFixed(1)}萬</b>（達成 ${ach.toFixed(0)}%）— 缺口在來客還是客單？`);
+    if(ach!=null&&ach<100){
+      let gapTxt=`業績差目標 <b>${gap.toFixed(1)}萬</b>（達成 ${ach.toFixed(0)}%）`;
+      const mo=mopsOf(st), sbk=STORE_BENCHMARKS[D26KEY[st]];
+      if(isShop && mo && mo.visitors && sbk){
+        const convGapPct=sbk.conv?(mo.conv-sbk.conv)/sbk.conv*100:null;
+        const ticketGapPct=sbk.ticket?(mo.ticket-sbk.ticket)/sbk.ticket*100:null;
+        const convTxt=`成交率 ${(mo.conv*100).toFixed(0)}%（目標${(sbk.conv*100).toFixed(0)}%）`;
+        const ticketTxt=`客單 $${fw(mo.ticket)}（目標$${fw(sbk.ticket)}）`;
+        if(convGapPct!=null&&convGapPct<-5&&(ticketGapPct==null||convGapPct<=ticketGapPct)){
+          gapTxt+=`— 主因<b>成交率</b>未達標：${convTxt}，${ticketTxt}尚可，來客${mo.visitors}人。轉換率才是缺口，非來客不足`;
+        } else if(ticketGapPct!=null&&ticketGapPct<-5&&(convGapPct==null||ticketGapPct<convGapPct)){
+          gapTxt+=`— 主因<b>客單</b>未達標：${ticketTxt}，${convTxt}尚可，來客${mo.visitors}人。缺口在客單/搭銷，非轉換率`;
+        } else if((convGapPct==null||convGapPct>=-5)&&(ticketGapPct==null||ticketGapPct>=-5)){
+          gapTxt+=`— 成交率(${(mo.conv*100).toFixed(0)}%)、客單($${fw(mo.ticket)})均達標，缺口在<b>來客數</b>不足（本月${mo.visitors}人），催來客/導流為主`;
+        } else {
+          gapTxt+=`— ${convTxt}、${ticketTxt}皆未達標，來客與轉換率雙弱`;
+        }
+      } else if(!isShop && mo && mo.gaConv!=null){
+        gapTxt+=`— GA轉換率${(mo.gaConv*100).toFixed(2)}%、客單$${fw(mo.ticket||0)}、流量${fw(mo.sessions||0)}，${mo.gaConv<0.02?'<b>轉換率</b>是主要瓶頸':'流量或客單需加強'}`;
+      } else {
+        gapTxt+=`— 來客/成交率資料待補（月度營運 Sheet 尚無 ${d.ym} 資料）`;
+      }
+      bad.push(gapTxt);
+    }
     if(niPct<0) bad.push(`淨利 <b>${fW(ni)}</b> 為負 — 距損益平衡點 ${fW(be)} 還差 <b>${beGap.toFixed(1)}萬</b>，先衝量`);
     if(rMoM!=null&&rMoM<-10) bad.push(`營收較上月 <b>${pctTxt(rMoM)}</b> — 留意客流／淡季`);
     /* 毛利/淨利/人事/租金 vs 目標 → 改由下方 🚩 量化對標，不在此重複 */
