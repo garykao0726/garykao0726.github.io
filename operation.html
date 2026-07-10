@@ -671,7 +671,7 @@ function renderMgmt(){
 
   const fW=n=>{const sign=n<0?'-':'';return sign+(Math.abs(n)/10000).toFixed(1)+'萬';};
   const fW2=n=>{const sign=n<0?'-':'';return sign+(Math.abs(n)/10000).toFixed(2)+'萬';};
-  const pctChg=(cur,prev)=>prev!==0?(cur-prev)/Math.abs(prev)*100:null;
+  const pctChg=(cur,prev)=>(prev!=null&&prev!==0)?(cur-prev)/Math.abs(prev)*100:null;
   const chgSp=(pct,lowerBetter=false)=>{
     if(pct===null)return'<span style="font-size:10px;color:var(--text-muted)">—</span>';
     const good=lowerBetter?pct<=0:pct>=0;
@@ -704,7 +704,7 @@ function renderMgmt(){
   const pkgOf = ym => PKGH[ym]||0;
   const pkgActual = pkgOf(d.ym);
   const normCogs = (rawPct, rev, ym) => rev ? (rev*rawPct/100 - pkgOf(ym) + pkgNorm)/rev*100 : rawPct;
-  const normNi   = (rawNi, ym) => rawNi + (pkgOf(ym) - pkgNorm);
+  const normNi   = (rawNi, ym) => rawNi==null ? null : rawNi + (pkgOf(ym) - pkgNorm);
   const cogsN = normCogs(d.cogsPct, d.rev, d.ym);   // 平滑後本月成本占比
   const niN   = normNi(d.ni, d.ym);                  // 平滑後本月營業淨利（全公司一致用此）
   const niNPct = d.rev ? niN/d.rev*100 : 0;
@@ -732,7 +732,7 @@ function renderMgmt(){
   const revMoM=pctChg(d.rev,d.prevMoRev);
   const revYoY=pctChg(d.rev,d.prevYrRev);
   const niMoM=pctChg(niN,normNi(d.prevMoNI,prevMoYm));
-  const niYoY=d.prevYrNI!==0?pctChg(niN,normNi(d.prevYrNI,prevYrYm)):null;
+  const niYoY=(d.prevYrNI!=null&&d.prevYrNI!==0)?pctChg(niN,normNi(d.prevYrNI,prevYrYm)):null;
   const mktAch=d.mktTotal/d.mktBudget*100;
   const niAch=niN/d.niTarget*100;
   /* 廣告費 MoM/YoY ＋ 廣告ROI（營收÷廣告費，每1元廣告帶來幾元營收）*/
@@ -759,7 +759,7 @@ function renderMgmt(){
     const rMoM=pctChg(s.rev,s.prevMoRev);
     const rYoY=pctChg(s.rev,s.prevYrRev);
     const nMoM=pctChg(s.ni,s.prevMoNI);
-    const nYoY=s.prevYrNI!==0?pctChg(s.ni,s.prevYrNI):null;
+    const nYoY=(s.prevYrNI!=null&&s.prevYrNI!==0)?pctChg(s.ni,s.prevYrNI):null;
     return`<tr>
       <td class="td-s"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${sc[st]};margin-right:6px;vertical-align:middle"></span>${st}</td>
       <td style="font-weight:700">${fW(s.rev)}</td>
@@ -1303,8 +1303,8 @@ function renderMgmt(){
           <span style="${d.cogsPct>d.cogsPctPrevMo?'color:var(--negative)':'color:var(--positive)'}">${d.cogsPct>d.cogsPctPrevMo?'+':''}${(d.cogsPct-d.cogsPctPrevMo).toFixed(2)} pp</span>
         </div>
         <div style="display:flex;justify-content:space-between">
-          <span style="color:var(--text-muted)">去年同月 ${d.cogsPctPrevYr}%</span>
-          <span style="color:var(--positive)">${(d.cogsPct-d.cogsPctPrevYr).toFixed(2)} pp</span>
+          <span style="color:var(--text-muted)">去年同月 ${d.cogsPctPrevYr!=null?d.cogsPctPrevYr+'%':'—'}</span>
+          <span style="color:var(--positive)">${d.cogsPctPrevYr!=null?(d.cogsPct-d.cogsPctPrevYr).toFixed(2)+' pp':'—'}</span>
         </div>
       </div>
     </div>
