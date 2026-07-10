@@ -538,10 +538,24 @@ function renderMonthlyStoreCards(m){
         mo.visitors?statPill('neu','來客',mo.visitors+'人',null,fmtDeltaPct(momPct(mo.visitors,moPrev&&moPrev.visitors))):'',
         mo.conv?statPill(convStatus(mo.conv,s),'成交率',(mo.conv*100).toFixed(0)+'%',null,fmtDeltaPP(momPP(mo.conv,moPrev&&moPrev.conv))):'',
         mo.ticket?statPill(ticketStatus(mo.ticket,s),'客單','$'+fw(mo.ticket),null,fmtDeltaPct(momPct(mo.ticket,moPrev&&moPrev.ticket))):'',
-        tot?statPill('neu','新客',nr+'%',null,fmtDeltaPP(nr!=null&&prevNrPP!=null?nr-prevNrPP:null)):'',
+        tot?statPill('neu','新客成交',nr+'%',null,fmtDeltaPP(nr!=null&&prevNrPP!=null?nr-prevNrPP:null)):'',
       ];
       const filled=pills.filter(Boolean).join('');
       if(filled) opsPills=`<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px;display:flex;flex-wrap:wrap;gap:5px">${filled}</div>`;
+      /* 來客組成：新客/舊客(回購)/維修 三類來客拆分，維修來客是獨立第三類、不算進舊客裡（月度營運表 D=E+F+G 三欄相加驗證過） */
+      if(!isWeb&&mo.visitors>0){
+        const vN=mo.vNew||0,vO=mo.vOld||0,vR=mo.vRep||0;
+        const nvp=Math.round(vN/mo.visitors*100),ovp=Math.round(vO/mo.visitors*100),rvp=Math.max(0,100-nvp-ovp);
+        opsPills+=`<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+          <div style="font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-bottom:4px">來客組成（新客／舊客回購／維修，三者互斥不重疊）</div>
+          <div class="ratio-bar"><div style="height:100%;float:left;width:${nvp}%;background:var(--green)"></div><div style="height:100%;float:left;width:${ovp}%;background:var(--sand)"></div><div style="height:100%;float:left;width:${rvp}%;background:var(--rust)"></div></div>
+          <div style="display:flex;gap:12px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:4px;flex-wrap:wrap">
+            <span><span style="color:var(--green)">■</span> 新客 ${nvp}%（${vN}人）</span>
+            <span><span style="color:var(--sand)">■</span> 舊客 ${ovp}%（${vO}人）</span>
+            <span><span style="color:var(--rust)">■</span> 維修 ${rvp}%（${vR}人）</span>
+          </div>
+        </div>`;
+      }
     }
     return`<div class="wkc" style="--wkc-col:${S_COL[i]}">
       <div class="wkc-name">${S_EMO[i]} ${s}</div>
@@ -582,6 +596,12 @@ function ctFmt(s,v){
   if(ctMetric==='ticket')return'$'+fw(v);
   return String(v);
 }
+/* 來客數指標下，額外標出新客/舊客(回購)/維修三類佔比，方便看新舊客結構是否有明顯變化；維修為獨立第三類，不併入舊客 */
+function ctVisitorSub(s,mo){
+  if(s==='官網'||!mo||!mo.visitors)return'';
+  const nvp=Math.round((mo.vNew||0)/mo.visitors*100),ovp=Math.round((mo.vOld||0)/mo.visitors*100),rvp=Math.max(0,100-nvp-ovp);
+  return`<div style="font-size:8px;color:var(--text-muted);font-weight:400;margin-top:1px">新${nvp}／舊${ovp}／修${rvp}</div>`;
+}
 function renderCustomerTrend(){
   const noteEl=document.getElementById('ct-note'),tblEl=document.getElementById('ct-table');
   if(typeof MOPS==='undefined'){noteEl.textContent='月度營運表尚未載入';tblEl.innerHTML='';return;}
@@ -602,22 +622,25 @@ function renderCustomerTrend(){
   const curMo=new Date().getMonth()+1;
   const head=`<thead><tr><th>門市</th>${months.map(m=>`<th>${m}月${m===curMo?'<div style="font-size:8px;font-weight:400;color:var(--text-muted)">進行中</div>':''}</th>`).join('')}</tr></thead>`;
   const body=STORES.map((s,i)=>{
-    const vals=months.map(m=>ctValue(s,MOPS[s]&&MOPS[s][m-1]));
+    const moArr=months.map(m=>MOPS[s]&&MOPS[s][m-1]);
+    const vals=months.map((m,vi)=>ctValue(s,moArr[vi]));
     /* 進行中的當月資料尚未跑完整月，排除在最佳/最差判斷之外，避免月初天數少被誤判成「最差」 */
     const nums=months.map((m,vi)=>m===curMo?null:vals[vi]).filter(v=>v!=null);
     const best=nums.length>1?Math.max(...nums):null,worst=nums.length>1?Math.min(...nums):null;
     const cells=vals.map((v,vi)=>{
+      const sub=ctMetric==='visitors'?ctVisitorSub(s,moArr[vi]):'';
       if(v==null)return`<td style="color:var(--text-muted)">—</td>`;
-      if(months[vi]===curMo)return`<td style="color:var(--text-sub)">${ctFmt(s,v)}</td>`;
+      if(months[vi]===curMo)return`<td style="color:var(--text-sub)">${ctFmt(s,v)}${sub}</td>`;
       const isBest=v===best,isWorst=v===worst;
       const bg=isBest?'rgba(56,142,60,.12)':isWorst?'rgba(211,47,47,.10)':'transparent';
       const col=isBest?'var(--positive)':isWorst?'var(--negative)':'var(--text-sub)';
-      return`<td style="background:${bg};color:${col};font-weight:${isBest||isWorst?700:400}">${ctFmt(s,v)}${isBest?' 🔺':isWorst?' 🔻':''}</td>`;
+      return`<td style="background:${bg};color:${col};font-weight:${isBest||isWorst?700:400}">${ctFmt(s,v)}${isBest?' 🔺':isWorst?' 🔻':''}${sub}</td>`;
     }).join('');
     return`<tr><td style="color:${S_COL[i]};font-weight:600;white-space:nowrap">${S_EMO[i]} ${s}</td>${cells}</tr>`;
   }).join('');
   tblEl.innerHTML=head+`<tbody>${body}</tbody>`;
-  noteEl.textContent='🔺該店此指標表現最好的月份／🔻表現最差的月份（資料來源：月度營運表，僅2026年，故為月度環比比較，非YoY）';
+  const subNote=ctMetric==='visitors'?'；「新／舊／修」＝新客／舊客回購／維修來客佔比，三者互斥加總100%（維修不算在舊客內）':'';
+  noteEl.textContent='🔺該店此指標表現最好的月份／🔻表現最差的月份（資料來源：月度營運表，僅2026年，故為月度環比比較，非YoY）'+subNote+(ctMetric==='visitors'?'。維修來客當月是否轉換購買，月度營運表未記錄，如需維修轉換率請看「週報快覽」分頁的「維修來客分析」（僅當週資料）':'');
 }
 function renderMonthly(){if(!document.getElementById('m-pills').children.length){const pills=document.getElementById('m-pills');const all=document.createElement('button');all.className='mp active';all.textContent='全年 YTD';all.onclick=()=>selectMonth(0,all);pills.appendChild(all);for(let m=1;m<=12;m++){const b=document.createElement('button');b.className='mp';b.textContent=m+'月';b.onclick=function(){selectMonth(m,this)};pills.appendChild(b);}}renderMonthlyKPI();renderMonthlyStoreCards(selMonth);renderTrendChart();renderNoTrend();renderCompanyDonut();renderSrMonthly();renderChDonut();renderMonthlyWkDetail(selMonth);renderCustomerTrend();}
 function renderNoTrend(){
