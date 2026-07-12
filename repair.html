@@ -643,6 +643,64 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbywhbtNQWEsQ68I7sCbcs71bVAPD_DrDGBAY_wm8Nl_MXln1daS77h-tXVBXrOYw4kBBg/exec';
 
 // =============================================
+// 員工登入憑證（2026-07-12 安全修正）
+// auth.js 只給短效 ID token 用來過畫面，撈清單/寫入這種後台呼叫另外要一組
+// OAuth access token 讓 GAS 驗證「這是不是 @oringoshoes.com 的人」，
+// 同一個 GCP OAuth client（跟 auth.js 同一組），不需要另外設定。
+// =============================================
+const STAFF_OAUTH_CLIENT_ID = '777948523832-8qfmjk689e35f02crqjp35kg47j4kcgn.apps.googleusercontent.com';
+let staffAccessToken = null;
+let staffTokenClient = null;
+
+function isAlreadyLoggedIn() {
+  try {
+    const d = JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null');
+    return !!(d && d.exp > Date.now());
+  } catch { return false; }
+}
+
+function waitForGSI(cb) {
+  if (window.google && google.accounts && google.accounts.oauth2) { cb(); return; }
+  setTimeout(() => waitForGSI(cb), 300);
+}
+
+function initStaffTokenClient() {
+  staffTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: STAFF_OAUTH_CLIENT_ID,
+    scope: 'openid email profile',
+    callback: (resp) => {
+      if (resp.error) { showAuthorizeBanner(); return; }
+      staffAccessToken = resp.access_token;
+      hideAuthorizeBanner();
+      loadOrders(); // 不管是靜默還是點了橫幅互動拿到的，拿到就（重新）載入
+    },
+  });
+  staffTokenClient.requestAccessToken({ prompt: '' }); // 先試靜默取得，失敗才顯示橫幅要求手動授權
+}
+
+function showAuthorizeBanner() {
+  if (document.getElementById('staff-auth-banner')) return;
+  const el = document.createElement('div');
+  el.id = 'staff-auth-banner';
+  el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99997;background:#A54A1A;color:#fff;padding:10px 16px;text-align:center;font-size:13px;cursor:pointer';
+  el.textContent = '⚠ 需要額外授權才能存取工單資料，點此授權';
+  el.onclick = () => staffTokenClient.requestAccessToken({ prompt: 'consent' });
+  document.body.prepend(el);
+}
+function hideAuthorizeBanner() {
+  const el = document.getElementById('staff-auth-banner');
+  if (el) el.remove();
+}
+
+// 幫 POST body / GET query 自動帶上員工憑證，所有打後台員工專用 action 的地方都要用這兩個
+function withStaffToken(bodyObj) {
+  return Object.assign({}, bodyObj, { staffToken: staffAccessToken || '' });
+}
+function staffTokenQS() {
+  return staffAccessToken ? `&staffToken=${encodeURIComponent(staffAccessToken)}` : '';
+}
+
+// =============================================
 // 維修項目清單（含預設報價）
 // =============================================
 const REPAIR_ITEMS = [
@@ -684,10 +742,15 @@ window.addEventListener('DOMContentLoaded', () => {
   // Customer view?
   const params = new URLSearchParams(location.search);
   if (params.get('view') === 'customer' && params.get('id')) {
-    loadCustomerView(params.get('id'));
+    loadCustomerView(params.get('id'), params.get('phone'));
     return;
   }
-  loadOrders();
+  // 員工路徑：先確保拿到後台憑證才載清單，避免登入前打 API 空等
+  if (isAlreadyLoggedIn()) {
+    waitForGSI(initStaffTokenClient);
+  } else {
+    document.addEventListener('oriAuthComplete', () => waitForGSI(initStaffTokenClient), { once: true });
+  }
 });
 
 function setDefaultDate() {
@@ -715,7 +778,7 @@ function showView(name) {
 // =============================================
 async function loadOrders() {
   try {
-    const resp = await fetch(`${GAS_URL}?action=getOrders&type=repair`, { cache:'no-store' });
+    const resp = await fetch(`${GAS_URL}?action=getOrders&type=repair${staffTokenQS()}`, { cache:'no-store' });
     const data = await resp.json();
     allOrders = (data.success && data.orders) ? data.orders : [];
   } catch (e) {
@@ -927,7 +990,7 @@ async function openDetail(id) {
   let o = allOrders.find(x => x.id === id);
   if (!o) {
     try {
-      const r = await fetch(`${GAS_URL}?action=getOrder&id=${encodeURIComponent(id)}&type=repair`);
+      const r = await fetch(`${GAS_URL}?action=getOrder&id=${encodeURIComponent(id)}&type=repair${staffTokenQS()}`);
       const d = await r.json();
       o = d.order;
     } catch (e) { toast('載入失敗','error'); return; }
@@ -1032,7 +1095,7 @@ async function saveDetailUpdate() {
     const body = { action:'updateOrder', id:currentOrder.id, type:'repair', status:currentStatus };
     if (price !== '') body.price = Number(price);
     if (payment) body.paymentStatus = payment;
-    const resp = await fetch(GAS_URL, { method:'POST', body: JSON.stringify(body) });
+    const resp = await fetch(GAS_URL, { method:'POST', body: JSON.stringify(withStaffToken(body)) });
     const data = await resp.json();
     if (data.success) {
       Object.assign(currentOrder, { status:currentStatus, price: price !== '' ? Number(price) : currentOrder.price, paymentStatus: payment || currentOrder.paymentStatus });
@@ -1075,11 +1138,11 @@ async function handlePhotoUpload(type, input) {
       const b64 = await toBase64(file);
       const resp = await fetch(GAS_URL, {
         method:'POST',
-        body: JSON.stringify({
+        body: JSON.stringify(withStaffToken({
           action:'uploadPhoto', orderId:currentOrder.id, orderType:'repair', type,
           fileName: file.name || `${type}_${Date.now()}.jpg`,
           fileData: b64, mimeType: file.type || 'image/jpeg'
-        })
+        }))
       });
       const data = await resp.json();
       if (data.success && data.url) urls.push(data.url);
@@ -1089,7 +1152,7 @@ async function handlePhotoUpload(type, input) {
     const field = type === 'before' ? 'photoBefore' : 'photoAfter';
     const existing = String(currentOrder[field]||'').split(',').filter(Boolean);
     const merged = [...existing, ...urls].join(',');
-    await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'updateOrder', id:currentOrder.id, type:'repair', [field]: merged }) });
+    await fetch(GAS_URL, { method:'POST', body: JSON.stringify(withStaffToken({ action:'updateOrder', id:currentOrder.id, type:'repair', [field]: merged })) });
     currentOrder[field] = merged;
     const idx = allOrders.findIndex(o => o.id === currentOrder.id);
     if (idx >= 0) allOrders[idx][field] = merged;
@@ -1159,7 +1222,7 @@ async function submitOrder() {
   try {
     const createResp = await fetch(GAS_URL, {
       method:'POST',
-      body: JSON.stringify({
+      body: JSON.stringify(withStaffToken({
         action:'createOrder', type:'repair',
         store, name, phone, email, model,
         desc: desc || summaryDesc,
@@ -1169,7 +1232,7 @@ async function submitOrder() {
         paymentStatus,
         isFreeUsed,
         date, status
-      })
+      }))
     });
     const createData = await createResp.json();
     if (!createData.success) { toast('建立失敗：'+(createData.error||''), 'error'); showUploadOverlay(false); return; }
@@ -1184,24 +1247,24 @@ async function submitOrder() {
         const b64 = p.dataUrl.split(',')[1];
         const resp = await fetch(GAS_URL, {
           method:'POST',
-          body: JSON.stringify({
+          body: JSON.stringify(withStaffToken({
             action:'uploadPhoto', orderId, orderType:'repair', type:'before',
             fileName: p.file.name || 'before.jpg', fileData: b64, mimeType: p.file.type || 'image/jpeg'
-          })
+          }))
         });
         const d = await resp.json();
         if (d.success && d.url) photoUrls.push(d.url);
       } catch (e) { console.error(e); }
     }
     if (photoUrls.length) {
-      await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'updateOrder', id:orderId, type:'repair', photoBefore: photoUrls.join(',') }) });
+      await fetch(GAS_URL, { method:'POST', body: JSON.stringify(withStaffToken({ action:'updateOrder', id:orderId, type:'repair', photoBefore: photoUrls.join(',') })) });
     }
 
     // 寄送 Email
     if (sendEmailFlag && email) {
       showUploadOverlay(true, '寄送 Email 中…');
       try {
-        const r = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'sendEmail', id:orderId, type:'repair' }) });
+        const r = await fetch(GAS_URL, { method:'POST', body: JSON.stringify(withStaffToken({ action:'sendEmail', id:orderId, type:'repair' })) });
         const d = await r.json();
         if (!d.success) console.warn('Email 寄送失敗:', d.error);
       } catch (e) { console.warn(e); }
@@ -1247,7 +1310,7 @@ async function sendEmail() {
   if (!currentOrder.email) { toast('此單未填客戶 email', 'error'); return; }
   showUploadOverlay(true, '寄送中…');
   try {
-    const r = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'sendEmail', id:currentOrder.id, type:'repair' }) });
+    const r = await fetch(GAS_URL, { method:'POST', body: JSON.stringify(withStaffToken({ action:'sendEmail', id:currentOrder.id, type:'repair' })) });
     const d = await r.json();
     toast(d.success ? '✓ Email 已寄出' : ('寄送失敗：'+(d.error||'')), d.success ? '' : 'error');
   } catch (e) { toast('連線失敗', 'error'); }
@@ -1256,17 +1319,29 @@ async function sendEmail() {
 
 function copyCustomerLink() {
   if (!currentOrder) return;
-  const url = `${location.origin}${location.pathname}?view=customer&id=${encodeURIComponent(currentOrder.id)}`;
+  // 單號本身是連號可被猜，2026-07-12 起連結內帶電話後四碼供 GAS 端二次核對
+  const url = `${location.origin}${location.pathname}?view=customer&id=${encodeURIComponent(currentOrder.id)}&phone=${encodeURIComponent(currentOrder.phone||'')}`;
   navigator.clipboard.writeText(url).then(() => toast('✓ 客戶連結已複製，可貼到 LINE/Email')).catch(() => prompt('複製連結：', url));
 }
 
 // =============================================
 // CUSTOMER VIEW
 // =============================================
-async function loadCustomerView(id) {
+async function loadCustomerView(id, phone) {
   showView('customer');
+  // 舊連結（2026-07-12 修正前產生）沒有帶電話，先請客人補輸入
+  if (!phone) {
+    document.getElementById('customer-card').innerHTML = `
+      <div class="detail-section">
+        <div class="section-title">請輸入您的電話後四碼以查詢</div>
+        <input type="tel" id="cv-phone-input" placeholder="電話後四碼" maxlength="4"
+               style="width:100%;padding:12px;font-size:16px;border:1px solid var(--border,#ccc);border-radius:8px;margin:12px 0">
+        <button class="btn btn-primary" style="width:100%" onclick="loadCustomerView('${esc(id)}', document.getElementById('cv-phone-input').value)">查詢</button>
+      </div>`;
+    return;
+  }
   try {
-    const r = await fetch(`${GAS_URL}?action=getCustomerOrder&id=${encodeURIComponent(id)}&type=repair`);
+    const r = await fetch(`${GAS_URL}?action=getCustomerOrder&id=${encodeURIComponent(id)}&type=repair&phone=${encodeURIComponent(phone)}`);
     const d = await r.json();
     if (!d.success || !d.order) {
       document.getElementById('customer-card').innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><div class="empty-text">查無此單號，請確認後再試</div></div>';
