@@ -7,6 +7,7 @@
 <link rel="icon" href="/favicon.png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="oringo-data.js"></script>
 <script src="data.js"></script>
 <style>
 :root{--green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;--rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;--bg:#F5EDE3;--surface:#ffffff;--surface2:#FAF5EF;--border:rgba(40,66,52,0.10);--border2:rgba(40,66,52,0.22);--text:#284234;--text-sub:#8D5531;--text-muted:#b09a88;--positive:#388E3C;--warning:#F57C00;--info:#1976D2;--negative:#D32F2F}
@@ -435,19 +436,23 @@ const STORES=['中山店','松菸店','台中店','東門店','官網'];
 const STORES4=['中山店','松菸店','台中店','東門店'];
 const S_EMO=['🏙️','🌿','🏔️','🚪','🌐'];
 const S_COL=['#284234','#5a8a6e','#A54A1A','#8D5531','#CFA294'];
-const TARGETS={'中山店':[180,170,170,150,140,125,125,125,140,170,170,180],'松菸店':[160,150,150,140,120,110,110,110,120,140,150,160],'台中店':[130,120,120,120,110,95,95,95,110,120,120,130],'東門店':[140,130,130,120,110,100,100,100,120,130,130,140],'官網':[125,115,115,100,100,90,90,90,100,115,115,125]};
+// TARGETS/STORE_BENCHMARKS/TARGET_TICKET/TARGET_CONV 改由中央 Sheet「月目標」「參數」
+// 「門市基準值」分頁提供，見 buildOpTargets() 與頁面啟動流程。TARGETS25 是凍結的歷史
+// 對照資料，不隨月份變動，維持寫死。
+const SHEET_KEY_TO_STORE_LABEL={'中山':'中山店','松菸':'松菸店','東門':'東門店','台中':'台中店','電商':'官網'};
+let TARGETS=null, TARGET_TICKET=null, TARGET_CONV=null, STORE_BENCHMARKS=null;
+function buildOpTargets(cfg){
+  const t={};
+  Object.keys(SHEET_KEY_TO_STORE_LABEL).forEach(k=>{ t[SHEET_KEY_TO_STORE_LABEL[k]]=cfg.monthlyTargets[k]; });
+  TARGETS=t;
+  TARGET_TICKET=cfg.params.targetTicket;
+  TARGET_CONV=cfg.params.targetConv;
+  STORE_BENCHMARKS={};
+  Object.keys(cfg.storeBenchmarks).forEach(k=>{ STORE_BENCHMARKS[k]=cfg.storeBenchmarks[k]; });
+}
 const TARGETS25={'中山店':[148,141,131,103,131,98,121,112,117,138,161,160],'松菸店':[136,119,138,119,108,89,87,91,122,139,174,160],'台中店':[110,98,75,59,64,78,60,88,76,100,113,126],'東門店':[117,105,96,75,84,90,66,89,81,111,130,172],'官網':[128,79,97,70,70,60,74,77,67,100,101,105]};
 const ANNUAL_TARGET_2025=7200;
 const ANNUAL_TARGET_2025_TOTAL=8200;
-const TARGET_TICKET=6800;
-const TARGET_CONV=0.58;
-// 各門市轉換率/客單價目標（與 GAS CONFIG.STORE_BENCHMARKS 同步）
-const STORE_BENCHMARKS={
-  '中山店':{conv:0.58,ticket:6500},
-  '松菸店':{conv:0.58,ticket:6800},
-  '台中店':{conv:0.56,ticket:6700},
-  '東門店':{conv:0.55,ticket:6500},
-};
 const SHEET_ID='17hTgCpF0mBTHf3RcnDmRFrJMeLBn3nRdTMuG8l58QjY';
 const D25={'中山店':[148,141,131,103,131,98,121,112,117,138,161,160],'松菸店':[136,119,138,119,108,89,87,91,122,139,174,160],'台中店':[110,98,75,59,64,78,60,88,76,100,113,126],'東門店':[117,105,96,75,84,90,66,89,81,111,130,172],'官網':[128,79,97,70,70,60,74,77,67,100,101,105]};
 let D26={'中山店':[185,0,0,0,0,0,0,0,0,0,0,0],'松菸店':[163,0,0,0,0,0,0,0,0,0,0,0],'台中店':[133,0,0,0,0,0,0,0,0,0,0,0],'東門店':[145,0,0,0,0,0,0,0,0,0,0,0],'官網':[130,0,0,0,0,0,0,0,0,0,0,0]};
@@ -1785,7 +1790,10 @@ function renderGbpRank(data){
   }).join('');
 }
 (function tick(){const n=new Date();document.getElementById('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>('0'+v).slice(-2)).join(':');setTimeout(tick,1000);})();
-loadData();
+ORINGO.getConfig().then(cfg => {
+  buildOpTargets(cfg);
+  loadData();
+}).catch(e => console.error('[operation] 初始化失敗', e));
 </script>
 <script>
 /* ===== GBP 月維度切換（讀 GBP月數據，覆蓋原本的週快照）===== */

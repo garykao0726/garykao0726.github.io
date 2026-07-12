@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>林果良品｜行銷儀表板</title>
 <script src="auth.js"></script>
+<script src="oringo-data.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -375,30 +376,35 @@ setInterval(tick,1000);tick();
 
 // ===== 目標清單（集中管理）=====
 // upper:true → 越低越好（如退貨率、購物車放棄率），達成判定反向
-const TARGETS = {
-  siteCVR:          { val: 0.35,   unit: '%',  label: '整站 CVR 目標（年均）' },
-  cartAbandon:      { val: 70,     unit: '%',  label: '購物車放棄上限', upper: true },
-  totalROAS:        { val: 4.5,    unit: '',   label: '廣告 ROAS 目標（Meta+Google GA4）' }, // 廣告歸因 ROAS
-  siteROAS:         { val: 7.5,    unit: '',   label: '全站 ROAS 目標（電商營收/廣告花費）' },
-  paidCVR:          { val: 0.59,   unit: '%',  label: '付費 CVR 目標' },
-  metaROAS:         { val: 4.5,    unit: '',   label: 'Meta ROAS 目標' },
-  googleROAS:       { val: 4.5,    unit: '',   label: 'Google ROAS 目標' },
-  kolROAS:          { val: 3.0,    unit: '',   label: 'KOL ROAS 目標' },
-  annualOrders:     { val: 2500,   unit: '筆', label: '年訂單數目標' },
-  annualPaidTraffic:{ val: 340000, unit: '',   label: '年度廣告流量目標（sessions）' },
-  annualOrganic:    { val: 277645, unit: '',   label: '年度自然搜尋流量目標' },
-  annualKOL:        { val: 19550,  unit: '',   label: 'KOL 年度導流目標（sessions）' },
-  annualSocial:     { val: 110500, unit: '',   label: '社群年度流量目標（sessions）' },
-  organicRevShare:  { val: 30,     unit: '%',  label: 'SEO 自然搜尋營收佔比目標' },
-  kolCPC:           { val: 3,      unit: 'NT$',label: 'KOL 廣告 CPC 目標', upper: true },
-  shootBudget:      { val: 724000, unit: 'NT$',label: '視覺拍攝年度預算上限', upper: true },
-  adRateTotal:      { val: 6,      unit: '%',  label: '廣告費率上限（/全通路）', upper: true },
-  adRateEC:         { val: 20,     unit: '%',  label: '廣告費率上限（/電商）', upper: true },
-  monthRev:         [1250,1150,1150,1000,1000,900,900,900,1000,1150,1150,1250], // 萬 / 月
-  aov:              { val: 11250, unit:'NT$',  label: 'AOV 目標' },
-  refundRate:       { val: 5,    unit: '%',    label: '退貨率上限', upper: true },
-  whereOringoPv:    { val: 1200, unit: '',     label: '林果在哪裡 PV/週' }
-};
+// TARGETS 改由中央 Sheet「參數」分頁提供（見 buildTargets() 與頁面啟動流程），
+// 此處不再寫死數值；monthRev 未被任何程式碼讀取（死碼），維持原樣不遷移。
+let TARGETS = null;
+function buildTargets(p) {
+  return {
+  siteCVR:          { val: p.siteCVR,           unit: '%',  label: '整站 CVR 目標（年均）' },
+  cartAbandon:      { val: p.cartAbandon,       unit: '%',  label: '購物車放棄上限', upper: true },
+  totalROAS:        { val: p.totalROAS,         unit: '',   label: '廣告 ROAS 目標（Meta+Google GA4）' }, // 廣告歸因 ROAS
+  siteROAS:         { val: p.siteROAS,          unit: '',   label: '全站 ROAS 目標（電商營收/廣告花費）' },
+  paidCVR:          { val: p.paidCVR,           unit: '%',  label: '付費 CVR 目標' },
+  metaROAS:         { val: p.metaROAS,          unit: '',   label: 'Meta ROAS 目標' },
+  googleROAS:       { val: p.googleROAS,        unit: '',   label: 'Google ROAS 目標' },
+  kolROAS:          { val: p.kolROAS,           unit: '',   label: 'KOL ROAS 目標' },
+  annualOrders:     { val: p.annualOrders,      unit: '筆', label: '年訂單數目標' },
+  annualPaidTraffic:{ val: p.annualPaidTraffic, unit: '',   label: '年度廣告流量目標（sessions）' },
+  annualOrganic:    { val: p.annualOrganic,     unit: '',   label: '年度自然搜尋流量目標' },
+  annualKOL:        { val: p.annualKOL,         unit: '',   label: 'KOL 年度導流目標（sessions）' },
+  annualSocial:     { val: p.annualSocial,      unit: '',   label: '社群年度流量目標（sessions）' },
+  organicRevShare:  { val: p.organicRevShare,   unit: '%',  label: 'SEO 自然搜尋營收佔比目標' },
+  kolCPC:           { val: p.kolCPC,            unit: 'NT$',label: 'KOL 廣告 CPC 目標', upper: true },
+  shootBudget:      { val: p.shootBudget,       unit: 'NT$',label: '視覺拍攝年度預算上限', upper: true },
+  adRateTotal:      { val: p.adRateTotal,       unit: '%',  label: '廣告費率上限（/全通路）', upper: true },
+  adRateEC:         { val: p.adRateEC,          unit: '%',  label: '廣告費率上限（/電商）', upper: true },
+  monthRev:         [1250,1150,1150,1000,1000,900,900,900,1000,1150,1150,1250], // 萬 / 月（死碼，未遷移）
+  aov:              { val: p.aov,               unit:'NT$', label: 'AOV 目標' },
+  refundRate:       { val: p.refundRate,        unit: '%',  label: '退貨率上限', upper: true },
+  whereOringoPv:    { val: p.whereOringoPv,     unit: '',   label: '林果在哪裡 PV/週' }
+  };
+}
 
 // 年度廣告預算（按月，單位：元）+ 代理商服務費率
 // budget 已是「含服務費的最終目標」；GA / Meta / Google 抓到的廣告花費要 ×SERVICE_FEE_RATE 換算實際支出
@@ -1586,7 +1592,11 @@ function switchTab(tab,btn){
     RENDERED[tab]=true;
   }
 }
-loadData().then(()=>{renderOverview();RENDERED.overview=true;});
+ORINGO.getConfig().then(cfg => {
+  TARGETS = buildTargets(cfg.params);
+  return loadData();
+}).then(()=>{renderOverview();RENDERED.overview=true;})
+  .catch(e => console.error('[marketing] 初始化失敗', e));
 </script>
 </body>
 </html>
