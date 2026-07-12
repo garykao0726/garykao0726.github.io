@@ -9,6 +9,9 @@
   const SESSION_KEY = 'oringo_auth_v1';
   const SESSION_TTL = 8 * 60 * 60 * 1000; // 8 小時
 
+  /* ── 0. 頁面自行宣告免登入（例如客人自助查詢連結）→ 直接放行 ── */
+  if (window.ORINGO_SKIP_AUTH) return;
+
   /* ── 1. 檢查 session ── */
   function isSessionValid() {
     try {
