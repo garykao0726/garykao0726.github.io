@@ -40,8 +40,8 @@ const ANNUAL_NI_TARGETS  = {'中山':18450000*.08,'松菸':16200000*.08,'東門'
 const COMPANY_REV_TARGET = 80000000;  // 全公司年度目標（含B2B）：8,000萬
 const STORES_REV_TARGET  = 75000000;  // 五通路年度目標：7,500萬
 const COMPANY_NI_TARGET  = 6400000;
-const ANNUAL_MKT_BASE    = 65000000;  // 廣告費預算基準收入：6,500萬
-const COMPANY_MKT_BUDGET = 3900000;   // 年度廣告費預算：6,500萬 × 6% = 390萬
+const ANNUAL_MKT_BASE    = 69000000;  // 廣告費預算基準收入：6,900萬（保守版，Gary 2026-07-12確認）
+const COMPANY_MKT_BUDGET = 4140000;   // 年度廣告費預算：6,900萬 × 6% = 414萬
 
 /* ── 廣告費效益分析：2025 逐月公司級（來源：總公司_2025年度損益表_月份比較，已對帳
       全年 rev 69,025,980／mkt 5,379,107(7.79%)／營業淨利 1,406,129）── */
@@ -2072,7 +2072,7 @@ function renderExpenseCards() {
     <div class="exp-card">
       <div class="exp-label">廣告費年度使用率</div>
       <div class="exp-val ${yc}">${fmtPct(ytdMktRate)}</div>
-      <span class="tag ${tagClass(yc)}">預算 ${fmtW(COMPANY_MKT_BUDGET)}（6,500萬×6%）</span>
+      <span class="tag ${tagClass(yc)}">預算 ${fmtW(COMPANY_MKT_BUDGET)}（6,900萬×6%）</span>
       <div class="exp-sub" style="margin-top:8px">剩餘 ${fmtW(remainMkt)}，後${remainMonths}個月均攤 ${fmtW(remainMkt/remainMonths)}/月</div>
     </div>`;
 }
