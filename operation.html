@@ -1027,7 +1027,7 @@ function renderMgmt(){
   /* ── 表二：各通路淨利表 ── */
   const niRow = (name,color,revInc,target,ni,niPct,pmNI,pyNI,note,strong)=>{
     const ach = target?revInc/target*100:null;   // 達成率＝含稅營收(週報)÷含稅目標
-    const yoyCell = (pyNI!=null && pyNI<=0) ? '<span style="font-size:10px;color:var(--text-muted)">去年虧損</span>'
+    const yoyCell = (pyNI!=null && pyNI<=0) ? `<span style="font-size:10px;color:var(--negative)">去年虧損 ${fW(Math.abs(pyNI))}</span>`
       : (pyNI!=null ? chgSp(pctChg(ni,pyNI)) : '<span style="font-size:10px;color:var(--text-muted)">—</span>');
     return `<tr${strong?' style="background:var(--surface2);font-weight:700"':''}>
       <td class="td-s">${color?`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};margin-right:6px;vertical-align:middle"></span>`:''}${name}</td>
