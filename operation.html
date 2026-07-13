@@ -877,6 +877,8 @@ function renderMgmt(){
   const mopsOf = st => { const k=D26KEY[st]; return (typeof MOPS!=='undefined'&&MOPS[k]&&MOPS[k][_moIdx])?MOPS[k][_moIdx]:null; };
   /* 上月月度營運（來客/成交率/客單等 MoM 環比用）*/
   const mopsPrevOf = st => { const k=D26KEY[st]; return (_moIdx>0 && typeof MOPS!=='undefined'&&MOPS[k]&&MOPS[k][_moIdx-1])?MOPS[k][_moIdx-1]:null; };
+  /* 2025同期來客/新舊客歷史（僅1–6月，來源：2025年業績報表-週會用彙整）：給 來客/成交率/客單 補 YoY 用 */
+  const hist2025Of = st => { const arr=(FIN_DATA.HIST_2025_OPS||{})[st]; return (arr && _moIdx<arr.length) ? arr[_moIdx] : null; };
   /* 通用 %變化 delta（來客數/客單價等非比率指標，別跟 fmtDeltaPP(pp變化,給成交率用) 搞混 */
   const momChgPct = (cur,prev) => (cur==null||prev==null||prev===0) ? null : (cur-prev)/prev*100;
   const fmtDeltaChg = pct => (pct==null||!isFinite(pct)) ? null : {txt:(pct>=0?'▲+':'▼')+Math.abs(pct).toFixed(1)+'%', col:pct>=0?'var(--positive)':'var(--negative)'};
@@ -1417,6 +1419,13 @@ function renderMgmt(){
           const k=D26KEY[st], sb=STORE_BENCHMARKS[k];
           const m=mopsOf(st), isWeb=st==='電商';
           const mPrev=mopsPrevOf(st);
+          const h25=isWeb?null:hist2025Of(st);
+          const h25Conv=(h25&&h25.vis)?h25.txn/h25.vis:null;
+          const h25Ticket=(h25&&h25.txn)?h25.rev/h25.txn:null;
+          const visYoY=(m&&h25)?momChgPct(m.visitors,h25.vis):null;
+          const convYoYFmt=(m&&h25Conv!=null)?fmtDeltaPP(momPP(m.conv,h25Conv)):null;
+          const ticketYoY=(m&&h25Ticket)?momChgPct(m.ticket,h25Ticket):null;
+          const h25Note = (h25&&m) ? `<span style="color:var(--border2)">|</span><span>來客YoY ${chgSp(visYoY)}</span><span>成交率YoY ${convYoYFmt?`<span style="color:${convYoYFmt.col}">${convYoYFmt.txt}</span>`:'<span style="color:var(--text-muted)">—</span>'}</span><span>客單YoY ${chgSp(ticketYoY)}</span>` : '';
           let pills;
           if(m){
             const tot=(m.tNew||0)+(m.tOld||0);
@@ -1469,7 +1478,7 @@ function renderMgmt(){
             </div>
             <div style="margin-top:7px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);display:flex;gap:14px;flex-wrap:wrap">
               <span>累計 ${fW(ytdActual(st))}/${fW(ytdTarget(st))}（${yA!=null?yA.toFixed(0):'—'}%）</span>
-              <span>MoM ${chgSp(mom)}</span><span>YoY ${chgSp(yoy)}</span>${m?'':'<span style="color:var(--rust)">·營運資料待月度營運表</span>'}
+              <span>MoM ${chgSp(mom)}</span><span>YoY ${chgSp(yoy)}</span>${m?'':'<span style="color:var(--rust)">·營運資料待月度營運表</span>'}${h25Note}
             </div>
           </div>`;
         }).join('')}
@@ -1488,6 +1497,7 @@ function renderMgmt(){
           </div>
         </div>
       </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 來客／成交率／客單 YoY 僅涵蓋 1–6月（來源：2025年業績報表-週會用，週資料彙整為月；7月起原始週報未持續記錄）。方法論與 2026 月度營運表略有差異（客單為月pooled平均、成交率無VIP拆分），僅供年度比較參考。</div>
     </div>
 
     <!-- NI bar chart -->
