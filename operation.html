@@ -1134,15 +1134,15 @@ function renderMgmt(){
     if(rentPct!=null&&rentPct>RT.rentPct) tgt.push(`租金占比 <b>${rentPct.toFixed(1)}%</b> ＞目標 ${RT.rentPct}%（超 ${(rentPct-RT.rentPct).toFixed(1)}pp）`);
     const tgtHtml = tgt.length ? `<div style="margin-top:8px;font-size:10.5px;font-family:'Noto Sans TC',sans-serif;line-height:1.55;color:var(--negative)"><b>🚩 超出今年目標比例：</b>${tgt.join('；')}</div>` : `<div style="margin-top:8px;font-size:10.5px;font-family:'Noto Sans TC',sans-serif;color:var(--positive)">🚩 各項比例均達今年目標</div>`;
 
+    /* good/bad 只留「值得注意」的訊號：單純達標(≥目標)已由下方 🚩 對標區塊涵蓋，這裡不重複，只放超出預期或有變化趨勢的 */
     const good=[];
-    if(ach!=null&&ach>=100) good.push(`業績達標 <b>${ach.toFixed(0)}%</b>，來客／轉換到位`);
-    if(niPct>=15) good.push(`淨利率 <b>${niPct.toFixed(1)}%</b> 優，成本控管紮實`);
-    else if(niPct>=RT.niPct) good.push(`淨利率 <b>${niPct.toFixed(1)}%</b> 達標（≥${RT.niPct}%）`);
-    if(gp>=RT.gpPct) good.push(`毛利率 <b>${gp.toFixed(1)}%</b> 達標（≥${RT.gpPct}%），少折扣／高價品賣得動`);
+    if(ach!=null&&ach>=110) good.push(`業績達成 <b>${ach.toFixed(0)}%</b>，明顯超標`);
+    if(niPct>=15) good.push(`淨利率 <b>${niPct.toFixed(1)}%</b> 優於一般達標水準，成本控管紮實`);
     if(rYoY!=null&&rYoY>=10) good.push(`營收 YoY <b>${pctTxt(rYoY)}</b>，成長動能強`);
     if(nMoM!=null&&nMoM>=15&&ni>0) good.push(`淨利較上月 <b>${pctTxt(nMoM)}</b>，持續向上`);
-    if(isShop&&wagePct!=null&&wagePct<=RT.wagePct) good.push(`人事費占比 <b>${wagePct.toFixed(1)}%</b> ≤目標 ${RT.wagePct}%，控得好`);
     if(margin!=null&&margin>=20) good.push(`安全邊際 <b>${margin.toFixed(0)}%</b>，抗淡季能力足`);
+    const isHealthy = status.indexOf('🟢')===0;
+    const goodEmptyMsg = isHealthy ? '各項指標穩定達標，本月無特別突出的單項亮點' : '本月亮點較少，先補右側項目';
 
     const bad=[];
     if(ach!=null&&ach<100){
@@ -1169,7 +1169,7 @@ function renderMgmt(){
       }
       bad.push(gapTxt);
     }
-    if(niPct<0) bad.push(`淨利 <b>${fW(ni)}</b> 為負 — 距損益平衡點 ${fW(be)} 還差 <b>${beGap.toFixed(1)}萬</b>，先衝量`);
+    if(niPct<0) bad.push(`淨利為負 <b>${fW(ni)}</b>（距損益平衡點差 ${beGap.toFixed(1)}萬，怎麼衝回正見下方本月行動）`);
     if(rMoM!=null&&rMoM<-10) bad.push(`營收較上月 <b>${pctTxt(rMoM)}</b> — 留意客流／淡季`);
     /* 毛利/淨利/人事/租金 vs 目標 → 改由下方 🚩 量化對標，不在此重複 */
 
@@ -1187,7 +1187,7 @@ function renderMgmt(){
         <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:${scol}">${status}</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:11px;font-family:'Noto Sans TC',sans-serif;line-height:1.5">
-        <div><div style="font-weight:700;color:var(--positive);margin-bottom:3px;font-size:10px">✅ 做對的事</div><ul style="margin:0;padding-left:16px">${li(good,'本月亮點較少，先補右側項目')}</ul></div>
+        <div><div style="font-weight:700;color:var(--positive);margin-bottom:3px;font-size:10px">✅ 做對的事</div><ul style="margin:0;padding-left:16px">${li(good,goodEmptyMsg)}</ul></div>
         <div><div style="font-weight:700;color:var(--rust);margin-bottom:3px;font-size:10px">⚠️ 要檢討／加強</div><ul style="margin:0;padding-left:16px">${li(bad,'業績與營收面無明顯缺口')}</ul></div>
       </div>
       ${tgtHtml}
