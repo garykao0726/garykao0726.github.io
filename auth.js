@@ -20,10 +20,11 @@
     } catch { return false; }
   }
 
-  function saveSession(email) {
+  function saveSession(email, idToken) {
     localStorage.setItem(SESSION_KEY, JSON.stringify({
       email: email.toLowerCase(),
-      exp: Date.now() + SESSION_TTL
+      exp: Date.now() + SESSION_TTL,
+      idToken: idToken || null
     }));
   }
 
@@ -51,7 +52,7 @@
     const payload = decodeJWT(response.credential);
     const email = (payload.email || '').toLowerCase();
     if (email.endsWith('@' + ALLOWED_DOMAIN)) {
-      saveSession(email);
+      saveSession(email, response.credential);
       document.getElementById('auth-overlay')?.remove();
       document.getElementById('auth-hide-style')?.remove();
       // 通知其他頁面邏輯（如 finance.html 的二次授權）
