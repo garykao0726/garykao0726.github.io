@@ -1191,6 +1191,70 @@ function renderMgmt(){
     </div>`;
   }).join('');
 
+  /* ── 各店 新客 vs 回購 月趨勢（月會用）：來源＝月度營運表 tNew/tOld，逐月比較看比例升降 ── */
+  const noStores4 = stores.filter(s=>s!=='電商');
+  const noMonthsList=[]; for(let m=1;m<=_moIdx+1;m++) noMonthsList.push(m);
+  const noMomArrow=(v,unit,dec=0)=> v==null?'<span style="color:var(--text-muted)">—</span>':`<span style="color:${v>=0?'var(--positive)':'var(--negative)'}">${v>=0?'▲':'▼'}${Math.abs(v).toFixed(dec)}${unit}</span>`;
+  const noStoreData = noStores4.map(st=>{
+    const k=D26KEY[st];
+    const months = noMonthsList.map(m=>{
+      const e=(typeof MOPS!=='undefined'&&MOPS[k]&&MOPS[k][m-1])?MOPS[k][m-1]:null;
+      const tNew=e?(e.tNew||0):0, tOld=e?(e.tOld||0):0, tot=tNew+tOld;
+      return {m, tNew, tOld, tot, ratio: tot>0?tNew/tot*100:null};
+    });
+    const withData = months.filter(x=>x.tot>0);
+    const cur = months.find(x=>x.m===_moIdx+1 && x.tot>0) || null;
+    const prev = cur ? (withData.filter(x=>x.m<cur.m).slice(-1)[0]||null) : null;
+    const first = withData.length ? withData[0] : null;
+    return {st, k, months, cur, prev, first};
+  });
+  const noTrendCards = noStoreData.map(sd=>{
+    const barsHtml = sd.months.map(mo=>{
+      if(mo.tot<=0) return `<div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;height:50px;background:var(--surface2);border-radius:3px" title="${mo.m}月：無資料"></div></div>`;
+      const newH=Math.round(mo.ratio/100*50), oldH=50-newH;
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+        <div style="width:100%;height:50px;border-radius:3px;overflow:hidden;display:flex;flex-direction:column-reverse" title="${mo.m}月：新客${mo.tNew}筆／回購${mo.tOld}筆（新客佔${mo.ratio.toFixed(0)}%）">
+          <div style="width:100%;height:${newH}px;background:var(--green)"></div>
+          <div style="width:100%;height:${oldH}px;background:var(--sand)"></div>
+        </div>
+      </div>`;
+    }).join('');
+    const labelsHtml = sd.months.map(mo=>`<div style="flex:1;text-align:center;font-size:8px;color:${mo.m===(sd.cur&&sd.cur.m)?'var(--text-sub)':'var(--text-muted)'};font-weight:${mo.m===(sd.cur&&sd.cur.m)?700:400};font-family:'Space Mono',monospace">${mo.m}月</div>`).join('');
+    const trendPP = (sd.cur&&sd.cur.ratio!=null&&sd.first&&sd.first.ratio!=null&&sd.cur.m!==sd.first.m) ? sd.cur.ratio-sd.first.ratio : null;
+    const trendTxt = trendPP==null ? '' : `<span style="font-family:'Space Mono',monospace;font-size:10.5px">${trendPP>=0?'<span style=\"color:var(--positive)\">▲</span>':'<span style=\"color:var(--negative)\">▼</span>'} ${Math.abs(trendPP).toFixed(1)}pp<span style="color:var(--text-muted)"> vs ${sd.first.m}月</span></span>`;
+    const momNewD = (sd.cur&&sd.prev)?sd.cur.tNew-sd.prev.tNew:null;
+    const momOldD = (sd.cur&&sd.prev)?sd.cur.tOld-sd.prev.tOld:null;
+    const momRatioD = (sd.cur&&sd.prev&&sd.cur.ratio!=null&&sd.prev.ratio!=null)?sd.cur.ratio-sd.prev.ratio:null;
+    const summary = sd.cur ? `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--border2);font-size:11px;font-family:'Noto Sans TC',sans-serif;line-height:1.6">
+        <b>${sd.cur.m}月</b>：新客 <b>${sd.cur.tNew}</b>筆 ・ 回購 <b>${sd.cur.tOld}</b>筆 ・新客佔 <b>${sd.cur.ratio!=null?sd.cur.ratio.toFixed(0)+'%':'—'}</b>
+        ${sd.prev?`<br><span style="color:var(--text-muted)">環比${sd.prev.m}月：</span>新客${noMomArrow(momNewD,'筆')}　回購${noMomArrow(momOldD,'筆')}　佔比${noMomArrow(momRatioD,'pp',1)}`:'<br><span style="color:var(--text-muted)">本年僅此一月有資料，環比待下月</span>'}
+      </div>` : `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--border2);font-size:11px;color:var(--text-muted)">${d.ym} 尚無新舊客資料（月度營運表待補）</div>`;
+    return `<div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px;background:var(--surface)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:4px">
+        <span style="font-weight:700;font-size:13px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${sc[sd.st]};margin-right:6px;vertical-align:middle"></span>${sd.st}</span>
+        ${trendTxt}
+      </div>
+      <div style="display:flex;gap:4px">${barsHtml}</div>
+      <div style="display:flex;gap:4px;margin-top:3px">${labelsHtml}</div>
+      ${summary}
+    </div>`;
+  }).join('');
+  const noTrendSection = `
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-hdr">
+      <span class="card-lbl">各店 新客 vs 回購 月趨勢</span>
+      <span class="card-badge">成交筆數 · ${noMonthsList[0]}–${noMonthsList[noMonthsList.length-1]}月 · 月度營運表</span>
+    </div>
+    <div class="legend" style="margin-bottom:.75rem">
+      <div class="leg-i"><div class="leg-dot" style="background:var(--green)"></div>新客</div>
+      <div class="leg-i"><div class="leg-dot" style="background:var(--sand)"></div>回購</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+      ${noTrendCards}
+    </div>
+    <div style="margin-top:10px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 長條高度＝該月新客／回購「佔比」（非筆數多寡），滑鼠移到長條上可看該月筆數；標題 pp 變化＝本月新客佔比 vs 今年第一個有資料的月份。</div>
+  </div>`;
+
   el.innerHTML=`
   <div style="max-width:1400px;margin:0 auto;padding:1.75rem 2rem">
 
@@ -1457,6 +1521,8 @@ function renderMgmt(){
       </div>
     </div>
   </div>
+
+  ${noTrendSection}
 
   <!-- Cost / Mkt / Expense cards -->
   <div class="g3" style="margin-bottom:1.5rem">
