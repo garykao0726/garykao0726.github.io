@@ -875,6 +875,11 @@ function renderMgmt(){
   const ytdAchTot = ytdTargetTot?ytdActualTot/ytdTargetTot*100:null;
   /* 月度營運（來客/成交/客單/維修/新舊客；電商:訂單/流量/GA轉換）取選定月 */
   const mopsOf = st => { const k=D26KEY[st]; return (typeof MOPS!=='undefined'&&MOPS[k]&&MOPS[k][_moIdx])?MOPS[k][_moIdx]:null; };
+  /* 上月月度營運（來客/成交率/客單等 MoM 環比用）*/
+  const mopsPrevOf = st => { const k=D26KEY[st]; return (_moIdx>0 && typeof MOPS!=='undefined'&&MOPS[k]&&MOPS[k][_moIdx-1])?MOPS[k][_moIdx-1]:null; };
+  /* 通用 %變化 delta（來客數/客單價等非比率指標，別跟 fmtDeltaPP(pp變化,給成交率用) 搞混 */
+  const momChgPct = (cur,prev) => (cur==null||prev==null||prev===0) ? null : (cur-prev)/prev*100;
+  const fmtDeltaChg = pct => (pct==null||!isFinite(pct)) ? null : {txt:(pct>=0?'▲+':'▼')+Math.abs(pct).toFixed(1)+'%', col:pct>=0?'var(--positive)':'var(--negative)'};
   const revAch=posRevTot/d.revTarget*100;       // 達成率＝含稅營收(週報)÷含稅目標
   const revMoM=pctChg(d.rev,d.prevMoRev);
   const revYoY=pctChg(d.rev,d.prevYrRev);
@@ -1411,24 +1416,31 @@ function renderMgmt(){
           const mom=pctChg(s.rev,s.prevMoRev), yoy=pctChg(s.rev,s.prevYrRev);
           const k=D26KEY[st], sb=STORE_BENCHMARKS[k];
           const m=mopsOf(st), isWeb=st==='電商';
+          const mPrev=mopsPrevOf(st);
           let pills;
           if(m){
             const tot=(m.tNew||0)+(m.tOld||0);
             const nr=tot>0?Math.round(m.tNew/tot*100):0;
             if(isWeb){
+              const sessMom=mPrev?momChgPct(m.sessions,mPrev.sessions):null;
+              const gaConvMomPP=mPrev?momPP(m.gaConv,mPrev.gaConv):null;
+              const ticketMom=mPrev?momChgPct(m.ticket,mPrev.ticket):null;
               pills=[
                 m.orders?statPill('neu','訂單',m.orders+'筆'):'',
-                m.sessions?statPill('neu','流量',fw(m.sessions)):'',
-                m.gaConv?statPill(m.gaConv>=.03?'good':m.gaConv>=.015?'warn':'bad','GA轉換',(m.gaConv*100).toFixed(2)+'%'):'',
-                m.ticket?statPill(ticketStatus(m.ticket,true),'客單','$'+fw(m.ticket)):'',
+                m.sessions?statPill('neu','流量',fw(m.sessions),null,fmtDeltaChg(sessMom)):'',
+                m.gaConv?statPill(m.gaConv>=.03?'good':m.gaConv>=.015?'warn':'bad','GA轉換',(m.gaConv*100).toFixed(2)+'%',null,fmtDeltaPP(gaConvMomPP)):'',
+                m.ticket?statPill(ticketStatus(m.ticket,true),'客單','$'+fw(m.ticket),null,fmtDeltaChg(ticketMom)):'',
                 tot?statPill('good','新客',nr+'%'):'',
                 tot?statPill('neu','回購',(100-nr)+'%'):'',
               ].filter(Boolean).join('');
             } else {
+              const visMom=mPrev?momChgPct(m.visitors,mPrev.visitors):null;
+              const convMomPP=mPrev?momPP(m.conv,mPrev.conv):null;
+              const ticketMom=mPrev?momChgPct(m.ticket,mPrev.ticket):null;
               pills=[
-                m.visitors?statPill('neu','來客',m.visitors+'人'):'',
-                m.conv?statPill(convStatus(m.conv,k),'成交率',(m.conv*100).toFixed(0)+'%',sb?(sb.conv*100).toFixed(0)+'%':null):'',
-                m.ticket?statPill(ticketStatus(m.ticket,k),'客單','$'+fw(m.ticket),sb?'$'+fw(sb.ticket):null):'',
+                m.visitors?statPill('neu','來客',m.visitors+'人',null,fmtDeltaChg(visMom)):'',
+                m.conv?statPill(convStatus(m.conv,k),'成交率',(m.conv*100).toFixed(0)+'%',sb?(sb.conv*100).toFixed(0)+'%':null,fmtDeltaPP(convMomPP)):'',
+                m.ticket?statPill(ticketStatus(m.ticket,k),'客單','$'+fw(m.ticket),sb?'$'+fw(sb.ticket):null,fmtDeltaChg(ticketMom)):'',
                 m.vRep?statPill('neu','維修',m.vRep+'人'):'',
                 tot?statPill('good','新客',nr+'%'):'',
                 tot?statPill('neu','回購',(100-nr)+'%'):'',
