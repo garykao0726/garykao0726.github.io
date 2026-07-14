@@ -88,41 +88,44 @@ HIST_2025_RAW: {
 },
 
 /* ════ 2025 上半年來客/新舊客歷史（index 0=1月...5=6月，僅到6月）════
-   來源：「2025年業績報表-週會用」Google Sheet 週資料彙整為月；7月起原始週報只有3週且部分店缺欄，排除避免半月比全月失真；8-12月原始週報未記錄。
+   來客/新舊客/成交筆數 來源：「2025年業績報表-週會用」Google Sheet 週資料彙整為月；7月起原始週報只有3週且部分店缺欄，排除避免半月比全月失真；8-12月原始週報未記錄。
    ⚠️ 方法論跟 2026 月度營運表不完全一致，YoY 僅供參考：ticket=月營收/月總成交(pooled月平均，非2026版的「每日客單平均」)；
-   conv=總成交/到店人次(2025週報無 VIP 拆分，2026版本成交數含VIP)。 */
+   conv=總成交/到店人次(2025週報無 VIP 拆分，2026版本成交數含VIP)。
+   rev（2026-07-13 已修正）：原本用週資料彙整，週界跟月曆邊界對不齊，6月分曾誤差+27%；
+   已改用「2026林果年度目標總覽」Sheet 的「2025年」分頁（fileId 1YzK1aCCuuNNKSGXI_F_B09o5oscb8gPo1jOsUuLMLDk），
+   跟 data.js 既有 HIST_2025_RAW(未稅)×1.05 逐月核對完全吻合，是可信的權威月營收數字（含稅）。 */
 HIST_2025_OPS: {
   '中山': [
-    {rev:1491968,new:84,old:134,txn:218,vis:260},
-    {rev:1318970,new:84,old:130,txn:214,vis:257},
-    {rev:1349755,new:101,old:125,txn:226,vis:294},
-    {rev:1063692,new:71,old:97,txn:168,vis:241},
-    {rev:1074980,new:76,old:112,txn:187,vis:228},
-    {rev:1257504,new:102,old:96,txn:198,vis:268},
+    {rev:1479684,new:84,old:134,txn:218,vis:260},
+    {rev:1411070,new:84,old:130,txn:214,vis:257},
+    {rev:1305531,new:101,old:125,txn:226,vis:294},
+    {rev:1027173,new:71,old:97,txn:168,vis:241},
+    {rev:1313368,new:76,old:112,txn:187,vis:228},
+    {rev:984938,new:102,old:96,txn:198,vis:268},
   ],
   '松菸': [
-    {rev:1381266,new:75,old:123,txn:198,vis:280},
-    {rev:1146265,new:70,old:114,txn:184,vis:262},
-    {rev:1443448,new:89,old:131,txn:220,vis:344},
-    {rev:1077985,new:54,old:99,txn:153,vis:216},
-    {rev:941285,new:73,old:75,txn:148,vis:203},
-    {rev:966113,new:61,old:100,txn:161,vis:211},
+    {rev:1358285,new:75,old:123,txn:198,vis:280},
+    {rev:1187397,new:70,old:114,txn:184,vis:262},
+    {rev:1382540,new:89,old:131,txn:220,vis:344},
+    {rev:1186186,new:54,old:99,txn:153,vis:216},
+    {rev:1084871,new:73,old:75,txn:148,vis:203},
+    {rev:885887,new:61,old:100,txn:161,vis:211},
   ],
   '台中': [
-    {rev:991502,new:62,old:87,txn:149,vis:196},
-    {rev:928335,new:58,old:80,txn:138,vis:180},
-    {rev:748162,new:61,old:72,txn:133,vis:173},
-    {rev:623991,new:42,old:66,txn:107,vis:146},
-    {rev:553025,new:50,old:45,txn:95,vis:128},
-    {rev:942380,new:68,old:74,txn:142,vis:181},
+    {rev:1101644,new:62,old:87,txn:149,vis:196},
+    {rev:975851,new:58,old:80,txn:138,vis:180},
+    {rev:751171,new:61,old:72,txn:133,vis:173},
+    {rev:592325,new:42,old:66,txn:107,vis:146},
+    {rev:639989,new:50,old:45,txn:95,vis:128},
+    {rev:775786,new:68,old:74,txn:142,vis:181},
   ],
   '東門': [
-    {rev:1091823,new:73,old:87,txn:160,vis:248},
-    {rev:976899,new:64,old:90,txn:154,vis:303},
-    {rev:901905,new:82,old:80,txn:160,vis:286},
-    {rev:667038,new:59,old:58,txn:117,vis:185},
-    {rev:787466,new:70,old:53,txn:123,vis:206},
-    {rev:889690,new:70,old:71,txn:141,vis:227},
+    {rev:1170884,new:73,old:87,txn:160,vis:248},
+    {rev:1048555,new:64,old:90,txn:154,vis:303},
+    {rev:960668,new:82,old:80,txn:160,vis:286},
+    {rev:751698,new:59,old:58,txn:117,vis:185},
+    {rev:837022,new:70,old:53,txn:123,vis:206},
+    {rev:897778,new:70,old:71,txn:141,vis:227},
   ],
 },
 

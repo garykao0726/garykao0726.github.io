@@ -1415,11 +1415,16 @@ function renderMgmt(){
           const s=d.storeData[st];if(!s)return'';
           const ach=posRev(st)/s.target*100, yA=ytdAch(st);
           const col=achColor(ach), lbl=achLabel(ach), urg=ach<55;
-          const mom=pctChg(s.rev,s.prevMoRev), yoy=pctChg(s.rev,s.prevYrRev);
           const k=D26KEY[st], sb=STORE_BENCHMARKS[k];
           const m=mopsOf(st), isWeb=st==='電商';
           const mPrev=mopsPrevOf(st);
           const h25=isWeb?null:hist2025Of(st);
+          /* 營收 MoM/YoY 改用跟達成率同一套 POS含稅基準(posRev/D26)，別再混用損益表未稅(s.rev)——
+             兩者口徑不同會兜不起來（曾核對月會簡報發現對不上，查出來就是這裡混用），2025同期用HIST_2025_OPS(僅1-6月，含稅)。
+             D26/HIST_2025_OPS 缺資料時 fallback 回 ERP(s.rev)，至少有個數字可看。*/
+          const posRevPrevMo = (_moIdx>0 && typeof D26!=='undefined'&&D26[k]&&D26[k][_moIdx-1]) ? D26[k][_moIdx-1]*10000 : null;
+          const mom = posRevPrevMo ? pctChg(posRev(st),posRevPrevMo) : pctChg(s.rev,s.prevMoRev);
+          const yoy = (h25&&h25.rev) ? pctChg(posRev(st),h25.rev) : (s.prevYrRev!=null ? pctChg(s.rev,s.prevYrRev) : null);
           const h25Conv=(h25&&h25.vis)?h25.txn/h25.vis:null;
           const h25Ticket=(h25&&h25.txn)?h25.rev/h25.txn:null;
           const visYoY=(m&&h25)?momChgPct(m.visitors,h25.vis):null;
