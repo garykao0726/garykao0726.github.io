@@ -1128,13 +1128,23 @@ function renderMgmt(){
     else if(niPct>=8){status='🟡 獲利·業績未達';scol='#C77B0A';}
     else {status='🟠 業績獲利雙弱';scol='var(--rust)';}
 
-    /* 🚩 對比今年目標比例：毛利/淨利為下限(低於=未達)、人事/租金為上限(高於=超標) */
+    /* 新客/舊客成交率(本月)：取自月度營運表，供下方 🚩 對標與「舊客明顯低於新客」異常檢查用 */
+    const moConv=isShop?mopsOf(st):null;
+    const newConv=(moConv&&moConv.vNew)?moConv.tNew/moConv.vNew*100:null;
+    const oldConv=(moConv&&moConv.vOld)?moConv.tOld/moConv.vOld*100:null;
+    const convGapPP=(newConv!=null&&oldConv!=null)?oldConv-newConv:null;
+
+    /* 🚩 對比今年目標比例：毛利/淨利/新客成交率/舊客成交率為下限(低於=未達)、人事/租金為上限(高於=超標) */
     const tgt=[];
     if(gp<RT.gpPct) tgt.push(`毛利率 <b>${gp.toFixed(1)}%</b> ＜目標 ${RT.gpPct}%（差 ${(RT.gpPct-gp).toFixed(1)}pp）`);
     if(niPct<RT.niPct) tgt.push(`淨利率 <b>${niPct.toFixed(1)}%</b> ＜目標 ${RT.niPct}%（差 ${(RT.niPct-niPct).toFixed(1)}pp）`);
     if(isShop&&wagePct!=null&&wagePct>RT.wagePct) tgt.push(`人事費占比 <b>${wagePct.toFixed(1)}%</b> ＞目標 ${RT.wagePct}%（超 ${(wagePct-RT.wagePct).toFixed(1)}pp）`);
     if(rentPct!=null&&rentPct>RT.rentPct) tgt.push(`租金占比 <b>${rentPct.toFixed(1)}%</b> ＞目標 ${RT.rentPct}%（超 ${(rentPct-RT.rentPct).toFixed(1)}pp）`);
+    if(newConv!=null&&newConv<RT.newConvPct) tgt.push(`新客成交率 <b>${newConv.toFixed(1)}%</b> ＜目標 ${RT.newConvPct}%（差 ${(RT.newConvPct-newConv).toFixed(1)}pp）`);
+    if(oldConv!=null&&oldConv<RT.oldConvPct) tgt.push(`舊客成交率 <b>${oldConv.toFixed(1)}%</b> ＜目標 ${RT.oldConvPct}%（差 ${(RT.oldConvPct-oldConv).toFixed(1)}pp）`);
     const tgtHtml = tgt.length ? `<div style="margin-top:8px;font-size:10.5px;font-family:'Noto Sans TC',sans-serif;line-height:1.55;color:var(--negative)"><b>🚩 超出今年目標比例：</b>${tgt.join('；')}</div>` : `<div style="margin-top:8px;font-size:10.5px;font-family:'Noto Sans TC',sans-serif;color:var(--positive)">🚩 各項比例均達今年目標</div>`;
+    /* ⚠️ 特別異常：舊客成交率理論上該明顯高於新客(歷史均差12pp)，若差距<5pp甚至反轉，代表老客回購體驗可能出問題，比單看轉換率本身更值得留意 */
+    const convGapHtml = (convGapPP!=null&&convGapPP<5) ? `<div style="margin-top:6px;font-size:10.5px;font-family:'Noto Sans TC',sans-serif;color:var(--negative)">⚠️ 舊客成交率(${oldConv.toFixed(0)}%)僅比新客(${newConv.toFixed(0)}%)高 <b>${convGapPP.toFixed(1)}pp</b>${convGapPP<0?'－已反轉，舊客成交率反而更低':''}（一般應高10pp+），留意老客回購體驗</div>` : '';
 
     /* good/bad 只留「值得注意」的訊號：單純達標(≥目標)已由下方 🚩 對標區塊涵蓋，這裡不重複，只放超出預期或有變化趨勢的 */
     const good=[];
@@ -1193,6 +1203,7 @@ function renderMgmt(){
         <div><div style="font-weight:700;color:var(--rust);margin-bottom:3px;font-size:10px">⚠️ 要檢討／加強</div><ul style="margin:0;padding-left:16px">${li(bad,'業績與營收面無明顯缺口')}</ul></div>
       </div>
       ${tgtHtml}
+      ${convGapHtml}
       ${caHtml}
       <div style="margin-top:9px;padding-top:8px;border-top:1px dashed var(--border2);font-size:11px;font-family:'Noto Sans TC',sans-serif"><b style="color:${scol}">🎯 本月行動：</b>${act}</div>
     </div>`;
