@@ -47,23 +47,48 @@
     } catch { return {}; }
   }
 
+  /* ── 名單制：以 admin.html 使用者管理的名單為準 ── */
+  const PERM_GAS_URL = 'https://script.google.com/macros/s/AKfycbyno4dWC9uaZjiCLYRqAJf7HrX8fUsOnqU6R0giYNBq1ECE3lkBOV5GZJmZwGIyC93Jbw/exec';
+  const ALWAYS_ALLOW = new Set(['gary@oringoshoes.com']); // 保底：管理員永不被鎖在外
+
+  async function isActiveUser(email) {
+    if (ALWAYS_ALLOW.has(email)) return true;
+    try {
+      const res = await fetch(PERM_GAS_URL + '?action=getUsers');
+      const data = await res.json();
+      const list = (data && data.users) || [];
+      return list.some(u => (u.email || '').toLowerCase() === email && u.active !== false);
+    } catch (e) {
+      // 後端連不到時「放行」（fail-open），避免服務中斷把全公司鎖在外面
+      console.warn('權限名單查詢失敗，暫以網域放行', e);
+      return true;
+    }
+  }
+
+  function showAuthError(msg) {
+    const errEl = document.getElementById('auth-error');
+    if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+  }
+
   /* ── 5. 登入回呼 ── */
-  window._oriAuthCallback = function (response) {
+  window._oriAuthCallback = async function (response) {
     const payload = decodeJWT(response.credential);
     const email = (payload.email || '').toLowerCase();
-    if (email.endsWith('@' + ALLOWED_DOMAIN)) {
-      saveSession(email, response.credential);
-      document.getElementById('auth-overlay')?.remove();
-      document.getElementById('auth-hide-style')?.remove();
-      // 通知其他頁面邏輯（如 finance.html 的二次授權）
-      document.dispatchEvent(new CustomEvent('oriAuthComplete', { detail: { email } }));
-    } else {
-      const errEl = document.getElementById('auth-error');
-      if (errEl) {
-        errEl.textContent = '⚠️ 帳號 ' + email + ' 無存取權限，請使用 @oringoshoes.com 帳號登入。';
-        errEl.style.display = 'block';
-      }
+    if (!email.endsWith('@' + ALLOWED_DOMAIN)) {
+      showAuthError('⚠️ 帳號 ' + email + ' 無存取權限，請使用 @oringoshoes.com 帳號登入。');
+      return;
     }
+    // 需為 admin.html 名單中的有效使用者
+    const ok = await isActiveUser(email);
+    if (!ok) {
+      showAuthError('⚠️ 帳號 ' + email + ' 尚未獲授權使用儀表板，請洽 Gary 開通。');
+      return;
+    }
+    saveSession(email, response.credential);
+    document.getElementById('auth-overlay')?.remove();
+    document.getElementById('auth-hide-style')?.remove();
+    // 通知其他頁面邏輯（如 finance.html 的二次授權）
+    document.dispatchEvent(new CustomEvent('oriAuthComplete', { detail: { email } }));
   };
 
   /* ── 6. 建立登入覆蓋層 ── */
