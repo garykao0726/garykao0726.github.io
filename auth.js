@@ -16,7 +16,8 @@
   function isSessionValid() {
     try {
       const d = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-      return d && d.exp > Date.now() && (d.email || '').toLowerCase().endsWith('@' + ALLOWED_DOMAIN);
+      // 純名單制：登入時已驗證在名單內，session 只看有效期（不再限公司網域）
+      return d && d.exp > Date.now() && !!d.email;
     } catch { return false; }
   }
 
@@ -51,17 +52,28 @@
   const PERM_GAS_URL = 'https://script.google.com/macros/s/AKfycbyno4dWC9uaZjiCLYRqAJf7HrX8fUsOnqU6R0giYNBq1ECE3lkBOV5GZJmZwGIyC93Jbw/exec';
   const ALWAYS_ALLOW = new Set(['gary@oringoshoes.com']); // 保底：管理員永不被鎖在外
 
+  const ALLOWLIST_CACHE = 'oringo_allowlist_v1';
+
   async function isActiveUser(email) {
     if (ALWAYS_ALLOW.has(email)) return true;
     try {
       const res = await fetch(PERM_GAS_URL + '?action=getUsers');
       const data = await res.json();
-      const list = (data && data.users) || [];
-      return list.some(u => (u.email || '').toLowerCase() === email && u.active !== false);
+      const emails = ((data && data.users) || [])
+        .filter(u => u.active !== false)
+        .map(u => (u.email || '').toLowerCase());
+      // 快取最後一次成功抓到的名單，供後端斷線時使用
+      try { localStorage.setItem(ALLOWLIST_CACHE, JSON.stringify(emails)); } catch {}
+      return emails.includes(email);
     } catch (e) {
-      // 後端連不到時「放行」（fail-open），避免服務中斷把全公司鎖在外面
-      console.warn('權限名單查詢失敗，暫以網域放行', e);
-      return true;
+      // 後端連不到：用上次成功抓到的名單快取判斷（安全又不會全公司被鎖死）
+      console.warn('權限名單查詢失敗，改用快取名單', e);
+      try {
+        const cached = JSON.parse(localStorage.getItem(ALLOWLIST_CACHE) || 'null');
+        if (Array.isArray(cached)) return cached.includes(email);
+      } catch {}
+      // 連快取都沒有：只放行公司網域（避免完全鎖死，又不至於放任何人進來）
+      return email.endsWith('@' + ALLOWED_DOMAIN);
     }
   }
 
@@ -74,11 +86,8 @@
   window._oriAuthCallback = async function (response) {
     const payload = decodeJWT(response.credential);
     const email = (payload.email || '').toLowerCase();
-    if (!email.endsWith('@' + ALLOWED_DOMAIN)) {
-      showAuthError('⚠️ 帳號 ' + email + ' 無存取權限，請使用 @oringoshoes.com 帳號登入。');
-      return;
-    }
-    // 需為 admin.html 名單中的有效使用者
+    if (!email) { showAuthError('⚠️ 無法取得帳號，請重試。'); return; }
+    // 純名單制：只要在 admin.html 名單中（active）即可，不限公司網域
     const ok = await isActiveUser(email);
     if (!ok) {
       showAuthError('⚠️ 帳號 ' + email + ' 尚未獲授權使用儀表板，請洽 Gary 開通。');
