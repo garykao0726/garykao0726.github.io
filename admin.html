@@ -105,6 +105,18 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
 .form-input{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;color:var(--text);outline:none;transition:border-color .15s}
 .form-input:focus{border-color:var(--green)}
 .form-select{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;color:var(--text);outline:none;background:#fff;cursor:pointer}
+.role-panel{background:#fff;border:1.5px solid var(--border2);border-radius:12px;padding:18px 20px;margin-bottom:22px}
+.role-panel-title{font-weight:700;font-size:1rem;color:var(--green)}
+.role-panel-sub{font-size:.78rem;color:#888;margin-top:3px;line-height:1.5}
+.role-card{border:1px solid var(--border2);border-radius:9px;padding:12px 14px;margin-top:12px}
+.role-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.role-card-name{font-weight:700;color:var(--green)}
+.role-card-count{font-size:.72rem;color:#999;font-weight:400;margin-left:8px}
+.role-card .perm-check-row{display:flex;flex-wrap:wrap;gap:8px}
+.role-card.locked{opacity:.65}
+.role-save-btn{background:var(--green);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.78rem;cursor:pointer}
+.role-save-btn:disabled{opacity:.45;cursor:default}
+.role-hint{background:#f7faf8;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:.8rem;color:#555;line-height:1.6}
 .perm-check-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .perm-check{display:flex;align-items:center;gap:6px;font-size:.8rem;cursor:pointer;padding:5px 10px;border:1.5px solid var(--border2);border-radius:6px;transition:all .15s}
 .perm-check input{accent-color:var(--green)}
@@ -151,11 +163,23 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
 
   <div class="stats-row" id="stats-row"></div>
 
+  <!-- 角色權限設定：勾選每個角色能看的儀表板，指派角色給人即可 -->
+  <div class="role-panel">
+    <div class="role-panel-head">
+      <div>
+        <div class="role-panel-title">🎭 角色權限設定</div>
+        <div class="role-panel-sub">勾選每個角色能看到的儀表板。改完按「儲存」會套用到所有該角色的人。指派使用者時只要選角色即可。</div>
+      </div>
+    </div>
+    <div id="role-cards"></div>
+  </div>
+
   <div class="filter-bar">
     <input class="filter-input" type="text" id="search-input" placeholder="搜尋姓名或 Email…" oninput="renderTable()">
     <button class="filter-btn active" data-role="all" onclick="setRoleFilter(this,'all')">全部</button>
     <button class="filter-btn" data-role="admin" onclick="setRoleFilter(this,'admin')">管理員</button>
-    <button class="filter-btn" data-role="exec" onclick="setRoleFilter(this,'exec')">高階主管</button>
+    <button class="filter-btn" data-role="exec" onclick="setRoleFilter(this,'exec')">高級主管</button>
+    <button class="filter-btn" data-role="manager" onclick="setRoleFilter(this,'manager')">主管</button>
     <button class="filter-btn" data-role="staff" onclick="setRoleFilter(this,'staff')">一般員工</button>
   </div>
 
@@ -196,15 +220,15 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
     </div>
     <div class="form-group">
       <label class="form-label">角色</label>
-      <select class="form-select" id="f-role" onchange="syncRolePerms()">
-        <option value="staff">一般員工（預設：運營 / 商品 / SEO / 行銷）</option>
-        <option value="exec">高階主管（全頁面存取）</option>
-        <option value="admin">管理員（全頁面 + 後台）</option>
+      <select class="form-select" id="f-role" onchange="renderRoleHint()">
+        <option value="staff">一般員工</option>
+        <option value="manager">主管</option>
+        <option value="exec">高級主管</option>
+        <option value="admin">管理員（含後台管理）</option>
       </select>
     </div>
     <div class="form-group">
-      <label class="form-label">頁面權限（可自訂）</label>
-      <div class="perm-check-row" id="perm-checks"></div>
+      <div class="role-hint" id="role-hint"></div>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">取消</button>
@@ -230,12 +254,31 @@ const PAGES = [
   { id: 'finance',   label: '財務報表', emoji: '💰' },
 ];
 
-// 預設角色權限
+// 角色定義（順序 = 由高到低顯示）
+const ROLES = [
+  { id: 'admin',   label: '管理員',   note: '全部 + 後台管理' },
+  { id: 'exec',    label: '高級主管', note: '' },
+  { id: 'manager', label: '主管',     note: '' },
+  { id: 'staff',   label: '一般員工', note: '' },
+];
+function roleLabel(r){ const o = ROLES.find(x=>x.id===r); return o ? o.label : '一般員工'; }
+
+// 各角色「預設」看得到的頁面（實際定義以名單中同角色使用者為準，可在角色權限面板調整）
 const ROLE_PERMS = {
-  admin: { operation: true, products: true, marketing: true, seo: true, finance: true },
-  exec:  { operation: true, products: true, marketing: true, seo: true, finance: true },
-  staff: { operation: true, products: true, marketing: true, seo: true, finance: false },
+  admin:   { operation: true, products: true, marketing: true, seo: true, finance: true },
+  exec:    { operation: true, products: true, marketing: true, seo: true, finance: true },
+  manager: { operation: true, products: true, marketing: true, seo: true, finance: false },
+  staff:   { operation: true, products: true, marketing: true, seo: true, finance: false },
 };
+
+// 取某角色目前的權限定義：以名單中該角色第一位使用者為準，沒有則用預設
+function getRoleDef(role){
+  const u = USERS.find(x => x.role === role && x.perms);
+  const src = (u && u.perms) || ROLE_PERMS[role] || ROLE_PERMS.staff;
+  const out = {};
+  PAGES.forEach(p => { out[p.id] = !!src[p.id]; });
+  return out;
+}
 
 // 初始使用者資料（之後從 GAS 讀取）
 let USERS = [
@@ -276,6 +319,7 @@ function grantOrDenyAdmin() {
     document.getElementById('app').style.display = 'block';
     renderStats();
     renderTable();
+    renderRolePanel();
     loadFromGAS(); // 嘗試從 GAS 讀最新資料
   } else if (currentAdminEmail) {
     // 有登入但不是 admin
@@ -302,6 +346,7 @@ async function loadFromGAS() {
       USERS = data.users;
       renderStats();
       renderTable();
+      renderRolePanel();
     }
   } catch(e) {
     console.warn('GAS 連線失敗，使用本機資料', e);
@@ -378,16 +423,13 @@ function renderTable() {
         </div>
       </td>
       <td>
-        <span class="role-badge role-${u.role}">
-          ${u.role === 'admin' ? '管理員' : u.role === 'exec' ? '高階主管' : '一般員工'}
-        </span>
+        <span class="role-badge role-${u.role}">${roleLabel(u.role)}</span>
       </td>
       <td>
         <div class="perm-row">
           ${PAGES.map(p => `
             <span class="perm-tag ${p.id} ${u.perms?.[p.id] ? 'on' : 'off'}"
-                  onclick="togglePerm(${u.id},'${p.id}',this)"
-                  title="${u.perms?.[p.id] ? '點擊撤銷' : '點擊授予'}">
+                  title="由角色決定，請至上方『角色權限設定』調整">
               ${p.emoji} ${p.label}
             </span>`).join('')}
         </div>
@@ -410,14 +452,50 @@ function renderTable() {
 /* ══════════════════════════════════════════
    Permission Toggle
 ══════════════════════════════════════════ */
-async function togglePerm(id, pageId, tagEl) {
-  const user = USERS.find(u => u.id === id);
-  if (!user) return;
-  user.perms[pageId] = !user.perms[pageId];
-  tagEl.className = `perm-tag ${pageId} ${user.perms[pageId] ? 'on' : 'off'}`;
-  tagEl.title = user.perms[pageId] ? '點擊撤銷' : '點擊授予';
-  renderStats();
-  await saveToGAS({ action: 'updatePerm', id, pageId, value: user.perms[pageId] });
+/* ══════════════════════════════════════════
+   角色權限面板
+══════════════════════════════════════════ */
+function renderRolePanel() {
+  document.getElementById('role-cards').innerHTML = ROLES.map(r => {
+    const def = getRoleDef(r.id);
+    const count = USERS.filter(u => u.role === r.id).length;
+    const locked = (r.id === 'admin'); // 管理員固定全開，不可調
+    return `
+    <div class="role-card ${locked ? 'locked' : ''}">
+      <div class="role-card-head">
+        <div class="role-card-name">${r.label}<span class="role-card-count">${count} 人${r.note ? ' · ' + r.note : ''}</span></div>
+        ${locked ? '<span style="font-size:.72rem;color:#999">全部頁面（不可調整）</span>'
+                 : `<button class="role-save-btn" id="rs-${r.id}" onclick="saveRoleDef('${r.id}')">儲存並套用</button>`}
+      </div>
+      <div class="perm-check-row">
+        ${PAGES.map(p => `
+          <label class="perm-check">
+            <input type="checkbox" data-role="${r.id}" data-page="${p.id}"
+                   ${def[p.id] ? 'checked' : ''} ${locked ? 'disabled' : ''}>
+            ${p.emoji} ${p.label}
+          </label>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function saveRoleDef(role) {
+  const perms = {};
+  document.querySelectorAll(`#role-cards input[data-role="${role}"]`).forEach(cb => {
+    perms[cb.dataset.page] = cb.checked;
+  });
+  const targets = USERS.filter(u => u.role === role);
+  const btn = document.getElementById('rs-' + role);
+  if (btn) { btn.disabled = true; btn.textContent = '套用中…'; }
+  let ok = true;
+  for (const u of targets) {
+    u.perms = { ...perms };
+    const r = await saveToGAS({ action: 'updateUser', id: u.id, name: u.name, email: u.email, role: u.role, perms });
+    if (!r) ok = false;
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '儲存並套用'; }
+  showToast(ok ? `✅ 已套用「${roleLabel(role)}」權限給 ${targets.length} 人` : '❌ 部分套用失敗，請重試');
+  renderTable();
 }
 
 async function toggleActive(id, toggleEl) {
@@ -437,21 +515,13 @@ async function toggleActive(id, toggleEl) {
 ══════════════════════════════════════════ */
 let editingId = null;
 
-function buildPermChecks(perms = {}) {
-  document.getElementById('perm-checks').innerHTML = PAGES.map(p => `
-    <label class="perm-check">
-      <input type="checkbox" id="pc-${p.id}" ${perms[p.id] ? 'checked' : ''}>
-      ${p.emoji} ${p.label}
-    </label>`).join('');
-}
-
-function syncRolePerms() {
+function renderRoleHint() {
   const role = document.getElementById('f-role').value;
-  const rp = ROLE_PERMS[role] || ROLE_PERMS.staff;
-  PAGES.forEach(p => {
-    const cb = document.getElementById('pc-' + p.id);
-    if (cb) cb.checked = !!rp[p.id];
-  });
+  const def = getRoleDef(role);
+  const can = PAGES.filter(p => def[p.id]).map(p => p.emoji + p.label);
+  document.getElementById('role-hint').innerHTML =
+    `此角色目前可看：<b>${can.length ? can.join('、') : '（未設定）'}</b><br>` +
+    `<span style="color:#999">頁面權限由角色決定，可在上方「角色權限設定」調整。</span>`;
 }
 
 function openAddModal() {
@@ -460,7 +530,7 @@ function openAddModal() {
   document.getElementById('f-name').value = '';
   document.getElementById('f-email').value = '';
   document.getElementById('f-role').value = 'staff';
-  buildPermChecks(ROLE_PERMS.staff);
+  renderRoleHint();
   document.getElementById('modal').style.display = 'flex';
 }
 
@@ -472,7 +542,7 @@ function openEditModal(id) {
   document.getElementById('f-name').value = user.name;
   document.getElementById('f-email').value = user.email;
   document.getElementById('f-role').value = user.role;
-  buildPermChecks(user.perms || {});
+  renderRoleHint();
   document.getElementById('modal').style.display = 'flex';
 }
 
@@ -480,17 +550,14 @@ function closeModal() {
   document.getElementById('modal').style.display = 'none';
 }
 
-function getFormPerms() {
-  const perms = {};
-  PAGES.forEach(p => { perms[p.id] = document.getElementById('pc-' + p.id)?.checked || false; });
-  return perms;
-}
-
 async function saveUser() {
   const name  = document.getElementById('f-name').value.trim();
   const email = document.getElementById('f-email').value.trim().toLowerCase();
   const role  = document.getElementById('f-role').value;
-  const perms = getFormPerms();
+  // 權限直接套用該角色目前的定義（管理員固定全開）
+  const perms = role === 'admin'
+    ? { operation:true, products:true, marketing:true, seo:true, finance:true }
+    : getRoleDef(role);
 
   if (!name || !email) { alert('請填寫姓名與 Email'); return; }
   if (!email.includes('@')) { alert('Email 格式不正確'); return; }
@@ -508,6 +575,7 @@ async function saveUser() {
   closeModal();
   renderStats();
   renderTable();
+  renderRolePanel();
 }
 
 async function deleteUser(id) {
@@ -518,6 +586,7 @@ async function deleteUser(id) {
   await saveToGAS({ action: 'deleteUser', id });
   renderStats();
   renderTable();
+  renderRolePanel();
 }
 
 /* ══════════════════════════════════════════
