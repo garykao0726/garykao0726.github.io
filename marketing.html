@@ -209,7 +209,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
   <div class="sec-hdr" style="margin-top:1.5rem">
     <div class="sec-title">社群自然流量</div>
-    <div class="sec-date">Metricool · IG / FB 粉絲數・觸及・互動（不含廣告）</div>
+    <div class="sec-date">Metricool · IG / FB / Threads 粉絲數・觸及・互動（不含廣告）</div>
   </div>
   <div class="kpi6" id="monthly-organic-kpi"></div>
 
@@ -1110,7 +1110,7 @@ function buildMonthly(rows, monthlyRows){
   rows.forEach(r=>{
     const d=parseDate_(r[0]); if(!d||isNaN(d))return;
     const ym=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0');
-    const M=byM[ym]||(byM[ym]={ym,y:d.getFullYear(),m:d.getMonth()+1,days:0,sessions:0,newUsers:0,wherePv:0,cvrSum:0,cvrN:0,cartSum:0,cartN:0,ecRev:0,ecOrders:0,refSum:0,refN:0,metaSp:0,metaCv:0,gSp:0,gCv:0,organic:0,paidSearch:0,paidSocial:0,direct:0,referral:0,kol:0,ig:0,fb:0,line:0,igRev:0,fbRev:0,lineRev:0,organicRev:0,igReach:0,igEngagement:0,fbReach:0,fbEngagement:0,igFollowersEnd:0,fbFollowersEnd:0,_lastFollowerDate:null});
+    const M=byM[ym]||(byM[ym]={ym,y:d.getFullYear(),m:d.getMonth()+1,days:0,sessions:0,newUsers:0,wherePv:0,cvrSum:0,cvrN:0,cartSum:0,cartN:0,ecRev:0,ecOrders:0,refSum:0,refN:0,metaSp:0,metaCv:0,gSp:0,gCv:0,organic:0,paidSearch:0,paidSocial:0,direct:0,referral:0,kol:0,ig:0,fb:0,line:0,igRev:0,fbRev:0,lineRev:0,organicRev:0,igReach:0,igEngagement:0,fbReach:0,fbEngagement:0,igFollowersEnd:0,fbFollowersEnd:0,thReach:0,thEngagement:0,thFollowersEnd:0,_lastFollowerDate:null});
     M.days++;M.sessions+=n(r[2]);M.newUsers+=n(r[3]);M.wherePv+=n(r[6]);
     if(n(r[4])>0){M.cvrSum+=n(r[4]);M.cvrN++;}
     if(n(r[5])>0){M.cartSum+=n(r[5]);M.cartN++;}
@@ -1119,9 +1119,10 @@ function buildMonthly(rows, monthlyRows){
     M.metaSp+=n(r[26]);M.metaCv+=n(r[29]);M.gSp+=n(r[30]);M.gCv+=n(r[33]);
     M.organic+=n(r[7]);M.paidSearch+=n(r[8]);M.paidSocial+=n(r[10]);M.direct+=n(r[12]);M.referral+=n(r[13]);M.kol+=n(r[37]);
     M.ig+=n(r[14]);M.fb+=n(r[17]);M.line+=n(r[20]);M.igRev+=n(r[16]);M.fbRev+=n(r[19]);M.lineRev+=n(r[22]);M.organicRev+=n(r[34]);
-    // Metricool 社群自然流量（col 39-44）：reach/engagement 當月加總；followers 取月內最新一筆（快照值，非加總）
+    // Metricool 社群自然流量（col 39-47）：reach/engagement/views 當月加總；followers 取月內最新一筆（快照值，非加總）
     M.igReach+=n(r[40]);M.igEngagement+=n(r[41]);M.fbReach+=n(r[43]);M.fbEngagement+=n(r[44]);
-    if((n(r[39])>0||n(r[42])>0)&&(!M._lastFollowerDate||d>M._lastFollowerDate)){M.igFollowersEnd=n(r[39]);M.fbFollowersEnd=n(r[42]);M._lastFollowerDate=d;}
+    M.thReach+=n(r[46]);M.thEngagement+=n(r[47]);
+    if((n(r[39])>0||n(r[42])>0||n(r[45])>0)&&(!M._lastFollowerDate||d>M._lastFollowerDate)){M.igFollowersEnd=n(r[39]);M.fbFollowersEnd=n(r[42]);M.thFollowersEnd=n(r[45]);M._lastFollowerDate=d;}
   });
   Object.values(byM).forEach(M=>{
     M.adSpendRaw=M.metaSp+M.gSp;M.adSpend=Math.round(M.adSpendRaw*AD_SERVICE_FEE_RATE);M.adCv=M.metaCv+M.gCv;
@@ -1132,7 +1133,7 @@ function buildMonthly(rows, monthlyRows){
     M.aov=M.ecOrders>0?Math.round(M.ecRev/M.ecOrders):0;M.social=M.ig+M.fb+M.line;
     M.hasRev=M.ecRev>0&&M.ecOrders>0;M.revReliable=M.hasRev&&M.days>=28&&M.ecOrders>=80;
     M.adActive=M.adSpendRaw>=AD_MIN_SPEND;
-    M.hasOrganicSocial=M.igFollowersEnd>0||M.fbFollowersEnd>0;
+    M.hasOrganicSocial=M.igFollowersEnd>0||M.fbFollowersEnd>0||M.thFollowersEnd>0;
     M.totalRev=MONTHLY_TOTAL_REV[M.ym]||0;
     // 電商營收：GA4 可靠時用 GA4；否則用月度數據「官網」ERP 數字（標記 ecRevIsERP）
     if(!M.revReliable&&MONTHLY_EC_REV_OVERRIDE[M.ym]){
@@ -1220,7 +1221,10 @@ function renderOrganicSocial(M,P){
     'IG 互動':{v:_mf(M.igEngagement),delta:P&&P.igEngagement>0?d(M.igEngagement,P.igEngagement):null,vs:'本月累計',color:'#E1306C'},
     'FB 粉絲數':{v:_mf(M.fbFollowersEnd),delta:P&&P.fbFollowersEnd>0?d(M.fbFollowersEnd,P.fbFollowersEnd):null,vs:'月底快照',color:'#1877F2'},
     'FB 觸及':{v:_mf(M.fbReach),delta:P&&P.fbReach>0?d(M.fbReach,P.fbReach):null,vs:'本月累計',color:'#1877F2'},
-    'FB 互動':{v:_mf(M.fbEngagement),delta:P&&P.fbEngagement>0?d(M.fbEngagement,P.fbEngagement):null,vs:'本月累計',color:'#1877F2'}
+    'FB 互動':{v:_mf(M.fbEngagement),delta:P&&P.fbEngagement>0?d(M.fbEngagement,P.fbEngagement):null,vs:'本月累計',color:'#1877F2'},
+    'Threads 粉絲數':{v:_mf(M.thFollowersEnd),delta:P&&P.thFollowersEnd>0?d(M.thFollowersEnd,P.thFollowersEnd):null,vs:'月底快照',color:'#000000'},
+    'Threads 瀏覽':{v:_mf(M.thReach),delta:P&&P.thReach>0?d(M.thReach,P.thReach):null,vs:'本月累計',color:'#000000'},
+    'Threads 互動':{v:_mf(M.thEngagement),delta:P&&P.thEngagement>0?d(M.thEngagement,P.thEngagement):null,vs:'本月累計',color:'#000000'}
   };
   renderKPIs('monthly-organic-kpi',items);
 }
@@ -1303,7 +1307,8 @@ function buildMktInsights(M,P,Y){
   if(M.hasOrganicSocial&&P&&P.hasOrganicSocial){
     const igFolD=P.igFollowersEnd>0?pc(M.igFollowersEnd,P.igFollowersEnd):null;
     const fbFolD=P.fbFollowersEnd>0?pc(M.fbFollowersEnd,P.fbFollowersEnd):null;
-    [['IG',igFolD,M.igFollowersEnd,P.igFollowersEnd],['FB',fbFolD,M.fbFollowersEnd,P.fbFollowersEnd]].forEach(([nm,dlt,cur,prev])=>{
+    const thFolD=P.thFollowersEnd>0?pc(M.thFollowersEnd,P.thFollowersEnd):null;
+    [['IG',igFolD,M.igFollowersEnd,P.igFollowersEnd],['FB',fbFolD,M.fbFollowersEnd,P.fbFollowersEnd],['Threads',thFolD,M.thFollowersEnd,P.thFollowersEnd]].forEach(([nm,dlt,cur,prev])=>{
       if(dlt!=null&&dlt<0){
         out.push({sev:dlt<=-3?'red':'amber',tag:'社群自然流量',title:`${mo} ${nm} 粉絲數下滑 ${dlt}%`,body:`${nm} 粉絲數從 ${f(prev)} 掉到 ${f(cur)}，屬異常波動，建議檢查是否有帳號被檢舉/大量取消追蹤/內容違規下架等情況。`,data:`${nm} 粉絲數 ${f(cur)}（上月 ${f(prev)}）`});
       }
