@@ -213,7 +213,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
   <div class="g2">
     <div class="card">
-      <div class="card-hdr"><span class="card-lbl">月度趨勢（Sessions × 廣告 ROAS）</span><span class="card-badge">近 12 月</span></div>
+      <div class="card-hdr"><span class="card-lbl">月度趨勢（流量 × 廣告 ROAS）</span><span class="card-badge">近 12 月</span></div>
       <div class="ch240"><canvas id="ch-monthly-trend"></canvas></div>
     </div>
     <div class="card">
@@ -911,9 +911,13 @@ async function loadData(){
     buildRoasCheck(summaryRows);
     if(RENDERED.ads){renderRoasCheck();renderOfflineQuality();renderNewProducts();}
     // 解析 ERP 廣告費明細 → ERP_AD_MAP[ym]
+    // 年月欄位是 Sheet 的日期型別，gviz 只回傳 c.v 不是 c.f，抓到的是 "Date(2026,0,1)" 這種原始字串，
+    // 不能直接當 key 用（跟 M.ym 的 "2026/01" 格式對不上，導致查表永遠 miss、每個月都顯示「無ERP」）。
+    // 用既有的 parseDate_() 轉成真正的 Date 再重新格式化。
     ERP_AD_MAP={};
     if(erpRows){erpRows.slice(1).forEach(r=>{
-      const ym=String(r[0]||'').trim();if(!ym)return;
+      const d=parseDate_(r[0]);if(!d)return;
+      const ym=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0');
       const shoot=Number(r[1])||0,mediaErp=Number(r[2])||0,print=Number(r[3])||0,event=Number(r[4])||0,pr=Number(r[5])||0;
       ERP_AD_MAP[ym]={shoot,media:mediaErp,print,event,pr,nonMedia:shoot+print+event+pr};
     });}
@@ -1460,7 +1464,7 @@ function renderMonthlyTrend(){
   const ks=MONTHLY_KEYS.slice(-12),el=document.getElementById('ch-monthly-trend');if(!el)return;
   if(el._chartInst)el._chartInst.destroy();
   el._chartInst=new Chart(el,{data:{labels:ks.map(k=>{const[y,m]=k.split('/');return(y==='2026'?'':y.slice(2)+'/')+(+m)+'月';}),datasets:[
-    {type:'bar',label:'Sessions',data:ks.map(k=>MONTHLY[k].sessions),backgroundColor:'rgba(40,66,52,.55)',yAxisID:'y',order:2},
+    {type:'bar',label:'流量',data:ks.map(k=>MONTHLY[k].sessions),backgroundColor:'rgba(40,66,52,.55)',yAxisID:'y',order:2},
     {type:'line',label:'廣告 ROAS',data:ks.map(k=>MONTHLY[k].adActive?MONTHLY[k].roas:null),borderColor:'#A54A1A',backgroundColor:'#A54A1A',tension:.3,pointRadius:4,borderWidth:2,yAxisID:'y1',order:1,spanGaps:true}
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Space Mono',size:11}}}},scales:{y:{position:'left',ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{color:'rgba(40,66,52,.05)'}},y1:{position:'right',min:0,ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}},x:{ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}}}}});
 }
