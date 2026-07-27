@@ -338,6 +338,26 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div class="card-hdr"><span class="card-lbl">IG / FB / LINE 比較</span><span class="card-badge">sessions · CVR · 轉換金額</span></div>
     <div style="overflow-x:auto"><table class="ctbl" id="tbl-ads-social"></table></div>
   </div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">GA4 vs Meta 廣告歸因交叉驗證</div>
+    <div class="sec-date" id="roascheck-week">—</div>
+  </div>
+  <div class="kpi3" id="roascheck-kpi" style="margin-bottom:1rem"></div>
+  <div class="card" id="roascheck-card" style="display:none">
+    <div class="card-hdr"><span class="card-lbl">落差解讀</span><span class="card-badge">自動判讀</span></div>
+    <div id="roascheck-note" style="font-size:12px;color:var(--text-sub);line-height:1.7"></div>
+  </div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">新品銷售</div>
+    <div class="sec-date" id="newprod-week">—</div>
+  </div>
+  <div class="kpi3" id="newprod-kpi" style="margin-bottom:1rem"></div>
+  <div class="card" id="newprod-card" style="display:none">
+    <div class="card-hdr"><span class="card-lbl">新品銷售明細</span><span class="card-badge">依營收排序 · 本週</span></div>
+    <div style="overflow-x:auto"><table class="ctbl" id="tbl-newprod"></table></div>
+  </div>
 </div>
 
 <!-- ============ 年度目標 ============ -->
@@ -830,15 +850,45 @@ function applyWeeklyOverrides(d, weeklyRows, monthlyRows) {
   }
 }
 
+// 「行銷週報彙總」欄位對照（0-indexed，跟 GAS WEEKLY_SUMMARY_HEADERS 順序一致）
+// 0 week_start,1 week_end,2 meta_spend,3 meta_roas,4 meta_purchase_value,
+// 5 ga4_paid_social_revenue,6 ga4_roas,7 roas_gap_multiple,
+// 8 ec_sessions,9 ec_revenue,10 ec_orders,11 ec_avg_order,
+// 12 new_product_count,13 new_product_window_days,14 new_product_revenue,15 new_product_units,
+// 16 new_product_top_name,17 new_product_matched_json,18 updated_at
+let ROAS_CHECK = null;
+function buildRoasCheck(summaryRows){
+  if(!summaryRows||!summaryRows.length){ROAS_CHECK=null;return;}
+  const rows=summaryRows.filter(r=>r&&r[0]).sort((a,b)=>(parseDate_(a[0])||0)-(parseDate_(b[0])||0));
+  if(!rows.length){ROAS_CHECK=null;return;}
+  const r=rows[rows.length-1];
+  const n=v=>Number(v)||0;
+  let matched=[];
+  try{matched=JSON.parse(r[17]||'[]');}catch(e){matched=[];}
+  const ws=parseDate_(r[0]),we=parseDate_(r[1]);
+  const weekLabel=ws&&we?`${ws.getMonth()+1}/${ws.getDate()} – ${we.getMonth()+1}/${we.getDate()}`:'—';
+  ROAS_CHECK={
+    weekLabel,
+    metaSpend:n(r[2]), metaRoas:n(r[3]), metaPurchaseValue:n(r[4]),
+    ga4Revenue:n(r[5]), ga4Roas:n(r[6]), gapMultiple:r[7]!==''&&r[7]!=null?n(r[7]):null,
+    ecRevenue:n(r[9]), ecOrders:n(r[10]),
+    newProductCount:n(r[12]), windowDays:n(r[13])||60, newProductRevenue:n(r[14]), newProductUnits:n(r[15]),
+    matched, updatedAt:r[18]
+  };
+}
+
 async function loadData(){
   const banner=document.getElementById('data-status-banner');
   try{
-    const [rows, weeklyRows, monthlyRows, erpRows] = await Promise.all([
+    const [rows, weeklyRows, monthlyRows, erpRows, summaryRows] = await Promise.all([
       loadGviz('行銷儀錶板數據'),
       loadGviz('週報數據').catch(() => null),
       loadGviz('月度數據').catch(() => null),
-      loadGviz('行銷費用月表').catch(() => null)
+      loadGviz('行銷費用月表').catch(() => null),
+      loadGviz('行銷週報彙總').catch(() => null)
     ]);
+    buildRoasCheck(summaryRows);
+    if(RENDERED.ads){renderRoasCheck();renderNewProducts();}
     // 解析 ERP 廣告費明細 → ERP_AD_MAP[ym]
     ERP_AD_MAP={};
     if(erpRows){erpRows.slice(1).forEach(r=>{
@@ -926,6 +976,67 @@ function renderAds(){
   renderAdMonth();
   renderBudget();
   renderAdsSocial();
+  renderRoasCheck();
+  renderNewProducts();
+}
+
+// ----- GA4 vs Meta ROAS 交叉驗證（來源：「行銷週報彙總」，週一自動更新）-----
+function renderRoasCheck(){
+  const wkEl=document.getElementById('roascheck-week');
+  const kpiEl=document.getElementById('roascheck-kpi');
+  const cardEl=document.getElementById('roascheck-card');
+  const noteEl=document.getElementById('roascheck-note');
+  if(!kpiEl) return;
+  const r=ROAS_CHECK;
+  if(!r){
+    wkEl.textContent='資料累積中';
+    kpiEl.innerHTML='<div class="cmp-pending" style="grid-column:1/-1">尚無「行銷週報彙總」資料，需等下一次週一自動發送後才會出現。</div>';
+    cardEl.style.display='none';
+    return;
+  }
+  wkEl.textContent=r.weekLabel+'（週一自動更新）';
+  const gapColor = r.gapMultiple===null ? '#8D5531' : (r.gapMultiple>=3?'#c0392b':r.gapMultiple>=1.5?'#b8860b':'#1a7a4a');
+  renderKPIs('roascheck-kpi',{
+    'Meta 自報 ROAS':{v:r.metaRoas.toFixed(2)+'x',delta:null,vs:'花費 NT$'+r.metaSpend.toLocaleString(),color:'#1877F2'},
+    'GA4 觀測 ROAS':{v:r.ga4Roas.toFixed(2)+'x',delta:null,vs:'GA4 社群營收 NT$'+r.ga4Revenue.toLocaleString(),color:'#284234'},
+    '落差倍數':{v:r.gapMultiple===null?'—':r.gapMultiple.toFixed(1)+'x',delta:null,vs:'Meta ÷ GA4',color:gapColor}
+  });
+  if(r.gapMultiple===null){
+    cardEl.style.display='none';
+  }else{
+    cardEl.style.display='';
+    const lvl = r.gapMultiple>=3?'落差非常大':r.gapMultiple>=1.5?'落差明顯':'落差在合理範圍';
+    noteEl.textContent = `Meta 自報 ROAS（${r.metaRoas.toFixed(2)}x）比 GA4 觀測到的社群通路 ROAS（${r.ga4Roas.toFixed(2)}x）高出 ${r.gapMultiple.toFixed(1)} 倍，${lvl}。Meta 用 7 天點擊/1 天瀏覽的寬鬆歸因窗口，GA4 用最後點擊歸因（較保守），兩者本來就不會相等；落差越大，代表越該以 GA4 這個保守數字做加碼判斷，而非只看 Meta 後台。`;
+  }
+}
+
+// ----- 新品銷售（來源：「行銷週報彙總」，近 N 天上架商品本週銷售，自動偵測不需人工維護清單）-----
+function renderNewProducts(){
+  const wkEl=document.getElementById('newprod-week');
+  const kpiEl=document.getElementById('newprod-kpi');
+  const cardEl=document.getElementById('newprod-card');
+  const tblEl=document.getElementById('tbl-newprod');
+  if(!kpiEl) return;
+  const r=ROAS_CHECK;
+  if(!r){
+    wkEl.textContent='資料累積中';
+    kpiEl.innerHTML='<div class="cmp-pending" style="grid-column:1/-1">尚無新品銷售資料，需等下一次週一自動發送後才會出現。</div>';
+    cardEl.style.display='none';
+    return;
+  }
+  wkEl.textContent=`近 ${r.windowDays} 天上架（${r.newProductCount} 項）· ${r.weekLabel}銷售`;
+  renderKPIs('newprod-kpi',{
+    '新品營收':{v:'NT$'+r.newProductRevenue.toLocaleString(),delta:null,vs:'本週',color:'#A54A1A'},
+    '新品件數':{v:r.newProductUnits.toLocaleString()+' 件',delta:null,vs:'本週',color:'#5a8a6e'},
+    '上架新品數':{v:r.newProductCount.toLocaleString()+' 項',delta:null,vs:`近 ${r.windowDays} 天`,color:'#284234'}
+  });
+  if(!r.matched||!r.matched.length){
+    cardEl.style.display='';
+    tblEl.innerHTML=`<thead><tr><th>商品</th><th>營收</th><th>件數</th></tr></thead><tbody><tr><td colspan="3" style="color:var(--text-muted);font-size:11px">近 ${r.windowDays} 天上架商品本週無銷售</td></tr></tbody>`;
+    return;
+  }
+  cardEl.style.display='';
+  tblEl.innerHTML=`<thead><tr><th>商品</th><th>營收</th><th>件數</th></tr></thead><tbody>${r.matched.map(p=>`<tr><td class="td-s">${p.title}</td><td>NT$${fmt(Math.round(p.revenue))}</td><td>${p.units}</td></tr>`).join('')}</tbody>`;
 }
 
 function renderAdMonth(){
