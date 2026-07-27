@@ -135,10 +135,13 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div class="sec-title" id="period-title">本週關鍵指標</div>
     <div class="sec-date" id="overview-date">2026 / 04 / 21 – 04 / 27</div>
   </div>
-  <div class="mswitch" id="period-switcher" style="margin-bottom:1.1rem">
+  <div class="mswitch" id="period-switcher" style="margin-bottom:1.1rem;align-items:center">
     <button class="active" onclick="setPeriod('week',this)">本週</button>
     <button onclick="setPeriod('month',this)">本月</button>
     <button onclick="setPeriod('lastmonth',this)">上月</button>
+    <select id="period-month-select" onchange="setPeriod('pick',null,this.value)" style="font-family:'Space Mono',monospace;font-size:11px;padding:3px 11px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);color:var(--text-sub);cursor:pointer">
+      <option value="">往月選擇…</option>
+    </select>
   </div>
 
   <!-- 本週 -->
@@ -1285,6 +1288,13 @@ function renderMonthly(){
   const cavEl=document.getElementById('monthly-caveat');
   if(cav.length){cavEl.style.display='flex';cavEl.innerHTML='⚠️ '+cav.join('　');}else cavEl.style.display='none';
 
+  // 往月選擇下拉（近 12 個完整月，最新在最上面）
+  const selEl=document.getElementById('period-month-select');
+  if(selEl){
+    const opts=MONTHLY_KEYS.slice(-12).slice().reverse();
+    selEl.innerHTML='<option value="">往月選擇…</option>'+opts.map(k=>`<option value="${k}">${k.replace('/','-')}</option>`).join('');
+  }
+
   renderMonthlyTrend();
   renderChannelDonut(M,'ch-monthly-channel','ch-monthly-channel-legend');
   renderOrganicSocial(M,P);
@@ -1295,26 +1305,30 @@ function renderMonthly(){
 // ===== 期間選擇器（本週／本月／上月）=====
 let OVERVIEW_WEEK_LABEL='';
 const PERIOD_TITLES={week:'本週關鍵指標',month:'本月關鍵指標（進行中）',lastmonth:'上月關鍵指標'};
-function setPeriod(period,btn){
+function setPeriod(period,btn,explicitYm){
   document.querySelectorAll('#period-switcher button').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
-  document.getElementById('period-title').textContent=PERIOD_TITLES[period]||'關鍵指標';
+  const selEl=document.getElementById('period-month-select');
+  if(period!=='pick'&&selEl)selEl.value='';
   document.getElementById('period-week').style.display=period==='week'?'':'none';
   document.getElementById('period-month').style.display=period==='week'?'none':'';
   if(period==='week'){
+    document.getElementById('period-title').textContent=PERIOD_TITLES.week;
     document.getElementById('overview-date').textContent=OVERVIEW_WEEK_LABEL||'—';
   }else{
-    renderPeriodMonth(period);
+    renderPeriodMonth(period,explicitYm);
   }
 }
 
-function renderPeriodMonth(period){
+function renderPeriodMonth(period,explicitYm){
   const now=new Date(),curYm=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0');
-  const ym=period==='month'?curYm:(MONTHLY_KEYS.length?MONTHLY_KEYS[MONTHLY_KEYS.length-1]:null);
+  const ym=period==='pick'?explicitYm:(period==='month'?curYm:(MONTHLY_KEYS.length?MONTHLY_KEYS[MONTHLY_KEYS.length-1]:null));
   const dateEl=document.getElementById('overview-date');
   const caveat=document.getElementById('period-month-caveat');
+  const titleEl=document.getElementById('period-title');
   const M=ym?MONTHLY[ym]:null;
   if(!M){
+    if(titleEl)titleEl.textContent=PERIOD_TITLES[period]||'關鍵指標';
     if(dateEl)dateEl.textContent='尚無資料';
     if(caveat){caveat.style.display='flex';caveat.innerHTML='⚠️ 尚無足夠資料產生此期間的統計。';}
     document.getElementById('period-month-kpi').innerHTML='';
@@ -1322,6 +1336,7 @@ function renderPeriodMonth(period){
     document.getElementById('period-month-yoy').innerHTML='';
     return;
   }
+  if(titleEl)titleEl.textContent=period==='pick'?(M.y+'年'+M.m+'月關鍵指標'):PERIOD_TITLES[period];
   const P=MONTHLY[_prevYm(ym)],Y=MONTHLY[_yoyYm(ym)];
   if(dateEl)dateEl.textContent=M.y+' / '+String(M.m).padStart(2,'0')+(period==='month'?'（截至今日 '+M.days+' 天）':'（共 '+M.days+' 天）');
 
@@ -1361,7 +1376,7 @@ function renderPeriodMonth(period){
   if(M.revReliable&&Y&&Y.revReliable)yoy.ecRev={label:'官網營收',cur:M.ecRev,prev:Y.ecRev,fmt:fmtRev};
   renderMonthlyCmp('period-month-yoy',yoy,true);
 
-  document.getElementById('period-month-badge').textContent=period==='month'?'本月（進行中）':'上月';
+  document.getElementById('period-month-badge').textContent=period==='month'?'本月（進行中）':(period==='pick'?ym.replace('/','-'):'上月');
   renderChannelDonut(M,'ch-period-month','ch-period-month-legend');
 }
 
