@@ -118,7 +118,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
 <nav class="tabs">
   <button class="tab active" onclick="switchTab('overview',this)">📊 流量總覽</button>
-  <button class="tab" onclick="switchTab('monthly',this)">📈 月度觀察</button>
   <button class="tab" onclick="switchTab('ads',this)">💰 廣告成效</button>
   <button class="tab" onclick="switchTab('goals',this)">🎯 年度目標</button>
 </nav>
@@ -130,36 +129,64 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   ⏳ 正在載入行銷數據...
 </div>
 
-<!-- ============ 流量總覽 ============ -->
+<!-- ============ 流量總覽（週/月/上月 共用一組期間選擇器）============ -->
 <div class="tab-panel active" id="panel-overview">
   <div class="sec-hdr">
-    <div class="sec-title">本週關鍵指標</div>
+    <div class="sec-title" id="period-title">本週關鍵指標</div>
     <div class="sec-date" id="overview-date">2026 / 04 / 21 – 04 / 27</div>
   </div>
-  <div class="kpi6" id="overview-kpi"></div>
-
-  <div class="sec-hdr" style="margin-top:1.5rem">
-    <div class="sec-title">期間比較（MoM｜YoY）</div>
-    <div class="sec-date" id="cmp-date">本月對上月同期 · 流量去年同期</div>
-  </div>
-  <div class="cmp-grid" id="cmp-mom"></div>
-  <div class="cmp-grid" id="cmp-yoy"></div>
-
-  <div class="g2">
-    <div class="card">
-      <div class="card-hdr"><span class="card-lbl">每日流量趨勢（近 14 天）</span><span class="card-badge">sessions</span></div>
-      <div class="ch240"><canvas id="ch-traffic"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-hdr"><span class="card-lbl">流量來源拆解</span><span class="card-badge">本週</span></div>
-      <div class="ch200"><canvas id="ch-channel"></canvas></div>
-      <div class="legend" id="ch-channel-legend"></div>
-    </div>
+  <div class="mswitch" id="period-switcher" style="margin-bottom:1.1rem">
+    <button class="active" onclick="setPeriod('week',this)">本週</button>
+    <button onclick="setPeriod('month',this)">本月</button>
+    <button onclick="setPeriod('lastmonth',this)">上月</button>
   </div>
 
-  <div class="card">
-    <div class="card-hdr"><span class="card-lbl">流量來源 vs 轉換明細</span><span class="card-badge">含 ROAS / CVR</span></div>
-    <div style="overflow-x:auto"><table class="ctbl" id="tbl-channel"></table></div>
+  <!-- 本週 -->
+  <div id="period-week">
+    <div class="kpi6" id="overview-kpi"></div>
+
+    <div class="sec-hdr" style="margin-top:1.5rem">
+      <div class="sec-title">期間比較（MoM｜YoY）</div>
+      <div class="sec-date" id="cmp-date">本月對上月同期 · 流量去年同期</div>
+    </div>
+    <div class="cmp-grid" id="cmp-mom"></div>
+    <div class="cmp-grid" id="cmp-yoy"></div>
+
+    <div class="g2">
+      <div class="card">
+        <div class="card-hdr"><span class="card-lbl">每日流量趨勢（近 14 天）</span><span class="card-badge">sessions</span></div>
+        <div class="ch240"><canvas id="ch-traffic"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-lbl">流量來源拆解</span><span class="card-badge">本週</span></div>
+        <div class="ch200"><canvas id="ch-channel"></canvas></div>
+        <div class="legend" id="ch-channel-legend"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">流量來源 vs 轉換明細</span><span class="card-badge">含 ROAS / CVR</span></div>
+      <div style="overflow-x:auto"><table class="ctbl" id="tbl-channel"></table></div>
+    </div>
+  </div>
+
+  <!-- 本月 / 上月（共用同一組卡片，切換時重繪）-->
+  <div id="period-month" style="display:none">
+    <div class="mock-banner" id="period-month-caveat" style="display:none"></div>
+    <div class="kpi6" id="period-month-kpi"></div>
+
+    <div class="sec-hdr" style="margin-top:1.5rem">
+      <div class="sec-title">與上月 / 去年同月比較</div>
+      <div class="sec-date">MoM ｜ YoY</div>
+    </div>
+    <div class="cmp-grid" id="period-month-mom"></div>
+    <div class="cmp-grid" id="period-month-yoy"></div>
+
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">流量來源拆解</span><span class="card-badge" id="period-month-badge">本月</span></div>
+      <div class="ch200"><canvas id="ch-period-month"></canvas></div>
+      <div class="legend" id="ch-period-month-legend"></div>
+    </div>
   </div>
 
   <div class="sec-hdr" style="margin-top:1.75rem">
@@ -173,24 +200,13 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div class="ch200"><canvas id="ch-channel-mix"></canvas></div>
     <div class="legend" id="ch-mix-legend"></div>
   </div>
-</div>
 
-<!-- ============ 月度觀察 ============ -->
-<div class="tab-panel" id="panel-monthly">
-  <div class="sec-hdr">
-    <div class="sec-title">月度觀察報告</div>
+  <!-- ============ 月度深度分析（固定顯示最新完整月，不受上面期間選擇器影響）============ -->
+  <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">月度深度分析</div>
     <div class="sec-date" id="monthly-period">—</div>
   </div>
-  <div class="mswitch" id="monthly-switcher" style="margin-bottom:1.1rem"></div>
   <div class="mock-banner" id="monthly-caveat" style="display:none"></div>
-  <div class="kpi6" id="monthly-kpi"></div>
-
-  <div class="sec-hdr" style="margin-top:1.5rem">
-    <div class="sec-title">與上月 / 去年同月比較</div>
-    <div class="sec-date">MoM ｜ YoY</div>
-  </div>
-  <div class="cmp-grid" id="monthly-mom"></div>
-  <div class="cmp-grid" id="monthly-yoy"></div>
 
   <div class="g2">
     <div class="card">
@@ -198,7 +214,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       <div class="ch240"><canvas id="ch-monthly-trend"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-hdr"><span class="card-lbl">本月流量來源</span><span class="card-badge">sessions</span></div>
+      <div class="card-hdr"><span class="card-lbl">最新完整月流量來源</span><span class="card-badge">sessions</span></div>
       <div class="ch200"><canvas id="ch-monthly-channel"></canvas></div>
       <div class="legend" id="ch-monthly-channel-legend"></div>
     </div>
@@ -891,12 +907,12 @@ async function loadData(){
     const d=processMarketingData(rows);
     if(!d){banner.innerHTML='⚠️ 資料格式異常，顯示示意數據。';return;}
     applyWeeklyOverrides(d, weeklyRows, monthlyRows);
-    buildMonthly(rows, monthlyRows); if(RENDERED.monthly)renderMonthly(); if(RENDERED.goals)renderGoals();
+    buildMonthly(rows, monthlyRows); renderMonthly(); if(RENDERED.goals)renderGoals();
     Object.assign(MOCK,{overview:d.overview,channels:d.channels,trafficTrend:d.trafficTrend,ads:d.ads,revenue:d.revenue,social:d.social,mom:d.mom,yoy:d.yoy,adYear:d.adYear,adMonth:d.adMonth,weekRev:d.weekRev,weekAch:d.weekAch});
     banner.style.cssText='background:#e8f5e9;border-color:#4caf50;color:#2e7d32;border-radius:8px;padding:10px 16px;margin-bottom:1.25rem;display:flex;align-items:center;gap:12px;font-size:11px;font-family:\'Space Mono\',monospace';
     const src = weeklyRows ? '週報數據' : '行銷儀錶板數據';
     banner.innerHTML='✅ 即時資料（主：'+src+'）｜最後更新：'+fmtDatetime_(d.updatedAt);
-    if(d.weekLabel)document.getElementById('overview-date').textContent=d.weekLabel;
+    if(d.weekLabel){OVERVIEW_WEEK_LABEL=d.weekLabel;document.getElementById('overview-date').textContent=d.weekLabel;}
     document.querySelector('.data-tag').textContent='LIVE DATA';
   }catch(e){
     console.error('loadData',e);
@@ -1252,15 +1268,13 @@ function buildMonthly(rows, monthlyRows){
   MONTHLY=byM;MONTHLY_KEYS=Object.keys(byM).filter(k=>k!==curYm&&byM[k].days>=20).sort();
 }
 
-function switchMonthly(ym){CUR_MYM=ym;renderMonthly();}
-
+// 月度深度分析：固定顯示最新完整月（不受上方「本週/本月/上月」選擇器影響）
 function renderMonthly(){
-  const kpiEl=document.getElementById('monthly-kpi');
-  if(!MONTHLY_KEYS.length){if(kpiEl)kpiEl.innerHTML='<div style="grid-column:1/-1;padding:18px;color:var(--text-muted);font-size:13px;background:var(--surface);border:1px dashed var(--border2);border-radius:10px">尚無完整月份資料（資料載入後自動產生）。</div>';return;}
-  if(!CUR_MYM||!MONTHLY[CUR_MYM])CUR_MYM=MONTHLY_KEYS[MONTHLY_KEYS.length-1];
+  const periodEl=document.getElementById('monthly-period');
+  if(!MONTHLY_KEYS.length){if(periodEl)periodEl.textContent='尚無完整月份資料（資料載入後自動產生）';return;}
+  CUR_MYM=MONTHLY_KEYS[MONTHLY_KEYS.length-1];
   const M=MONTHLY[CUR_MYM],P=MONTHLY[_prevYm(CUR_MYM)],Y=MONTHLY[_yoyYm(CUR_MYM)];
-  document.getElementById('monthly-period').textContent=M.y+' 年 '+M.m+' 月 · 共 '+M.days+' 天';
-  document.getElementById('monthly-switcher').innerHTML=MONTHLY_KEYS.slice(-12).map(k=>`<button class="${k===CUR_MYM?'active':''}" onclick="switchMonthly('${k}')">${k.replace('/','-')}</button>`).join('');
+  periodEl.textContent=M.y+' 年 '+M.m+' 月 · 共 '+M.days+' 天（最新完整月）';
 
   // 資料缺口提示
   const cav=[];
@@ -1271,11 +1285,58 @@ function renderMonthly(){
   const cavEl=document.getElementById('monthly-caveat');
   if(cav.length){cavEl.style.display='flex';cavEl.innerHTML='⚠️ '+cav.join('　');}else cavEl.style.display='none';
 
-  // KPI 卡
+  renderMonthlyTrend();
+  renderChannelDonut(M,'ch-monthly-channel','ch-monthly-channel-legend');
+  renderOrganicSocial(M,P);
+  renderMonthlyInsights(buildMktInsights(M,P,Y));
+  renderMonthlyAdRate();
+}
+
+// ===== 期間選擇器（本週／本月／上月）=====
+let OVERVIEW_WEEK_LABEL='';
+const PERIOD_TITLES={week:'本週關鍵指標',month:'本月關鍵指標（進行中）',lastmonth:'上月關鍵指標'};
+function setPeriod(period,btn){
+  document.querySelectorAll('#period-switcher button').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.getElementById('period-title').textContent=PERIOD_TITLES[period]||'關鍵指標';
+  document.getElementById('period-week').style.display=period==='week'?'':'none';
+  document.getElementById('period-month').style.display=period==='week'?'none':'';
+  if(period==='week'){
+    document.getElementById('overview-date').textContent=OVERVIEW_WEEK_LABEL||'—';
+  }else{
+    renderPeriodMonth(period);
+  }
+}
+
+function renderPeriodMonth(period){
+  const now=new Date(),curYm=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0');
+  const ym=period==='month'?curYm:(MONTHLY_KEYS.length?MONTHLY_KEYS[MONTHLY_KEYS.length-1]:null);
+  const dateEl=document.getElementById('overview-date');
+  const caveat=document.getElementById('period-month-caveat');
+  const M=ym?MONTHLY[ym]:null;
+  if(!M){
+    if(dateEl)dateEl.textContent='尚無資料';
+    if(caveat){caveat.style.display='flex';caveat.innerHTML='⚠️ 尚無足夠資料產生此期間的統計。';}
+    document.getElementById('period-month-kpi').innerHTML='';
+    document.getElementById('period-month-mom').innerHTML='';
+    document.getElementById('period-month-yoy').innerHTML='';
+    return;
+  }
+  const P=MONTHLY[_prevYm(ym)],Y=MONTHLY[_yoyYm(ym)];
+  if(dateEl)dateEl.textContent=M.y+' / '+String(M.m).padStart(2,'0')+(period==='month'?'（截至今日 '+M.days+' 天）':'（共 '+M.days+' 天）');
+
+  const cav=[];
+  if(period==='month'&&M.days<20)cav.push('本月資料截至今日僅 '+M.days+' 天，月底才會完整，數字僅供參考。');
+  if(M.hasRev&&!M.revReliable)cav.push('本月官網 GA4 電商追蹤未完整，營收/訂單僅供參考。');
+  if(P&&M.revReliable&&!P.revReliable)cav.push('上月電商追蹤未完整，營收 MoM 已略過。');
+  if(!Y)cav.push('去年同月無資料，YoY 僅比較有資料指標。');
+  if(caveat){if(cav.length){caveat.style.display='flex';caveat.innerHTML='⚠️ '+cav.join('　');}else caveat.style.display='none';}
+
+  const fmtNum=v=>v.toLocaleString(),fmtRev=v=>'NT$'+Math.round(v).toLocaleString();
   const kRev=M.hasRev?{v:'NT$'+_mf(M.ecRev),delta:(P&&P.revReliable&&M.revReliable)?_pc(M.ecRev,P.ecRev):null,vs:M.revReliable?'GA4 電商':'部分追蹤',color:'#1a7a4a'}:{v:'未追蹤',delta:null,vs:'GA4 電商',color:'#b09a88'};
   const kOrd=M.hasRev?{v:_mf(M.ecOrders),delta:(P&&P.revReliable&&M.revReliable)?_pc(M.ecOrders,P.ecOrders):null,vs:'AOV NT$'+_mf(M.aov),color:'#5a8a6e'}:{v:'—',delta:null,vs:'訂單',color:'#b09a88'};
   const yoyTxt=(Y&&Y.sessions>0)?('YoY '+((_pc(M.sessions,Y.sessions)>=0)?'+':'')+_pc(M.sessions,Y.sessions)+'%'):'vs 上月';
-  renderKPIs('monthly-kpi',{
+  renderKPIs('period-month-kpi',{
     '工作階段':{v:_mf(M.sessions),delta:P?_pc(M.sessions,P.sessions):null,vs:yoyTxt,color:'#284234'},
     '新用戶':{v:_mf(M.newUsers),delta:P?_pc(M.newUsers,P.newUsers):null,vs:'vs 上月',color:'#5a8a6e'},
     '廣告花費':{v:'NT$'+_mf(M.adSpend),delta:P?_pc(M.adSpend,P.adSpend):null,vs:'含 15% 服務費',color:'#A54A1A'},
@@ -1284,8 +1345,6 @@ function renderMonthly(){
     '訂單數':kOrd
   });
 
-  // MoM / YoY 比較卡
-  const fmtNum=v=>v.toLocaleString(),fmtRev=v=>'NT$'+Math.round(v).toLocaleString();
   const mom={
     sessions:{label:'工作階段',cur:M.sessions,prev:P?P.sessions:null,fmt:fmtNum},
     adSpend:{label:'廣告花費',cur:M.adSpend,prev:P?P.adSpend:null,fmt:fmtRev},
@@ -1293,20 +1352,17 @@ function renderMonthly(){
     social:{label:'社群 Sessions',cur:M.social,prev:(P&&P.social>0)?P.social:null,fmt:fmtNum}
   };
   if(M.revReliable&&P&&P.revReliable)mom.ecRev={label:'官網營收',cur:M.ecRev,prev:P.ecRev,fmt:fmtRev};
-  renderMonthlyCmp('monthly-mom',mom,false);
+  renderMonthlyCmp('period-month-mom',mom,false);
   const yoy={
     sessions:{label:'工作階段',cur:M.sessions,prev:(Y&&Y.sessions>0)?Y.sessions:null,fmt:fmtNum},
     newUsers:{label:'新用戶',cur:M.newUsers,prev:(Y&&Y.newUsers>0)?Y.newUsers:null,fmt:fmtNum},
     wherePv:{label:'林果在哪裡 PV',cur:M.wherePv,prev:(Y&&Y.wherePv>0)?Y.wherePv:null,fmt:fmtNum}
   };
   if(M.revReliable&&Y&&Y.revReliable)yoy.ecRev={label:'官網營收',cur:M.ecRev,prev:Y.ecRev,fmt:fmtRev};
-  renderMonthlyCmp('monthly-yoy',yoy,true);
+  renderMonthlyCmp('period-month-yoy',yoy,true);
 
-  renderMonthlyTrend();
-  renderMonthlyChannel(M);
-  renderOrganicSocial(M,P);
-  renderMonthlyInsights(buildMktInsights(M,P,Y));
-  renderMonthlyAdRate();
+  document.getElementById('period-month-badge').textContent=period==='month'?'本月（進行中）':'上月';
+  renderChannelDonut(M,'ch-period-month','ch-period-month-legend');
 }
 
 // 社群自然流量 KPI 卡（Metricool）：粉絲數（月底快照，MoM 比較）、觸及／互動（當月加總）
@@ -1352,14 +1408,14 @@ function renderMonthlyTrend(){
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Space Mono',size:11}}}},scales:{y:{position:'left',ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{color:'rgba(40,66,52,.05)'}},y1:{position:'right',min:0,ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}},x:{ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}}}}});
 }
 
-function renderMonthlyChannel(M){
-  const el=document.getElementById('ch-monthly-channel');if(!el)return;
+function renderChannelDonut(M,chartElId,legendElId){
+  const el=document.getElementById(chartElId);if(!el)return;
   if(el._chartInst)el._chartInst.destroy();
   const data=[['自然搜尋',M.organic],['付費搜尋',M.paidSearch],['直接',M.direct],['付費社群',M.paidSocial],['推薦',M.referral],['KOL',M.kol]].filter(c=>c[1]>0).sort((a,b)=>b[1]-a[1]);
   const colors=['#284234','#A54A1A','#5a8a6e','#8D5531','#CFA294','#b09a88'];
   const total=data.reduce((s,c)=>s+c[1],0)||1;
   el._chartInst=new Chart(el,{type:'doughnut',data:{labels:data.map(c=>c[0]),datasets:[{data:data.map(c=>c[1]),backgroundColor:colors,borderWidth:3,borderColor:'#fff'}]},options:{cutout:'58%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed.toLocaleString()} (${(ctx.parsed/total*100).toFixed(1)}%)`}}}}});
-  document.getElementById('ch-monthly-channel-legend').innerHTML=data.map((c,i)=>`<div class="leg-i"><div class="leg-dot" style="background:${colors[i]}"></div>${c[0]} ${(c[1]/total*100).toFixed(0)}%</div>`).join('');
+  document.getElementById(legendElId).innerHTML=data.map((c,i)=>`<div class="leg-i"><div class="leg-dot" style="background:${colors[i]}"></div>${c[0]} ${(c[1]/total*100).toFixed(0)}%</div>`).join('');
 }
 
 // 規則式洞察：每條觀察都由通用規則從 M/P/Y 算出，每月自動成立，無需手動編寫。
@@ -1724,7 +1780,7 @@ function renderGoalsFeasibility(p,pace){
 }
 
 // ===== Tab switcher（lazy render） =====
-const RENDERED={overview:false,monthly:false,ads:false,revenue:false,social:false,goals:false};
+const RENDERED={overview:false,ads:false,revenue:false,social:false,goals:false};
 function switchTab(tab,btn){
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
   btn.classList.add('active');
@@ -1732,7 +1788,6 @@ function switchTab(tab,btn){
   document.getElementById('panel-'+tab).classList.add('active');
   if(!RENDERED[tab]){
     if(tab==='overview')renderOverview();
-    if(tab==='monthly')renderMonthly();
     if(tab==='ads')renderAds();
     if(tab==='goals')renderGoals();
 
