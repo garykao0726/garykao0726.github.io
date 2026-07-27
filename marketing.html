@@ -85,8 +85,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .ch-pill.good{background:rgba(26,122,74,.1);color:var(--positive)}
 .ch-pill.warn{background:rgba(184,134,11,.12);color:#b8860b}
 .ch-pill.bad{background:rgba(192,57,43,.1);color:var(--negative)}
-.iframe-wrap{width:100%;height:calc(100vh - 180px);min-height:600px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--surface)}
-.iframe-wrap iframe{width:100%;height:100%;border:0;display:block}
 .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
 .leg-i{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace}
 .leg-dot{width:8px;height:8px;border-radius:50%}
@@ -122,7 +120,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <button class="tab active" onclick="switchTab('overview',this)">📊 流量總覽</button>
   <button class="tab" onclick="switchTab('monthly',this)">📈 月度觀察</button>
   <button class="tab" onclick="switchTab('ads',this)">💰 廣告成效</button>
-  <button class="tab" onclick="switchTab('seo',this)">🔍 SEO 監控</button>
   <button class="tab" onclick="switchTab('goals',this)">🎯 年度目標</button>
 </nav>
 
@@ -376,15 +373,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div class="sec-date">依現有 YTD 資料推算全年走向</div>
   </div>
   <div id="goals-feasibility" style="display:flex;flex-direction:column;gap:12px;margin-bottom:1.25rem"></div>
-</div>
-
-<!-- ============ SEO 監控（嵌入 seo.html）============ -->
-<div class="tab-panel" id="panel-seo">
-  <div class="sec-hdr">
-    <div class="sec-title">SEO 監控（嵌入 seo.html）</div>
-    <div class="sec-date"><a href="seo.html" target="_blank" style="color:var(--text-muted);text-decoration:none;font-size:11px">在新分頁打開 →</a></div>
-  </div>
-  <div class="iframe-wrap"><iframe src="seo.html" title="SEO 監控"></iframe></div>
 </div>
 
 </div>
