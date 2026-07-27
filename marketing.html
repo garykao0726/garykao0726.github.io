@@ -366,6 +366,16 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
 
   <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">線下轉換比對品質</div>
+    <div class="sec-date">Meta Dataset Quality API · 實體門市訂單 CAPI</div>
+  </div>
+  <div class="kpi4" id="offlineq-kpi" style="margin-bottom:1rem"></div>
+  <div class="card" id="offlineq-card" style="display:none">
+    <div class="card-hdr"><span class="card-lbl">Meta 建議</span><span class="card-badge">官方回饋</span></div>
+    <div id="offlineq-note" style="font-size:12px;color:var(--text-sub);line-height:1.7"></div>
+  </div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
     <div class="sec-title">新品銷售</div>
     <div class="sec-date" id="newprod-week">—</div>
   </div>
@@ -862,7 +872,9 @@ function applyWeeklyOverrides(d, weeklyRows, monthlyRows) {
 // 5 ga4_paid_social_revenue,6 ga4_roas,7 roas_gap_multiple,
 // 8 ec_sessions,9 ec_revenue,10 ec_orders,11 ec_avg_order,
 // 12 new_product_count,13 new_product_window_days,14 new_product_revenue,15 new_product_units,
-// 16 new_product_top_name,17 new_product_matched_json,18 updated_at
+// 16 new_product_top_name,17 new_product_matched_json,
+// 18 offline_composite_score,19 offline_match_key_score,20 offline_frequency_score,21 offline_freshness_score,22 offline_recommendation,
+// 23 updated_at
 let ROAS_CHECK = null;
 function buildRoasCheck(summaryRows){
   if(!summaryRows||!summaryRows.length){ROAS_CHECK=null;return;}
@@ -880,7 +892,9 @@ function buildRoasCheck(summaryRows){
     ga4Revenue:n(r[5]), ga4Roas:n(r[6]), gapMultiple:r[7]!==''&&r[7]!=null?n(r[7]):null,
     ecRevenue:n(r[9]), ecOrders:n(r[10]),
     newProductCount:n(r[12]), windowDays:n(r[13])||60, newProductRevenue:n(r[14]), newProductUnits:n(r[15]),
-    matched, updatedAt:r[18]
+    matched,
+    offlineComposite:n(r[18]), offlineMatchKey:n(r[19]), offlineFrequency:n(r[20]), offlineFreshness:n(r[21]), offlineRecommendation:r[22]||'',
+    updatedAt:r[23]
   };
 }
 
@@ -895,7 +909,7 @@ async function loadData(){
       loadGviz('行銷週報彙總').catch(() => null)
     ]);
     buildRoasCheck(summaryRows);
-    if(RENDERED.ads){renderRoasCheck();renderNewProducts();}
+    if(RENDERED.ads){renderRoasCheck();renderOfflineQuality();renderNewProducts();}
     // 解析 ERP 廣告費明細 → ERP_AD_MAP[ym]
     ERP_AD_MAP={};
     if(erpRows){erpRows.slice(1).forEach(r=>{
@@ -984,6 +998,7 @@ function renderAds(){
   renderBudget();
   renderAdsSocial();
   renderRoasCheck();
+  renderOfflineQuality();
   renderNewProducts();
 }
 
@@ -1014,6 +1029,33 @@ function renderRoasCheck(){
     cardEl.style.display='';
     const lvl = r.gapMultiple>=3?'落差非常大':r.gapMultiple>=1.5?'落差明顯':'落差在合理範圍';
     noteEl.textContent = `Meta 自報 ROAS（${r.metaRoas.toFixed(2)}x）比 GA4 觀測到的社群通路 ROAS（${r.ga4Roas.toFixed(2)}x）高出 ${r.gapMultiple.toFixed(1)} 倍，${lvl}。Meta 用 7 天點擊/1 天瀏覽的寬鬆歸因窗口，GA4 用最後點擊歸因（較保守），兩者本來就不會相等；落差越大，代表越該以 GA4 這個保守數字做加碼判斷，而非只看 Meta 後台。`;
+  }
+}
+
+// ----- 線下轉換比對品質（來源：Meta Dataset Quality API，實體門市訂單 CAPI 送出後的比對成效）-----
+function renderOfflineQuality(){
+  const kpiEl=document.getElementById('offlineq-kpi');
+  const cardEl=document.getElementById('offlineq-card');
+  const noteEl=document.getElementById('offlineq-note');
+  if(!kpiEl) return;
+  const r=ROAS_CHECK;
+  if(!r||(!r.offlineComposite&&!r.offlineMatchKey)){
+    kpiEl.innerHTML='<div class="cmp-pending" style="grid-column:1/-1">尚無線下轉換比對品質資料，需等下一次週一自動發送後才會出現。</div>';
+    cardEl.style.display='none';
+    return;
+  }
+  const scoreColor=v=>v>=8?'#1a7a4a':v>=6?'#b8860b':'#c0392b';
+  renderKPIs('offlineq-kpi',{
+    '綜合分數':{v:r.offlineComposite.toFixed(1)+'/10',delta:null,vs:'Composite Score',color:scoreColor(r.offlineComposite)},
+    '比對欄位品質':{v:r.offlineMatchKey.toFixed(1)+'/10',delta:null,vs:'Email/電話/姓名等',color:scoreColor(r.offlineMatchKey)},
+    '上傳頻率':{v:r.offlineFrequency.toFixed(1)+'/10',delta:null,vs:'資料回傳頻率',color:scoreColor(r.offlineFrequency)},
+    '資料新鮮度':{v:r.offlineFreshness.toFixed(1)+'/10',delta:null,vs:'即時 vs 延遲',color:scoreColor(r.offlineFreshness)}
+  });
+  if(r.offlineRecommendation){
+    cardEl.style.display='';
+    noteEl.textContent=r.offlineRecommendation;
+  }else{
+    cardEl.style.display='none';
   }
 }
 
