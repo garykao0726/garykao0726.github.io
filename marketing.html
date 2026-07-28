@@ -377,6 +377,26 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
 
   <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">月度線上 vs 線下轉換比例</div>
+    <div class="sec-date" id="monthlysplit-period">月度數據 · 官網 vs 四門市</div>
+  </div>
+  <div class="card" id="monthlysplit-card" style="display:none">
+    <div class="card-hdr"><span class="card-lbl">月度營收拆分</span><span class="card-badge">近期完整月</span></div>
+    <div class="ch240"><canvas id="ch-monthly-channelsplit"></canvas></div>
+    <div id="monthlysplit-note" style="font-size:12px;color:var(--text-sub);line-height:1.7;margin-top:8px"></div>
+  </div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">廣告投放對新客／回購佔比的影響</div>
+    <div class="sec-date" id="adnewcust-period">月度營運表 · 全通路成交筆數</div>
+  </div>
+  <div class="card" id="adnewcust-card" style="display:none">
+    <div class="card-hdr"><span class="card-lbl">廣告花費 vs 新客佔比</span><span class="card-badge">逐月比較</span></div>
+    <div class="ch240"><canvas id="ch-ad-newcust"></canvas></div>
+    <div id="adnewcust-note" style="font-size:12px;color:var(--text-sub);line-height:1.7;margin-top:8px"></div>
+  </div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
     <div class="sec-title">線下轉換比對品質</div>
     <div class="sec-date">Meta Dataset Quality API · 實體門市訂單 CAPI</div>
   </div>
@@ -917,15 +937,24 @@ function buildRoasCheck(summaryRows){
 async function loadData(){
   const banner=document.getElementById('data-status-banner');
   try{
-    const [rows, weeklyRows, monthlyRows, erpRows, summaryRows] = await Promise.all([
+    const [rows, weeklyRows, monthlyRows, erpRows, summaryRows, mopsRows] = await Promise.all([
       loadGviz('行銷儀錶板數據'),
       loadGviz('週報數據').catch(() => null),
       loadGviz('月度數據').catch(() => null),
       loadGviz('行銷費用月表').catch(() => null),
-      loadGviz('行銷週報彙總').catch(() => null)
+      loadGviz('行銷週報彙總').catch(() => null),
+      loadGviz('月度營運').catch(() => null)
     ]);
     buildRoasCheck(summaryRows);
-    if(RENDERED.ads){renderRoasCheck();renderChannelSplit();renderOfflineQuality();renderNewProducts();}
+    // 全通路（四門市+官網）每月新客/回購成交筆數，跟 operation.html 讀同一張「月度營運」表、同樣的全通路加總邏輯
+    MOPS_MONTHLY={};
+    if(mopsRows){mopsRows.forEach(r=>{
+      const yr=Number(r[0]),mo=Number(r[1]);if(!yr||!mo)return;
+      const ym=yr+'/'+String(mo).padStart(2,'0');
+      const e=MOPS_MONTHLY[ym]||(MOPS_MONTHLY[ym]={newTxn:0,oldTxn:0});
+      e.newTxn+=Number(r[8])||0; e.oldTxn+=Number(r[9])||0;
+    });}
+    if(RENDERED.ads){renderRoasCheck();renderChannelSplit();renderMonthlySplit();renderAdNewCust();renderOfflineQuality();renderNewProducts();}
     // 解析 ERP 廣告費明細 → ERP_AD_MAP[ym]
     // 年月欄位是 Sheet 的日期型別，gviz 只回傳 c.v 不是 c.f，抓到的是 "Date(2026,0,1)" 這種原始字串，
     // 不能直接當 key 用（跟 M.ym 的 "2026/01" 格式對不上，導致查表永遠 miss、每個月都顯示「無ERP」）。
@@ -1019,6 +1048,8 @@ function renderAds(){
   renderAdsSocial();
   renderRoasCheck();
   renderChannelSplit();
+  renderMonthlySplit();
+  renderAdNewCust();
   renderOfflineQuality();
   renderNewProducts();
 }
@@ -1080,6 +1111,83 @@ function renderChannelSplit(){
   noteEl.textContent=ratio>0&&ratio<1
     ? `本週線下（四門市實體通路）營收是線上（官網）的 ${(1/ratio).toFixed(1)} 倍。林果以實體門市為主力通路，官網訂單量較小但客單價可能不同，兩者用途不同（門市看到貨試穿、官網做全台/海外覆蓋），不是直接競爭關係。`
     : `本週線上（官網）營收是線下（四門市）的 ${ratio.toFixed(1)} 倍。`;
+}
+
+// ----- 月度線上 vs 線下轉換比例（來源：「月度數據」ERP 各店月營收，官網=線上、其餘四店加總=線下）-----
+function renderMonthlySplit(){
+  const cardEl=document.getElementById('monthlysplit-card');
+  const periodEl=document.getElementById('monthlysplit-period');
+  if(!cardEl) return;
+  const keys=MONTHLY_KEYS.filter(k=>MONTHLY_TOTAL_REV[k]!=null&&MONTHLY_EC_REV_OVERRIDE[k]!=null).slice(-12);
+  if(!keys.length){
+    cardEl.style.display='none';
+    if(periodEl)periodEl.textContent='尚無月度營收拆分資料';
+    return;
+  }
+  cardEl.style.display='';
+  if(periodEl)periodEl.textContent=(+keys[0].split('/')[1])+'月–'+(+keys[keys.length-1].split('/')[1])+'月（月度數據）';
+  const labels=keys.map(k=>{const[y,m]=k.split('/');return(y==='2026'?'':y.slice(2)+'/')+(+m)+'月';});
+  const online=keys.map(k=>MONTHLY_EC_REV_OVERRIDE[k]||0);
+  const offline=keys.map(k=>Math.max(0,(MONTHLY_TOTAL_REV[k]||0)-(MONTHLY_EC_REV_OVERRIDE[k]||0)));
+  const onlinePct=keys.map((k,i)=>{const t=online[i]+offline[i];return t>0?Math.round(online[i]/t*1000)/10:null;});
+  const el=document.getElementById('ch-monthly-channelsplit');
+  if(el._chartInst)el._chartInst.destroy();
+  el._chartInst=new Chart(el,{data:{labels,datasets:[
+    {type:'bar',label:'線上（官網）',data:online,backgroundColor:'#284234',yAxisID:'y',stack:'rev'},
+    {type:'bar',label:'線下（四門市）',data:offline,backgroundColor:'#A54A1A',yAxisID:'y',stack:'rev'},
+    {type:'line',label:'線上佔比%',data:onlinePct,borderColor:'#8D5531',backgroundColor:'#8D5531',tension:.3,pointRadius:4,borderWidth:2,yAxisID:'y1',spanGaps:true}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Space Mono',size:11}}}},scales:{
+    y:{stacked:true,position:'left',ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{color:'rgba(40,66,52,.05)'}},
+    y1:{position:'right',min:0,max:100,ticks:{font:{family:'Space Mono',size:10},color:'#b09a88',callback:v=>v+'%'},grid:{display:false}},
+    x:{stacked:true,ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}}
+  }}});
+  const noteEl=document.getElementById('monthlysplit-note');
+  const lastIdx=keys.length-1,lastPct=onlinePct[lastIdx],prevPct=lastIdx>0?onlinePct[lastIdx-1]:null;
+  if(noteEl){
+    const trend=prevPct!=null&&lastPct!=null?(lastPct>prevPct?`比上月上升 ${(lastPct-prevPct).toFixed(1)}pp`:lastPct<prevPct?`比上月下降 ${(prevPct-lastPct).toFixed(1)}pp`:'與上月持平'):'';
+    noteEl.textContent=lastPct!=null?`${labels[lastIdx]}線上佔比 ${lastPct.toFixed(1)}%${trend?'，'+trend:''}。林果以實體門市為主力通路，官網佔比長期偏低是通路結構本身如此，不代表行銷成效不好。`:'';
+  }
+}
+
+// ----- 廣告投放對新客/回購佔比的影響（來源：「月度營運」表 全通路新客/回購成交筆數，跟月廣告花費對照）-----
+function renderAdNewCust(){
+  const cardEl=document.getElementById('adnewcust-card');
+  const periodEl=document.getElementById('adnewcust-period');
+  if(!cardEl) return;
+  const keys=MONTHLY_KEYS.filter(k=>MOPS_MONTHLY[k]&&(MOPS_MONTHLY[k].newTxn+MOPS_MONTHLY[k].oldTxn)>0).slice(-12);
+  if(!keys.length){
+    cardEl.style.display='none';
+    if(periodEl)periodEl.textContent='尚無新舊客資料';
+    return;
+  }
+  cardEl.style.display='';
+  if(periodEl)periodEl.textContent=(+keys[0].split('/')[1])+'月–'+(+keys[keys.length-1].split('/')[1])+'月（月度營運表）';
+  const labels=keys.map(k=>{const[y,m]=k.split('/');return(y==='2026'?'':y.slice(2)+'/')+(+m)+'月';});
+  const spend=keys.map(k=>MONTHLY[k]?MONTHLY[k].adSpendRaw:0);
+  const newPct=keys.map(k=>{const e=MOPS_MONTHLY[k],t=e.newTxn+e.oldTxn;return t>0?Math.round(e.newTxn/t*1000)/10:null;});
+  const el=document.getElementById('ch-ad-newcust');
+  if(el._chartInst)el._chartInst.destroy();
+  el._chartInst=new Chart(el,{data:{labels,datasets:[
+    {type:'bar',label:'廣告花費',data:spend,backgroundColor:'rgba(165,74,26,.55)',yAxisID:'y',order:2},
+    {type:'line',label:'新客佔成交%',data:newPct,borderColor:'#284234',backgroundColor:'#284234',tension:.3,pointRadius:4,borderWidth:2,yAxisID:'y1',order:1,spanGaps:true}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Space Mono',size:11}}}},scales:{
+    y:{position:'left',ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{color:'rgba(40,66,52,.05)'}},
+    y1:{position:'right',min:0,ticks:{font:{family:'Space Mono',size:10},color:'#b09a88',callback:v=>v+'%'},grid:{display:false}},
+    x:{ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}}
+  }}});
+  const noteEl=document.getElementById('adnewcust-note');
+  const lastIdx=keys.length-1,lastPct=newPct[lastIdx],lastSpend=spend[lastIdx];
+  const prevPct=lastIdx>0?newPct[lastIdx-1]:null,prevSpend=lastIdx>0?spend[lastIdx-1]:null;
+  if(noteEl){
+    let trend='';
+    if(prevPct!=null&&prevSpend!=null&&lastPct!=null){
+      const spendUp=lastSpend>prevSpend,pctUp=lastPct>prevPct;
+      if(spendUp&&pctUp)trend='廣告花費與新客佔比同步上升，方向一致，但這是同期觀察不是因果證明，還需搭配其他指標判斷。';
+      else if(!spendUp&&!pctUp)trend='廣告花費與新客佔比同步下降。';
+      else trend='廣告花費與新客佔比走勢不同步，兩者近期看不出明顯連動，新客佔比可能更多受季節性/促案檔期影響。';
+    }
+    noteEl.textContent=lastPct!=null?`${labels[lastIdx]}新客佔成交 ${lastPct.toFixed(1)}%，廣告花費 NT$${Math.round(lastSpend).toLocaleString()}。${trend}`:'';
+  }
 }
 
 function renderOfflineQuality(){
@@ -1299,6 +1407,7 @@ const _mf=v=>Math.round(v).toLocaleString();
 // MONTHLY_EC_REV_OVERRIDE = 月度數據「官網」欄的 ERP 電商月營收，供 GA4 未完整月份補入
 let MONTHLY_TOTAL_REV={},MONTHLY_EC_REV_OVERRIDE={};
 let ERP_AD_MAP={}; // {ym: {shoot,media,print,event,pr,nonMedia}}
+let MOPS_MONTHLY={}; // {ym: {newTxn,oldTxn}} 全通路（四門市+官網）月度新客/回購成交筆數
 function buildMonthlyTotalRev(monthlyRows){
   if(!monthlyRows||!monthlyRows.length)return;
   const n=v=>Number(v)||0,byM={},ecM={};
