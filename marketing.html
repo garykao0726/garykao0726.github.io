@@ -387,6 +387,17 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
 
   <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">四店線下轉換分店比較</div>
+    <div class="sec-date" id="storesplit-period">月度數據 · 各店 ERP 月營收</div>
+  </div>
+  <div class="card" id="storesplit-card" style="display:none">
+    <div class="card-hdr"><span class="card-lbl">各店月營收</span><span class="card-badge">近期完整月</span></div>
+    <div class="ch240"><canvas id="ch-store-split"></canvas></div>
+    <div style="overflow-x:auto;margin-top:10px"><table class="ctbl" id="tbl-store-split"></table></div>
+    <div id="storesplit-note" style="font-size:12px;color:var(--text-sub);line-height:1.7;margin-top:8px"></div>
+  </div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
     <div class="sec-title">廣告投放對新客／回購佔比的影響</div>
     <div class="sec-date" id="adnewcust-period">月度營運表 · 全通路成交筆數</div>
   </div>
@@ -954,7 +965,7 @@ async function loadData(){
       const e=MOPS_MONTHLY[ym]||(MOPS_MONTHLY[ym]={newTxn:0,oldTxn:0});
       e.newTxn+=Number(r[8])||0; e.oldTxn+=Number(r[9])||0;
     });}
-    if(RENDERED.ads){renderRoasCheck();renderChannelSplit();renderMonthlySplit();renderAdNewCust();renderOfflineQuality();renderNewProducts();}
+    if(RENDERED.ads){renderRoasCheck();renderChannelSplit();renderMonthlySplit();renderStoreSplit();renderAdNewCust();renderOfflineQuality();renderNewProducts();}
     // 解析 ERP 廣告費明細 → ERP_AD_MAP[ym]
     // 年月欄位是 Sheet 的日期型別，gviz 只回傳 c.v 不是 c.f，抓到的是 "Date(2026,0,1)" 這種原始字串，
     // 不能直接當 key 用（跟 M.ym 的 "2026/01" 格式對不上，導致查表永遠 miss、每個月都顯示「無ERP」）。
@@ -1049,6 +1060,7 @@ function renderAds(){
   renderRoasCheck();
   renderChannelSplit();
   renderMonthlySplit();
+  renderStoreSplit();
   renderAdNewCust();
   renderOfflineQuality();
   renderNewProducts();
@@ -1146,6 +1158,46 @@ function renderMonthlySplit(){
   if(noteEl){
     const trend=prevPct!=null&&lastPct!=null?(lastPct>prevPct?`比上月上升 ${(lastPct-prevPct).toFixed(1)}pp`:lastPct<prevPct?`比上月下降 ${(prevPct-lastPct).toFixed(1)}pp`:'與上月持平'):'';
     noteEl.textContent=lastPct!=null?`${labels[lastIdx]}線上佔比 ${lastPct.toFixed(1)}%${trend?'，'+trend:''}。林果以實體門市為主力通路，官網佔比長期偏低是通路結構本身如此，不代表行銷成效不好。`:'';
+  }
+}
+
+// ----- 四店線下轉換分店比較（來源：「月度數據」ERP 各店月營收，中山/松菸/台中/東門）-----
+// ⚠️ 只能做到月度：Shopline POS 同步進來的訂單（created_from=admin_openapi）本身沒有帶店別欄位
+// （查過 default_warehouse_id/order_source/ref_order_id 都是四店共用同一個值，查不出是哪一間店），
+// 所以「線上vs線下轉換」那組週資料沒辦法再往下拆四店；只有 ERP 月報表本來就是分店填寫，才拆得出來。
+function renderStoreSplit(){
+  const cardEl=document.getElementById('storesplit-card');
+  const periodEl=document.getElementById('storesplit-period');
+  const tblEl=document.getElementById('tbl-store-split');
+  if(!cardEl) return;
+  const keys=MONTHLY_KEYS.filter(k=>MONTHLY_BY_STORE[k]&&Object.keys(MONTHLY_BY_STORE[k]).length).slice(-12);
+  if(!keys.length){
+    cardEl.style.display='none';
+    if(periodEl)periodEl.textContent='尚無分店月營收資料';
+    return;
+  }
+  cardEl.style.display='';
+  if(periodEl)periodEl.textContent=(+keys[0].split('/')[1])+'月–'+(+keys[keys.length-1].split('/')[1])+'月（月度數據，僅月度、Shopline週資料無店別欄位無法再拆）';
+  const labels=keys.map(k=>{const[y,m]=k.split('/');return(y==='2026'?'':y.slice(2)+'/')+(+m)+'月';});
+  const el=document.getElementById('ch-store-split');
+  if(el._chartInst)el._chartInst.destroy();
+  el._chartInst=new Chart(el,{data:{labels,datasets:STORES4.map(s=>({
+    type:'bar',label:s,data:keys.map(k=>(MONTHLY_BY_STORE[k]&&MONTHLY_BY_STORE[k][s])||0),backgroundColor:STORE_COLORS4[s],yAxisID:'y',stack:'rev'
+  }))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Space Mono',size:11}}}},scales:{
+    y:{stacked:true,position:'left',ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{color:'rgba(40,66,52,.05)'}},
+    x:{stacked:true,ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}}
+  }}});
+  const lastK=keys[keys.length-1],lastM=MONTHLY_BY_STORE[lastK]||{};
+  const lastTotal=STORES4.reduce((s,st)=>s+(lastM[st]||0),0)||1;
+  tblEl.innerHTML=`<thead><tr><th>月份</th>${STORES4.map(s=>`<th>${s}</th>`).join('')}<th>四店合計</th></tr></thead><tbody>${keys.map(k=>{
+    const m=MONTHLY_BY_STORE[k]||{};const total=STORES4.reduce((s,st)=>s+(m[st]||0),0);
+    return `<tr><td>${k}</td>${STORES4.map(s=>`<td>${m[s]?'NT$'+Math.round(m[s]).toLocaleString():'—'}</td>`).join('')}<td><b>NT$${Math.round(total).toLocaleString()}</b></td></tr>`;
+  }).join('')}</tbody>`;
+  const noteEl=document.getElementById('storesplit-note');
+  if(noteEl){
+    const ranked=STORES4.map(s=>({s,v:lastM[s]||0,pct:Math.round((lastM[s]||0)/lastTotal*1000)/10})).sort((a,b)=>b.v-a.v);
+    const top=ranked[0],bottom=ranked[ranked.length-1];
+    noteEl.textContent=`${labels[keys.length-1]}四店線下營收合計 NT$${Math.round(lastTotal).toLocaleString()}，其中${top.s}最高（${top.pct}%），${bottom.s}最低（${bottom.pct}%）。此拆分來源是 ERP 月度數據，只能做到月度；Shopline 週報那組「線上vs線下轉換」資料（見上方）目前查不到店別欄位，沒辦法再往下拆四店週資料。`;
   }
 }
 
@@ -1405,20 +1457,23 @@ const _mf=v=>Math.round(v).toLocaleString();
 
 // 月度全通路營收（從 月度數據 tab，所有門市+官網加總）
 // MONTHLY_EC_REV_OVERRIDE = 月度數據「官網」欄的 ERP 電商月營收，供 GA4 未完整月份補入
-let MONTHLY_TOTAL_REV={},MONTHLY_EC_REV_OVERRIDE={};
+let MONTHLY_TOTAL_REV={},MONTHLY_EC_REV_OVERRIDE={},MONTHLY_BY_STORE={};
 let ERP_AD_MAP={}; // {ym: {shoot,media,print,event,pr,nonMedia}}
 let MOPS_MONTHLY={}; // {ym: {newTxn,oldTxn}} 全通路（四門市+官網）月度新客/回購成交筆數
+const STORES4=['中山店','松菸店','台中店','東門店']; // 跟 finance.html/operation.html 同一套四店命名
+const STORE_COLORS4={'中山店':'#378ADD','松菸店':'#1D9E75','台中店':'#EF9F27','東門店':'#D4537E'}; // 對齊 finance.html STORE_COLORS
 function buildMonthlyTotalRev(monthlyRows){
   if(!monthlyRows||!monthlyRows.length)return;
-  const n=v=>Number(v)||0,byM={},ecM={};
+  const n=v=>Number(v)||0,byM={},ecM={},byStore={};
   monthlyRows.forEach(r=>{
     const y=String(r[0]||'').trim(),m=String(r[1]||'').trim(),store=String(r[2]||'').trim(),rev=n(r[3]);
     if(!y||!m||!rev)return;
     const ym=y+'/'+m.padStart(2,'0');
     byM[ym]=(byM[ym]||0)+rev;
     if(store==='官網')ecM[ym]=(ecM[ym]||0)+rev; // ERP 電商月營收
+    if(STORES4.includes(store)){const e=byStore[ym]||(byStore[ym]={});e[store]=(e[store]||0)+rev;}
   });
-  MONTHLY_TOTAL_REV=byM;MONTHLY_EC_REV_OVERRIDE=ecM;
+  MONTHLY_TOTAL_REV=byM;MONTHLY_EC_REV_OVERRIDE=ecM;MONTHLY_BY_STORE=byStore;
 }
 
 // 把每日 row 依 YYYY/MM 彙整成各月份指標。完整月份 = 非「進行中當月」且 ≥20 天。
