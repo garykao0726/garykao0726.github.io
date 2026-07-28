@@ -366,6 +366,17 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
 
   <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">線上 vs 線下轉換</div>
+    <div class="sec-date">Shopline 實際成交 · 官網 vs 四門市</div>
+  </div>
+  <div class="kpi3" id="channelsplit-kpi" style="margin-bottom:1rem"></div>
+  <div class="card" id="channelsplit-card" style="display:none">
+    <div class="card-hdr"><span class="card-lbl">營收佔比</span><span class="card-badge">本週實際成交</span></div>
+    <div id="channelsplit-bar" style="display:flex;height:28px;border-radius:6px;overflow:hidden;margin-bottom:10px"></div>
+    <div id="channelsplit-note" style="font-size:12px;color:var(--text-sub);line-height:1.7"></div>
+  </div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
     <div class="sec-title">線下轉換比對品質</div>
     <div class="sec-date">Meta Dataset Quality API · 實體門市訂單 CAPI</div>
   </div>
@@ -874,7 +885,8 @@ function applyWeeklyOverrides(d, weeklyRows, monthlyRows) {
 // 12 new_product_count,13 new_product_window_days,14 new_product_revenue,15 new_product_units,
 // 16 new_product_top_name,17 new_product_matched_json,
 // 18 offline_composite_score,19 offline_match_key_score,20 offline_frequency_score,21 offline_freshness_score,22 offline_recommendation,
-// 23 updated_at
+// 23 offline_store_revenue,24 offline_store_orders,
+// 25 updated_at
 let ROAS_CHECK = null;
 function buildRoasCheck(summaryRows){
   if(!summaryRows||!summaryRows.length){ROAS_CHECK=null;return;}
@@ -886,6 +898,8 @@ function buildRoasCheck(summaryRows){
   try{matched=JSON.parse(r[17]||'[]');}catch(e){matched=[];}
   const ws=parseDate_(r[0]),we=parseDate_(r[1]);
   const weekLabel=ws&&we?`${ws.getMonth()+1}/${ws.getDate()} – ${we.getMonth()+1}/${we.getDate()}`:'—';
+  const onlineRev=n(r[9]), offlineRev=n(r[23]);
+  const channelTotal=onlineRev+offlineRev;
   ROAS_CHECK={
     weekLabel,
     metaSpend:n(r[2]), metaRoas:n(r[3]), metaPurchaseValue:n(r[4]),
@@ -894,7 +908,9 @@ function buildRoasCheck(summaryRows){
     newProductCount:n(r[12]), windowDays:n(r[13])||60, newProductRevenue:n(r[14]), newProductUnits:n(r[15]),
     matched,
     offlineComposite:n(r[18]), offlineMatchKey:n(r[19]), offlineFrequency:n(r[20]), offlineFreshness:n(r[21]), offlineRecommendation:r[22]||'',
-    updatedAt:r[23]
+    offlineStoreRevenue:offlineRev, offlineStoreOrders:n(r[24]),
+    onlineVsOfflinePct:channelTotal>0?Math.round(onlineRev/channelTotal*1000)/10:null,
+    updatedAt:r[25]
   };
 }
 
@@ -909,7 +925,7 @@ async function loadData(){
       loadGviz('行銷週報彙總').catch(() => null)
     ]);
     buildRoasCheck(summaryRows);
-    if(RENDERED.ads){renderRoasCheck();renderOfflineQuality();renderNewProducts();}
+    if(RENDERED.ads){renderRoasCheck();renderChannelSplit();renderOfflineQuality();renderNewProducts();}
     // 解析 ERP 廣告費明細 → ERP_AD_MAP[ym]
     // 年月欄位是 Sheet 的日期型別，gviz 只回傳 c.v 不是 c.f，抓到的是 "Date(2026,0,1)" 這種原始字串，
     // 不能直接當 key 用（跟 M.ym 的 "2026/01" 格式對不上，導致查表永遠 miss、每個月都顯示「無ERP」）。
@@ -1002,6 +1018,7 @@ function renderAds(){
   renderBudget();
   renderAdsSocial();
   renderRoasCheck();
+  renderChannelSplit();
   renderOfflineQuality();
   renderNewProducts();
 }
@@ -1037,6 +1054,34 @@ function renderRoasCheck(){
 }
 
 // ----- 線下轉換比對品質（來源：Meta Dataset Quality API，實體門市訂單 CAPI 送出後的比對成效）-----
+// ----- 線上 vs 線下轉換（來源：「行銷週報彙總」，Shopline 官網 vs 四門市 POS 本週實際成交）-----
+function renderChannelSplit(){
+  const kpiEl=document.getElementById('channelsplit-kpi');
+  const cardEl=document.getElementById('channelsplit-card');
+  const barEl=document.getElementById('channelsplit-bar');
+  const noteEl=document.getElementById('channelsplit-note');
+  if(!kpiEl) return;
+  const r=ROAS_CHECK;
+  if(!r||r.onlineVsOfflinePct===null){
+    kpiEl.innerHTML='<div class="cmp-pending" style="grid-column:1/-1">尚無線上/線下轉換比例資料，需等下一次週一自動發送後才會出現。</div>';
+    cardEl.style.display='none';
+    return;
+  }
+  const onlinePct=r.onlineVsOfflinePct, offlinePct=Math.round((100-onlinePct)*10)/10;
+  const fmtRevLocal=v=>'NT$'+Math.round(v).toLocaleString();
+  renderKPIs('channelsplit-kpi',{
+    '線上（官網）':{v:fmtRevLocal(r.ecRevenue),delta:null,vs:r.ecOrders+' 筆訂單',color:'#284234'},
+    '線下（四門市）':{v:fmtRevLocal(r.offlineStoreRevenue),delta:null,vs:r.offlineStoreOrders+' 筆訂單',color:'#A54A1A'},
+    '線上佔比':{v:onlinePct.toFixed(1)+'%',delta:null,vs:'線下 '+offlinePct.toFixed(1)+'%',color:'#8D5531'}
+  });
+  cardEl.style.display='';
+  barEl.innerHTML=`<div style="width:${onlinePct}%;background:#284234;display:flex;align-items:center;justify-content:center;color:#E2CEB9;font-size:11px;font-family:'Space Mono',monospace;min-width:${onlinePct>8?'auto':'0'}">${onlinePct>8?onlinePct.toFixed(0)+'%':''}</div><div style="width:${offlinePct}%;background:#A54A1A;display:flex;align-items:center;justify-content:center;color:#F5EDE3;font-size:11px;font-family:'Space Mono',monospace;min-width:${offlinePct>8?'auto':'0'}">${offlinePct>8?offlinePct.toFixed(0)+'%':''}</div>`;
+  const ratio=r.offlineStoreRevenue>0?(r.ecRevenue/r.offlineStoreRevenue):0;
+  noteEl.textContent=ratio>0&&ratio<1
+    ? `本週線下（四門市實體通路）營收是線上（官網）的 ${(1/ratio).toFixed(1)} 倍。林果以實體門市為主力通路，官網訂單量較小但客單價可能不同，兩者用途不同（門市看到貨試穿、官網做全台/海外覆蓋），不是直接競爭關係。`
+    : `本週線上（官網）營收是線下（四門市）的 ${ratio.toFixed(1)} 倍。`;
+}
+
 function renderOfflineQuality(){
   const kpiEl=document.getElementById('offlineq-kpi');
   const cardEl=document.getElementById('offlineq-card');
