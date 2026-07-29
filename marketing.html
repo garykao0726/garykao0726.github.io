@@ -270,6 +270,11 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
 <!-- ============ 廣告成效 ============ -->
 <div class="tab-panel" id="panel-ads">
+  <div class="card" id="healthcheck-card" style="display:none;margin-bottom:1.25rem">
+    <div class="card-hdr"><span class="card-lbl" id="healthcheck-title">資料健康度檢查</span><span class="card-badge">每次出報告自動重跑</span></div>
+    <div id="healthcheck-body" style="font-size:12px;line-height:1.8"></div>
+  </div>
+
   <div class="sec-hdr">
     <div class="sec-title">廣告投放總覽</div>
     <div class="sec-date">本週</div>
@@ -363,6 +368,16 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <div class="card" id="roascheck-card" style="display:none">
     <div class="card-hdr"><span class="card-lbl">落差解讀</span><span class="card-badge">自動判讀</span></div>
     <div id="roascheck-note" style="font-size:12px;color:var(--text-sub);line-height:1.7"></div>
+  </div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">廣告花費 vs 真實總營收 趨勢</div>
+    <div class="sec-date" id="spendreal-period">不受歸因模型偏誤影響的參考指標</div>
+  </div>
+  <div class="card" id="spendreal-card" style="display:none">
+    <div class="card-hdr"><span class="card-lbl">花費與真實線上營收是否同向</span><span class="card-badge">近期完整月</span></div>
+    <div class="ch240"><canvas id="ch-spend-real"></canvas></div>
+    <div id="spendreal-note" style="font-size:12px;color:var(--text-sub);line-height:1.7;margin-top:8px"></div>
   </div>
 
   <div class="sec-hdr" style="margin-top:1.75rem">
@@ -909,15 +924,17 @@ function applyWeeklyOverrides(d, weeklyRows, monthlyRows) {
   }
 }
 
-// 「行銷週報彙總」欄位對照（0-indexed，跟 GAS WEEKLY_SUMMARY_HEADERS 順序一致）
+// 「行銷週報彙總」欄位對照（0-indexed，跟 GAS WEEKLY_SUMMARY_HEADERS 順序一致，2026-07-29 補 meta_offline/blended + health）
 // 0 week_start,1 week_end,2 meta_spend,3 meta_roas,4 meta_purchase_value,
-// 5 ga4_paid_social_revenue,6 ga4_roas,7 roas_gap_multiple,
-// 8 ec_sessions,9 ec_revenue,10 ec_orders,11 ec_avg_order,
-// 12 new_product_count,13 new_product_window_days,14 new_product_revenue,15 new_product_units,
-// 16 new_product_top_name,17 new_product_matched_json,
-// 18 offline_composite_score,19 offline_match_key_score,20 offline_frequency_score,21 offline_freshness_score,22 offline_recommendation,
-// 23 offline_store_revenue,24 offline_store_orders,
-// 25 updated_at
+// 5 meta_offline_purchases,6 meta_offline_value,7 meta_offline_roas,8 meta_blended_value,9 meta_blended_roas,
+// 10 ga4_paid_social_revenue,11 ga4_roas,12 roas_gap_multiple,
+// 13 ec_sessions,14 ec_revenue,15 ec_orders,16 ec_avg_order,
+// 17 new_product_count,18 new_product_window_days,19 new_product_revenue,20 new_product_units,
+// 21 new_product_top_name,22 new_product_matched_json,
+// 23 offline_composite_score,24 offline_match_key_score,25 offline_frequency_score,26 offline_freshness_score,27 offline_recommendation,
+// 28 offline_store_revenue,29 offline_store_orders,
+// 30 health_status,31 health_flags_json,
+// 32 updated_at
 let ROAS_CHECK = null;
 function buildRoasCheck(summaryRows){
   if(!summaryRows||!summaryRows.length){ROAS_CHECK=null;return;}
@@ -926,22 +943,26 @@ function buildRoasCheck(summaryRows){
   const r=rows[rows.length-1];
   const n=v=>Number(v)||0;
   let matched=[];
-  try{matched=JSON.parse(r[17]||'[]');}catch(e){matched=[];}
+  try{matched=JSON.parse(r[22]||'[]');}catch(e){matched=[];}
+  let healthFlags=[];
+  try{healthFlags=JSON.parse(r[31]||'[]');}catch(e){healthFlags=[];}
   const ws=parseDate_(r[0]),we=parseDate_(r[1]);
   const weekLabel=ws&&we?`${ws.getMonth()+1}/${ws.getDate()} – ${we.getMonth()+1}/${we.getDate()}`:'—';
-  const onlineRev=n(r[9]), offlineRev=n(r[23]);
+  const onlineRev=n(r[14]), offlineRev=n(r[28]);
   const channelTotal=onlineRev+offlineRev;
   ROAS_CHECK={
     weekLabel,
     metaSpend:n(r[2]), metaRoas:n(r[3]), metaPurchaseValue:n(r[4]),
-    ga4Revenue:n(r[5]), ga4Roas:n(r[6]), gapMultiple:r[7]!==''&&r[7]!=null?n(r[7]):null,
-    ecRevenue:n(r[9]), ecOrders:n(r[10]),
-    newProductCount:n(r[12]), windowDays:n(r[13])||60, newProductRevenue:n(r[14]), newProductUnits:n(r[15]),
+    metaOfflinePurchases:n(r[5]), metaOfflineValue:n(r[6]), metaOfflineRoas:n(r[7]), metaBlendedValue:n(r[8]), metaBlendedRoas:n(r[9]),
+    ga4Revenue:n(r[10]), ga4Roas:n(r[11]), gapMultiple:r[12]!==''&&r[12]!=null?n(r[12]):null,
+    ecRevenue:n(r[14]), ecOrders:n(r[15]),
+    newProductCount:n(r[17]), windowDays:n(r[18])||60, newProductRevenue:n(r[19]), newProductUnits:n(r[20]),
     matched,
-    offlineComposite:n(r[18]), offlineMatchKey:n(r[19]), offlineFrequency:n(r[20]), offlineFreshness:n(r[21]), offlineRecommendation:r[22]||'',
-    offlineStoreRevenue:offlineRev, offlineStoreOrders:n(r[24]),
+    offlineComposite:n(r[23]), offlineMatchKey:n(r[24]), offlineFrequency:n(r[25]), offlineFreshness:n(r[26]), offlineRecommendation:r[27]||'',
+    offlineStoreRevenue:offlineRev, offlineStoreOrders:n(r[29]),
     onlineVsOfflinePct:channelTotal>0?Math.round(onlineRev/channelTotal*1000)/10:null,
-    updatedAt:r[25]
+    healthStatus:r[30]||'ok', healthFlags,
+    updatedAt:r[32]
   };
 }
 
@@ -965,7 +986,7 @@ async function loadData(){
       const e=MOPS_MONTHLY[ym]||(MOPS_MONTHLY[ym]={newTxn:0,oldTxn:0});
       e.newTxn+=Number(r[8])||0; e.oldTxn+=Number(r[9])||0;
     });}
-    if(RENDERED.ads){renderRoasCheck();renderChannelSplit();renderMonthlySplit();renderStoreSplit();renderAdNewCust();renderOfflineQuality();renderNewProducts();}
+    if(RENDERED.ads){renderHealthCheck();renderRoasCheck();renderChannelSplit();renderMonthlySplit();renderStoreSplit();renderAdNewCust();renderOfflineQuality();renderNewProducts();renderSpendVsRealRevenue();}
     // 解析 ERP 廣告費明細 → ERP_AD_MAP[ym]
     // 年月欄位是 Sheet 的日期型別，gviz 只回傳 c.v 不是 c.f，抓到的是 "Date(2026,0,1)" 這種原始字串，
     // 不能直接當 key 用（跟 M.ym 的 "2026/01" 格式對不上，導致查表永遠 miss、每個月都顯示「無ERP」）。
@@ -1054,6 +1075,7 @@ function renderAds(){
 
   new Chart(document.getElementById('ch-ads-trend'),{type:'bar',data:{labels:MOCK.ads.trend.labels,datasets:[{label:'花費 (千)',data:MOCK.ads.trend.spend,backgroundColor:'rgba(165,74,26,.7)',yAxisID:'y'},{label:'ROAS',data:MOCK.ads.trend.roas,type:'line',borderColor:'#284234',backgroundColor:'#284234',tension:.3,yAxisID:'y1',pointRadius:5,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Space Mono',size:11}}}},scales:{y:{position:'left',ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{color:'rgba(40,66,52,.05)'}},y1:{position:'right',ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false},min:0,suggestedMax:Math.max(6,Math.ceil(Math.max(...MOCK.ads.trend.roas)*1.15))},x:{ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}}}}});
 
+  renderHealthCheck();
   renderAdMonth();
   renderBudget();
   renderAdsSocial();
@@ -1064,9 +1086,64 @@ function renderAds(){
   renderAdNewCust();
   renderOfflineQuality();
   renderNewProducts();
+  renderSpendVsRealRevenue();
 }
 
 // ----- GA4 vs Meta ROAS 交叉驗證（來源：「行銷週報彙總」，週一自動更新）-----
+// ----- 資料健康度檢查（來源：「行銷週報彙總」health_status/health_flags_json，GAS 每次出報告自動重跑）-----
+// Gary 2026-07-29 要求：數字之間差太多沒辦法判斷，要有機制每次確認完再重複查驗，不能靠人工事後發現。
+function renderHealthCheck(){
+  const cardEl=document.getElementById('healthcheck-card');
+  const titleEl=document.getElementById('healthcheck-title');
+  const bodyEl=document.getElementById('healthcheck-body');
+  if(!cardEl) return;
+  const r=ROAS_CHECK;
+  if(!r){ cardEl.style.display='none'; return; }
+  cardEl.style.display='';
+  const flags=r.healthFlags||[];
+  if(!flags.length){
+    titleEl.textContent='資料健康度檢查 · '+r.weekLabel;
+    bodyEl.innerHTML=`<div style="color:#1a7a4a">✅ 本週數字通過自動檢查，可作為判斷參考。（檢查項目：Meta自報轉換值是否遠超過GA4真實總營收、本週有線下訂單時Meta是否有回報對應轉換）</div>`;
+  }else{
+    const hasError=flags.some(f=>f.level==='error');
+    titleEl.textContent=(hasError?'⚠️ ':'🟡 ')+'資料健康度檢查 · '+r.weekLabel;
+    bodyEl.innerHTML=flags.map(f=>`<div style="margin-bottom:6px;color:${f.level==='error'?'#c0392b':'#b8860b'}">${f.level==='error'?'🔴':'🟡'} ${f.msg}</div>`).join('');
+  }
+}
+
+// ----- 廣告花費 vs 真實線上營收 趨勢（來源：MONTHLY_EC_REV_OVERRIDE，ERP真實月營收，不受任何歸因模型偏誤影響）-----
+// Gary 2026-07-29：Meta自報跟GA4最後點擊落差太大沒辦法判斷，這張圖改看「花費增加時真實營收有沒有同向成長」，
+// 這個關係不靠任一方的歸因模型，是比較能拿去做預算判斷的方向性訊號（不是精確ROAS，只看方向一不一致）。
+function renderSpendVsRealRevenue(){
+  const cardEl=document.getElementById('spendreal-card');
+  const periodEl=document.getElementById('spendreal-period');
+  if(!cardEl) return;
+  const keys=MONTHLY_KEYS.filter(k=>MONTHLY[k]&&MONTHLY_EC_REV_OVERRIDE[k]!=null).slice(-12);
+  if(!keys.length){ cardEl.style.display='none'; return; }
+  cardEl.style.display='';
+  if(periodEl)periodEl.textContent=(+keys[0].split('/')[1])+'月–'+(+keys[keys.length-1].split('/')[1])+'月 · 不受歸因模型偏誤影響的參考指標';
+  const labels=keys.map(k=>{const[y,m]=k.split('/');return(y==='2026'?'':y.slice(2)+'/')+(+m)+'月';});
+  const spend=keys.map(k=>MONTHLY[k].adSpendRaw||0);
+  const rev=keys.map(k=>MONTHLY_EC_REV_OVERRIDE[k]||0);
+  const el=document.getElementById('ch-spend-real');
+  if(el._chartInst)el._chartInst.destroy();
+  el._chartInst=new Chart(el,{data:{labels,datasets:[
+    {type:'bar',label:'廣告花費',data:spend,backgroundColor:'rgba(165,74,26,.55)',yAxisID:'y',order:2},
+    {type:'line',label:'真實線上營收(ERP)',data:rev,borderColor:'#284234',backgroundColor:'#284234',tension:.3,pointRadius:4,borderWidth:2,yAxisID:'y1',order:1}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Space Mono',size:11}}}},scales:{
+    y:{position:'left',ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{color:'rgba(40,66,52,.05)'}},
+    y1:{position:'right',min:0,ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}},
+    x:{ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}}
+  }}});
+  const noteEl=document.getElementById('spendreal-note');
+  if(noteEl&&keys.length>=2){
+    const lastIdx=keys.length-1;
+    const spendUp=spend[lastIdx]>spend[lastIdx-1], revUp=rev[lastIdx]>rev[lastIdx-1];
+    const sameDir=spendUp===revUp;
+    noteEl.textContent=`${labels[lastIdx]}廣告花費${spendUp?'上升':'下降'}、真實線上營收${revUp?'上升':'下降'}，方向${sameDir?'一致':'不一致'}。這張圖看的是「花費增減時真實營收有沒有同向反應」，不是精確 ROAS——Meta 自報數字歸因窗口寬鬆會誇大成效，GA4 最後點擊又會低估（品牌只要曝光過、之後客人自己回來買也不算廣告功勞），兩個單一數字都不建議直接拿來做加碼/砍預算的依據，方向性趨勢比較穩。`;
+  }
+}
+
 function renderRoasCheck(){
   const wkEl=document.getElementById('roascheck-week');
   const kpiEl=document.getElementById('roascheck-kpi');
