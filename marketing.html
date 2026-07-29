@@ -371,6 +371,16 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
 
   <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">Meta 廣告轉換：線上 vs 線下 vs 全通路</div>
+    <div class="sec-date">action_values 拆 offline_conversion.purchase，跟上面「Meta自報ROAS」是同一週但不同算法，分開看不混用</div>
+  </div>
+  <div class="kpi3" id="metasplit-kpi" style="margin-bottom:1rem"></div>
+  <div class="card" id="metasplit-card" style="display:none">
+    <div class="card-hdr"><span class="card-lbl">說明</span><span class="card-badge">2026-07-29 新增</span></div>
+    <div id="metasplit-note" style="font-size:12px;color:var(--text-sub);line-height:1.7"></div>
+  </div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
     <div class="sec-title">廣告花費 vs 真實總營收 趨勢</div>
     <div class="sec-date" id="spendreal-period">不受歸因模型偏誤影響的參考指標</div>
   </div>
@@ -986,7 +996,7 @@ async function loadData(){
       const e=MOPS_MONTHLY[ym]||(MOPS_MONTHLY[ym]={newTxn:0,oldTxn:0});
       e.newTxn+=Number(r[8])||0; e.oldTxn+=Number(r[9])||0;
     });}
-    if(RENDERED.ads){renderHealthCheck();renderRoasCheck();renderChannelSplit();renderMonthlySplit();renderStoreSplit();renderAdNewCust();renderOfflineQuality();renderNewProducts();renderSpendVsRealRevenue();}
+    if(RENDERED.ads){renderHealthCheck();renderRoasCheck();renderMetaSplit();renderChannelSplit();renderMonthlySplit();renderStoreSplit();renderAdNewCust();renderOfflineQuality();renderNewProducts();renderSpendVsRealRevenue();}
     // 解析 ERP 廣告費明細 → ERP_AD_MAP[ym]
     // 年月欄位是 Sheet 的日期型別，gviz 只回傳 c.v 不是 c.f，抓到的是 "Date(2026,0,1)" 這種原始字串，
     // 不能直接當 key 用（跟 M.ym 的 "2026/01" 格式對不上，導致查表永遠 miss、每個月都顯示「無ERP」）。
@@ -1080,6 +1090,7 @@ function renderAds(){
   renderBudget();
   renderAdsSocial();
   renderRoasCheck();
+  renderMetaSplit();
   renderChannelSplit();
   renderMonthlySplit();
   renderStoreSplit();
@@ -1171,6 +1182,31 @@ function renderRoasCheck(){
     const lvl = r.gapMultiple>=3?'落差非常大':r.gapMultiple>=1.5?'落差明顯':'落差在合理範圍';
     noteEl.textContent = `Meta 自報 ROAS（${r.metaRoas.toFixed(2)}x）比 GA4 觀測到的社群通路 ROAS（${r.ga4Roas.toFixed(2)}x）高出 ${r.gapMultiple.toFixed(1)} 倍，${lvl}。Meta 用 7 天點擊/1 天瀏覽的寬鬆歸因窗口，GA4 用最後點擊歸因（較保守），兩者本來就不會相等；落差越大，代表越該以 GA4 這個保守數字做加碼判斷，而非只看 Meta 後台。`;
   }
+}
+
+// ----- Meta 廣告轉換：線上 vs 線下 vs 全通路（2026-07-29，Gary 選的方案：不動上面既有「Meta自報ROAS」定義，另外拆出來看）-----
+// Meta 的 action_values 裡 offline_conversion.purchase 是跟 purchase/offsite_conversion.fb_pixel_purchase
+// 互斥的另一個 bucket，兩個加總 = Meta 認定的全通路(omni_purchase)。上面那張卡的「Meta自報ROAS」只算線上，
+// 這張卡把線下、全通路也攤開來看，讓「Meta認為廣告帶動了多少店內購買」這件事看得到，不是被蓋掉。
+function renderMetaSplit(){
+  const kpiEl=document.getElementById('metasplit-kpi');
+  const cardEl=document.getElementById('metasplit-card');
+  const noteEl=document.getElementById('metasplit-note');
+  if(!kpiEl) return;
+  const r=ROAS_CHECK;
+  if(!r||(!r.metaOfflineValue&&!r.metaBlendedValue)){
+    kpiEl.innerHTML='<div class="cmp-pending" style="grid-column:1/-1">尚無線上/線下/全通路拆分資料，需等下一次週一自動發送後才會出現。</div>';
+    cardEl.style.display='none';
+    return;
+  }
+  renderKPIs('metasplit-kpi',{
+    '線上 ROAS':{v:r.metaRoas.toFixed(2)+'x',delta:null,vs:'NT$'+r.metaPurchaseValue.toLocaleString(),color:'#1877F2'},
+    '線下 ROAS':{v:r.metaOfflineRoas.toFixed(2)+'x',delta:null,vs:'NT$'+Math.round(r.metaOfflineValue).toLocaleString()+'（'+r.metaOfflinePurchases+'筆）',color:'#A54A1A'},
+    '全通路 ROAS':{v:r.metaBlendedRoas.toFixed(2)+'x',delta:null,vs:'NT$'+Math.round(r.metaBlendedValue).toLocaleString(),color:'#8D5531'}
+  });
+  cardEl.style.display='';
+  const offlinePct=r.metaBlendedValue>0?Math.round(r.metaOfflineValue/r.metaBlendedValue*1000)/10:0;
+  noteEl.textContent=`Meta 自己認定的廣告轉換，本週線下（門市，CAPI比對到廣告的）佔全通路 ${offlinePct}%。這組數字一樣是 Meta 寬鬆歸因窗口下的結果，不是真實貢獻度（真實貢獻度請看下面「廣告花費 vs 真實總營收 趨勢」），這裡純粹是把「線上vs線下」兩塊在 Meta 眼中各佔多少攤開來看，避免只看線上那組漏掉線下這塊。`;
 }
 
 // ----- 線下轉換比對品質（來源：Meta Dataset Quality API，實體門市訂單 CAPI 送出後的比對成效）-----
