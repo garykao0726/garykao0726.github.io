@@ -124,7 +124,27 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .skel{background:linear-gradient(90deg,#e8e2d8 25%,#f0ece4 50%,#e8e2d8 75%);background-size:200% 100%;animation:skel .9s infinite;border-radius:6px;height:18px;margin-bottom:8px}
 @keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+/* ── New-product grading ── */
+.method-note{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:1.25rem;font-size:12px;color:var(--text-sub);line-height:1.7}
+.method-note b{color:var(--green)}
+.grade-pill{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:6px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#fff}
+.grade-S{background:#A54A1A}
+.grade-A{background:#1a7a4a}
+.grade-B{background:#378ADD}
+.grade-C{background:#b07d12}
+.grade-D{background:#c0392b}
+.grade-dash{color:var(--text-muted);font-family:'Space Mono',monospace;font-size:11px}
+.insight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem}
+.insight-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.insight-card .tag{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--rust);text-transform:uppercase;margin-bottom:6px;display:block}
+.insight-card h4{font-size:13px;color:var(--green);margin-bottom:6px}
+.insight-card p{font-size:11.5px;color:var(--text-sub);line-height:1.6}
+.np-table td.launch{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)}
+.np-table td.cat{font-size:11px;color:var(--text-muted)}
+.np-table tr.hl td{background:rgba(165,74,26,.05)}
+
 @media(max-width:1100px){
+  .insight-grid{grid-template-columns:1fr}
   .kpi-grid{grid-template-columns:repeat(3,1fr)}
   .store-grid{grid-template-columns:repeat(3,1fr)}
   .cols2,.cols3{grid-template-columns:1fr}
@@ -365,6 +385,64 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <button class="tab-btn" data-store="東門店" onclick="switchMonthStore('東門店',this)">東門店</button>
   </div>
   <div id="month-store-content"></div>
+
+  <!-- ════════════════════════════════════════
+       新品熱銷分級（雙軌標準）
+       ════════════════════════════════════════ -->
+  <div class="sec" style="margin-top:2rem">🆕 新品熱銷分級・雙軌標準（2026年3-7月新品觀察）</div>
+
+  <div class="method-note">
+    <b>為什麼要分兩套標準：</b>新品剛上市通常會有一波曝光/行銷帶來的熱度，直接拿它跟「已經賣穩的常規商品」比，分數會系統性偏高。
+    這裡改成「新品跟新品比、常規跟常規比」——<b>常規商品基準</b>取自 <span id="np-est-n">–</span> 款已在賣的商品，用 3-6月「每款月銷量中位數」當常態；
+    <b>新品基準</b>取自今年 <span id="np-pool-n">–</span> 款有明確上市日的新品，用上市後第1/2/3個月（各30天）的實際銷量分布。
+    等級一律用同一把尺：<span class="grade-pill grade-S">S</span>前10%．<span class="grade-pill grade-A">A</span>前30%．<span class="grade-pill grade-B">B</span>前60%．<span class="grade-pill grade-C">C</span>前80%．<span class="grade-pill grade-D">D</span>後20%——但S/A/B/C/D對應的實際件數，新品和常規是不同的兩把尺。
+    資料截至 <span id="np-as-of">–</span>；July上市的新品尚未滿30/60/90天者，M2/M3顯示「尚未開始」。
+  </div>
+
+  <div class="kpi-grid" id="np-kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi"><div class="kpi-label">常規商品・月銷中位數</div><div class="kpi-val" id="np-kpi-est-median">–</div><div class="kpi-sub">前25%門檻約 <span id="np-kpi-est-p75">–</span> 件/月</div></div>
+    <div class="kpi"><div class="kpi-label">新品・首月(M1)中位數</div><div class="kpi-val" id="np-kpi-m1-median">–</div><div class="kpi-sub">樣本 <span id="np-kpi-m1-n">–</span> 款新品</div></div>
+    <div class="kpi"><div class="kpi-label">目前追蹤新品數</div><div class="kpi-val" id="np-kpi-total">–</div><div class="kpi-sub">3月-7月上市，含配件/鞋類</div></div>
+    <div class="kpi"><div class="kpi-label">最新一批（7月）</div><div class="kpi-val" id="np-kpi-recent">–</div><div class="kpi-sub">M1 進行中，尚無 M2/M3</div></div>
+  </div>
+
+  <div class="insight-grid">
+    <div class="insight-card">
+      <span class="tag">話題／聯名款型</span>
+      <h4>ORINGO × SUPERFICTION</h4>
+      <p>4/15-4/28 上市，首月普普（M1僅B～S不等），<b>第二個月銷量暴衝</b>（54/71/43/41件），第三個月又收斂回6件。話題延燒需要時間發酵，退燒也快——跟一般新品「上市即高峰」的曲線完全相反，是目前样本裡最極端的案例。</p>
+    </div>
+    <div class="insight-card">
+      <span class="tag">軟上市型</span>
+      <h4>Structure系列皮件</h4>
+      <p>4/8 上市，三個月都在低檔（多數C～D級），從頭到尾沒有真正起來過。不是「退燒」，是這波新品從沒被市場注意到，跟聯名款完全不同的失敗模式。</p>
+    </div>
+    <div class="insight-card">
+      <span class="tag">穩健型</span>
+      <h4>LibreSole 焦糖奶茶兩款</h4>
+      <p>5/21 上市，首月即A級、次月維持A/B級，是樣本中新品存活曲線最健康的案例——沒有聯名款的爆衝，但也沒有明顯退燒，值得當作「新品該有的樣子」參考基準。</p>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">新品上市軌跡・M1→M2→M3（30天等效銷量件數，虛線＝常規商品月銷中位數）</div>
+    <div class="chart-legend" id="np-trend-legend"></div>
+    <div class="chart-wrap lg"><canvas id="np-trend-chart"></canvas></div>
+  </div>
+
+  <div class="rank-card">
+    <div class="rank-hd">
+      <span class="rank-hd-title">📋 2026年新品完整名單與分級</span>
+      <span class="rank-hd-sub">依上市日排序，SUPERFICTION／大尺碼款以底色標示</span>
+    </div>
+    <table class="rank-table np-table">
+      <thead><tr>
+        <th>商品</th><th style="width:90px">上市日</th><th style="width:80px">類別</th><th class="num" style="width:70px">售價</th>
+        <th class="num" style="width:110px">M1（首月）</th><th class="num" style="width:110px">M2（次月）</th><th class="num" style="width:110px">M3（第三月）</th>
+      </tr></thead>
+      <tbody id="np-table-body"><tr><td colspan="7" class="no-data">讀取中…</td></tr></tbody>
+    </table>
+  </div>
 
 </div><!-- /container -->
 
@@ -1500,6 +1578,117 @@ function renderMonthStore() {
 
 init();
 </script>
+<script>
+/* ════════════════════════════════════════
+   新品熱銷分級（雙軌標準）— 靜態快照
+   資料來源：Gmail POS 週報（2026/03/01-07/27）+ Shopline products.json
+   手動產生，非即時；下次更新時重新跑分析後替換 NP_DATA
+   ════════════════════════════════════════ */
+const NP_DATA = {"newProducts": [{"title": "Structure系列．油感皮革掛繩證件套 深海藍", "launch": "2026-04-08", "price": 1680, "category": "包袋皮件", "windows": {"M1": {"qty": 0.0, "amount": 0, "complete": true, "days_elapsed": 30, "grade": "D", "pct": 3.3}, "M2": {"qty": 0, "amount": 0, "complete": true, "days_elapsed": 30, "grade": "C", "pct": 20.0}, "M3": {"qty": 0, "amount": 0, "complete": true, "days_elapsed": 30, "grade": "C", "pct": 20.8}}}, {"title": "Structure系列．油感皮革掛繩證件套 松木綠", "launch": "2026-04-08", "price": 1680, "category": "包袋皮件", "windows": {"M1": {"qty": 5.0, "amount": 8232, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 50.0}, "M2": {"qty": 0.0, "amount": 0, "complete": true, "days_elapsed": 30, "grade": "C", "pct": 20.0}, "M3": {"qty": 0, "amount": 0, "complete": true, "days_elapsed": 30, "grade": "C", "pct": 20.8}}}, {"title": "Structure系列．油感皮革掛繩證件套 經典黑", "launch": "2026-04-08", "price": 1680, "category": "包袋皮件", "windows": {"M1": {"qty": 3.0, "amount": 4872, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 40.0}, "M2": {"qty": 0, "amount": 0, "complete": true, "days_elapsed": 30, "grade": "C", "pct": 20.0}, "M3": {"qty": 2.0, "amount": 3360, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 54.2}}}, {"title": "Structure系列．油感皮革掛繩證件套 栗棕色", "launch": "2026-04-08", "price": 1680, "category": "包袋皮件", "windows": {"M1": {"qty": 6.0, "amount": 9578, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 56.7}, "M2": {"qty": -1.0, "amount": -1680, "complete": true, "days_elapsed": 30, "grade": "D", "pct": 3.3}, "M3": {"qty": 0, "amount": 0, "complete": true, "days_elapsed": 30, "grade": "C", "pct": 20.8}}}, {"title": "Structure系列．油感皮革多層收納短夾 栗棕色", "launch": "2026-04-08", "price": 3680, "category": "包袋皮件", "windows": {"M1": {"qty": 2.0, "amount": 7210, "complete": true, "days_elapsed": 30, "grade": "C", "pct": 26.7}, "M2": {"qty": 2.0, "amount": 7360, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 40.0}, "M3": {"qty": 0, "amount": 0, "complete": true, "days_elapsed": 30, "grade": "C", "pct": 20.8}}}, {"title": "Structure系列．油感皮革多層收納短夾 松木綠", "launch": "2026-04-08", "price": 3680, "category": "包袋皮件", "windows": {"M1": {"qty": 1.0, "amount": 3680, "complete": true, "days_elapsed": 30, "grade": "D", "pct": 13.3}, "M2": {"qty": 0, "amount": 0, "complete": true, "days_elapsed": 30, "grade": "C", "pct": 20.0}, "M3": {"qty": 0, "amount": 0, "complete": true, "days_elapsed": 30, "grade": "C", "pct": 20.8}}}, {"title": "Structure系列．油感皮革多層收納短夾 深海藍", "launch": "2026-04-08", "price": 3680, "category": "包袋皮件", "windows": {"M1": {"qty": 3.0, "amount": 11040, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 40.0}, "M2": {"qty": 3.0, "amount": 11040, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 53.3}, "M3": {"qty": 1.0, "amount": 3680, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 45.8}}}, {"title": "ORINGO × SUPERFICTION 聯名流蘇袋鼠鞋-經典黑", "launch": "2026-04-15", "price": 8588, "category": "鞋類", "windows": {"M1": {"qty": 7.0, "amount": 54909, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 63.3}, "M2": {"qty": 54.0, "amount": 421305, "complete": true, "days_elapsed": 30, "grade": "S", "pct": 90.0}, "M3": {"qty": 6.0, "amount": 51397, "complete": true, "days_elapsed": 30, "grade": "A", "pct": 83.3}}}, {"title": "ORINGO x SUPERFICTION 聯名休閒紳士襪．鞋下風景組", "launch": "2026-04-28", "price": 980, "category": "鞋類配件", "windows": {"M1": {"qty": 30.0, "amount": 27838, "complete": true, "days_elapsed": 30, "grade": "S", "pct": 96.7}, "M2": {"qty": 71.0, "amount": 66269, "complete": true, "days_elapsed": 30, "grade": "S", "pct": 96.7}, "M3": {"qty": 6.0, "amount": 5282, "complete": true, "days_elapsed": 30, "grade": "A", "pct": 83.3}}}, {"title": "ORINGO x SUPERFICTION 聯名厚磅帆布袋", "launch": "2026-04-28", "price": 890, "category": "其他", "windows": {"M1": {"qty": 26.0, "amount": 21963, "complete": true, "days_elapsed": 30, "grade": "A", "pct": 80.0}, "M2": {"qty": 43.0, "amount": 36748, "complete": true, "days_elapsed": 30, "grade": "A", "pct": 83.3}, "M3": {"qty": 6.0, "amount": 5052, "complete": true, "days_elapsed": 30, "grade": "A", "pct": 83.3}}}, {"title": "ORINGO × SUPERFICTION 聯名流蘇袋鼠鞋-卡其", "launch": "2026-04-28", "price": 8588, "category": "鞋類", "windows": {"M1": {"qty": 28.0, "amount": 217009, "complete": true, "days_elapsed": 30, "grade": "S", "pct": 90.0}, "M2": {"qty": 41.0, "amount": 319512, "complete": true, "days_elapsed": 30, "grade": "A", "pct": 76.7}, "M3": {"qty": 6.0, "amount": 49474, "complete": true, "days_elapsed": 30, "grade": "A", "pct": 83.3}}}, {"title": "Combo手作皮革小白鞋-大尺碼", "launch": "2026-04-29", "price": 6588, "category": "其他", "windows": {"M1": {"qty": 2.0, "amount": 12976, "complete": true, "days_elapsed": 30, "grade": "C", "pct": 26.7}, "M2": {"qty": 2.0, "amount": 13176, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 40.0}, "M3": {"qty": 3.0, "amount": 19104, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 62.5}}}, {"title": "Combo手作皮革休閒鞋-經典黑-大尺碼", "launch": "2026-05-09", "price": 6588, "category": "鞋類", "windows": {"M1": {"qty": 1.0, "amount": 6442, "complete": true, "days_elapsed": 30, "grade": "D", "pct": 13.3}, "M2": {"qty": 3.0, "amount": 19764, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 53.3}, "M3": {"qty": 0, "amount": 0, "complete": false, "days_elapsed": 20, "grade": "C", "pct": 20.8}}}, {"title": "LibreSole升級大底-XV1皮革休閒鞋女鞋 焦糖奶茶", "launch": "2026-05-21", "price": 5288, "category": "鞋類", "windows": {"M1": {"qty": 17.0, "amount": 89395, "complete": true, "days_elapsed": 30, "grade": "A", "pct": 70.0}, "M2": {"qty": 14.0, "amount": 73368, "complete": true, "days_elapsed": 30, "grade": "B", "pct": 63.3}, "M3": {"qty": 3.0, "amount": 15864, "complete": false, "days_elapsed": 8, "grade": "S", "pct": 100.0}}}, {"title": "LibreSole升級大底-XV1經典皮革休閒鞋 焦糖奶茶", "launch": "2026-05-21", "price": 5288, "category": "鞋類", "windows": {"M1": {"qty": 26.0, "amount": 134811, "complete": true, "days_elapsed": 30, "grade": "A", "pct": 80.0}, "M2": {"qty": 32.0, "amount": 164228, "complete": true, "days_elapsed": 30, "grade": "A", "pct": 70.0}, "M3": {"qty": 7.0, "amount": 34894, "complete": false, "days_elapsed": 8, "grade": "S", "pct": 100.0}}}, {"title": "Combo馬蹄釦雙條帶涼鞋-可可咖", "launch": "2026-07-14", "price": 3988, "category": "鞋類", "windows": {"M1": {"qty": 4.0, "amount": 15753, "complete": false, "days_elapsed": 14, "grade": "B", "pct": 66.7}, "M2": null, "M3": null}}, {"title": "Combo馬蹄釦雙條帶涼鞋-黑", "launch": "2026-07-14", "price": 3988, "category": "鞋類", "windows": {"M1": {"qty": 3.0, "amount": 11692, "complete": false, "days_elapsed": 14, "grade": "B", "pct": 60.0}, "M2": null, "M3": null}}, {"title": "Combo馬蹄釦雙條帶涼鞋-卡其", "launch": "2026-07-14", "price": 3988, "category": "鞋類", "windows": {"M1": {"qty": 1.0, "amount": 3988, "complete": false, "days_elapsed": 14, "grade": "C", "pct": 33.3}, "M2": null, "M3": null}}, {"title": "LibreSole XVB 經典三孔帆船鞋-淺灰色", "launch": "2026-07-16", "price": 5288, "category": "鞋類", "windows": {"M1": {"qty": 2.0, "amount": 10576, "complete": false, "days_elapsed": 12, "grade": "B", "pct": 50.0}, "M2": null, "M3": null}}, {"title": "LibreSole XVB 經典三孔帆船鞋-經典黑", "launch": "2026-07-16", "price": 5288, "category": "鞋類", "windows": {"M1": {"qty": 5.0, "amount": 26340, "complete": false, "days_elapsed": 12, "grade": "B", "pct": 66.7}, "M2": null, "M3": null}}, {"title": "Vibram鏤空編織漁夫涼鞋-極簡灰", "launch": "2026-07-21", "price": 6588, "category": "鞋類", "windows": {"M1": {"qty": 0, "amount": 0, "complete": false, "days_elapsed": 7, "grade": "D", "pct": 3.3}, "M2": null, "M3": null}}, {"title": "Vibram鏤空編織漁夫涼鞋-經典黑", "launch": "2026-07-22", "price": 6588, "category": "鞋類", "windows": {"M1": {"qty": 3.0, "amount": 19106, "complete": false, "days_elapsed": 6, "grade": "B", "pct": 66.7}, "M2": null, "M3": null}}, {"title": "Vibram鏤空編織漁夫涼鞋-栗棕色", "launch": "2026-07-22", "price": 6588, "category": "鞋類", "windows": {"M1": {"qty": 3.0, "amount": 19435, "complete": false, "days_elapsed": 6, "grade": "B", "pct": 66.7}, "M2": null, "M3": null}}], "establishedBaseline": {"n": 356, "median": 4.0, "p25": 2.0, "p75": 7.0, "p90": 14.5}, "poolSizes": {"M1": 15, "M2": 15, "M3": 12}, "dataAsOf": "2026-07-27"};
+
+(function(){
+  const GRADE_COLOR = { S:'#A54A1A', A:'#1a7a4a', B:'#378ADD', C:'#b07d12', D:'#c0392b' };
+  const HIGHLIGHT_KEYWORDS = ['SUPERFICTION','大尺碼'];
+
+  function pill(g){
+    if (!g) return '<span class="grade-dash">—</span>';
+    return `<span class="grade-pill grade-${g}">${g}</span>`;
+  }
+  function cell(w){
+    if (!w) return '<span class="grade-dash">尚未開始</span>';
+    const qtyTxt = w.complete ? `${Math.round(w.qty)}件` : `${Math.round(w.qty)}件・進行中${w.days_elapsed}天`;
+    return `${pill(w.grade)} <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">${qtyTxt}</span>`;
+  }
+
+  // ── method note + KPI ──
+  document.getElementById('np-est-n').textContent = NP_DATA.establishedBaseline.n;
+  document.getElementById('np-pool-n').textContent = NP_DATA.poolSizes.M1;
+  document.getElementById('np-as-of').textContent = NP_DATA.dataAsOf;
+  document.getElementById('np-kpi-est-median').textContent = NP_DATA.establishedBaseline.median + ' 件';
+  document.getElementById('np-kpi-est-p75').textContent = NP_DATA.establishedBaseline.p75;
+
+  const m1Vals = NP_DATA.newProducts.map(p => p.windows.M1 && p.windows.M1.complete ? p.windows.M1.qty : null).filter(v => v !== null);
+  m1Vals.sort((a,b)=>a-b);
+  const m1Median = m1Vals.length ? m1Vals[Math.floor(m1Vals.length/2)] : '–';
+  document.getElementById('np-kpi-m1-median').textContent = m1Median + ' 件';
+  document.getElementById('np-kpi-m1-n').textContent = NP_DATA.poolSizes.M1;
+  document.getElementById('np-kpi-total').textContent = NP_DATA.newProducts.length + ' 款';
+  document.getElementById('np-kpi-recent').textContent = NP_DATA.newProducts.filter(p => p.launch >= '2026-07-01').length + ' 款';
+
+  // ── table ──
+  const tbody = document.getElementById('np-table-body');
+  tbody.innerHTML = NP_DATA.newProducts.map(p => {
+    const hl = HIGHLIGHT_KEYWORDS.some(k => p.title.includes(k));
+    return `<tr class="${hl ? 'hl' : ''}">
+      <td style="font-size:12.5px">${p.title}</td>
+      <td class="launch">${p.launch}</td>
+      <td class="cat">${p.category}</td>
+      <td class="num" style="font-family:'Space Mono',monospace;font-size:11px">${p.price ?? '–'}</td>
+      <td class="num">${cell(p.windows.M1)}</td>
+      <td class="num">${cell(p.windows.M2)}</td>
+      <td class="num">${cell(p.windows.M3)}</td>
+    </tr>`;
+  }).join('');
+
+  // ── trajectory chart：只挑有代表性的幾款，避免線太多看不清 ──
+  const HIGHLIGHT_TITLES = [
+    'ORINGO × SUPERFICTION 聯名流蘇袋鼠鞋-經典黑',
+    'ORINGO × SUPERFICTION 聯名流蘇袋鼠鞋-卡其',
+    'ORINGO x SUPERFICTION 聯名休閒紳士襪．鞋下風景組',
+    'ORINGO x SUPERFICTION 聯名厚磅帆布袋',
+    'LibreSole升級大底-XV1經典皮革休閒鞋 焦糖奶茶',
+    'LibreSole升級大底-XV1皮革休閒鞋女鞋 焦糖奶茶',
+    'Structure系列．油感皮革掛繩證件套 經典黑',
+    'Combo手作皮革休閒鞋-經典黑-大尺碼'
+  ];
+  const PALETTE = ['#A54A1A','#D4537E','#EF9F27','#8D5531','#1D9E75','#284234','#378ADD','#CFA294'];
+
+  const highlighted = HIGHLIGHT_TITLES
+    .map(t => NP_DATA.newProducts.find(p => p.title === t))
+    .filter(Boolean);
+
+  const labels = ['M1（首月）','M2（次月）','M3（第三月）'];
+  const datasets = highlighted.map((p, i) => ({
+    label: p.title.replace('ORINGO × SUPERFICTION','SF').replace('ORINGO x SUPERFICTION','SF')
+                   .replace('LibreSole升級大底-XV1','LibreSole').replace('Structure系列．油感皮革掛繩證件套','Structure證件套')
+                   .replace('Combo手作皮革休閒鞋-','Combo'),
+    data: ['M1','M2','M3'].map(k => p.windows[k] ? p.windows[k].qty : null),
+    borderColor: PALETTE[i % PALETTE.length],
+    backgroundColor: PALETTE[i % PALETTE.length],
+    tension: 0.25,
+    spanGaps: false,
+    pointRadius: 4
+  }));
+
+  // 常規商品月銷中位數・參考虛線
+  datasets.push({
+    label: `常規商品月銷中位數（${NP_DATA.establishedBaseline.median}件）`,
+    data: [NP_DATA.establishedBaseline.median, NP_DATA.establishedBaseline.median, NP_DATA.establishedBaseline.median],
+    borderColor: '#b09a88',
+    borderDash: [5,4],
+    pointRadius: 0,
+    borderWidth: 1.5
+  });
+
+  const legendEl = document.getElementById('np-trend-legend');
+  legendEl.innerHTML = datasets.map(d =>
+    `<span class="leg-item"><span class="leg-dot" style="background:${Array.isArray(d.borderColor)?d.borderColor[0]:d.borderColor}"></span>${d.label}</span>`
+  ).join('');
+
+  new Chart(document.getElementById('np-trend-chart'), {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, title: { display: true, text: '30天等效銷量（件）' } }
+      }
+    }
+  });
+})();
+</script>
+
 <footer class="footer">
   <a href="https://garykao0726.github.io/" style="color:var(--gray-pink);text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;border:1px solid rgba(226,206,185,.25);padding:3px 12px;border-radius:20px;display:inline-block;margin-bottom:8px;transition:all .15s" onmouseover="this.style.color='#E2CEB9'" onmouseout="this.style.color=''">← 中控中心</a><br>
   林果良品 ORINGO｜商品銷售分析 
