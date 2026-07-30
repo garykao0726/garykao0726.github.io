@@ -433,6 +433,18 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
 
   <div class="sec-hdr" style="margin-top:1.75rem">
+    <div class="sec-title">KOL 廣告效果</div>
+    <div class="sec-date" id="kol-period">流量/轉換率/轉換金額=GA4（source/campaign/medium含"kol"）· 廣告金額=Meta廣告層級名稱含"kol"</div>
+  </div>
+  <div class="kpi4" id="kol-kpi" style="margin-bottom:1rem"></div>
+  <div class="card" id="kol-card" style="display:none">
+    <div class="card-hdr"><span class="card-lbl">月度趨勢</span><span class="card-badge">流量 · 廣告金額 vs 轉換金額</span></div>
+    <div class="ch240"><canvas id="ch-kol"></canvas></div>
+    <div style="overflow-x:auto;margin-top:10px"><table class="ctbl" id="tbl-kol"></table></div>
+    <div id="kol-note" style="font-size:12px;color:var(--text-sub);line-height:1.7;margin-top:8px"></div>
+  </div>
+
+  <div class="sec-hdr" style="margin-top:1.75rem">
     <div class="sec-title">線下轉換比對品質</div>
     <div class="sec-date">Meta Dataset Quality API · 實體門市訂單 CAPI</div>
   </div>
@@ -979,13 +991,14 @@ function buildRoasCheck(summaryRows){
 async function loadData(){
   const banner=document.getElementById('data-status-banner');
   try{
-    const [rows, weeklyRows, monthlyRows, erpRows, summaryRows, mopsRows] = await Promise.all([
+    const [rows, weeklyRows, monthlyRows, erpRows, summaryRows, mopsRows, kolRows] = await Promise.all([
       loadGviz('行銷儀錶板數據'),
       loadGviz('週報數據').catch(() => null),
       loadGviz('月度數據').catch(() => null),
       loadGviz('行銷費用月表').catch(() => null),
       loadGviz('行銷週報彙總').catch(() => null),
-      loadGviz('月度營運').catch(() => null)
+      loadGviz('月度營運').catch(() => null),
+      loadGviz('KOL月度成效').catch(() => null)
     ]);
     buildRoasCheck(summaryRows);
     // 全通路（四門市+官網）每月新客/回購成交筆數，跟 operation.html 讀同一張「月度營運」表、同樣的全通路加總邏輯
@@ -996,7 +1009,16 @@ async function loadData(){
       const e=MOPS_MONTHLY[ym]||(MOPS_MONTHLY[ym]={newTxn:0,oldTxn:0});
       e.newTxn+=Number(r[8])||0; e.oldTxn+=Number(r[9])||0;
     });}
-    if(RENDERED.ads){renderHealthCheck();renderRoasCheck();renderMetaSplit();renderChannelSplit();renderMonthlySplit();renderStoreSplit();renderAdNewCust();renderOfflineQuality();renderNewProducts();renderSpendVsRealRevenue();}
+    // KOL 月度成效：GAS 已經彙整好（流量/轉換率/轉換金額來自 GA4，廣告金額來自 Meta 廣告層級名稱含"kol"）
+    // ym 欄位是 Sheet 的日期型別，gviz 只回傳 c.v 不是 c.f，抓到的是 "Date(2026,0,1)" 原始字串——
+    // 跟 ERP_AD_MAP、行銷費用月表踩過同一個坑，一樣用 parseDate_() 轉成真正的 Date 再重新格式化。
+    KOL_MONTHLY={};
+    if(kolRows){kolRows.forEach(r=>{
+      const d=parseDate_(r[0]);if(!d)return;
+      const ym=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0');
+      KOL_MONTHLY[ym]={sessions:Number(r[1])||0,transactions:Number(r[2])||0,cvr:Number(r[3])||0,revenue:Number(r[4])||0,spend:Number(r[5])||0,roas:Number(r[6])||0};
+    });}
+    if(RENDERED.ads){renderHealthCheck();renderRoasCheck();renderMetaSplit();renderChannelSplit();renderMonthlySplit();renderStoreSplit();renderAdNewCust();renderOfflineQuality();renderNewProducts();renderSpendVsRealRevenue();renderKolMonthly();}
     // 解析 ERP 廣告費明細 → ERP_AD_MAP[ym]
     // 年月欄位是 Sheet 的日期型別，gviz 只回傳 c.v 不是 c.f，抓到的是 "Date(2026,0,1)" 這種原始字串，
     // 不能直接當 key 用（跟 M.ym 的 "2026/01" 格式對不上，導致查表永遠 miss、每個月都顯示「無ERP」）。
@@ -1098,6 +1120,7 @@ function renderAds(){
   renderOfflineQuality();
   renderNewProducts();
   renderSpendVsRealRevenue();
+  renderKolMonthly();
 }
 
 // ----- GA4 vs Meta ROAS 交叉驗證（來源：「行銷週報彙總」，週一自動更新）-----
@@ -1355,6 +1378,53 @@ function renderAdNewCust(){
   }
 }
 
+// ----- KOL 廣告效果（來源：GAS「KOL月度成效」，GA4 流量/轉換率/轉換金額 + Meta 廣告層級花費，2026-07-30）-----
+function renderKolMonthly(){
+  const kpiEl=document.getElementById('kol-kpi');
+  const cardEl=document.getElementById('kol-card');
+  const tblEl=document.getElementById('tbl-kol');
+  const noteEl=document.getElementById('kol-note');
+  if(!kpiEl) return;
+  const _now=new Date(),_curYm=_now.getFullYear()+'/'+String(_now.getMonth()+1).padStart(2,'0');
+  const keys=Object.keys(KOL_MONTHLY).filter(k=>k.startsWith('2026/')&&k!==_curYm).sort().slice(-12);
+  if(!keys.length){
+    kpiEl.innerHTML='<div class="cmp-pending" style="grid-column:1/-1">尚無 KOL 月度資料。</div>';
+    cardEl.style.display='none';
+    return;
+  }
+  const labels=keys.map(k=>(+k.split('/')[1])+'月');
+  const lastK=keys[keys.length-1], last=KOL_MONTHLY[lastK];
+  const fmtRev=v=>'NT$'+Math.round(v).toLocaleString();
+  renderKPIs('kol-kpi',{
+    '流量':{v:last.sessions.toLocaleString(),delta:null,vs:lastK+' sessions',color:'#284234'},
+    '轉換率':{v:last.cvr.toFixed(2)+'%',delta:null,vs:last.transactions+' 筆訂單',color:'#5a8a6e'},
+    '廣告金額':{v:fmtRev(last.spend),delta:null,vs:'Meta 廣告層級花費',color:'#A54A1A'},
+    '轉換金額':{v:fmtRev(last.revenue),delta:null,vs:'ROAS '+last.roas.toFixed(2)+'x',color:'#8D5531'}
+  });
+  cardEl.style.display='';
+  const el=document.getElementById('ch-kol');
+  if(el._chartInst)el._chartInst.destroy();
+  el._chartInst=new Chart(el,{data:{labels,datasets:[
+    {type:'bar',label:'廣告金額',data:keys.map(k=>KOL_MONTHLY[k].spend),backgroundColor:'#A54A1A',yAxisID:'y',order:2},
+    {type:'bar',label:'轉換金額',data:keys.map(k=>KOL_MONTHLY[k].revenue),backgroundColor:'#284234',yAxisID:'y',order:2},
+    {type:'line',label:'流量',data:keys.map(k=>KOL_MONTHLY[k].sessions),borderColor:'#8D5531',backgroundColor:'#8D5531',tension:.3,pointRadius:4,borderWidth:2,yAxisID:'y1',order:1}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Space Mono',size:11}}}},scales:{
+    y:{position:'left',ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{color:'rgba(40,66,52,.05)'}},
+    y1:{position:'right',min:0,ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}},
+    x:{ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}}
+  }}});
+  tblEl.innerHTML=`<thead><tr><th>月份</th><th>流量</th><th>轉換率</th><th>轉換筆數</th><th>廣告金額</th><th>轉換金額</th><th>ROAS</th></tr></thead><tbody>${keys.map(k=>{
+    const d=KOL_MONTHLY[k];
+    return `<tr><td>${k}</td><td>${d.sessions.toLocaleString()}</td><td>${d.cvr.toFixed(2)}%</td><td>${d.transactions}</td><td>${fmtRev(d.spend)}</td><td>${fmtRev(d.revenue)}</td><td>${d.roas.toFixed(2)}x</td></tr>`;
+  }).join('')}</tbody>`;
+  if(noteEl){
+    const lowSample=last.transactions>0&&last.transactions<10;
+    noteEl.textContent=`${lastK} KOL 帶來 ${last.sessions.toLocaleString()} 流量、${last.transactions} 筆訂單（轉換率 ${last.cvr.toFixed(2)}%），廣告花費 ${fmtRev(last.spend)}、轉換金額 ${fmtRev(last.revenue)}（ROAS ${last.roas.toFixed(2)}x）。`
+      + (lowSample?` ⚠️ 轉換筆數只有 ${last.transactions} 筆，樣本很小，轉換率/ROAS 波動可能很大，不建議只看單月數字做判斷，建議看多月趨勢。`:'')
+      + ' 判定規則：GA4 sessionSource/sessionCampaignName/sessionMedium 含「kol」算流量與轉換金額；Meta 廣告花費算「廣告/廣告組合/受眾名稱含 kol」（例如 SF_KOL_xxx、KOL_xxx），兩邊命名規則可能沒有完全對齊到同一組人，僅供方向參考。';
+  }
+}
+
 function renderOfflineQuality(){
   const kpiEl=document.getElementById('offlineq-kpi');
   const cardEl=document.getElementById('offlineq-card');
@@ -1573,6 +1643,7 @@ const _mf=v=>Math.round(v).toLocaleString();
 let MONTHLY_TOTAL_REV={},MONTHLY_EC_REV_OVERRIDE={},MONTHLY_BY_STORE={};
 let ERP_AD_MAP={}; // {ym: {shoot,media,print,event,pr,nonMedia}}
 let MOPS_MONTHLY={}; // {ym: {newTxn,oldTxn}} 全通路（四門市+官網）月度新客/回購成交筆數
+let KOL_MONTHLY={}; // {ym: {sessions,transactions,cvr,revenue,spend,roas}} KOL 月度成效（2026-07-30）
 const STORES4=['中山店','松菸店','台中店','東門店']; // 跟 finance.html/operation.html 同一套四店命名
 const STORE_COLORS4={'中山店':'#378ADD','松菸店':'#1D9E75','台中店':'#EF9F27','東門店':'#D4537E'}; // 對齊 finance.html STORE_COLORS
 function buildMonthlyTotalRev(monthlyRows){
