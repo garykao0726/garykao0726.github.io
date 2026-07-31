@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜KOL 成效儀表板</title>
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;--rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;--bg:#F5EDE3;--surface:#ffffff;--surface2:#FAF5EF;--border:rgba(40,66,52,0.10);--border2:rgba(40,66,52,0.22);--text:#284234;--text-sub:#8D5531;--text-muted:#b09a88;--positive:#1a7a4a;--negative:#c0392b}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100vh}
+.hdr{position:sticky;top:0;z-index:100;background:var(--green);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--sand)}
+.brand-sep{width:1px;height:16px;background:rgba(226,206,185,.3)}
+.brand-sub{font-size:10px;color:var(--gray-pink);font-family:'Space Mono',monospace}
+.hdr-r{display:flex;align-items:center;gap:14px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#5be8a0;box-shadow:0 0 8px #5be8a0;animation:blink 2.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hclock{font-family:'Space Mono',monospace;font-size:12px;color:var(--gray-pink)}
+.data-tag{padding:3px 10px;border-radius:20px;border:1px solid rgba(226,206,185,.25);font-size:10px;font-family:'Space Mono',monospace;color:var(--gray-pink)}
+.back-link{font-family:'Space Mono',monospace;font-size:11px;color:var(--gray-pink);text-decoration:none;border:1px solid rgba(226,206,185,.25);padding:3px 10px;border-radius:20px;transition:all .15s}
+.back-link:hover{color:var(--sand);border-color:var(--sand)}
+.container{max-width:1400px;margin:0 auto;padding:1.75rem 2rem}
+.g-half{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+@media(max-width:1000px){.g-half{grid-template-columns:1fr}}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:6px}
+.sec-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.sec-title::before{content:'';display:block;width:3px;height:14px;background:var(--rust);border-radius:2px}
+.sec-date{font-size:11px;color:var(--text-muted);font-family:'Space Mono',monospace}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.35rem;margin-bottom:1.25rem}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem}
+.card-lbl{font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px}
+.card-lbl::before{content:'';display:block;width:3px;height:12px;background:var(--rust);border-radius:2px}
+.card-badge{font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px}
+.kpi4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
+@media(max-width:1100px){.kpi4{grid-template-columns:repeat(2,1fr)}}
+.kc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.1rem;position:relative;overflow:hidden}
+.kc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc-color,var(--green))}
+.kc-l{font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.kc-v{font-size:20px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text);line-height:1;margin-bottom:5px}
+.kc-vs{font-size:10px;color:var(--text-muted)}
+.ch220{position:relative;height:220px}.ch320{position:relative;height:320px}
+.ctbl{width:100%;border-collapse:collapse;font-size:12px}
+.ctbl th{text-align:left;padding:7px 10px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--border);background:var(--surface2)}
+.ctbl td{padding:8px 10px;border-bottom:1px solid var(--border);font-family:'Space Mono',monospace}
+.ctbl tr:last-child td{border-bottom:none}
+.ctbl .td-s{font-family:'Noto Sans TC',sans-serif;font-size:13px;font-weight:600;color:var(--text)}
+.ch-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:9px;font-family:'Space Mono',monospace}
+.ch-pill.good{background:rgba(26,122,74,.1);color:var(--positive)}
+.ch-pill.warn{background:rgba(184,134,11,.12);color:#b8860b}
+.ch-pill.bad{background:rgba(192,57,43,.1);color:var(--negative)}
+.lowsample{font-size:8px;font-family:'Space Mono',monospace;color:#b8860b;background:rgba(184,134,11,.12);padding:1px 5px;border-radius:8px;margin-left:5px}
+.insight{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--text-sub);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1.25rem}
+.insight-hd{display:flex;align-items:center;gap:10px;margin-bottom:7px;flex-wrap:wrap}
+.insight-tag{font-size:9px;font-family:'Space Mono',monospace;color:#fff;padding:2px 8px;border-radius:4px;letter-spacing:.04em;white-space:nowrap;background:var(--brown)}
+.insight-title{font-size:13px;font-weight:700;color:var(--text)}
+.insight-body{font-size:12px;color:var(--text-sub);line-height:1.8}
+.cmp-pending{font-size:11px;color:var(--text-muted);padding:6px 0;display:flex;align-items:center;gap:6px}
+.cmp-pending::before{content:'⏳';font-size:11px}
+.footer{background:var(--green);text-align:center;padding:1.25rem;font-size:11px;font-family:'Space Mono',monospace;color:var(--gray-pink);margin-top:.5rem}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="brand">
+    <span class="brand-name">ORINGO</span>
+    <div class="brand-sep"></div>
+    <span class="brand-sub">KOL 成效儀表板</span>
+  </div>
+  <div class="hdr-r">
+    <a href="marketing.html" class="back-link">← 行銷儀表板</a>
+    <div class="live-dot"></div>
+    <div class="hclock" id="clock">--:--:--</div>
+    <div class="data-tag">MOCK DATA</div>
+  </div>
+</header>
+
+<div class="container">
+
+<div class="insight" style="border-left-color:var(--green)">
+  <div class="insight-hd"><span class="insight-tag">說明</span><span class="insight-title">這頁在看什麼</span></div>
+  <div class="insight-body">
+    KOL（網紅／部落客）廣告在 GA4 跟 Meta 的命名都會帶「kol」關鍵字，所以流量跟轉換可以從其他廣告裡拆出來單獨看。
+    這頁分兩層：<b>月度總覽</b>（下方，用 GA4 真實營收，跟儀表板其他頁面口徑一致）看「KOL 整體有沒有在成長」；
+    <b>個人排行榜</b>（再下方）看「哪一位 KOL 表現比較好」——這層因為 GA4 沒有「個人」維度，只能用 Meta 自己認列的轉換金額，
+    兩層的「轉換金額」定義不一樣，请分開看，下面各自都有加註。
+  </div>
+</div>
+
+<div class="sec-hdr">
+  <div class="sec-title">月度總覽（GA4 真實營收口徑）</div>
+  <div class="sec-date" id="kol-month-range">載入中...</div>
+</div>
+<div class="kpi4" id="kol-kpi"></div>
+<div class="card" id="kol-trend-card">
+  <div class="card-hdr">
+    <div class="card-lbl">流量 / 廣告金額 / 轉換金額 走勢</div>
+    <div class="card-badge">GA4 sessionSource/CampaignName/Medium 含 "kol"</div>
+  </div>
+  <div class="ch220"><canvas id="ch-kol-monthly"></canvas></div>
+</div>
+<div class="card" id="kol-monthly-tbl-card">
+  <div class="card-hdr"><div class="card-lbl">月度明細</div></div>
+  <div style="overflow-x:auto"><table class="ctbl" id="tbl-kol-monthly"></table></div>
+</div>
+
+<div class="sec-hdr">
+  <div class="sec-title">個人排行榜（近 180 天，Meta 自報轉換金額）</div>
+  <div class="sec-date" id="kol-person-updated">載入中...</div>
+</div>
+<div class="insight">
+  <div class="insight-hd"><span class="insight-tag">方法論但書</span><span class="insight-title">這份排行榜的數字怎麼來、能不能直接信</span></div>
+  <div class="insight-body">
+    GA4 抓不到「哪一位 KOL」，只能靠 Meta 廣告命名本身帶的名字（例如 SF_KOL_ALLEN、KOL_Freda）拆到個人層級，
+    轉換金額只能用 <b>Meta 自己認列的 action_values</b>，不是 GA4 真實營收——這個數字用的是 Meta 寬鬆的歸因窗口（7天點擊/1天瀏覽），
+    結構上會比真實貢獻高估，<b>不能當成真的賺了這麼多錢</b>。但因為所有 KOL 都是用同一把（有偏差的）尺在量，
+    <b>相對排名還是有參考價值</b>——誰在前面誰在後面，比 ROAS 絕對數字本身更可信。
+    「線下轉換」欄是這次新拆出來的——门市 POS 訂單透過 Meta CAPI 比對回廣告，證實部分 KOL（例如 ALLEN、芋圓）帶來的購買主要發生在實體門市，不是線上。
+    廣告數 &lt; 3 的標了「低樣本」，代表只測過一兩檔，數字可能不穩定，建議多觀察幾檔再下判斷。
+  </div>
+</div>
+<div class="card">
+  <div class="card-hdr">
+    <div class="card-lbl">線上 vs 線下轉換金額（依全通路轉換金額排序）</div>
+    <div class="card-badge">Meta level=ad insights</div>
+  </div>
+  <div class="ch320"><canvas id="ch-kol-person"></canvas></div>
+</div>
+<div class="card">
+  <div class="card-hdr"><div class="card-lbl">個人明細</div></div>
+  <div style="overflow-x:auto"><table class="ctbl" id="tbl-kol-person"></table></div>
+</div>
+
+</div>
+
+<footer class="footer">
+  <a href="marketing.html" style="color:var(--gray-pink);text-decoration:none;font-family:'Space Mono',monospace;font-size:11px;border:1px solid rgba(226,206,185,.25);padding:3px 12px;border-radius:20px;display:inline-block;margin-bottom:8px;transition:all .15s" onmouseover="this.style.color='#E2CEB9'" onmouseout="this.style.color=''">← 行銷儀表板</a><br>
+  林果良品 ORINGO｜KOL 成效儀表板
+  <span style="opacity:.4;font-size:10px;display:block;margin-top:3px">INTERNAL USE ONLY · ©2026 ORINGO</span>
+</footer>
+
+<script>
+// ===== Clock =====
+function tick(){const d=new Date();document.getElementById('clock').textContent=d.toLocaleTimeString('en-GB');}
+setInterval(tick,1000);tick();
+
+// ===== gviz 讀取（跟 marketing.html 同一套 sheet + 手法）=====
+const SHEET_ID='17hTgCpF0mBTHf3RcnDmRFrJMeLBn3nRdTMuG8l58QjY';
+let _gvizSeq=0;
+function loadGviz(sheetName){return new Promise((resolve,reject)=>{const cb='_gvizCb'+(++_gvizSeq);window[cb]=function(resp){delete window[cb];if(!resp||!resp.table){reject(new Error('no table'));return;}resolve((resp.table.rows||[]).map(r=>(r.c||[]).map(c=>c?c.v:null)));};const s=document.createElement('script');s.onerror=()=>reject(new Error('script load failed'));s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}`;document.head.appendChild(s);});}
+function parseDate_(v){if(!v)return null;if(v instanceof Date)return v;if(typeof v==='string'){const m=v.match(/^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/);if(m)return new Date(+m[1],+m[2],+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));return new Date(v);}return new Date(v);}
+function fmtRev(v){return 'NT$'+Math.round(v).toLocaleString();}
+function fmtDatetime_(v){const d=parseDate_(v);if(!d||isNaN(d))return v||'—';return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+
+function renderKPIs(elId, items){
+  const el=document.getElementById(elId);
+  el.innerHTML=Object.entries(items).map(([k,v])=>`<div class="kc" style="--kc-color:${v.color}"><div class="kc-l">${k}</div><div class="kc-v">${v.v}</div><div class="kc-vs">${v.vs}</div></div>`).join('');
+}
+
+let KOL_MONTHLY_ROWS=[], KOL_PERSON_ROWS=[];
+
+async function loadData(){
+  try{
+    const [monthly, person] = await Promise.all([
+      loadGviz('KOL月度成效'),
+      loadGviz('KOL個人成效')
+    ]);
+    KOL_MONTHLY_ROWS = (monthly||[]).map(r=>{
+      const d=parseDate_(r[0]); if(!d) return null;
+      return { ym: d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0'),
+        sessions:Number(r[1])||0, transactions:Number(r[2])||0, cvr:Number(r[3])||0,
+        revenue:Number(r[4])||0, spend:Number(r[5])||0, roas:Number(r[6])||0 };
+    }).filter(Boolean).sort((a,b)=>a.ym<b.ym?-1:1);
+    KOL_PERSON_ROWS = (person||[]).map(r=>({
+      name:r[0], spend:Number(r[1])||0, onlineValue:Number(r[2])||0, offlineValue:Number(r[3])||0,
+      totalValue:Number(r[4])||0, roas:Number(r[5])||0, adCount:Number(r[6])||0, updatedAt:r[7]
+    })).filter(r=>r.name).sort((a,b)=>b.totalValue-a.totalValue);
+    document.querySelector('.data-tag').textContent='LIVE DATA';
+  }catch(err){
+    console.error('KOL 資料載入失敗', err);
+    document.querySelector('.data-tag').textContent='LOAD FAILED';
+  }
+  renderMonthly();
+  renderPerson();
+}
+
+function renderMonthly(){
+  const kpiEl=document.getElementById('kol-kpi');
+  if(!KOL_MONTHLY_ROWS.length){
+    kpiEl.innerHTML='<div class="cmp-pending" style="grid-column:1/-1">尚無 KOL 月度資料。</div>';
+    document.getElementById('kol-month-range').textContent='—';
+    return;
+  }
+  // 排除進行中的當月（資料還沒跑完會誤導）；2025 年月份的 kol_transactions/cvr 沒有補齊歷史資料
+  // （只回填了 2026 年），2025 那幾個月轉換筆數看起來是 0 其實是「沒資料」不是「真的 0」，容易誤導，故只顯示 2026 年起
+  const now=new Date(), curYm=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0');
+  const rows=KOL_MONTHLY_ROWS.filter(r=>r.ym.startsWith('2026/')&&r.ym!==curYm);
+  if(!rows.length){ kpiEl.innerHTML='<div class="cmp-pending" style="grid-column:1/-1">尚無完整月份資料。</div>'; return; }
+  const last=rows[rows.length-1];
+  document.getElementById('kol-month-range').textContent=rows[0].ym+' – '+last.ym+'（共 '+rows.length+' 個月）';
+  renderKPIs('kol-kpi',{
+    '流量':{v:last.sessions.toLocaleString(),vs:last.ym+' sessions',color:'#284234'},
+    '轉換率':{v:last.cvr.toFixed(2)+'%',vs:last.transactions+' 筆訂單',color:'#5a8a6e'},
+    '廣告金額':{v:fmtRev(last.spend),vs:'Meta 廣告層級花費',color:'#A54A1A'},
+    '轉換金額':{v:fmtRev(last.revenue),vs:'GA4 真實營收・ROAS '+last.roas.toFixed(2)+'x',color:'#8D5531'}
+  });
+
+  const el=document.getElementById('ch-kol-monthly');
+  if(el._chartInst) el._chartInst.destroy();
+  el._chartInst=new Chart(el,{data:{
+    labels:rows.map(r=>r.ym),
+    datasets:[
+      {type:'bar',label:'廣告金額',data:rows.map(r=>r.spend),backgroundColor:'#A54A1A',yAxisID:'y',order:2},
+      {type:'bar',label:'轉換金額(GA4)',data:rows.map(r=>r.revenue),backgroundColor:'#284234',yAxisID:'y',order:2},
+      {type:'line',label:'流量',data:rows.map(r=>r.sessions),borderColor:'#8D5531',backgroundColor:'#8D5531',tension:.3,pointRadius:3,borderWidth:2,yAxisID:'y1',order:1}
+    ]},options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{family:'Space Mono',size:10},color:'#8D5531',boxWidth:10}}},
+      scales:{
+        y:{position:'left',ticks:{font:{family:'Space Mono',size:9},color:'#b09a88',callback:v=>'NT$'+(v/1000)+'k'},grid:{color:'rgba(40,66,52,.05)'}},
+        y1:{position:'right',ticks:{font:{family:'Space Mono',size:9},color:'#b09a88'},grid:{display:false}},
+        x:{ticks:{font:{family:'Space Mono',size:9},color:'#b09a88'},grid:{display:false}}
+      }}});
+
+  document.getElementById('tbl-kol-monthly').innerHTML=`<thead><tr><th>月份</th><th>流量</th><th>轉換率</th><th>轉換筆數</th><th>轉換金額</th><th>廣告金額</th><th>ROAS</th></tr></thead><tbody>${
+    rows.slice().reverse().map(r=>{
+      const roasCls = r.roas>=3?'good':r.roas>=1?'warn':'bad';
+      const lowSample = r.transactions>0 && r.transactions<10;
+      return `<tr><td class="td-s">${r.ym}</td><td>${r.sessions.toLocaleString()}</td><td>${r.cvr.toFixed(2)}%</td><td>${r.transactions}${lowSample?'<span class="lowsample">低樣本</span>':''}</td><td>${fmtRev(r.revenue)}</td><td>${fmtRev(r.spend)}</td><td><span class="ch-pill ${roasCls}">${r.roas.toFixed(2)}x</span></td></tr>`;
+    }).join('')
+  }</tbody>`;
+}
+
+function renderPerson(){
+  const tblEl=document.getElementById('tbl-kol-person');
+  if(!KOL_PERSON_ROWS.length){
+    tblEl.innerHTML='';
+    document.getElementById('kol-person-updated').textContent='尚無資料';
+    return;
+  }
+  document.getElementById('kol-person-updated').textContent='更新於 '+fmtDatetime_(KOL_PERSON_ROWS[0].updatedAt);
+
+  const el=document.getElementById('ch-kol-person');
+  if(el._chartInst) el._chartInst.destroy();
+  el._chartInst=new Chart(el,{type:'bar',data:{
+    labels:KOL_PERSON_ROWS.map(r=>r.name),
+    datasets:[
+      {label:'線上轉換值',data:KOL_PERSON_ROWS.map(r=>r.onlineValue),backgroundColor:'#284234',stack:'v'},
+      {label:'線下轉換值(門市)',data:KOL_PERSON_ROWS.map(r=>r.offlineValue),backgroundColor:'#A54A1A',stack:'v'}
+    ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{family:'Space Mono',size:10},color:'#8D5531',boxWidth:10}}},
+      scales:{
+        x:{stacked:true,ticks:{font:{family:'Space Mono',size:9},color:'#b09a88',callback:v=>'NT$'+(v/1000)+'k'},grid:{color:'rgba(40,66,52,.05)'}},
+        y:{stacked:true,ticks:{font:{family:'Space Mono',size:11},color:'#284234'},grid:{display:false}}
+      }}});
+
+  tblEl.innerHTML=`<thead><tr><th>KOL</th><th>廣告金額</th><th>線上轉換</th><th>線下轉換</th><th>全通路轉換</th><th>ROAS</th><th>廣告數</th></tr></thead><tbody>${
+    KOL_PERSON_ROWS.map(r=>{
+      const roasCls = r.roas>=6?'good':r.roas>=3?'warn':'bad';
+      const lowSample = r.adCount<3;
+      const offlinePct = r.totalValue>0 ? Math.round(r.offlineValue/r.totalValue*100) : 0;
+      return `<tr><td class="td-s">${r.name}</td><td>${fmtRev(r.spend)}</td><td>${fmtRev(r.onlineValue)}</td><td>${fmtRev(r.offlineValue)}${offlinePct>=50?'<span class="lowsample" style="color:var(--positive);background:rgba(26,122,74,.1)">主要線下</span>':''}</td><td>${fmtRev(r.totalValue)}</td><td><span class="ch-pill ${roasCls}">${r.roas.toFixed(2)}x</span></td><td>${r.adCount}${lowSample?'<span class="lowsample">低樣本</span>':''}</td></tr>`;
+    }).join('')
+  }</tbody>`;
+}
+
+loadData();
+</script>
+</body>
+</html>
