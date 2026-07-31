@@ -108,6 +108,29 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .prog{height:5px;background:var(--sand);border-radius:3px;overflow:hidden;margin-bottom:6px}
 .prog-bar{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)}
 
+/* ── Annual goal ── */
+.goal-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.35rem}
+.goal-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.9rem}
+.goal-title{font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px}
+.goal-title::before{content:'';display:block;width:3px;height:12px;background:var(--rust);border-radius:2px}
+.goal-status{font-size:10px;font-family:'Space Mono',monospace;font-weight:700;padding:2px 9px;border-radius:20px}
+.goal-status.ahead{background:rgba(26,122,74,.1);color:var(--positive)}
+.goal-status.behind{background:rgba(192,57,43,.1);color:var(--negative)}
+.goal-metric-row{display:flex;align-items:baseline;gap:8px;margin-bottom:.35rem}
+.goal-metric-val{font-size:1.9rem;font-weight:700;font-family:'Space Mono',monospace;color:var(--text);line-height:1}
+.goal-metric-of{font-size:11px;color:var(--text-muted);font-family:'Space Mono',monospace}
+.goal-track{height:10px;background:var(--sand);border-radius:5px;overflow:hidden;position:relative;margin:.6rem 0 .5rem}
+.goal-fill{height:100%;border-radius:5px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.goal-marker{position:absolute;top:-3px;width:2px;height:16px;background:var(--brown)}
+.goal-foot{display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace}
+.goal-sub{margin-top:1rem;padding-top:.9rem;border-top:1px solid var(--border)}
+.goal-sub-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.goal-sub-row:last-child{margin-bottom:0}
+.goal-sub-label{font-size:11px;color:var(--text-sub);font-weight:600}
+.goal-sub-bar{flex:1;height:6px;background:var(--sand);border-radius:3px;overflow:hidden;margin:0 10px}
+.goal-sub-bar-fill{height:100%;border-radius:3px}
+.goal-sub-val{font-size:11px;font-family:'Space Mono',monospace;font-weight:700;white-space:nowrap}
+
 /* ── Pending ── */
 .pending-box{background:#fdf6e0;border:1px solid #e8c84a;border-radius:8px;padding:1.1rem 1.35rem;margin-bottom:1.25rem;font-size:.84rem;color:#8a6200;display:flex;align-items:center;gap:.75rem}
 
@@ -137,6 +160,16 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       ⏳ <span>等待 SEO GAS 首次執行後自動顯示資料。跑一次 <code>runWeeklyReport()</code> 即可。</span>
     </div>
   </div>
+
+  <!-- 2026 年度目標 -->
+  <div class="sec-hdr">
+    <div class="sec-title">2026 年度目標進度</div>
+    <div class="sec-date" id="goal-updated">—</div>
+  </div>
+  <div id="goal-pending" style="display:none">
+    <div class="pending-box">⏳ <span>年度目標追蹤還沒有資料——會在下週一 SEO/GEO 週報自動執行後第一次出現，或請 Gary 在 Apps Script 編輯器手動跑一次 <code>testTrackAnnualGoals()</code>。</span></div>
+  </div>
+  <div class="g2" id="goal-cards" style="display:none"></div>
 
   <!-- KPI summary -->
   <div class="sec-hdr">
@@ -271,6 +304,58 @@ async function loadSeoData(){
 
 function showPending(){
   document.getElementById('seo-pending').style.display='block';
+}
+
+async function loadGoalData(){
+  try{
+    const rows=await loadGviz('年度目標追蹤');
+    if(!rows||rows.length<1){document.getElementById('goal-pending').style.display='block';return;}
+    const r=rows[rows.length-1]; // 最新一列
+    const [updatedAt,ytdClicks,target,pctTarget,daysElapsed,pctYear,geminiRate,perplexityRate]=r;
+    document.getElementById('goal-updated').textContent='最近更新：'+updatedAt;
+
+    const ahead=pctTarget>=pctYear;
+    const trafficClr=ahead?'#1a7a4a':(pctTarget>=pctYear-15?'#b87a00':'#c0392b');
+
+    const geminiOk=geminiRate!=null&&geminiRate>=90;
+    const perplexityOk=perplexityRate!=null&&perplexityRate>=80;
+
+    document.getElementById('goal-cards').style.display='grid';
+    document.getElementById('goal-cards').innerHTML=`
+      <div class="goal-card">
+        <div class="goal-hdr">
+          <span class="goal-title">自然搜尋流量（YTD）</span>
+          <span class="goal-status ${ahead?'ahead':'behind'}">${ahead?'✅ 領先進度':'⚠️ 落後進度'}</span>
+        </div>
+        <div class="goal-metric-row">
+          <span class="goal-metric-val" style="color:${trafficClr}">${Number(ytdClicks).toLocaleString()}</span>
+          <span class="goal-metric-of">/ ${Number(target).toLocaleString()} 次點擊（年度目標）</span>
+        </div>
+        <div class="goal-track">
+          <div class="goal-fill" style="width:${Math.min(pctTarget,100)}%;background:${trafficClr}"></div>
+          <div class="goal-marker" style="left:${Math.min(pctYear,100)}%" title="年度時間進度 ${pctYear}%"></div>
+        </div>
+        <div class="goal-foot"><span>目標達成 ${pctTarget}%</span><span>年度已過 ${pctYear}%（棕色標記＝時間進度）</span></div>
+      </div>
+      <div class="goal-card">
+        <div class="goal-hdr">
+          <span class="goal-title">AI 搜尋引用率（GEO 核心題）</span>
+          <span class="goal-status ${geminiOk&&perplexityOk?'ahead':'behind'}">${geminiOk&&perplexityOk?'✅ 達標':'⚠️ 未達標'}</span>
+        </div>
+        <div class="goal-sub">
+          <div class="goal-sub-row">
+            <span class="goal-sub-label">Gemini（目標 90%）</span>
+            <div class="goal-sub-bar"><div class="goal-sub-bar-fill" style="width:${geminiRate||0}%;background:${geminiOk?'#1a7a4a':'#b87a00'}"></div></div>
+            <span class="goal-sub-val" style="color:${geminiOk?'#1a7a4a':'#b87a00'}">${geminiRate!=null?geminiRate+'%':'—'}</span>
+          </div>
+          <div class="goal-sub-row">
+            <span class="goal-sub-label">Perplexity（目標 80%）</span>
+            <div class="goal-sub-bar"><div class="goal-sub-bar-fill" style="width:${perplexityRate||0}%;background:${perplexityOk?'#1a7a4a':'#b87a00'}"></div></div>
+            <span class="goal-sub-val" style="color:${perplexityOk?'#1a7a4a':'#b87a00'}">${perplexityRate!=null?perplexityRate+'%':'—'}</span>
+          </div>
+        </div>
+      </div>`;
+  }catch(e){console.error(e);document.getElementById('goal-pending').style.display='block';}
 }
 
 function renderKpi(own,comp){
@@ -436,6 +521,7 @@ function renderCompetitors(own,comp){
 
 (function tick(){const n=new Date();document.getElementById('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>('0'+v).slice(-2)).join(':');setTimeout(tick,1000);})();
 loadSeoData();
+loadGoalData();
 </script>
 </body>
 </html>
