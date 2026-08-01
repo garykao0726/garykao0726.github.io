@@ -169,7 +169,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <div id="goal-pending" style="display:none">
     <div class="pending-box">⏳ <span>年度目標追蹤還沒有資料——會在下週一 SEO/GEO 週報自動執行後第一次出現，或請 Gary 在 Apps Script 編輯器手動跑一次 <code>testTrackAnnualGoals()</code>。</span></div>
   </div>
-  <div class="g2" id="goal-cards" style="display:none"></div>
+  <div class="g3" id="goal-cards" style="display:none"></div>
 
   <!-- KPI summary -->
   <div class="sec-hdr">
@@ -311,7 +311,8 @@ async function loadGoalData(){
     const rows=await loadGviz('年度目標追蹤');
     if(!rows||rows.length<1){document.getElementById('goal-pending').style.display='block';return;}
     const r=rows[rows.length-1]; // 最新一列
-    const [updatedAt,ytdClicks,target,pctTarget,daysElapsed,pctYear,geminiRate,perplexityRate]=r;
+    const [updatedAt,ytdClicks,target,pctTarget,daysElapsed,pctYear,geminiRate,perplexityRate,
+      organicRevenue,organicSessions,aiRevenue,aiSessions,aiSourceList]=r;
     document.getElementById('goal-updated').textContent='最近更新：'+updatedAt;
 
     const ahead=pctTarget>=pctYear;
@@ -353,6 +354,25 @@ async function loadGoalData(){
             <div class="goal-sub-bar"><div class="goal-sub-bar-fill" style="width:${perplexityRate||0}%;background:${perplexityOk?'#1a7a4a':'#b87a00'}"></div></div>
             <span class="goal-sub-val" style="color:${perplexityOk?'#1a7a4a':'#b87a00'}">${perplexityRate!=null?perplexityRate+'%':'—'}</span>
           </div>
+        </div>
+      </div>
+      <div class="goal-card">
+        <div class="goal-hdr">
+          <span class="goal-title">SEO/AI搜尋帶來的營收（YTD）</span>
+          <span class="goal-status neu" style="background:var(--surface2);color:var(--text-muted)">效益追蹤</span>
+        </div>
+        <div class="goal-sub" style="margin-top:0;padding-top:0;border-top:none">
+          <div class="goal-sub-row">
+            <span class="goal-sub-label">自然搜尋營收</span>
+            <span class="goal-sub-val" style="color:var(--green);font-size:14px">NT$${organicRevenue!=null?Number(organicRevenue).toLocaleString():'—'}</span>
+          </div>
+          <div style="font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;margin:-6px 0 10px">${organicSessions!=null?Number(organicSessions).toLocaleString()+' 工作階段（GA4，最後點擊歸因）':''}</div>
+          <div class="goal-sub-row">
+            <span class="goal-sub-label">AI搜尋來源營收</span>
+            <span class="goal-sub-val" style="color:var(--rust);font-size:14px">NT$${aiRevenue!=null?Number(aiRevenue).toLocaleString():'—'}</span>
+          </div>
+          <div style="font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace">${aiSessions!=null?Number(aiSessions).toLocaleString()+' 工作階段':''}${aiSourceList?'｜'+aiSourceList:''}</div>
+          <div style="font-size:9px;color:var(--text-muted);margin-top:8px;line-height:1.5">⚠️ AI助理常不傳送referrer，這組數字是低估值，只看方向趨勢，不是精確總量</div>
         </div>
       </div>`;
   }catch(e){console.error(e);document.getElementById('goal-pending').style.display='block';}
