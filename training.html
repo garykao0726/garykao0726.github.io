@@ -588,14 +588,14 @@ let answers = {}; // quizIdx -> {picked, correct}
 const $ = (id) => document.getElementById(id);
 
 async function loadProgress() {
+  renderModuleGrid(); // 先用「尚未開始」畫面立刻顯示，不要卡在等 GAS 回應（GAS 常常要2-3秒以上）
   const email = getEmail();
   if (!email || !GAS_URL) return;
   try {
     const res = await fetch(GAS_URL + '?action=getProgress&email=' + encodeURIComponent(email));
     const data = await res.json();
-    if (data && data.success) progressCache = data.progress || {};
+    if (data && data.success) { progressCache = data.progress || {}; renderModuleGrid(); } // 拿到真實進度後再補畫一次徽章
   } catch (e) { console.warn('讀取學習進度失敗', e); }
-  renderModuleGrid();
 }
 
 function renderModuleGrid() {
