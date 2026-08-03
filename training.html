@@ -47,7 +47,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   color:rgba(207,162,148,.7);text-transform:uppercase}
 
 /* ── Container ── */
-.container{max-width:780px;margin:0 auto;padding:2.4rem 1.5rem 4rem}
+.container{max-width:980px;margin:0 auto;padding:2.4rem 1.5rem 4rem}
 
 /* ── Module grid ── */
 .module-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
@@ -74,19 +74,27 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 
 .step-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;
-  padding:30px 28px;box-shadow:0 4px 18px rgba(40,66,52,.06);animation:slide-in .3s ease}
+  padding:32px 32px;box-shadow:0 4px 18px rgba(40,66,52,.06);animation:slide-in .3s ease;
+  max-width:700px;margin:0 auto}
 @keyframes slide-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.step-card.article-mode{max-width:920px;padding:44px 64px}
 .step-kicker{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;
   color:var(--gray-pink);text-transform:uppercase;margin-bottom:10px}
-.step-photo{width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-bottom:18px;
+.step-photo{width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-bottom:12px;
   display:block;box-shadow:0 4px 14px rgba(40,66,52,.1)}
-.step-photo-cap{font-size:11px;color:var(--text-muted);margin:-10px 0 18px;font-family:'Space Mono',monospace;letter-spacing:.5px}
-.article-section{margin-top:22px}
-.article-section:first-of-type{margin-top:20px}
-.article-section-title{font-size:16px;font-weight:700;color:var(--green);margin-bottom:12px}
-.article-divider{height:1px;background:var(--border);margin:26px 0}
+.article-mode .step-photo{max-height:400px}
+.step-photo-cap{font-size:12px;color:var(--text-muted);margin:0 0 18px;font-family:'Noto Sans TC',sans-serif;
+  font-style:italic;text-align:center;letter-spacing:.3px}
+.article-section{margin-top:36px;padding-top:32px;border-top:1px solid var(--border)}
+.article-section:first-of-type{margin-top:0;padding-top:0;border-top:none}
+.article-section-eyebrow{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:3px;
+  color:var(--rust);text-transform:uppercase;margin-bottom:8px}
+.article-section-title{font-size:23px;font-weight:700;color:var(--green);margin-bottom:16px;line-height:1.4;
+  letter-spacing:.01em}
+.article-divider{display:none}
 .step-title{font-size:19px;font-weight:700;color:var(--green);margin-bottom:16px;line-height:1.5}
-.step-body{font-size:14.5px;line-height:1.9;color:var(--text)}
+.step-body{font-size:14.5px;line-height:1.9;color:var(--text);max-width:74ch}
+.article-mode .step-body{font-size:15.5px;line-height:2}
 .step-body strong{color:var(--rust)}
 
 .table-scroll{overflow-x:auto;margin:12px 0;border-radius:10px;border:1px solid var(--border)}
@@ -134,11 +142,18 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .footer{border-top:1px solid var(--border);padding:1.6rem;text-align:center;
   font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:1.5px}
 
+@media(max-width:900px){
+  .step-card.article-mode{max-width:700px;padding:32px 32px}
+  .article-mode .step-body{font-size:14.5px;line-height:1.9}
+  .article-section-title{font-size:19px}
+}
 @media(max-width:540px){
   .hdr{padding:0 1rem}
   .hero{padding:2.2rem 1rem 2rem}
   .container{padding:2rem 1rem 3rem}
   .step-card{padding:22px 18px}
+  .step-card.article-mode{padding:22px 18px}
+  .article-section{margin-top:26px;padding-top:22px}
 }
 </style>
 </head>
@@ -628,19 +643,22 @@ function renderReadStep() {
   $('progress-label').textContent = '閱讀完整內容';
   $('progress-fill').style.width = '8%';
 
-  const sectionsHtml = readSteps.map(step => {
+  const sectionsHtml = readSteps.map((step, i) => {
     const photoHtml = step.photo
       ? `<img class="step-photo" src="${step.photo}" alt="${step.title}" loading="lazy">${step.photoCap ? '<div class="step-photo-cap">📷 '+step.photoCap+'</div>' : ''}`
       : '';
+    const idx = String(i + 1).padStart(2, '0');
     return `
       <div class="article-section">
+        <div class="article-section-eyebrow">${idx} / ${String(readSteps.length).padStart(2,'0')}</div>
         <div class="article-section-title">${step.title}</div>
         ${photoHtml}
         <div class="step-body">${step.body}</div>
       </div>`;
-  }).join('<div class="article-divider"></div>');
+  }).join('');
 
   const card = $('step-card');
+  card.classList.add('article-mode');
   card.innerHTML = `
     <div class="step-kicker">${currentModule.title} · 閱讀完整內容（共 ${readSteps.length} 段，讀完才開始測驗）</div>
     <div class="step-title">${currentModule.title}</div>
@@ -663,6 +681,7 @@ function renderQuizStep() {
 
   const prevAnswer = answers[quizIdx];
   const card = $('step-card');
+  card.classList.remove('article-mode');
   card.innerHTML = `
     <div class="step-kicker">🧠 小測驗（讀完了，靠記憶作答）</div>
     <div class="step-title">${step.q}</div>
