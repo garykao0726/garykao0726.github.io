@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜林果學苑．商品知識訓練</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{
+  --green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;
+  --rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;
+  --bg:#F5EDE3;--surface:#fff;--surface2:#FAF5EF;
+  --border:rgba(40,66,52,.10);--border2:rgba(40,66,52,.22);
+  --text:#284234;--text-muted:#b09a88;
+  --pos:#388E3C;--neg:#D32F2F;--warn:#F57C00
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;line-height:1.7}
+
+/* ── Header ── */
+.hdr{position:sticky;top:0;z-index:100;background:var(--green);height:54px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--sand)}
+.brand-sep{width:1px;height:16px;background:rgba(226,206,185,.3)}
+.brand-sub{font-size:10px;color:var(--gray-pink);font-family:'Space Mono',monospace}
+.hdr-r{display:flex;align-items:center;gap:14px}
+.hdr-back{font-size:11px;color:var(--gray-pink);text-decoration:none;font-family:'Space Mono',monospace;
+  border:1px solid rgba(226,206,185,.25);padding:5px 12px;border-radius:14px;transition:.2s;cursor:pointer;background:none}
+.hdr-back:hover{background:rgba(226,206,185,.1);color:var(--sand)}
+
+/* ── Hero ── */
+.hero{background:var(--green);padding:3rem 1.5rem 2.6rem;text-align:center;
+  border-bottom:1px solid rgba(226,206,185,.15)}
+.hero-eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:5px;
+  color:var(--gray-pink);text-transform:uppercase;margin-bottom:18px}
+.hero-rule{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:16px}
+.hero-line{width:48px;height:1px;background:rgba(226,206,185,.3)}
+.hero-icon{font-size:22px}
+.hero-title{font-family:'Noto Sans TC',sans-serif;font-size:clamp(22px,3.4vw,32px);
+  font-weight:700;color:var(--sand);letter-spacing:.04em;line-height:1.25;margin-bottom:6px}
+.hero-sub{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;
+  color:rgba(207,162,148,.7);text-transform:uppercase}
+
+/* ── Container ── */
+.container{max-width:780px;margin:0 auto;padding:2.4rem 1.5rem 4rem}
+
+/* ── Module grid ── */
+.module-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.module-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;
+  padding:22px 20px;cursor:pointer;transition:.18s;box-shadow:0 2px 10px rgba(40,66,52,.05);
+  display:flex;flex-direction:column;gap:10px}
+.module-card:hover{border-color:var(--green);transform:translateY(-2px);box-shadow:0 8px 22px rgba(40,66,52,.1)}
+.module-icon{font-size:30px}
+.module-title{font-size:15px;font-weight:700;color:var(--green)}
+.module-desc{font-size:12px;color:var(--text-muted);line-height:1.6;flex:1}
+.module-badge{align-self:flex-start;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.5px;
+  padding:4px 10px;border-radius:12px;background:var(--sand-light);color:var(--brown);border:1px solid var(--border)}
+.module-badge.done{background:rgba(56,142,60,.12);color:var(--pos);border-color:rgba(56,142,60,.3)}
+@media(max-width:560px){.module-grid{grid-template-columns:1fr}}
+
+/* ── Lesson runner ── */
+.lesson-wrap{display:none}
+.lesson-wrap.show{display:block}
+.progress-top{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.progress-bar-track{flex:1;height:6px;border-radius:4px;background:var(--sand-light);overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--green);border-radius:4px;transition:width .3s ease}
+.progress-step-label{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);white-space:nowrap}
+.lesson-exit{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);
+  background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+
+.step-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;
+  padding:30px 28px;box-shadow:0 4px 18px rgba(40,66,52,.06);animation:slide-in .3s ease}
+@keyframes slide-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.step-kicker{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;
+  color:var(--gray-pink);text-transform:uppercase;margin-bottom:10px}
+.step-title{font-size:19px;font-weight:700;color:var(--green);margin-bottom:16px;line-height:1.5}
+.step-body{font-size:14.5px;line-height:1.9;color:var(--text)}
+.step-body strong{color:var(--rust)}
+
+.table-scroll{overflow-x:auto;margin:12px 0;border-radius:10px;border:1px solid var(--border)}
+.ref-table{border-collapse:collapse;width:100%;font-size:12.5px;white-space:nowrap}
+.ref-table th,.ref-table td{padding:8px 12px;border-bottom:1px solid var(--border);text-align:center}
+.ref-table th{background:var(--sand-light);color:var(--green);font-weight:700;position:sticky;left:0}
+.ref-table tr:last-child td{border-bottom:none}
+
+.quiz-options{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.quiz-opt{text-align:left;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;
+  padding:13px 16px;font-size:13.5px;color:var(--text);cursor:pointer;transition:.15s;font-family:inherit;line-height:1.6}
+.quiz-opt:hover:not(:disabled){border-color:var(--green);background:#fff}
+.quiz-opt:disabled{cursor:default}
+.quiz-opt.correct{border-color:var(--pos);background:rgba(56,142,60,.1);color:var(--pos);font-weight:700}
+.quiz-opt.wrong{border-color:var(--neg);background:rgba(211,47,47,.08);color:var(--neg);font-weight:700}
+.quiz-feedback{margin-top:16px;padding:14px 16px;border-radius:12px;font-size:13px;line-height:1.8;
+  background:var(--sand-light);border:1px dashed var(--border2);display:none}
+.quiz-feedback.show{display:block}
+.quiz-feedback .fb-head{font-weight:700;margin-bottom:4px}
+.quiz-feedback.correct-fb .fb-head{color:var(--pos)}
+.quiz-feedback.wrong-fb .fb-head{color:var(--neg)}
+
+.step-nav{display:flex;justify-content:space-between;align-items:center;margin-top:22px}
+.btn{font-family:'Noto Sans TC',sans-serif;font-size:13.5px;font-weight:700;border:none;border-radius:12px;
+  padding:12px 24px;cursor:pointer;transition:.18s}
+.btn-primary{background:var(--green);color:var(--sand)}
+.btn-primary:hover{background:var(--dark)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:none;color:var(--text-muted);border:1px solid var(--border2)}
+.btn-ghost:hover{color:var(--green);border-color:var(--green)}
+
+/* ── Result screen ── */
+.result-wrap{display:none;text-align:center}
+.result-wrap.show{display:block}
+.result-emoji{font-size:52px;margin-bottom:14px}
+.result-title{font-size:20px;font-weight:700;color:var(--green);margin-bottom:8px}
+.result-score{font-family:'Space Mono',monospace;font-size:38px;font-weight:700;color:var(--rust);margin:14px 0}
+.result-score small{font-size:16px;color:var(--text-muted)}
+.result-sub{font-size:13px;color:var(--text-muted);margin-bottom:26px}
+.result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+.intro{text-align:center;color:var(--text-muted);padding:0 0 2rem;font-size:13px;line-height:1.9}
+.intro strong{color:var(--green)}
+
+.footer{border-top:1px solid var(--border);padding:1.6rem;text-align:center;
+  font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:1.5px}
+
+@media(max-width:540px){
+  .hdr{padding:0 1rem}
+  .hero{padding:2.2rem 1rem 2rem}
+  .container{padding:2rem 1rem 3rem}
+  .step-card{padding:22px 18px}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="hdr">
+  <div class="brand">
+    <div class="brand-name">ORINGO</div>
+    <div class="brand-sep"></div>
+    <div class="brand-sub">Staff Academy</div>
+  </div>
+  <div class="hdr-r">
+    <a href="/" class="hdr-back">← 中控中心</a>
+  </div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">Partner Learning &amp; Quiz</div>
+  <div class="hero-rule">
+    <div class="hero-line"></div>
+    <div class="hero-icon">🎓</div>
+    <div class="hero-line"></div>
+  </div>
+  <div class="hero-title">林果學苑</div>
+  <div class="hero-sub">商品知識 · 學習與測驗（雛形）</div>
+</div>
+
+<div class="container">
+
+  <div class="intro" id="intro-text">
+    把<strong>商品知識手冊</strong>拆成一個個小知識點，讀完一小段就來一題小測驗。<br>
+    全部讀完＋答完，就等於完整複習了一次商品知識！完成後會自動記錄你的分數。
+  </div>
+
+  <!-- 模組列表 -->
+  <div class="module-grid" id="module-grid"></div>
+
+  <!-- 學習/測驗 runner -->
+  <div class="lesson-wrap" id="lesson-wrap">
+    <div class="progress-top">
+      <button class="lesson-exit" id="lesson-exit">← 返回模組列表</button>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="progress-step-label" id="progress-label">1 / 1</div>
+    </div>
+    <div class="step-card" id="step-card"></div>
+  </div>
+
+  <!-- 結果畫面 -->
+  <div class="result-wrap" id="result-wrap">
+    <div class="result-emoji" id="result-emoji">🎉</div>
+    <div class="result-title" id="result-title"></div>
+    <div class="result-score" id="result-score"></div>
+    <div class="result-sub" id="result-sub"></div>
+    <div class="result-actions">
+      <button class="btn btn-ghost" id="btn-back-list">返回模組列表</button>
+      <button class="btn btn-primary" id="btn-retry">重新測驗</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">© 2026 ORINGO SHOES CO., LTD. · INTERNAL USE ONLY</div>
+
+<script>
+// ============================================================
+// 林果學苑 — 進度記錄 API
+// ============================================================
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbybDRIBOBbjPMH43C5GKB83JsaND2hK0sMYHGkKxXvcLckQ-rVikaPYtHvsxdst7Z7g/exec';
+
+function getEmail() {
+  try {
+    const s = JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null');
+    return (s && s.email) || '';
+  } catch { return ''; }
+}
+
+// ============================================================
+// 課程內容：第2冊 商品知識手冊
+// ============================================================
+const MODULES = [
+{
+  id:'brand', icon:'👞', title:'林果特色與鞋子構造', desc:'三大特色、各部位名稱、製鞋工藝、售後服務',
+  steps:[
+    {type:'card', title:'林果三大特色', body:`林果鞋有三大核心特色：<br>
+1️⃣ 以<strong>台灣人的版型</strong>開發楦頭<br>
+2️⃣ 由<strong>台灣師傅</strong>手工製作<br>
+3️⃣ <strong>皮革大底</strong>鞋款<br><br>
+向客人介紹商品時，這三點是建立信任感與專業度的第一步。`},
+    {type:'quiz', q:'林果鞋的三大特色不包含以下哪一項？',
+      options:['以台灣人的版型開發楦頭','由台灣師傅手工製作','全部改用進口機器大量量產','皮革大底鞋款'],
+      correct:2, exp:'林果強調台灣楦頭＋台灣師傅手工＋皮革大底，並非強調機器量產。'},
+
+    {type:'card', title:'認識港寶', body:`<strong>港寶</strong>是複合性材質製作的鞋頭/鞋跟內襯，原本軟軟的像紙張，泡過甲苯進烤箱烘烤後才會變硬定型。<br><br>
+⚠️ 重點：港寶一旦受外力壓迫或踢到，是<strong>無法修復</strong>的！常見狀況：沒用鞋拔硬踩後跟、踢到機車停車架、客人用手大力按壓測試軟硬度。`},
+    {type:'quiz', q:'情境題：客人說「我鞋頭被摩托車停車架踢到凹了一個洞，可以修好嗎？」你會怎麼回答比較正確？',
+      options:[
+        '「沒問題，我們可以幫您敲回原狀」',
+        '「這個位置是港寶，屬於受力後不可逆的結構材質，一旦凹陷無法修復；之後建議搭配鞋拔、留意尖銳物碰撞就能避免」',
+        '「這是皮革本身的問題，應該是你保養不夠好」',
+        '「這雙鞋壽命到了，建議直接買新的」'],
+      correct:1, exp:'港寶泡甲苯烘烤定型後會變硬，受外力壓迫是材質特性造成的不可逆損傷，不是保養問題。要誠實說明原因，並提供預防建議（用鞋拔、避免尖銳物碰撞），不要隨口答應能修復，也不要把責任推給客人。'},
+
+    {type:'card', title:'金油與中底鐵芯', body:`<strong>金油</strong>：鞋頭、鞋跟會上的一層薄薄後處理保護漆，帶有亮度。中段因為走路會彎折，只上薄薄一層蠟，不上金油（否則金油會裂開）。<br><br>
+<strong>中底(含鐵芯)</strong>：複合材質製作，與楦頭底貼合固定鞋面皮革、幫助固定鞋型。鞋腰(足弓)延伸至腳跟中心有一長條鐵片稱為「鐵芯」，加強有跟鞋款起伏處的支撐力，延長鞋子壽命。`},
+    {type:'quiz', q:'為什麼林果的鞋子鞋頭、後跟摸起來會亮，但中段不會？',
+      options:['中段刻意不上金油，因為走路彎折容易讓金油龜裂，只上薄薄一層蠟','中段沒有做完整工序，是品管疏漏','中段材質跟鞋頭不同，本來就不能上金油','這是消費者自己保養不當造成的'],
+      correct:0, exp:'鞋頭、後跟走路時不太會彎折，適合上金油做保護與亮度；中段會隨走路彎折，上金油容易裂開，所以只上薄薄一層蠟。'},
+    {type:'quiz', q:'中底裡的「鐵芯」主要功能是什麼？',
+      options:['讓鞋子變重顯得比較高級','加強足弓/鞋腰起伏處的支撐力，延長鞋子壽命','防止鞋子進水','用來辨別是不是真皮'],
+      correct:1, exp:'鐵芯是一長條鐵片，從鞋腰(足弓)延伸到腳跟中心，加強有跟鞋款起伏處的支撐效果。'},
+
+    {type:'card', title:'大底與天皮', body:`<strong>大底</strong>：鞋子最主要的結構，材質有真皮、橡膠、發泡材質等。<br><br>
+<strong>天皮</strong>：後腳跟區域的橡膠片，主要用途是<strong>止滑</strong>，通常可拆卸更換，維持大底的壽命。<br><br>
+🎁 <strong>售後服務重點</strong>：林果紳士鞋類的皮底鞋款，天皮提供<strong>免費更換一次</strong>的服務（門市可現場更換；寄送則需自付來回運費，工作天10-15天）。`},
+    {type:'quiz', q:'天皮的主要作用，以及林果的售後服務是？',
+      options:['止滑，紳士鞋皮底類提供免費更換一次','止滑，永久保固無限次免費更換','防水，需每次自費更換','純裝飾用，不影響鞋子壽命'],
+      correct:0, exp:'天皮約可穿8~10個月，磨平後林果提供紳士鞋皮底類「免費更換一次」的服務，門市可現場更換。'},
+
+    {type:'card', title:'製鞋工藝流程', body:`林果鞋由數十年經驗的台灣製鞋師傅製作，一雙皮底鞋以<strong>100多道製作步驟</strong>完成：<br><br>
+開發鞋楦 → 設計圖/畫版/製作樣品 → 劃皮/裁剪 → 縫製鞋面/內裡 → 拉幫(加入港寶)/貼合中底/烘烤 → 拔釘/打粗/上膠 → 大底處理 → 裝鞋墊/去漬/烘吹/推油<br><br>
+全部工序約需 <strong>45–60 天</strong>才能完成一雙鞋。`},
+    {type:'quiz', q:'一雙皮底鞋從開始製作到完成，大約需要多久時間？',
+      options:['7-10天','20-30天','45-60天','超過半年'],
+      correct:2, exp:'一雙皮底鞋以100多道製作步驟完成，從劃皮、縫製鞋面、拉幫、作底、脫楦…等，約需45-60天的製作期。'},
+
+    {type:'card', title:'鞋底材質比較', body:`<div class="table-scroll"><table class="ref-table">
+<tr><th>材質</th><th>優點</th><th>缺點</th><th>備註</th></tr>
+<tr><td>皮底</td><td>透氣、重量輕、防靜電</td><td>易滑、發霉</td><td>義大利進口高質感母牛背皮</td></tr>
+<tr><td>膠底</td><td>耐磨、止滑</td><td>重量較重</td><td>拉力測試超過國家標準2倍以上</td></tr>
+<tr><td>EVA泡棉</td><td>重量非常輕</td><td>消耗較快</td><td>搭配橡膠底成型，耐磨效果較好</td></tr>
+</table></div>`},
+    {type:'quiz', q:'情境題：客人常在下雨天通勤，很擔心止滑問題，你會優先推薦哪種鞋底？',
+      options:['皮底，因為比較有質感','膠底，耐磨止滑，較適合雨天通勤的止滑需求','EVA泡棉，因為最輕','三種都一樣，沒有差別'],
+      correct:1, exp:'膠底耐磨止滑，雖然比皮底重，但更適合雨天通勤這類重視止滑的情境；皮底透氣輕巧但容易滑、易發霉，可依客人的使用情境做取捨建議。'},
+
+    {type:'card', title:'售後服務總整理', body:`<strong>14天鑑賞期</strong>：網路購買客人，14天內尺碼不符/新品瑕疵，且無落地或人為破壞，可<strong>免費更換一次</strong>尺碼（店面購買需親自前往替換）。<br><br>
+<strong>保固期維修</strong>：全系列商品提供<strong>一年保固</strong>，非自然磨耗或人為破壞的品質不良故障，皆提供檢修維修。<br><br>
+<strong>天皮更換免費</strong>：天皮磨平時提供免費維修服務一次。`},
+    {type:'quiz', q:'網路購買的客人，尺碼不合的免費更換期限是幾天？',
+      options:['7天','14天','30天','無期限，隨時都能換'],
+      correct:1, exp:'網購客人在14天鑑賞期內，如尺碼不符、新品瑕疵，且無落地或人為破壞，可免費更換一次。'},
+
+    {type:'card', title:'常見Q&A：黏合鞋與生膠底', body:`<strong>黏合的鞋子容易壞掉嗎？</strong><br>
+林果的鞋子都經過拉力測試，超過<strong>國家標準2倍以上</strong>，只要避免長期泡水、記得定期更換天皮，不用擔心開口問題。<br><br>
+<strong>生膠底 vs 煉膠底</strong>：生膠底是未煉過的橡膠，柔軟度較佳，但夏天較黏、不適合亞熱帶氣候。林果的皮鞋及休閒鞋都是<strong>煉過的橡膠大底</strong>，密度較緊密、耐磨程度較好。`},
+    {type:'quiz', q:'情境題：客人問「你們黏合的鞋是不是比較容易壞掉？」你的回答應該是？',
+      options:['對啊，黏的比較不耐用，建議選車縫的款式','我們的鞋子都經過超過國家標準2倍以上的拉力測試，只要避免長期泡水、定期更換天皮，不會有開口的問題','不清楚，要問廠長才知道','黏合鞋完全不會壞，可以放心亂穿'],
+      correct:1, exp:'要用具體的數據（拉力測試超過國家標準2倍以上）建立信任，同時誠實提醒正確的保養方式（避免長期泡水、定期更換天皮），而不是模糊帶過或誇大。'},
+
+    {type:'card', title:'常見Q&A：磨腳與皮革透氣度', body:`<strong>手工鞋不會磨腳嗎？</strong> 磨腳最常見的兩個原因：①鞋子太大或太小，無法完整包覆腳型。②皮革較厚或經過額外塗料處理，雖然不易進水但較不透氣、較硬。台灣氣候與腳型下，林果多數鞋款使用較薄的皮革，透氣舒適度較佳。<br><br>
+<strong>皮鞋穿久會不會臭？</strong> 基本上不會，因為鞋面是真牛皮，皮革有毛孔可以排出汗水濕氣；皮底鞋透氣度最好。若使用頻繁（如工作鞋），建議準備兩雙交替穿。`},
+    {type:'quiz', q:'情境題：客人擔心「常穿皮鞋工作，會不會很臭？」比較好的回答方向是？',
+      options:['會啊，皮鞋本來就比較悶熱','基本上不會，真牛皮的皮革有毛孔可以排出汗水濕氣，若使用頻繁建議準備兩雙交替穿更能改善','不會，因為我們的鞋子有除臭噴霧','這個問題不重要，可以不用回答'],
+      correct:1, exp:'用材質特性（真皮毛孔透氣）建立信心，同時給出實用建議（頻繁使用時兩雙交替穿），是比較完整、專業的回答方式。'}
+  ]
+},
+{
+  id:'construction', icon:'🧵', title:'鞋子成型結構', desc:'布雷克、固特異、攀幫、拉幫、摩卡森五大結構',
+  steps:[
+    {type:'card', title:'製鞋流程簡述', body:`從一片皮革到一雙鞋，基本流程是：<br>
+畫料 → 取料/裁斷 → 削皮 → 車縫組合 → 攀楦 → 貼合 → 底車縫 → 後處理<br><br>
+「成型結構」指的是<strong>鞋面與鞋底如何結合固定</strong>的方式，分成「有車縫線」和「無車縫線(直接黏貼)」兩大類，會直接影響鞋子的耐用度、腳感、能不能換底。`},
+
+    {type:'card', title:'布雷克結構 Blake construction', body:`命名源自1856年 Lyman Reed Blake 設計的車底機。做法：將<strong>鞋面、中底與大底片一起車縫</strong>，底部結構較輕薄，只做一道車縫。沿條屬裝飾性設計，可寬可窄。<br><br>
+✅ 優點：輕量、曲折性佳、外觀細緻<br>
+⚠️ 缺點：底的車線孔容易進水<br>
+🏷️ 常見於義大利製皮鞋；<strong>林果女鞋、工作鞋靴系列</strong>使用此結構`},
+    {type:'quiz', q:'布雷克結構的優點是？',
+      options:['輕量、曲折性佳、外觀細緻','完全防水，絕對不會進水','最耐穿，可以無限次更換底部','製作時間最短，成本最低'],
+      correct:0, exp:'布雷克結構底部只做一道車縫，輕量且曲折性佳、外觀細緻，缺點是車線孔容易進水。'},
+
+    {type:'card', title:'林果男鞋的布雷克結構（改良版）', body:`林果的做法：師傅先<strong>手工剖開大底做出夾層</strong>，鞋面、中底與大底是車縫在暗溝內，車縫後再將底層皮革貼合埋藏縫線，<strong>解決了一般布雷克容易進水的問題</strong>，而且縫線不外露。<br><br>
+🏷️ 用於<strong>所有林果皮底男鞋款</strong>`},
+    {type:'quiz', q:'情境題：客人問「你們家男鞋皮底摸起來怎麼看不到車縫線？」正確回答是？',
+      options:['因為根本沒有車縫，是純黏合的','因為師傅手工剖開大底做出夾層，車縫在暗溝內再把底層皮革貼合埋藏縫線，解決一般布雷克容易進水的問題','因為這是固特異結構','看不到縫線代表是品質瑕疵，建議送修'],
+      correct:1, exp:'這是林果改良版布雷克結構的重點：暗溝車縫＋貼合埋藏縫線，兼顧不外露的外觀與防止進水。'},
+
+    {type:'card', title:'固特異結構 Goodyear construction', body:`古老結構法，命名來自1870年代發明合縫肋條縫紉機的 Charles Goodyear, Jr.。做法：鞋面、中底垂直向肋條、沿條內側車縫後貼合大底片，沿條外側再與大底片車縫，<strong>底部做兩道車縫</strong>，沿條需寬6mm以上。<br><br>
+✅ 優點：較容易換底、較耐穿、不會進水<br>
+⚠️ 缺點：腳感較硬、較重、製作耗時<br>
+⚠️ <strong>重要：林果目前沒有固特異結構的鞋款！</strong>常見於中高檔紳士鞋。`},
+    {type:'quiz', q:'以下哪一項描述是正確的？',
+      options:['林果目前有推出固特異結構的鞋款','固特異結構沿條車縫只需要一道','固特異結構優點是較耐穿、好換底、不容易進水，但腳感較硬重、製作耗時','固特異結構是林果目前的主力鞋款結構'],
+      correct:2, exp:'⚠️特別注意：林果目前沒有固特異結構的鞋款，如果客人問起要誠實說明，不要誤導客人。固特異結構的特色是兩道車縫、沿條需6mm以上，較耐穿好換底，但腳感較硬重、製作耗時。'},
+
+    {type:'card', title:'攀幫結構 Lasting construction（貼底）', body:`隨著膠水黏性與強度改善，簡化生產的結構。保留最原始「將鞋面攀附在中底板下固定」的作法，<strong>以膠水取代車縫</strong>做為主要固定方式。<br><br>
+✅ 優點：製作快速<br>
+⚠️ 缺點：結構強度一般，<strong>無法換底</strong><br>
+🏷️ 最常見的鞋子成型製法；<strong>林果的工作鞋、膠底鞋、休閒鞋</strong>都是此結構`},
+    {type:'quiz', q:'攀幫結構(貼底)最大的限制是什麼？',
+      options:['價格最貴','無法換底','完全不能碰水','只能做女鞋'],
+      correct:1, exp:'攀幫結構以膠水黏合鞋面與鞋底，製作快速，但結構強度一般、無法換底。'},
+
+    {type:'card', title:'拉幫結構 Strobel construction', body:`1950年代開發出可平接材料的Z字形車縫機，改良摩卡森結構，節省鞋面材料。不需硬質中底板，直接將鞋面與<strong>布質中底</strong>拼接成襪袋狀鞋面，套入楦頭定型，上膠後與大底貼合。<br><br>
+✅ 優點：製作快速、節省材料、柔軟曲折佳<br>
+⚠️ 缺點：結構強度較差、不可換底<br>
+🏷️ 慢跑鞋與女生平底娃娃鞋常見；林果無此結構的常見鞋款`},
+    {type:'quiz', q:'情境題：客人翻開鞋墊，看到裡面是「布質的中底、直接與鞋面縫合」，這是哪種結構？',
+      options:['布雷克結構','固特異結構','拉幫結構','摩卡森結構'],
+      correct:2, exp:'拉幫結構的特徵就是掀開鞋墊看得到布質、與鞋面縫合的中底布，常見於慢跑鞋與女生平底娃娃鞋。'},
+
+    {type:'card', title:'摩卡森(包子鞋)結構 Moccasins construction', body:`古老結構法，源自印地安人鹿皮靴，衍伸出帆船鞋、機車鞋等鞋款。做法：側身鞋片加大延伸到底部，以肋條縫法縫合作出襪袋型鞋面，後跟通常墊半截中底支撐，套入楦頭定型，上膠後與大底貼合。<br><br>
+✅ 優點：前掌柔軟曲折佳<br>
+⚠️ 缺點：結構強度較差、不可換底、較浪費材料<br>
+🏷️ 機車鞋、帆船鞋常用；<strong>林果的馬克縫流蘇樂福鞋、帆船鞋</strong>使用此結構`},
+    {type:'quiz', q:'林果哪些鞋款使用摩卡森(包子鞋)結構？',
+      options:['馬克縫流蘇樂福鞋、帆船鞋','所有紳士皮鞋','所有工作鞋靴','所有女鞋款'],
+      correct:0, exp:'摩卡森結構是側身鞋片延伸到底部的襪袋型做法，林果的馬克縫流蘇樂福鞋、帆船鞋都是使用此結構。'},
+
+    {type:'card', title:'五大結構總複習', body:`<div class="table-scroll"><table class="ref-table">
+<tr><th>結構</th><th>大底車縫線</th><th>外觀特點</th><th>林果對應鞋款</th></tr>
+<tr><td>布雷克</td><td>有</td><td>大底有車縫線、底較薄、沿條可寬可窄</td><td>女鞋</td></tr>
+<tr><td>林果改良布雷克</td><td>有(暗溝)</td><td>腰身看得到車縫線、底較薄</td><td>男皮底鞋</td></tr>
+<tr><td>固特異</td><td>有</td><td>大底較厚、沿條寬(6mm以上)</td><td>無(林果目前無此結構)</td></tr>
+<tr><td>攀幫</td><td>無</td><td>掀鞋墊看得到紙漿中底板</td><td>男膠底鞋/休閒鞋/工作鞋</td></tr>
+<tr><td>拉幫</td><td>無</td><td>掀鞋墊看得到布質中底</td><td>無(運動鞋常見)</td></tr>
+<tr><td>摩卡森</td><td>有/無</td><td>掀鞋墊看得到鞋面裁片延伸到中底</td><td>帆船鞋、流蘇樂福鞋</td></tr>
+</table></div>`},
+    {type:'quiz', q:'情境題：客人翻開鞋墊，看到鞋面裁片直接延伸到中底處，這是？',
+      options:['布雷克結構','固特異結構','拉幫結構','摩卡森結構'],
+      correct:3, exp:'摩卡森結構的特徵是側身鞋片延伸到底部，掀開鞋墊會看到鞋面裁片直接延伸到中底。'}
+  ]
+},
+{
+  id:'care', icon:'🧴', title:'保養品專業知識', desc:'工具、清潔、滋養、補色、防水五大類產品與銷售話術',
+  steps:[
+    {type:'card', title:'為什麼要重視保養？', body:`重視保養能帶來四個價值：<br>
+① 加深客人的黏著度<br>
+② 員工個人價值提升：面對客人更有自信、建立成就感<br>
+③ 提升林果服務品質的一致性與穩定度<br>
+④ 呼應林果「從製鞋到保養」的重視、將保養觀念深植人心`},
+
+    {type:'card', title:'保養品牌背景', body:`<strong>莎菲爾 Saphir(法)</strong>：1920年創立，1925年巴黎世界現代工藝與裝飾博覽會金牌，藝術風格強烈、顏色鮮艷、天然。<br><br>
+<strong>哥倫布斯(日)</strong>：1919年創立(日東皮革塗料工業)，致力創新、保養品多元化。<br><br>
+<strong>林果良品</strong>：適合全林果鞋款，以天然成分為主(鞋乳廠商也做臉部保養品、亮光蠟以棕梠油為主)，是最基本簡單、自行就能上手的<strong>入門款</strong>，價位介於哥倫布斯與莎菲爾之間。`},
+    {type:'quiz', q:'情境題：客人問「你們自己的鞋乳跟外面買的比起來怎麼樣？」較好的回答方向是？',
+      options:['我們的比較好，因為比較貴','林果良品保養品以天然成分為主，是最基礎簡單、全林果鞋款都適用的入門款，價位介於哥倫布斯與莎菲爾之間','都一樣沒差','我們沒有自己的保養品可以介紹'],
+      correct:1, exp:'用具體定位(天然成分、入門款、價位區間)回答，比空泛說「比較好」更專業、更有說服力。'},
+
+    {type:'card', title:'工具類產品', body:`<strong>白馬鬃毛舉刷</strong>：山毛櫸木和馬鬃毛，可用於除塵與拋光鞋蠟(白馬鬃毛容易辨識鞋蠟顏色)。<br>
+<strong>麂皮清潔刷</strong>：適用麂皮、牛巴哥、反毛皮、榔皮鞋面，刷去表面灰塵；橡膠短刷則類似生膠效果做麂皮清潔。<br>
+<strong>純棉擦拭布</strong>：用於清潔、保養、拋光，不要用上漿或有彈性的布(比較利)。<br>
+<strong>雪松原木鞋撐</strong>：吸濕、防霉、芳香，可避免大底收縮；用一陣子可稍微曬太陽或用#600細砂紙拋一拋。<br><br>
+⚠️ 麂皮刷不能太大力向下壓，先刷一個方向，刷完再刷另一個方向。`},
+    {type:'quiz', q:'麂皮鞋款要用哪一種工具清潔比較合適？',
+      options:['白馬鬃毛舉刷','麂皮清潔刷','純棉擦拭布沾水','亮光蠟'],
+      correct:1, exp:'麂皮、牛巴哥、反毛皮鞋面要用麂皮清潔刷，力道不能太大，先刷一個方向再刷另一個方向。'},
+
+    {type:'card', title:'清潔類產品', body:`<strong>生膠</strong>：遇熱會變軟，針對麂皮/帆布皮用摩擦力把髒污帶起，也可清膠類、口香糖。<br>
+<strong>麂皮橡皮擦</strong>：髒污依附在橡皮擦碎屑中自然剝落。<br>
+<strong>皮革清潔乳</strong>：含水、油脂與界面活性劑，溫和、有制菌劑，屬乳化清潔。<br><br>
+⚠️ 教學重點：<strong>寧可用不乾淨，也不要用壞</strong>，約清潔2次即可，不要過度清潔；酒精含有機溶劑會揮發，比較傷皮革。`},
+    {type:'quiz', q:'關於清潔類產品的教學重點，以下何者正確？',
+      options:['清潔次數越多越乾淨越好','寧可用不乾淨也不要用壞，約清潔2次即可，不要過度清潔','建議用酒精清潔最安全','清潔類產品可以取代滋養保養'],
+      correct:1, exp:'清潔的教學重點是「不要強求」，約清潔2次即可，過度清潔反而傷皮革；酒精含有機溶劑，比較傷皮革，不建議常用。'},
+
+    {type:'card', title:'保養類產品(滋養)', body:`<strong>皮革滋養鮭魚油</strong>：滋養效果最強，<strong>非常推薦拿來厚敷保養皮底大底</strong>。<br>
+<strong>皮革滋養乳</strong>：含棕櫚油、椰子油、純橄欖乳霜、雪松精油，有潤色效果。<br><br>
+⚠️ 鞋油類商品上完後<strong>無法再上蠟、也無法上防水噴霧</strong>(無法附著)；避免上過量，沒乾前容易沾黏灰塵；鞋油本身沒有防水效果。`},
+    {type:'quiz', q:'情境題：客人剛買了鮭魚油要保養鞋面，你會提醒他什麼？',
+      options:['鮭魚油上完後還可以馬上上防水噴霧','鮭魚油上完後不建議再上蠟或防水噴霧(無法附著)，且要避免過量，沒乾前容易沾黏灰塵','鮭魚油完全不能用在皮底','鮭魚油可以每天大量塗抹沒關係'],
+      correct:1, exp:'鞋油類(含鮭魚油)上完後無法再附著蠟或防水噴霧，且避免上過量，沒乾前容易沾黏灰塵；鮭魚油反而非常推薦厚敷用在保養皮底大底。'},
+
+    {type:'card', title:'補色拋光類產品', body:`<strong>皮革鞋蠟</strong>：蜂蠟、油脂、溶劑，有保養效果，可補色並有些微防水與光澤。<br>
+<strong>快速亮光蠟</strong>：高成分蠟特殊比例調配成膏狀，能快速形成蠟膜打亮，但延展性、防護性較低。<br>
+<strong>鏡面亮光蠟</strong>：蜂蠟、棕櫚蠟、松節油，防刮傷、補色亮光與防水。<br>
+<strong>皮革亮光蠟</strong>：棕櫚蠟、溶劑、植物性油脂，添加雪松精油抗菌，防刮傷、補色美觀、防水。<br><br>
+💡 蜂蠟會形成一層蠟膜，對鞋子的保護性較高。`},
+    {type:'quiz', q:'哪一種補色拋光產品「延展性、防護性較低」，比較適合快速應急打亮？',
+      options:['快速亮光蠟','鏡面亮光蠟','皮革亮光蠟','蜂蠟膏'],
+      correct:0, exp:'快速亮光蠟以高成分蠟特殊比例調配成膏狀，能快速形成蠟膜打亮，但延展性、防護性都比較低，比較適合應急用途，不能取代完整的保養流程。'},
+
+    {type:'card', title:'防水類產品', body:`<strong>皮革防水噴霧</strong>：氟素樹脂、溶劑，針對材質產生防潑水，並有防霜雪效果。<br>
+<strong>防水防污噴霧</strong>：氟樹脂、溶劑，針對各種材質產生防潑水效果。<br><br>
+⚠️ 使用時請距離鞋面<strong>30公分</strong>，在通風或室外空間使用，噴<strong>2~3層</strong>(間隔3~5分鐘)。<br>
+⚠️ 教學重點：<strong>這是「防潑水」，並非完全防水</strong>；少量多次、預防勝於治療。`},
+    {type:'quiz', q:'跟客人介紹防水噴霧時，以下哪個說法正確？',
+      options:['這是完全防水，下雨天泡水也沒關係','這是防潑水效果，少量多次使用，並非完全防水','噴的距離越近效果越好','噴一次就永久有效，不用再補噴'],
+      correct:1, exp:'防水噴霧的正確說法是「防潑水」，不是完全防水；使用時要距離鞋面30公分、少量多次(2~3層，間隔3~5分鐘)，過度期待防水效果容易造成客人誤會與客訴。'},
+
+    {type:'card', title:'保養5步驟與銷售話術心法', body:`<strong>皮鞋保養5步驟</strong>：① 狀況評估 → ② 除塵清潔 → ③ 保養滋潤 → ④ 補色打亮 → ⑤ 鏡面拋光<br><br>
+心法：<strong>不要先入為主、確實做好不強求、適量不過量、預防勝於治療、溫和化圓前後一致</strong>。<br><br>
+話術SOP(習慣出發、知識教育)：先問「平常有保養習慣嗎？」<br>
+→ 有興趣：依專業知識與客人需求推薦保養組合<br>
+→ 沒興趣：傳遞保養概念(強調林果提供免費的基本保養)`},
+
+    {type:'card', title:'三種銷售組合', body:`<strong>簡易版(懶人推薦)</strong>：清潔(馬毛刷) + 防護(防水噴霧)。適合<strong>不常保養、生活忙碌</strong>的客群，避免重複推銷過的商品。<br><br>
+<strong>基礎版</strong>：清潔 + 滋養(適當油質維持彈性) + 防護。<br><br>
+<strong>進階版</strong>：清潔(含清潔露完整去舊) + 滋養 + 補色(蜜蠟) + 防護(亮光蠟多層)。適合<strong>出席重要場合或對保養有強烈興趣</strong>的客群。`},
+    {type:'quiz', q:'情境題：客人說「我平常很少保養鞋子，也沒什麼興趣」，你會推薦哪一種銷售組合？',
+      options:['進階版，因為比較完整周全','簡易版，針對不常保養/生活忙碌的客群，先建立基本保養習慣','什麼都不用推薦，直接結束對話','基礎版一定要包含補色步驟'],
+      correct:1, exp:'銷售組合要對應客群需求，對不常保養、沒興趣的客人推銷太複雜的進階版反而造成壓力，簡易版才是符合對方需求、能建立基本保養習慣的起點。'},
+
+    {type:'card', title:'常見問題FAQ', body:`<strong>發霉了怎麼辦？</strong>先刷除表層霉菌，用75%消毒酒精或皮革清潔露擦拭陰乾，反覆直到去除，最後再做鞋油保養。<br><br>
+<strong>淋雨後怎麼處理？</strong>先用布擦拭乾淨，放通風處或除濕機附近陰乾；若有水痕，先用微濕布或清潔劑擦拭再乾燥、做完整保養。<br><br>
+<strong>已經送過一次鞋面維修，還能再送第二次嗎？</strong>不建議，因維修需經過打磨，鞋子用越久皮面可能因二次維修變得更脆弱，建議穿到自然汰換。<br><br>
+<strong>機車油漬或油漆滴到鞋面？</strong>小範圍可用細砂紙或生膠擦嘗試清除後補蠟；大範圍會直接告知無法處理。`},
+    {type:'quiz', q:'情境題：客人的皮鞋不小心發霉了，你會怎麼建議？',
+      options:['直接說沒救了，建議買新的','先刷除表層霉菌，再用75%酒精或皮革清潔露擦拭陰乾，反覆直到去除後再做鞋油保養','泡水清洗最乾淨','用吹風機用力吹乾就好，不用特別處理'],
+      correct:1, exp:'發霉處理要先刷除菌絲、用酒精或清潔露擦拭陰乾，反覆直到去除乾淨，最後再做鞋油保養，不是直接放棄或用錯方法(如泡水)。'},
+    {type:'quiz', q:'已經送過一次鞋面維修的鞋子，客人問可不可以再送第二次維修？',
+      options:['可以無限次維修沒問題','不建議，因維修需要打磨，鞋子用越久皮面可能因二次維修變得更脆弱，建議可以穿到自然汰換','一定要直接拒絕，不能再維修','這個問題不重要，可以不用理會'],
+      correct:1, exp:'維修會經過打磨程序，鞋子已使用較長時間若再次維修，皮面可能變得更脆弱，建議讓客人了解風險、可以選擇穿到自然汰換。'}
+  ]
+},
+{
+  id:'sizing', icon:'📏', title:'尺碼與鞋撐對照', desc:'男鞋/靴子/女鞋尺碼系統、雪松木鞋撐挑選',
+  steps:[
+    {type:'card', title:'男鞋/一般鞋款尺碼對照表', body:`<div class="table-scroll"><table class="ref-table">
+<tr><th>英碼UK</th><td>3.5</td><td>4</td><td>4.5</td><td>5</td><td>5.5</td><td>6</td><td>6.5</td><td>7</td><td>7.5</td><td>8</td><td>8.5</td><td>9</td><td>9.5</td><td>10</td><td>10.5</td><td>11</td><td>12</td><td>13</td></tr>
+<tr><th>美碼US</th><td>4.5</td><td>5</td><td>5.5</td><td>6</td><td>6.5</td><td>7</td><td>7.5</td><td>8</td><td>8.5</td><td>9</td><td>9.5</td><td>10</td><td>10.5</td><td>11</td><td>11.5</td><td>12</td><td>13</td><td>14</td></tr>
+</table></div>
+💡 快速記法：一般男鞋<strong>美碼(US)大約是英碼(UK)+1</strong>。`},
+    {type:'quiz', q:'男鞋一般對照表中，客人平常穿UK7，你會建議先試穿美碼(US)幾號？',
+      options:['US7','US8','US9','US6'],
+      correct:1, exp:'對照表中UK7對應US8，一般男鞋美碼大約是英碼+1，可以用這個原則快速換算再實際試穿確認。'},
+
+    {type:'card', title:'靴子尺碼對照表（要特別注意！）', body:`<div class="table-scroll"><table class="ref-table">
+<tr><th>英碼UK</th><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td></tr>
+<tr><th>歐碼EU</th><td>37</td><td>38</td><td>39</td><td>40</td><td>42</td><td>43</td><td>44</td></tr>
+</table></div>
+⚠️ <strong>靴子尺碼跟一般鞋款尺碼系統不完全相同！</strong>注意EU碼從UK7(EU40)跳到UK8(EU42)，中間<strong>沒有EU41</strong>，不能直接套用一般鞋款的對照表。`},
+    {type:'quiz', q:'情境題：客人平常穿一般鞋款是UK8，想問靴子要挑歐碼(EU)多少？',
+      options:['EU41','EU42','EU40','EU43'],
+      correct:1, exp:'靴子尺碼對照表比較特殊，UK8對應到EU42(中間跳過EU41)，要提醒夥伴靴子跟一般鞋款尺碼系統不能直接套用，一定要查專屬的靴子對照表。'},
+
+    {type:'card', title:'女鞋 ORINGO_W 楦長與腳長腳寬對照', body:`<div class="table-scroll"><table class="ref-table">
+<tr><th>英碼UK</th><td>2.5</td><td>3</td><td>3.5</td><td>4</td><td>4.5</td><td>5</td><td>5.5</td></tr>
+<tr><th>楦長(mm)</th><td>247.5</td><td>251.0</td><td>254.5</td><td>258.0</td><td>261.5</td><td>265.0</td><td>268.5</td></tr>
+<tr><th>參考腳長(cm)</th><td>22.1-22.5</td><td>22.6-23</td><td>23.1-23.5</td><td>23.6-24</td><td>24.1-24.5</td><td>24.6-25</td><td>25.1-25.5</td></tr>
+<tr><th>參考腳寬(cm)</th><td>8.4-8.6</td><td>8.7-8.8</td><td>8.9-9.1</td><td>9.2-9.3</td><td>9.4-9.6</td><td>9.7-9.8</td><td>9.9-10.1</td></tr>
+</table></div>
+💡 幫客人量腳長後，對照「參考腳長」區間就能快速抓出建議尺碼，比用感覺猜準確很多。`},
+    {type:'quiz', q:'情境題：女客人的腳長量出來大約24.3cm，依照對照表，最接近的建議尺碼是？',
+      options:['UK4','UK4.5','UK5','UK3.5'],
+      correct:1, exp:'24.3cm落在「24.1-24.5cm」這個區間，對應UK4.5。用實際量測的腳長對照表格，比純粹目測更準確。'},
+
+    {type:'card', title:'雪松木鞋撐對照表(依楦型)', body:`鞋撐要挑「跟鞋楦型相符、尺寸範圍正確」的款式，太小的楦頭硬塞大鞋撐容易撐壞鞋型。<br><br>
+<div class="table-scroll"><table class="ref-table">
+<tr><th>楦型</th><th>37/38</th><th>39/40</th><th>41/42</th><th>43/44</th></tr>
+<tr><td>日式職男</td><td>-</td><td>5.5–6</td><td>6.5–8.5</td><td>9–10.5</td></tr>
+<tr><td>義式方頭</td><td>-</td><td>4.5–5.5</td><td>6.5–8</td><td>8.5–9.5</td></tr>
+<tr><td>都會雅士</td><td>-</td><td>5.5–6</td><td>6.5–8.5</td><td>9–10.5</td></tr>
+<tr><td>典雅圓頭</td><td>3.5–4</td><td>4.5–5.5</td><td>6–8</td><td>8.5–9</td></tr>
+<tr><td>復古圓頭</td><td>2.5–3</td><td>3.5–4.5</td><td>5–7</td><td>7.5–10</td></tr>
+</table></div>
+（數值為適用的英碼UK範圍，實際依商品鞋撐標示為準）`},
+    {type:'quiz', q:'情境題：客人買了「都會雅士」楦型的41/42尺寸鞋撐，這支鞋撐大概可以撐哪個尺碼範圍的鞋子？',
+      options:['UK6.5–8.5','UK3.5–6','UK9–10.5','沒有限制，任何尺碼都適用'],
+      correct:0, exp:'鞋撐是依楦型與尺寸區間設計的，「都會雅士」41/42尺寸適用UK6.5–8.5，太小的楦頭硬塞大鞋撐容易撐壞鞋型，一定要對照表確認範圍再推薦。'}
+  ]
+}
+];
+
+// ============================================================
+// State & rendering
+// ============================================================
+let progressCache = {};
+let currentModule = null;
+let currentStepIdx = 0;
+let answers = {}; // stepIdx -> {picked, correct}
+
+const $ = (id) => document.getElementById(id);
+
+async function loadProgress() {
+  const email = getEmail();
+  if (!email || !GAS_URL) return;
+  try {
+    const res = await fetch(GAS_URL + '?action=getProgress&email=' + encodeURIComponent(email));
+    const data = await res.json();
+    if (data && data.success) progressCache = data.progress || {};
+  } catch (e) { console.warn('讀取學習進度失敗', e); }
+  renderModuleGrid();
+}
+
+function renderModuleGrid() {
+  const grid = $('module-grid');
+  grid.innerHTML = '';
+  MODULES.forEach(m => {
+    const p = progressCache[m.id];
+    const card = document.createElement('div');
+    card.className = 'module-card';
+    card.innerHTML = `
+      <div class="module-icon">${m.icon}</div>
+      <div class="module-title">${m.title}</div>
+      <div class="module-desc">${m.desc}</div>
+      <div class="module-badge ${p ? 'done' : ''}">${p ? ('✅ 已完成 · ' + p.percent + '%') : '尚未開始'}</div>
+    `;
+    card.addEventListener('click', () => startModule(m.id));
+    grid.appendChild(card);
+  });
+}
+
+function startModule(id) {
+  currentModule = MODULES.find(m => m.id === id);
+  currentStepIdx = 0;
+  answers = {};
+  $('module-grid').style.display = 'none';
+  $('intro-text').style.display = 'none';
+  $('result-wrap').classList.remove('show');
+  $('lesson-wrap').classList.add('show');
+  renderStep();
+}
+
+function backToList() {
+  $('lesson-wrap').classList.remove('show');
+  $('result-wrap').classList.remove('show');
+  $('module-grid').style.display = 'grid';
+  $('intro-text').style.display = 'block';
+  renderModuleGrid();
+}
+
+function renderStep() {
+  const steps = currentModule.steps;
+  const step = steps[currentStepIdx];
+  $('progress-label').textContent = (currentStepIdx + 1) + ' / ' + steps.length;
+  $('progress-fill').style.width = Math.round(((currentStepIdx) / steps.length) * 100) + '%';
+
+  const card = $('step-card');
+  if (step.type === 'card') {
+    card.innerHTML = `
+      <div class="step-kicker">${currentModule.title}</div>
+      <div class="step-title">${step.title}</div>
+      <div class="step-body">${step.body}</div>
+      <div class="step-nav">
+        <button class="btn btn-ghost" id="btn-prev" ${currentStepIdx===0?'disabled':''}>上一步</button>
+        <button class="btn btn-primary" id="btn-next">${currentStepIdx===steps.length-1?'完成模組':'下一步'}</button>
+      </div>`;
+    $('btn-next').addEventListener('click', advanceStep);
+    $('btn-prev').addEventListener('click', prevStep);
+  } else {
+    const prevAnswer = answers[currentStepIdx];
+    card.innerHTML = `
+      <div class="step-kicker">🧠 小測驗</div>
+      <div class="step-title">${step.q}</div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="quiz-feedback" id="quiz-feedback"></div>
+      <div class="step-nav">
+        <button class="btn btn-ghost" id="btn-prev" ${currentStepIdx===0?'disabled':''}>上一步</button>
+        <button class="btn btn-primary" id="btn-next" disabled>${currentStepIdx===steps.length-1?'完成模組':'下一步'}</button>
+      </div>`;
+    const optWrap = $('quiz-options');
+    step.options.forEach((opt, i) => {
+      const b = document.createElement('button');
+      b.className = 'quiz-opt';
+      b.textContent = opt;
+      b.addEventListener('click', () => selectAnswer(i));
+      optWrap.appendChild(b);
+    });
+    $('btn-next').addEventListener('click', advanceStep);
+    $('btn-prev').addEventListener('click', prevStep);
+    if (prevAnswer) showQuizFeedback(prevAnswer.picked, true);
+  }
+}
+
+function selectAnswer(pickedIdx) {
+  const step = currentModule.steps[currentStepIdx];
+  if (answers[currentStepIdx]) return; // already answered
+  const isCorrect = pickedIdx === step.correct;
+  answers[currentStepIdx] = { picked: pickedIdx, correct: isCorrect };
+  showQuizFeedback(pickedIdx, false);
+}
+
+function showQuizFeedback(pickedIdx, isReplay) {
+  const step = currentModule.steps[currentStepIdx];
+  const opts = document.querySelectorAll('#quiz-options .quiz-opt');
+  opts.forEach((b, i) => {
+    b.disabled = true;
+    if (i === step.correct) b.classList.add('correct');
+    else if (i === pickedIdx) b.classList.add('wrong');
+  });
+  const isCorrect = pickedIdx === step.correct;
+  const fb = $('quiz-feedback');
+  fb.className = 'quiz-feedback show ' + (isCorrect ? 'correct-fb' : 'wrong-fb');
+  fb.innerHTML = `<div class="fb-head">${isCorrect ? '✅ 答對了！' : '❌ 答錯了'}</div><div>${step.exp}</div>`;
+  $('btn-next').disabled = false;
+}
+
+function prevStep() {
+  if (currentStepIdx === 0) return;
+  currentStepIdx--;
+  renderStep();
+}
+
+function advanceStep() {
+  const steps = currentModule.steps;
+  if (currentStepIdx < steps.length - 1) {
+    currentStepIdx++;
+    renderStep();
+  } else {
+    finishModule();
+  }
+}
+
+function finishModule() {
+  const steps = currentModule.steps;
+  const quizSteps = steps.map((s,i)=>({s,i})).filter(x => x.s.type === 'quiz');
+  const total = quizSteps.length;
+  const score = quizSteps.filter(x => answers[x.i] && answers[x.i].correct).length;
+  const percent = total ? Math.round((score/total)*100) : 100;
+
+  $('lesson-wrap').classList.remove('show');
+  $('result-wrap').classList.add('show');
+  $('result-emoji').textContent = percent >= 80 ? '🎉' : (percent >= 50 ? '💪' : '📖');
+  $('result-title').textContent = currentModule.title + ' · 完成！';
+  $('result-score').innerHTML = score + ' / ' + total + '<small> 題答對</small>';
+  $('result-sub').textContent = percent >= 80
+    ? '表現很棒，這個模組你已經掌握得不錯了！'
+    : (percent >= 50 ? '基本掌握了，建議重新測驗一次加深印象。' : '建議重新讀過一次，把答錯的觀念再確認清楚。');
+
+  const email = getEmail();
+  if (email && GAS_URL) {
+    fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'recordProgress', email,
+        moduleId: currentModule.id, moduleTitle: currentModule.title,
+        score, total
+      })
+    }).then(() => { progressCache[currentModule.id] = { moduleTitle: currentModule.title, score, total, percent }; })
+      .catch(e => console.warn('進度記錄失敗', e));
+  }
+}
+
+$('lesson-exit').addEventListener('click', backToList);
+$('btn-back-list').addEventListener('click', backToList);
+$('btn-retry').addEventListener('click', () => startModule(currentModule.id));
+
+loadProgress();
+</script>
+</body>
+</html>
