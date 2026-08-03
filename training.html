@@ -78,6 +78,9 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 @keyframes slide-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .step-kicker{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;
   color:var(--gray-pink);text-transform:uppercase;margin-bottom:10px}
+.step-photo{width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-bottom:18px;
+  display:block;box-shadow:0 4px 14px rgba(40,66,52,.1)}
+.step-photo-cap{font-size:11px;color:var(--text-muted);margin:-10px 0 18px;font-family:'Space Mono',monospace;letter-spacing:.5px}
 .step-title{font-size:19px;font-weight:700;color:var(--green);margin-bottom:16px;line-height:1.5}
 .step-body{font-size:14.5px;line-height:1.9;color:var(--text)}
 .step-body strong{color:var(--rust)}
@@ -217,17 +220,18 @@ const MODULES = [
 {
   id:'brand', icon:'👞', title:'林果特色與鞋子構造', desc:'三大特色、各部位名稱、製鞋工藝、售後服務',
   steps:[
-    {type:'card', title:'林果三大特色', body:`林果鞋有三大核心特色：<br>
-1️⃣ 以<strong>台灣人的版型</strong>開發楦頭<br>
-2️⃣ 由<strong>台灣師傅</strong>手工製作<br>
-3️⃣ <strong>皮革大底</strong>鞋款<br><br>
-向客人介紹商品時，這三點是建立信任感與專業度的第一步。`},
+    {type:'card', title:'林果三大特色', body:`如果客人問你「你們家鞋子跟別人差在哪？」，記住這三句話就夠了：<br><br>
+1️⃣ 楦頭是照<strong>台灣人的腳型</strong>開發的，不是直接套用國外版型<br>
+2️⃣ 每一雙都是<strong>台灣師傅</strong>手工做出來的，不是產線量產<br>
+3️⃣ 用的是<strong>皮革大底</strong>，不是便宜的合成材質<br><br>
+這三句話講出來，客人馬上會感覺到你懂自己在賣什麼——這就是建立信任感最快的方式。`},
     {type:'quiz', q:'林果鞋的三大特色不包含以下哪一項？',
       options:['以台灣人的版型開發楦頭','由台灣師傅手工製作','全部改用進口機器大量量產','皮革大底鞋款'],
       correct:2, exp:'林果強調台灣楦頭＋台灣師傅手工＋皮革大底，並非強調機器量產。'},
 
-    {type:'card', title:'認識港寶', body:`<strong>港寶</strong>是複合性材質製作的鞋頭/鞋跟內襯，原本軟軟的像紙張，泡過甲苯進烤箱烘烤後才會變硬定型。<br><br>
-⚠️ 重點：港寶一旦受外力壓迫或踢到，是<strong>無法修復</strong>的！常見狀況：沒用鞋拔硬踩後跟、踢到機車停車架、客人用手大力按壓測試軟硬度。`},
+    {type:'card', title:'認識港寶', photo:'assets/training/brand-anatomy.jpg', photoCap:'鞋子各部位名稱一次看懂',
+      body:`鞋頭跟鞋跟為什麼可以撐住形狀、不會一穿就塌掉？秘密藏在裡面一層叫<strong>港寶</strong>的材質。它原本軟趴趴像張紙，師傅把它泡過甲苯、送進烤箱烘烤之後，才會變硬定型，撐起整雙鞋的骨架。<br><br>
+但也因為這樣，港寶有個「天生的個性」：<strong>一旦定型後受外力硬壓或踢到，就再也回不去了</strong>。所以像是沒用鞋拔硬踩後跟、鞋頭去撞到機車停車架、或客人忍不住用力捏一捏測試軟硬——這些瞬間都是港寶最怕的時刻，遇到這樣的狀況，要老實告訴客人這是材質特性，不是能修好的小問題。`},
     {type:'quiz', q:'情境題：客人說「我鞋頭被摩托車停車架踢到凹了一個洞，可以修好嗎？」你會怎麼回答比較正確？',
       options:[
         '「沒問題，我們可以幫您敲回原狀」',
@@ -236,8 +240,8 @@ const MODULES = [
         '「這雙鞋壽命到了，建議直接買新的」'],
       correct:1, exp:'港寶泡甲苯烘烤定型後會變硬，受外力壓迫是材質特性造成的不可逆損傷，不是保養問題。要誠實說明原因，並提供預防建議（用鞋拔、避免尖銳物碰撞），不要隨口答應能修復，也不要把責任推給客人。'},
 
-    {type:'card', title:'金油與中底鐵芯', body:`<strong>金油</strong>：鞋頭、鞋跟會上的一層薄薄後處理保護漆，帶有亮度。中段因為走路會彎折，只上薄薄一層蠟，不上金油（否則金油會裂開）。<br><br>
-<strong>中底(含鐵芯)</strong>：複合材質製作，與楦頭底貼合固定鞋面皮革、幫助固定鞋型。鞋腰(足弓)延伸至腳跟中心有一長條鐵片稱為「鐵芯」，加強有跟鞋款起伏處的支撐力，延長鞋子壽命。`},
+    {type:'card', title:'金油與中底鐵芯', body:`留意過林果鞋子的光澤嗎？鞋頭、鞋跟特別亮，中段卻沒那麼亮——這不是做工不均，是刻意的。鞋頭鞋跟上的是<strong>金油</strong>，一層薄薄的保護漆；中段因為走路時會一直彎折，上金油反而容易裂開，所以只輕輕上一層蠟就好。<br><br>
+再往鞋子裡面看，藏著另一個關鍵角色：<strong>中底裡的鐵芯</strong>。這是一長條鐵片，從鞋腰(足弓)一路延伸到腳跟中心，撐住有跟鞋款起伏最大的地方，讓鞋子穿久了不容易垮、壽命更長。`},
     {type:'quiz', q:'為什麼林果的鞋子鞋頭、後跟摸起來會亮，但中段不會？',
       options:['中段刻意不上金油，因為走路彎折容易讓金油龜裂，只上薄薄一層蠟','中段沒有做完整工序，是品管疏漏','中段材質跟鞋頭不同，本來就不能上金油','這是消費者自己保養不當造成的'],
       correct:0, exp:'鞋頭、後跟走路時不太會彎折，適合上金油做保護與亮度；中段會隨走路彎折，上金油容易裂開，所以只上薄薄一層蠟。'},
@@ -245,21 +249,24 @@ const MODULES = [
       options:['讓鞋子變重顯得比較高級','加強足弓/鞋腰起伏處的支撐力，延長鞋子壽命','防止鞋子進水','用來辨別是不是真皮'],
       correct:1, exp:'鐵芯是一長條鐵片，從鞋腰(足弓)延伸到腳跟中心，加強有跟鞋款起伏處的支撐效果。'},
 
-    {type:'card', title:'大底與天皮', body:`<strong>大底</strong>：鞋子最主要的結構，材質有真皮、橡膠、發泡材質等。<br><br>
-<strong>天皮</strong>：後腳跟區域的橡膠片，主要用途是<strong>止滑</strong>，通常可拆卸更換，維持大底的壽命。<br><br>
-🎁 <strong>售後服務重點</strong>：林果紳士鞋類的皮底鞋款，天皮提供<strong>免費更換一次</strong>的服務（門市可現場更換；寄送則需自付來回運費，工作天10-15天）。`},
+    {type:'card', title:'大底與天皮', body:`鞋子最主要的結構是<strong>大底</strong>，材質可能是真皮、橡膠或發泡材質。而後腳跟那一小片橡膠，叫<strong>天皮</strong>，它的工作很單純但很重要——止滑，而且穿久磨平了可以單獨拆下來換，不用整雙大底一起換掉。<br><br>
+🎁 記得跟客人說：林果紳士鞋類的皮底鞋款，天皮<strong>免費更換一次</strong>！門市可以現場換，寄送的話要自付來回運費，工作天大概10-15天。這個福利很多客人都不知道，主動講出來會讓他們對售後服務很有感。`},
     {type:'quiz', q:'天皮的主要作用，以及林果的售後服務是？',
       options:['止滑，紳士鞋皮底類提供免費更換一次','止滑，永久保固無限次免費更換','防水，需每次自費更換','純裝飾用，不影響鞋子壽命'],
       correct:0, exp:'天皮約可穿8~10個月，磨平後林果提供紳士鞋皮底類「免費更換一次」的服務，門市可現場更換。'},
 
-    {type:'card', title:'製鞋工藝流程', body:`林果鞋由數十年經驗的台灣製鞋師傅製作，一雙皮底鞋以<strong>100多道製作步驟</strong>完成：<br><br>
-開發鞋楦 → 設計圖/畫版/製作樣品 → 劃皮/裁剪 → 縫製鞋面/內裡 → 拉幫(加入港寶)/貼合中底/烘烤 → 拔釘/打粗/上膠 → 大底處理 → 裝鞋墊/去漬/烘吹/推油<br><br>
-全部工序約需 <strong>45–60 天</strong>才能完成一雙鞋。`},
+    {type:'card', title:'製鞋工藝流程', photo:'assets/training/brand-glue.jpg', photoCap:'師傅手工上膠、貼合大底',
+      body:`一雙鞋要出現在門市貨架上之前，其實走過了一段很長的路：先由開發鞋楦師傅做出楦頭，接著畫版、開發樣品，再劃皮裁剪，縫製鞋面內裡，拉幫時加入港寶、貼合中底送進烤箱定型，然後拔釘、打粗、上膠，處理大底，最後裝鞋墊、去漬、烘吹、推油才算完工。<br><br>
+數十年經驗的台灣師傅，一雙皮底鞋要經手<strong>100多道工序</strong>，前前後後<strong>45–60天</strong>。下次客人問「怎麼這麼久」，你就可以把這段故事講給他聽。`},
     {type:'quiz', q:'一雙皮底鞋從開始製作到完成，大約需要多久時間？',
       options:['7-10天','20-30天','45-60天','超過半年'],
       correct:2, exp:'一雙皮底鞋以100多道製作步驟完成，從劃皮、縫製鞋面、拉幫、作底、脫楦…等，約需45-60天的製作期。'},
 
-    {type:'card', title:'鞋底材質比較', body:`<div class="table-scroll"><table class="ref-table">
+    {type:'card', title:'鞋底材質比較', body:`客人猶豫該選哪種底時，其實是在三種個性裡做取捨：<br><br>
+<strong>皮底</strong>像文青，透氣、輕、還防靜電，缺點是容易滑、比較怕潮發霉——義大利進口的高質感母牛背皮做的。<br>
+<strong>膠底</strong>像工作夥伴，耐磨止滑最實在，代價是重一點——每一雙都做過拉力測試，超過國家標準2倍以上。<br>
+<strong>EVA泡棉</strong>像羽量級選手，輕到幾乎感覺不到重量，但消耗比較快，通常會搭配橡膠底一起成型來補強耐磨度。<br><br>
+<div class="table-scroll"><table class="ref-table">
 <tr><th>材質</th><th>優點</th><th>缺點</th><th>備註</th></tr>
 <tr><td>皮底</td><td>透氣、重量輕、防靜電</td><td>易滑、發霉</td><td>義大利進口高質感母牛背皮</td></tr>
 <tr><td>膠底</td><td>耐磨、止滑</td><td>重量較重</td><td>拉力測試超過國家標準2倍以上</td></tr>
@@ -269,16 +276,17 @@ const MODULES = [
       options:['皮底，因為比較有質感','膠底，耐磨止滑，較適合雨天通勤的止滑需求','EVA泡棉，因為最輕','三種都一樣，沒有差別'],
       correct:1, exp:'膠底耐磨止滑，雖然比皮底重，但更適合雨天通勤這類重視止滑的情境；皮底透氣輕巧但容易滑、易發霉，可依客人的使用情境做取捨建議。'},
 
-    {type:'card', title:'售後服務總整理', body:`<strong>14天鑑賞期</strong>：網路購買客人，14天內尺碼不符/新品瑕疵，且無落地或人為破壞，可<strong>免費更換一次</strong>尺碼（店面購買需親自前往替換）。<br><br>
-<strong>保固期維修</strong>：全系列商品提供<strong>一年保固</strong>，非自然磨耗或人為破壞的品質不良故障，皆提供檢修維修。<br><br>
-<strong>天皮更換免費</strong>：天皮磨平時提供免費維修服務一次。`},
+    {type:'card', title:'售後服務總整理', body:`客人下單前最擔心的三件事，林果都幫他們想好了：<br><br>
+買錯尺碼怎麼辦？網購<strong>14天鑑賞期</strong>內，只要沒落地、沒人為破壞，<strong>免費換一次</strong>尺碼就好（店面購買要親自到店換）。<br><br>
+用了品質有問題怎麼辦？全系列<strong>一年保固</strong>，只要不是自然磨耗或人為弄壞的，我們都檢修。<br><br>
+穿久磨到天皮怎麼辦？磨平了直接<strong>免費維修一次</strong>就好，不用整雙報廢。<br><br>
+這三句話，是你面對猶豫不決客人時最有力的臨門一腳。`},
     {type:'quiz', q:'網路購買的客人，尺碼不合的免費更換期限是幾天？',
       options:['7天','14天','30天','無期限，隨時都能換'],
       correct:1, exp:'網購客人在14天鑑賞期內，如尺碼不符、新品瑕疵，且無落地或人為破壞，可免費更換一次。'},
 
-    {type:'card', title:'常見Q&A：黏合鞋與生膠底', body:`<strong>黏合的鞋子容易壞掉嗎？</strong><br>
-林果的鞋子都經過拉力測試，超過<strong>國家標準2倍以上</strong>，只要避免長期泡水、記得定期更換天皮，不用擔心開口問題。<br><br>
-<strong>生膠底 vs 煉膠底</strong>：生膠底是未煉過的橡膠，柔軟度較佳，但夏天較黏、不適合亞熱帶氣候。林果的皮鞋及休閒鞋都是<strong>煉過的橡膠大底</strong>，密度較緊密、耐磨程度較好。`},
+    {type:'card', title:'常見Q&A：黏合鞋與生膠底', body:`有些客人一聽到「用黏的」，直覺反應是「那應該很容易壞吧？」——這時候別急著否認，先讓數字說話：林果的鞋子都做過拉力測試，強度<strong>超過國家標準2倍以上</strong>，只要避免長期泡水、定期更換天皮，不會有開口的問題。<br><br>
+另一個常被問到的是生膠底。生膠是沒煉過的橡膠，摸起來軟，但夏天一熱就會黏黏的，其實不太適合台灣這種亞熱帶氣候。林果的皮鞋跟休閒鞋用的都是<strong>煉過的橡膠大底</strong>，密度紮實，耐磨度也更好。`},
     {type:'quiz', q:'情境題：客人問「你們黏合的鞋是不是比較容易壞掉？」你的回答應該是？',
       options:['對啊，黏的比較不耐用，建議選車縫的款式','我們的鞋子都經過超過國家標準2倍以上的拉力測試，只要避免長期泡水、定期更換天皮，不會有開口的問題','不清楚，要問廠長才知道','黏合鞋完全不會壞，可以放心亂穿'],
       correct:1, exp:'要用具體的數據（拉力測試超過國家標準2倍以上）建立信任，同時誠實提醒正確的保養方式（避免長期泡水、定期更換天皮），而不是模糊帶過或誇大。'},
@@ -293,57 +301,62 @@ const MODULES = [
 {
   id:'construction', icon:'🧵', title:'鞋子成型結構', desc:'布雷克、固特異、攀幫、拉幫、摩卡森五大結構',
   steps:[
-    {type:'card', title:'製鞋流程簡述', body:`從一片皮革到一雙鞋，基本流程是：<br>
-畫料 → 取料/裁斷 → 削皮 → 車縫組合 → 攀楦 → 貼合 → 底車縫 → 後處理<br><br>
-「成型結構」指的是<strong>鞋面與鞋底如何結合固定</strong>的方式，分成「有車縫線」和「無車縫線(直接黏貼)」兩大類，會直接影響鞋子的耐用度、腳感、能不能換底。`},
+    {type:'card', title:'製鞋流程簡述', photo:'assets/training/construction-flow.jpg', photoCap:'車縫台前，師傅正在組合鞋面',
+      body:`從一片皮革變成一雙鞋，要走過畫料、取料裁斷、削皮、車縫組合、攀楦、貼合、底車縫、後處理這一長串工序。這堂課要講的「成型結構」，其實只回答一個問題：<strong>鞋面跟鞋底到底是怎麼固定在一起的？</strong><br><br>
+答案分成兩大派：「有車縫線」跟「無車縫線(直接黏貼)」。你接下來會發現，這個選擇不只是做法不同，直接決定了一雙鞋耐不耐穿、腳感軟不軟、將來能不能換底。`},
 
-    {type:'card', title:'布雷克結構 Blake construction', body:`命名源自1856年 Lyman Reed Blake 設計的車底機。做法：將<strong>鞋面、中底與大底片一起車縫</strong>，底部結構較輕薄，只做一道車縫。沿條屬裝飾性設計，可寬可窄。<br><br>
-✅ 優點：輕量、曲折性佳、外觀細緻<br>
-⚠️ 缺點：底的車線孔容易進水<br>
-🏷️ 常見於義大利製皮鞋；<strong>林果女鞋、工作鞋靴系列</strong>使用此結構`},
+    {type:'card', title:'布雷克結構 Blake construction', photo:'assets/training/construction-blake-diagram.jpg', photoCap:'鞋面／中底／大底一起車縫的斷面圖',
+      body:`第一種結構的名字，來自1856年發明車底機的 Lyman Reed Blake。做法很直接：<strong>把鞋面、中底、大底片疊在一起，一次車縫</strong>，底部只做一道車線，所以整體特別輕薄。沿條純粹是裝飾用，寬窄都可以自由設計。<br><br>
+✅ 穿起來的感覺：輕量、曲折性好、外觀細緻，常見於義大利製皮鞋。<br>
+⚠️ 代價是：車線孔容易進水。<br>
+🏷️ 林果的女鞋、工作鞋靴系列，用的就是這個結構。`},
     {type:'quiz', q:'布雷克結構的優點是？',
       options:['輕量、曲折性佳、外觀細緻','完全防水，絕對不會進水','最耐穿，可以無限次更換底部','製作時間最短，成本最低'],
       correct:0, exp:'布雷克結構底部只做一道車縫，輕量且曲折性佳、外觀細緻，缺點是車線孔容易進水。'},
 
-    {type:'card', title:'林果男鞋的布雷克結構（改良版）', body:`林果的做法：師傅先<strong>手工剖開大底做出夾層</strong>，鞋面、中底與大底是車縫在暗溝內，車縫後再將底層皮革貼合埋藏縫線，<strong>解決了一般布雷克容易進水的問題</strong>，而且縫線不外露。<br><br>
-🏷️ 用於<strong>所有林果皮底男鞋款</strong>`},
+    {type:'card', title:'林果男鞋的布雷克結構（改良版）', photo:'assets/training/construction-blake-oringo.jpg', photoCap:'師傅檢查大底邊緣的暗溝車縫',
+      body:`布雷克結構容易進水的老問題，林果師傅想到了解法：<strong>先手工剖開大底、做出一層夾層</strong>，把鞋面、中底、大底車縫在這條「暗溝」裡，車縫完再把底層皮革貼合回去、把縫線整個埋起來。<br><br>
+結果就是——你摸鞋底，完全看不到車縫線，但進水的問題已經被解決了。這是<strong>所有林果皮底男鞋款</strong>都在用的做法，下次客人問「怎麼看不到縫線」，你就可以自信地把這個故事講給他聽。`},
     {type:'quiz', q:'情境題：客人問「你們家男鞋皮底摸起來怎麼看不到車縫線？」正確回答是？',
       options:['因為根本沒有車縫，是純黏合的','因為師傅手工剖開大底做出夾層，車縫在暗溝內再把底層皮革貼合埋藏縫線，解決一般布雷克容易進水的問題','因為這是固特異結構','看不到縫線代表是品質瑕疵，建議送修'],
       correct:1, exp:'這是林果改良版布雷克結構的重點：暗溝車縫＋貼合埋藏縫線，兼顧不外露的外觀與防止進水。'},
 
-    {type:'card', title:'固特異結構 Goodyear construction', body:`古老結構法，命名來自1870年代發明合縫肋條縫紉機的 Charles Goodyear, Jr.。做法：鞋面、中底垂直向肋條、沿條內側車縫後貼合大底片，沿條外側再與大底片車縫，<strong>底部做兩道車縫</strong>，沿條需寬6mm以上。<br><br>
-✅ 優點：較容易換底、較耐穿、不會進水<br>
-⚠️ 缺點：腳感較硬、較重、製作耗時<br>
-⚠️ <strong>重要：林果目前沒有固特異結構的鞋款！</strong>常見於中高檔紳士鞋。`},
+    {type:'card', title:'固特異結構 Goodyear construction', body:`這是最古老的結構法之一，命名來自1870年代發明合縫肋條縫紉機的 Charles Goodyear, Jr.。做法比布雷克更講究：鞋面跟中底的垂直肋條先跟沿條內側車縫、貼合大底片，沿條外側再車縫一次——<strong>底部總共做兩道車縫</strong>，而且沿條要寬6mm以上才夠機台操作。<br><br>
+✅ 換來的是：好換底、耐穿、不會進水。<br>
+⚠️ 代價是：腳感較硬、比較重、做起來很花時間。常見於中高檔紳士鞋。<br><br>
+⚠️ 這題要特別記住：<strong>林果目前沒有固特異結構的鞋款</strong>，如果客人問起，千萬別誤導他。`},
     {type:'quiz', q:'以下哪一項描述是正確的？',
       options:['林果目前有推出固特異結構的鞋款','固特異結構沿條車縫只需要一道','固特異結構優點是較耐穿、好換底、不容易進水，但腳感較硬重、製作耗時','固特異結構是林果目前的主力鞋款結構'],
       correct:2, exp:'⚠️特別注意：林果目前沒有固特異結構的鞋款，如果客人問起要誠實說明，不要誤導客人。固特異結構的特色是兩道車縫、沿條需6mm以上，較耐穿好換底，但腳感較硬重、製作耗時。'},
 
-    {type:'card', title:'攀幫結構 Lasting construction（貼底）', body:`隨著膠水黏性與強度改善，簡化生產的結構。保留最原始「將鞋面攀附在中底板下固定」的作法，<strong>以膠水取代車縫</strong>做為主要固定方式。<br><br>
-✅ 優點：製作快速<br>
-⚠️ 缺點：結構強度一般，<strong>無法換底</strong><br>
-🏷️ 最常見的鞋子成型製法；<strong>林果的工作鞋、膠底鞋、休閒鞋</strong>都是此結構`},
+    {type:'card', title:'攀幫結構 Lasting construction（貼底）', photo:'assets/training/construction-lasting.jpg', photoCap:'鞋面攀附在中底板下，準備上膠貼合',
+      body:`隨著膠水的黏性跟強度越做越好，工廠開始用一個更快的做法：保留「把鞋面攀附在中底板下固定」這個最原始的動作，但<strong>用膠水取代車縫</strong>當主要固定方式。<br><br>
+✅ 最大的好處：做得快。<br>
+⚠️ 換來的代價：結構強度普通，而且<strong>無法換底</strong>。<br>
+🏷️ 這是最常見的鞋子成型做法，<strong>林果的工作鞋、膠底鞋、休閒鞋</strong>都是用這個結構做的。`},
     {type:'quiz', q:'攀幫結構(貼底)最大的限制是什麼？',
       options:['價格最貴','無法換底','完全不能碰水','只能做女鞋'],
       correct:1, exp:'攀幫結構以膠水黏合鞋面與鞋底，製作快速，但結構強度一般、無法換底。'},
 
-    {type:'card', title:'拉幫結構 Strobel construction', body:`1950年代開發出可平接材料的Z字形車縫機，改良摩卡森結構，節省鞋面材料。不需硬質中底板，直接將鞋面與<strong>布質中底</strong>拼接成襪袋狀鞋面，套入楦頭定型，上膠後與大底貼合。<br><br>
-✅ 優點：製作快速、節省材料、柔軟曲折佳<br>
-⚠️ 缺點：結構強度較差、不可換底<br>
-🏷️ 慢跑鞋與女生平底娃娃鞋常見；林果無此結構的常見鞋款`},
+    {type:'card', title:'拉幫結構 Strobel construction', body:`1950年代，有人發明了可以平接材料、不用重疊拼接的Z字形車縫機，拿來改良摩卡森結構，順便省下不少鞋面材料。做法是不用硬質中底板，直接把鞋面跟<strong>布質中底</strong>拼接成一個襪袋狀，套進楦頭定型，上膠後跟大底貼合。<br><br>
+✅ 特色：做得快、省材料、柔軟曲折特別好。<br>
+⚠️ 但結構強度較差，<strong>不能換底</strong>。<br>
+🏷️ 慢跑鞋、女生平底娃娃鞋很常見這個結構；林果目前沒有常見鞋款用這個做法。`},
     {type:'quiz', q:'情境題：客人翻開鞋墊，看到裡面是「布質的中底、直接與鞋面縫合」，這是哪種結構？',
       options:['布雷克結構','固特異結構','拉幫結構','摩卡森結構'],
       correct:2, exp:'拉幫結構的特徵就是掀開鞋墊看得到布質、與鞋面縫合的中底布，常見於慢跑鞋與女生平底娃娃鞋。'},
 
-    {type:'card', title:'摩卡森(包子鞋)結構 Moccasins construction', body:`古老結構法，源自印地安人鹿皮靴，衍伸出帆船鞋、機車鞋等鞋款。做法：側身鞋片加大延伸到底部，以肋條縫法縫合作出襪袋型鞋面，後跟通常墊半截中底支撐，套入楦頭定型，上膠後與大底貼合。<br><br>
-✅ 優點：前掌柔軟曲折佳<br>
-⚠️ 缺點：結構強度較差、不可換底、較浪費材料<br>
-🏷️ 機車鞋、帆船鞋常用；<strong>林果的馬克縫流蘇樂福鞋、帆船鞋</strong>使用此結構`},
+    {type:'card', title:'摩卡森(包子鞋)結構 Moccasins construction', photo:'assets/training/construction-moccasin.jpg', photoCap:'手工縫合的鞋頭，就是摩卡森結構的招牌特徵',
+      body:`這是五種結構裡最古老的一種，源自印地安人做鹿皮靴的手藝，後來衍生出帆船鞋、機車鞋這些鞋款。做法是把側身鞋片加大、延伸到底部，用肋條縫法縫出一個襪袋型的鞋面，後跟通常墊半截中底撐著，套進楦頭定型，上膠後跟大底貼合。<br><br>
+✅ 特色：前掌特別柔軟曲折。<br>
+⚠️ 但結構強度較差、不能換底，也比較浪費材料。<br>
+🏷️ 機車鞋、帆船鞋常見這個結構；<strong>林果的馬克縫流蘇樂福鞋、帆船鞋</strong>就是這樣做的。`},
     {type:'quiz', q:'林果哪些鞋款使用摩卡森(包子鞋)結構？',
       options:['馬克縫流蘇樂福鞋、帆船鞋','所有紳士皮鞋','所有工作鞋靴','所有女鞋款'],
       correct:0, exp:'摩卡森結構是側身鞋片延伸到底部的襪袋型做法，林果的馬克縫流蘇樂福鞋、帆船鞋都是使用此結構。'},
 
-    {type:'card', title:'五大結構總複習', body:`<div class="table-scroll"><table class="ref-table">
+    {type:'card', title:'五大結構總複習', body:`五種結構都認識了，最快的判斷方法就是掀開鞋墊看一眼、摸一下大底邊緣——把口訣整理成一張表，等測驗的時候記得回想這裡：<br><br>
+<div class="table-scroll"><table class="ref-table">
 <tr><th>結構</th><th>大底車縫線</th><th>外觀特點</th><th>林果對應鞋款</th></tr>
 <tr><td>布雷克</td><td>有</td><td>大底有車縫線、底較薄、沿條可寬可窄</td><td>女鞋</td></tr>
 <tr><td>林果改良布雷克</td><td>有(暗溝)</td><td>腰身看得到車縫線、底較薄</td><td>男皮底鞋</td></tr>
@@ -360,77 +373,78 @@ const MODULES = [
 {
   id:'care', icon:'🧴', title:'保養品專業知識', desc:'工具、清潔、滋養、補色、防水五大類產品與銷售話術',
   steps:[
-    {type:'card', title:'為什麼要重視保養？', body:`重視保養能帶來四個價值：<br>
-① 加深客人的黏著度<br>
-② 員工個人價值提升：面對客人更有自信、建立成就感<br>
-③ 提升林果服務品質的一致性與穩定度<br>
-④ 呼應林果「從製鞋到保養」的重視、將保養觀念深植人心`},
+    {type:'card', title:'為什麼要重視保養？', body:`林果從製鞋就講究，保養當然也不能馬虎——這不只是賣東西的話術，背後有四個實實在在的理由：<br>
+① 讓客人願意一直回來找你，黏著度自然變高<br>
+② 你自己也會更有自信：懂保養的夥伴，面對客人的提問完全不怕，成就感也是這樣建立起來的<br>
+③ 讓林果整體服務品質更一致、更穩定，不會因人而異<br>
+④ 呼應「從製鞋到保養」的品牌精神，把保養觀念深植進每個客人心裡`},
 
-    {type:'card', title:'保養品牌背景', body:`<strong>莎菲爾 Saphir(法)</strong>：1920年創立，1925年巴黎世界現代工藝與裝飾博覽會金牌，藝術風格強烈、顏色鮮艷、天然。<br><br>
-<strong>哥倫布斯(日)</strong>：1919年創立(日東皮革塗料工業)，致力創新、保養品多元化。<br><br>
-<strong>林果良品</strong>：適合全林果鞋款，以天然成分為主(鞋乳廠商也做臉部保養品、亮光蠟以棕梠油為主)，是最基本簡單、自行就能上手的<strong>入門款</strong>，價位介於哥倫布斯與莎菲爾之間。`},
+    {type:'card', title:'保養品牌背景', body:`門市裡其實同時擺著三個保養品牌的故事：<br><br>
+<strong>莎菲爾 Saphir（法國）</strong>是老字號，1920年創立，1925年在巴黎世界現代工藝與裝飾博覽會拿過金牌，走的是藝術風格強烈、顏色鮮豔、成分天然的路線。<br><br>
+<strong>哥倫布斯（日本）</strong>1919年創立(日東皮革塗料工業起家)，特色是不斷創新、保養品項做得很多元。<br><br>
+<strong>林果良品</strong>自己的保養品，適合全林果鞋款，以天然成分為主——鞋乳其實是找做臉部保養品的廠商做的，亮光蠟則以棕梠油為主。定位是最簡單、自己在家就能上手的<strong>入門款</strong>，價位介於哥倫布斯跟莎菲爾之間。`},
     {type:'quiz', q:'情境題：客人問「你們自己的鞋乳跟外面買的比起來怎麼樣？」較好的回答方向是？',
       options:['我們的比較好，因為比較貴','林果良品保養品以天然成分為主，是最基礎簡單、全林果鞋款都適用的入門款，價位介於哥倫布斯與莎菲爾之間','都一樣沒差','我們沒有自己的保養品可以介紹'],
       correct:1, exp:'用具體定位(天然成分、入門款、價位區間)回答，比空泛說「比較好」更專業、更有說服力。'},
 
-    {type:'card', title:'工具類產品', body:`<strong>白馬鬃毛舉刷</strong>：山毛櫸木和馬鬃毛，可用於除塵與拋光鞋蠟(白馬鬃毛容易辨識鞋蠟顏色)。<br>
-<strong>麂皮清潔刷</strong>：適用麂皮、牛巴哥、反毛皮、榔皮鞋面，刷去表面灰塵；橡膠短刷則類似生膠效果做麂皮清潔。<br>
-<strong>純棉擦拭布</strong>：用於清潔、保養、拋光，不要用上漿或有彈性的布(比較利)。<br>
-<strong>雪松原木鞋撐</strong>：吸濕、防霉、芳香，可避免大底收縮；用一陣子可稍微曬太陽或用#600細砂紙拋一拋。<br><br>
-⚠️ 麂皮刷不能太大力向下壓，先刷一個方向，刷完再刷另一個方向。`},
+    {type:'card', title:'工具類產品', photo:'assets/training/care-brush.jpg', photoCap:'山毛櫸木＋白馬鬃毛的除塵拋光刷',
+      body:`保養第一步永遠是工具。<strong>白馬鬃毛舉刷</strong>用山毛櫸木配白馬鬃毛做成，除塵、拋光鞋蠟都靠它——選白色鬃毛是有原因的，比較容易看清楚刷上去的鞋蠟顏色。<br><br>
+麂皮、牛巴哥、反毛皮這類鞋面，要換成<strong>麂皮清潔刷</strong>刷掉表面灰塵；橡膠短刷則像生膠一樣，專門對付麂皮的髒污。清潔完要拋光滋潤，靠的是<strong>純棉擦拭布</strong>——記得別用上漿或有彈性的布，太利反而傷皮面。<br><br>
+鞋子沒穿的時候呢？塞一支<strong>雪松原木鞋撐</strong>，吸濕、防霉、還帶點香氣，也能避免皮底大底收縮變形。用久了鞋撐吸飽濕氣，曬曬太陽或用#600細砂紙輕拋一下就能恢復效果。<br><br>
+⚠️ 用麂皮刷有個小訣竅：不要太用力往下壓，先固定一個方向刷，刷完再換另一個方向。`},
     {type:'quiz', q:'麂皮鞋款要用哪一種工具清潔比較合適？',
       options:['白馬鬃毛舉刷','麂皮清潔刷','純棉擦拭布沾水','亮光蠟'],
       correct:1, exp:'麂皮、牛巴哥、反毛皮鞋面要用麂皮清潔刷，力道不能太大，先刷一個方向再刷另一個方向。'},
 
-    {type:'card', title:'清潔類產品', body:`<strong>生膠</strong>：遇熱會變軟，針對麂皮/帆布皮用摩擦力把髒污帶起，也可清膠類、口香糖。<br>
-<strong>麂皮橡皮擦</strong>：髒污依附在橡皮擦碎屑中自然剝落。<br>
-<strong>皮革清潔乳</strong>：含水、油脂與界面活性劑，溫和、有制菌劑，屬乳化清潔。<br><br>
-⚠️ 教學重點：<strong>寧可用不乾淨，也不要用壞</strong>，約清潔2次即可，不要過度清潔；酒精含有機溶劑會揮發，比較傷皮革。`},
+    {type:'card', title:'清潔類產品', photo:'assets/training/care-cleaner.jpg', photoCap:'質地溫和的皮革清潔乳',
+      body:`<strong>生膠</strong>遇熱會變軟，靠摩擦力把麂皮、帆布皮上的髒污帶起來，連膠類、口香糖都清得掉。<strong>麂皮橡皮擦</strong>原理類似，髒污會依附在橡皮擦碎屑裡自然剝落。日常清潔則交給<strong>皮革清潔乳</strong>，含水、油脂跟界面活性劑，溫和又有制菌效果，是乳化清潔的做法。<br><br>
+⚠️ 這裡有個容易被忽略的心法：<strong>寧可清潔得不夠乾淨，也不要清潔過頭把皮革用壞</strong>——大概清潔2次就好，不用一直重複。也要提醒客人別自己拿酒精來擦，酒精是有機溶劑，會揮發，反而比較傷皮革。`},
     {type:'quiz', q:'關於清潔類產品的教學重點，以下何者正確？',
       options:['清潔次數越多越乾淨越好','寧可用不乾淨也不要用壞，約清潔2次即可，不要過度清潔','建議用酒精清潔最安全','清潔類產品可以取代滋養保養'],
       correct:1, exp:'清潔的教學重點是「不要強求」，約清潔2次即可，過度清潔反而傷皮革；酒精含有機溶劑，比較傷皮革，不建議常用。'},
 
-    {type:'card', title:'保養類產品(滋養)', body:`<strong>皮革滋養鮭魚油</strong>：滋養效果最強，<strong>非常推薦拿來厚敷保養皮底大底</strong>。<br>
-<strong>皮革滋養乳</strong>：含棕櫚油、椰子油、純橄欖乳霜、雪松精油，有潤色效果。<br><br>
-⚠️ 鞋油類商品上完後<strong>無法再上蠟、也無法上防水噴霧</strong>(無法附著)；避免上過量，沒乾前容易沾黏灰塵；鞋油本身沒有防水效果。`},
+    {type:'card', title:'保養類產品(滋養)', photo:'assets/training/care-nourish.jpg', photoCap:'滋養乳的質地要輕薄均勻上',
+      body:`清潔完的皮革會需要「喝水」，這時候就靠滋養類產品。<strong>皮革滋養鮭魚油</strong>是滋養效果最強的一款，特別推薦拿來厚敷保養皮底大底。<strong>皮革滋養乳</strong>則溫和一些，含棕櫚油、椰子油、純橄欖乳霜、雪松精油，還帶點潤色效果。<br><br>
+⚠️ 要提醒客人的是：鞋油類產品上完之後，<strong>就不能再上蠟、也不能上防水噴霧了</strong>（會沾不上去），而且上太多、沒乾就容易黏灰塵——鞋油本身也沒有防水效果，這點常被誤會，一定要講清楚。`},
     {type:'quiz', q:'情境題：客人剛買了鮭魚油要保養鞋面，你會提醒他什麼？',
       options:['鮭魚油上完後還可以馬上上防水噴霧','鮭魚油上完後不建議再上蠟或防水噴霧(無法附著)，且要避免過量，沒乾前容易沾黏灰塵','鮭魚油完全不能用在皮底','鮭魚油可以每天大量塗抹沒關係'],
       correct:1, exp:'鞋油類(含鮭魚油)上完後無法再附著蠟或防水噴霧，且避免上過量，沒乾前容易沾黏灰塵；鮭魚油反而非常推薦厚敷用在保養皮底大底。'},
 
-    {type:'card', title:'補色拋光類產品', body:`<strong>皮革鞋蠟</strong>：蜂蠟、油脂、溶劑，有保養效果，可補色並有些微防水與光澤。<br>
-<strong>快速亮光蠟</strong>：高成分蠟特殊比例調配成膏狀，能快速形成蠟膜打亮，但延展性、防護性較低。<br>
-<strong>鏡面亮光蠟</strong>：蜂蠟、棕櫚蠟、松節油，防刮傷、補色亮光與防水。<br>
-<strong>皮革亮光蠟</strong>：棕櫚蠟、溶劑、植物性油脂，添加雪松精油抗菌，防刮傷、補色美觀、防水。<br><br>
-💡 蜂蠟會形成一層蠟膜，對鞋子的保護性較高。`},
+    {type:'card', title:'補色拋光類產品', photo:'assets/training/care-wax.jpg', photoCap:'蜜蠟開罐，準備補色拋光',
+      body:`鞋子穿久掉色、想找回光澤，就是這一類產品的舞台。<strong>皮革鞋蠟</strong>用蜂蠟、油脂、溶劑做的，補色之餘還帶一點防水跟光澤。想快速打亮的話用<strong>快速亮光蠟</strong>，膏狀質地能很快形成蠟膜，只是延展性、防護性都比較弱。<br><br>
+真的要做出鏡面效果，就要靠<strong>鏡面亮光蠟</strong>（蜂蠟、棕櫚蠟、松節油），防刮傷之外還能補色防水；<strong>皮革亮光蠟</strong>則多加了雪松精油抗菌，一樣防刮、補色、防水。<br><br>
+💡 記一個原理就好：蜂蠟會在鞋面形成一層蠟膜，這層膜就是保護力的來源。`},
     {type:'quiz', q:'哪一種補色拋光產品「延展性、防護性較低」，比較適合快速應急打亮？',
       options:['快速亮光蠟','鏡面亮光蠟','皮革亮光蠟','蜂蠟膏'],
       correct:0, exp:'快速亮光蠟以高成分蠟特殊比例調配成膏狀，能快速形成蠟膜打亮，但延展性、防護性都比較低，比較適合應急用途，不能取代完整的保養流程。'},
 
-    {type:'card', title:'防水類產品', body:`<strong>皮革防水噴霧</strong>：氟素樹脂、溶劑，針對材質產生防潑水，並有防霜雪效果。<br>
-<strong>防水防污噴霧</strong>：氟樹脂、溶劑，針對各種材質產生防潑水效果。<br><br>
-⚠️ 使用時請距離鞋面<strong>30公分</strong>，在通風或室外空間使用，噴<strong>2~3層</strong>(間隔3~5分鐘)。<br>
-⚠️ 教學重點：<strong>這是「防潑水」，並非完全防水</strong>；少量多次、預防勝於治療。`},
+    {type:'card', title:'防水類產品', photo:'assets/training/care-waterproof.jpg', photoCap:'噴罐要距離鞋面30公分',
+      body:`雨天前噴一下最安心，但這裡藏著一個最常被誤會的觀念。<strong>皮革防水噴霧</strong>靠氟素樹脂、溶劑針對材質做出防潑水效果，還兼防霜雪；<strong>防水防污噴霧</strong>則是氟樹脂、溶劑，對各種材質都有防潑水效果。<br><br>
+使用方式：距離鞋面<strong>30公分</strong>，在通風或室外空間噴<strong>2~3層</strong>，中間間隔3~5分鐘讓它吸收。<br><br>
+⚠️ 一定要跟客人講清楚：<strong>這是「防潑水」，不是完全防水</strong>——下雨天走一下沒問題，但泡在水裡一樣會濕。少量多次噴、預防勝於治療，才是正確心態。`},
     {type:'quiz', q:'跟客人介紹防水噴霧時，以下哪個說法正確？',
       options:['這是完全防水，下雨天泡水也沒關係','這是防潑水效果，少量多次使用，並非完全防水','噴的距離越近效果越好','噴一次就永久有效，不用再補噴'],
       correct:1, exp:'防水噴霧的正確說法是「防潑水」，不是完全防水；使用時要距離鞋面30公分、少量多次(2~3層，間隔3~5分鐘)，過度期待防水效果容易造成客人誤會與客訴。'},
 
-    {type:'card', title:'保養5步驟與銷售話術心法', body:`<strong>皮鞋保養5步驟</strong>：① 狀況評估 → ② 除塵清潔 → ③ 保養滋潤 → ④ 補色打亮 → ⑤ 鏡面拋光<br><br>
-心法：<strong>不要先入為主、確實做好不強求、適量不過量、預防勝於治療、溫和化圓前後一致</strong>。<br><br>
-話術SOP(習慣出發、知識教育)：先問「平常有保養習慣嗎？」<br>
-→ 有興趣：依專業知識與客人需求推薦保養組合<br>
-→ 沒興趣：傳遞保養概念(強調林果提供免費的基本保養)`},
+    {type:'card', title:'保養5步驟與銷售話術心法', body:`把前面幾類產品串起來，完整的<strong>皮鞋保養5步驟</strong>長這樣：① 狀況評估 → ② 除塵清潔 → ③ 保養滋潤 → ④ 補色打亮 → ⑤ 鏡面拋光。<br><br>
+貫穿這5步的心法就一句話：<strong>不要先入為主、確實做好不強求、適量不過量、預防勝於治療、前後一致溫和進行</strong>。<br><br>
+面對客人，話術也有一套順序——先問一句「平常有保養習慣嗎？」<br>
+→ 有興趣的，就用你剛學的專業知識，依他的需求推薦組合<br>
+→ 沒興趣的，別硬推銷，先把保養的概念傳遞出去就好（記得提醒林果有提供免費的基本保養）`},
 
-    {type:'card', title:'三種銷售組合', body:`<strong>簡易版(懶人推薦)</strong>：清潔(馬毛刷) + 防護(防水噴霧)。適合<strong>不常保養、生活忙碌</strong>的客群，避免重複推銷過的商品。<br><br>
-<strong>基礎版</strong>：清潔 + 滋養(適當油質維持彈性) + 防護。<br><br>
-<strong>進階版</strong>：清潔(含清潔露完整去舊) + 滋養 + 補色(蜜蠟) + 防護(亮光蠟多層)。適合<strong>出席重要場合或對保養有強烈興趣</strong>的客群。`},
+    {type:'card', title:'三種銷售組合', body:`同樣是保養，不同客人要推薦不同深度的組合：<br><br>
+<strong>簡易版(懶人推薦)</strong>：清潔(馬毛刷) + 防護(防水噴霧)。這是給<strong>不常保養、生活忙碌</strong>的客人，重點是別重複推銷他已經買過的東西。<br><br>
+<strong>基礎版</strong>：清潔 + 滋養(適當油質維持彈性) + 防護，適合想再多做一點的一般客人。<br><br>
+<strong>進階版</strong>：清潔(含清潔露徹底去舊) + 滋養 + 補色(蜜蠟) + 防護(亮光蠟多層)，這是留給<strong>要出席重要場合、或對保養本身有強烈興趣</strong>的客人的完整組合。`},
     {type:'quiz', q:'情境題：客人說「我平常很少保養鞋子，也沒什麼興趣」，你會推薦哪一種銷售組合？',
       options:['進階版，因為比較完整周全','簡易版，針對不常保養/生活忙碌的客群，先建立基本保養習慣','什麼都不用推薦，直接結束對話','基礎版一定要包含補色步驟'],
       correct:1, exp:'銷售組合要對應客群需求，對不常保養、沒興趣的客人推銷太複雜的進階版反而造成壓力，簡易版才是符合對方需求、能建立基本保養習慣的起點。'},
 
-    {type:'card', title:'常見問題FAQ', body:`<strong>發霉了怎麼辦？</strong>先刷除表層霉菌，用75%消毒酒精或皮革清潔露擦拭陰乾，反覆直到去除，最後再做鞋油保養。<br><br>
-<strong>淋雨後怎麼處理？</strong>先用布擦拭乾淨，放通風處或除濕機附近陰乾；若有水痕，先用微濕布或清潔劑擦拭再乾燥、做完整保養。<br><br>
-<strong>已經送過一次鞋面維修，還能再送第二次嗎？</strong>不建議，因維修需經過打磨，鞋子用越久皮面可能因二次維修變得更脆弱，建議穿到自然汰換。<br><br>
-<strong>機車油漬或油漆滴到鞋面？</strong>小範圍可用細砂紙或生膠擦嘗試清除後補蠟；大範圍會直接告知無法處理。`},
+    {type:'card', title:'常見問題FAQ', body:`把門市最常被問到的幾個狀況整理起來：<br><br>
+<strong>「鞋子發霉了怎麼辦？」</strong>先刷除表層霉菌，用75%消毒酒精或皮革清潔露擦拭陰乾，反覆做到菌絲清乾淨，最後再做一次完整鞋油保養。<br><br>
+<strong>「淋雨之後呢？」</strong>先用布把水擦乾淨，放通風處或除濕機旁邊陰乾；如果留下水痕，先用微濕布或清潔劑擦過再徹底乾燥、做完整保養。<br><br>
+<strong>「已經修過一次的鞋面，可以再送修嗎？」</strong>不建議。維修要經過打磨，鞋子已經穿了一段時間，皮面可能因為二次維修變得更脆弱，比較好的建議是讓它穿到自然汰換。<br><br>
+<strong>「鞋面被機車油漬或油漆滴到？」</strong>小範圍可以試試細砂紙或生膠擦清除後補蠟；範圍大的話，老實告訴客人真的處理不了。`},
     {type:'quiz', q:'情境題：客人的皮鞋不小心發霉了，你會怎麼建議？',
       options:['直接說沒救了，建議買新的','先刷除表層霉菌，再用75%酒精或皮革清潔露擦拭陰乾，反覆直到去除後再做鞋油保養','泡水清洗最乾淨','用吹風機用力吹乾就好，不用特別處理'],
       correct:1, exp:'發霉處理要先刷除菌絲、用酒精或清潔露擦拭陰乾，反覆直到去除乾淨，最後再做鞋油保養，不是直接放棄或用錯方法(如泡水)。'},
@@ -493,8 +507,12 @@ const MODULES = [
 // ============================================================
 let progressCache = {};
 let currentModule = null;
-let currentStepIdx = 0;
-let answers = {}; // stepIdx -> {picked, correct}
+let currentPhase = 'read'; // 'read' (讀完整段知識) 先於 'quiz' (再一次考完整份測驗)
+let readSteps = [];
+let quizSteps = [];
+let readIdx = 0;
+let quizIdx = 0;
+let answers = {}; // quizIdx -> {picked, correct}
 
 const $ = (id) => document.getElementById(id);
 
@@ -529,7 +547,11 @@ function renderModuleGrid() {
 
 function startModule(id) {
   currentModule = MODULES.find(m => m.id === id);
-  currentStepIdx = 0;
+  readSteps = currentModule.steps.filter(s => s.type === 'card');
+  quizSteps = currentModule.steps.filter(s => s.type === 'quiz');
+  currentPhase = 'read';
+  readIdx = 0;
+  quizIdx = 0;
   answers = {};
   $('module-grid').style.display = 'none';
   $('intro-text').style.display = 'none';
@@ -546,59 +568,86 @@ function backToList() {
   renderModuleGrid();
 }
 
+// 先讓夥伴讀完一個模組「完整的知識內容」，讀完才進入測驗階段一次考完，
+// 避免邊讀邊考只是靠短期記憶作答、讀完就忘、知識也學得零碎。
 function renderStep() {
-  const steps = currentModule.steps;
-  const step = steps[currentStepIdx];
-  $('progress-label').textContent = (currentStepIdx + 1) + ' / ' + steps.length;
-  $('progress-fill').style.width = Math.round(((currentStepIdx) / steps.length) * 100) + '%';
+  if (currentPhase === 'read') renderReadStep();
+  else renderQuizStep();
+}
 
+function renderReadStep() {
+  const step = readSteps[readIdx];
+  const isLast = readIdx === readSteps.length - 1;
+  $('progress-label').textContent = '閱讀 ' + (readIdx + 1) + ' / ' + readSteps.length;
+  $('progress-fill').style.width = (readSteps.length ? Math.round((readIdx / readSteps.length) * 50) : 50) + '%';
+
+  const photoHtml = step.photo
+    ? `<img class="step-photo" src="${step.photo}" alt="${step.title}" loading="lazy">${step.photoCap ? '<div class="step-photo-cap">📷 '+step.photoCap+'</div>' : ''}`
+    : '';
   const card = $('step-card');
-  if (step.type === 'card') {
-    card.innerHTML = `
-      <div class="step-kicker">${currentModule.title}</div>
-      <div class="step-title">${step.title}</div>
-      <div class="step-body">${step.body}</div>
-      <div class="step-nav">
-        <button class="btn btn-ghost" id="btn-prev" ${currentStepIdx===0?'disabled':''}>上一步</button>
-        <button class="btn btn-primary" id="btn-next">${currentStepIdx===steps.length-1?'完成模組':'下一步'}</button>
-      </div>`;
-    $('btn-next').addEventListener('click', advanceStep);
-    $('btn-prev').addEventListener('click', prevStep);
-  } else {
-    const prevAnswer = answers[currentStepIdx];
-    card.innerHTML = `
-      <div class="step-kicker">🧠 小測驗</div>
-      <div class="step-title">${step.q}</div>
-      <div class="quiz-options" id="quiz-options"></div>
-      <div class="quiz-feedback" id="quiz-feedback"></div>
-      <div class="step-nav">
-        <button class="btn btn-ghost" id="btn-prev" ${currentStepIdx===0?'disabled':''}>上一步</button>
-        <button class="btn btn-primary" id="btn-next" disabled>${currentStepIdx===steps.length-1?'完成模組':'下一步'}</button>
-      </div>`;
-    const optWrap = $('quiz-options');
-    step.options.forEach((opt, i) => {
-      const b = document.createElement('button');
-      b.className = 'quiz-opt';
-      b.textContent = opt;
-      b.addEventListener('click', () => selectAnswer(i));
-      optWrap.appendChild(b);
-    });
-    $('btn-next').addEventListener('click', advanceStep);
-    $('btn-prev').addEventListener('click', prevStep);
-    if (prevAnswer) showQuizFeedback(prevAnswer.picked, true);
-  }
+  card.innerHTML = `
+    <div class="step-kicker">${currentModule.title} · 閱讀</div>
+    <div class="step-title">${step.title}</div>
+    ${photoHtml}
+    <div class="step-body">${step.body}</div>
+    <div class="step-nav">
+      <button class="btn btn-ghost" id="btn-prev" ${readIdx===0?'disabled':''}>上一步</button>
+      <button class="btn btn-primary" id="btn-next">${isLast ? (quizSteps.length ? '讀完了，開始測驗 →' : '完成模組') : '下一步'}</button>
+    </div>`;
+  $('btn-next').addEventListener('click', () => {
+    if (!isLast) { readIdx++; renderStep(); return; }
+    if (quizSteps.length) { currentPhase = 'quiz'; quizIdx = 0; renderStep(); }
+    else finishModule();
+  });
+  $('btn-prev').addEventListener('click', () => { if (readIdx > 0) { readIdx--; renderStep(); } });
+}
+
+function renderQuizStep() {
+  const step = quizSteps[quizIdx];
+  const isLast = quizIdx === quizSteps.length - 1;
+  $('progress-label').textContent = '測驗 ' + (quizIdx + 1) + ' / ' + quizSteps.length;
+  $('progress-fill').style.width = (50 + Math.round((quizIdx / quizSteps.length) * 50)) + '%';
+
+  const prevAnswer = answers[quizIdx];
+  const card = $('step-card');
+  card.innerHTML = `
+    <div class="step-kicker">🧠 小測驗（讀完了，靠記憶作答）</div>
+    <div class="step-title">${step.q}</div>
+    <div class="quiz-options" id="quiz-options"></div>
+    <div class="quiz-feedback" id="quiz-feedback"></div>
+    <div class="step-nav">
+      <button class="btn btn-ghost" id="btn-prev">上一步</button>
+      <button class="btn btn-primary" id="btn-next" disabled>${isLast ? '完成模組' : '下一步'}</button>
+    </div>`;
+  const optWrap = $('quiz-options');
+  step.options.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'quiz-opt';
+    b.textContent = opt;
+    b.addEventListener('click', () => selectAnswer(i));
+    optWrap.appendChild(b);
+  });
+  $('btn-next').addEventListener('click', () => {
+    if (isLast) finishModule();
+    else { quizIdx++; renderStep(); }
+  });
+  $('btn-prev').addEventListener('click', () => {
+    if (quizIdx > 0) { quizIdx--; renderStep(); }
+    else { currentPhase = 'read'; readIdx = readSteps.length - 1; renderStep(); }
+  });
+  if (prevAnswer) showQuizFeedback(prevAnswer.picked, true);
 }
 
 function selectAnswer(pickedIdx) {
-  const step = currentModule.steps[currentStepIdx];
-  if (answers[currentStepIdx]) return; // already answered
+  const step = quizSteps[quizIdx];
+  if (answers[quizIdx]) return; // already answered
   const isCorrect = pickedIdx === step.correct;
-  answers[currentStepIdx] = { picked: pickedIdx, correct: isCorrect };
+  answers[quizIdx] = { picked: pickedIdx, correct: isCorrect };
   showQuizFeedback(pickedIdx, false);
 }
 
-function showQuizFeedback(pickedIdx, isReplay) {
-  const step = currentModule.steps[currentStepIdx];
+function showQuizFeedback(pickedIdx) {
+  const step = quizSteps[quizIdx];
   const opts = document.querySelectorAll('#quiz-options .quiz-opt');
   opts.forEach((b, i) => {
     b.disabled = true;
@@ -612,27 +661,9 @@ function showQuizFeedback(pickedIdx, isReplay) {
   $('btn-next').disabled = false;
 }
 
-function prevStep() {
-  if (currentStepIdx === 0) return;
-  currentStepIdx--;
-  renderStep();
-}
-
-function advanceStep() {
-  const steps = currentModule.steps;
-  if (currentStepIdx < steps.length - 1) {
-    currentStepIdx++;
-    renderStep();
-  } else {
-    finishModule();
-  }
-}
-
 function finishModule() {
-  const steps = currentModule.steps;
-  const quizSteps = steps.map((s,i)=>({s,i})).filter(x => x.s.type === 'quiz');
   const total = quizSteps.length;
-  const score = quizSteps.filter(x => answers[x.i] && answers[x.i].correct).length;
+  const score = quizSteps.filter((s, i) => answers[i] && answers[i].correct).length;
   const percent = total ? Math.round((score/total)*100) : 100;
 
   $('lesson-wrap').classList.remove('show');
