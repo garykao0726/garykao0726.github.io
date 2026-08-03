@@ -1,0 +1,165 @@
+<title>ORINGO Persona 研究｜報告分析</title>
+<style>
+  :root{
+    --ink:#002721; --forest:#284234; --rust:#A54A1A; --sand:#E2CEB9; --sand-light:#F5EDE3;
+    --slate:#4E5A63; --bg:#FBF8F4; --card-bg:#FFFFFF; --line:#E4DBCE; --muted:#6B6259;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0B1613; --card-bg:#122420; --ink:#EFE7DA; --forest:#9FC2AE; --rust:#E08A52;
+    --sand:#3A4A3F; --sand-light:#16241F; --slate:#AEB9C0; --line:#25332C; --muted:#9AA79D;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0B1613; --card-bg:#122420; --ink:#EFE7DA; --forest:#9FC2AE; --rust:#E08A52;
+      --sand:#3A4A3F; --sand-light:#16241F; --slate:#AEB9C0; --line:#25332C; --muted:#9AA79D;
+    }
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei","Helvetica Neue",sans-serif;
+    line-height:1.75; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  .num{font-family:"Space Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px 100px;}
+
+  .topnav{position:sticky;top:0;z-index:50;background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);}
+  .topnav-inner{max-width:1000px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .topnav .brand{font-weight:900;font-size:14px;color:var(--forest);}
+  .topnav .next-link{font-size:13px;font-weight:700;color:#fff;background:var(--rust);text-decoration:none;padding:7px 16px;border-radius:999px;}
+
+  header.masthead{padding:48px 0 32px;border-bottom:1px solid var(--line);margin-bottom:40px;}
+  .eyebrow{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--rust);font-weight:700;margin-bottom:10px;}
+  .part-label{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--forest);padding:5px 14px;border-radius:999px;margin-bottom:14px;}
+  h1{font-size:clamp(26px,3.6vw,34px);line-height:1.3;margin:0 0 12px;color:var(--forest);text-wrap:balance;font-weight:900;}
+  .subtitle{font-size:15px;color:var(--muted);max-width:66ch;margin:0;}
+
+  section{margin-bottom:48px;}
+  h2{font-size:22px;color:var(--forest);margin:0 0 6px;font-weight:800;}
+  h3.sub{font-size:15px;color:var(--rust);margin:28px 0 12px;font-weight:800;}
+  .section-desc{color:var(--muted);font-size:13.5px;max-width:70ch;margin:0 0 20px;}
+
+  .callout{background:var(--sand-light);border:1px solid var(--line);border-radius:6px;padding:18px 22px;font-size:13.5px;}
+  .callout p{margin:0 0 8px;}
+  .callout p:last-child{margin-bottom:0;}
+
+  .finding-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+  .finding-card{background:var(--card-bg);border:1px solid var(--line);border-radius:8px;padding:18px 20px;}
+  .finding-card .stat{font-size:24px;font-weight:900;color:var(--rust);font-family:"Space Mono",monospace;}
+  .finding-card .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:2px 0 8px;}
+  .finding-card p{font-size:13px;margin:0;color:var(--ink);}
+
+  .table-wrap{overflow-x:auto;margin-top:14px;}
+  table.tier-table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px;}
+  table.tier-table th{text-align:left;font-size:11px;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);}
+  table.tier-table td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+
+  .compare-panel{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:16px;}
+  .compare-side{padding:22px 24px;}
+  .compare-side.oringo{background:color-mix(in srgb, var(--rust) 7%, var(--card-bg));}
+  .compare-side.vanger{background:color-mix(in srgb, var(--slate) 8%, var(--card-bg));}
+  .compare-side h4{margin:0 0 4px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;}
+  .compare-side.oringo h4{color:var(--rust);}
+  .compare-side.vanger h4{color:var(--slate);}
+  .compare-side .headline{font-size:16px;font-weight:800;margin:0 0 10px;}
+  .compare-side ul{margin:0;padding-left:16px;font-size:12.5px;}
+  .compare-side li{margin-bottom:6px;}
+
+  .cta-box{margin-top:36px;background:var(--forest);color:var(--sand-light);border-radius:10px;padding:26px 30px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+  .cta-box p{margin:0;font-size:14px;max-width:52ch;}
+  .cta-box a{flex-shrink:0;font-size:13px;font-weight:800;background:#fff;color:var(--forest);text-decoration:none;padding:10px 20px;border-radius:999px;}
+
+  footer{border-top:1px solid var(--line);margin-top:56px;padding-top:20px;font-size:12px;color:var(--muted);}
+
+  @media (max-width:720px){
+    .compare-panel{grid-template-columns:1fr;}
+    .finding-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <span class="brand">ORINGO PERSONA · 報告分析</span>
+    <a class="next-link" href="persona-profiles.html" id="nextLink">看最終人物誌 →</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <header class="masthead">
+    <span class="part-label">Page 1 / 2</span>
+    <div class="eyebrow">ORINGO 顧客 Persona 研究</div>
+    <h1>報告分析：從真實資料看出來的六件事</h1>
+    <p class="subtitle">整合 IG／FB／customer.html／Google 評論／真實訂單／VANGER 對照的完整調查，收斂成這頁的關鍵發現——這是最終人物誌背後真正的依據，方法論與資料細節請見完整版研究報告。</p>
+  </header>
+
+  <section>
+    <h3 class="sub">用了哪些真實資料</h3>
+    <div class="callout">
+      <p><b>社群互動樣本</b>——oringoshoes（管理員視角）與 vangershoes（公開瀏覽）近期貼文的留言／按讚／追蹤中清單，各 30 組與 18 組高互動帳號。</p>
+      <p><b>官方後台數據</b>——FB 粉專洞察報告（59,122 位粉絲全量統計）、customer.html 顧客分析儀表板（3 年 CRM 真實交易資料）。</p>
+      <p><b>真實交易與評論</b>——商品彙整表真實訂單（6–8 週抽樣，311 筆品項）、Google 商家檔案四店近期 50 則評論原文。</p>
+      <p style="margin-bottom:0;"><b>競品對照</b>——VANGER 官網公開商品與定價、VANGER 官方合作/代言名單。</p>
+    </div>
+  </section>
+
+  <section>
+    <h3 class="sub">六個關鍵發現</h3>
+    <div class="finding-grid">
+      <div class="finding-card"><div class="stat num">70%</div><div class="label">核心年齡層</div><p>FB 官方數據：35–44 歲＋45–54 歲合計佔粉絲 70%，男性比例隨年齡遞增，北北桃佔 62%。</p></div>
+      <div class="finding-card"><div class="stat num">80%</div><div class="label">新客流失率</div><p>customer.html：Y1 招到 7,405 位新客，Y3 只剩 18.3% 活躍，VIP 終身價值卻是一般客的 2.32 倍。</p></div>
+      <div class="finding-card"><div class="stat num">+47%</div><div class="label">對 VANGER 溢價</div><p>真實訂單：ORINGO 鞋款均價 $5,914，比 VANGER 官網均價 $4,006 高 47%，兩品牌價格帶幾乎不重疊。</p></div>
+      <div class="finding-card"><div class="stat num">1</div><div class="label">同一個小圈子</div><p>追蹤圖譜：ORINGO 與 VANGER 的核心高互動粉絲，很大程度是同一個台灣正裝/丹寧愛好者社群。</p></div>
+      <div class="finding-card"><div class="stat num">6<span style="font-size:14px;">vs</span>71</div><div class="label">女鞋 SKU 缺口</div><p>真實訂單：女鞋僅 6 個 SKU、價格帶 $4,988–6,788，遠窄於男鞋 71 個 SKU、$1,980–8,988。</p></div>
+      <div class="finding-card"><div class="stat num">服務＞產品</div><div class="label">Google 評論主旋律</div><p>50 則評論裡最常被稱讚的是店員親切專業，且常指名道姓——買鞋更像是找一個信任的鞋顧問。</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h3 class="sub">跟 VANGER 比，差在哪裡</h3>
+    <p class="section-desc">這是這次調查唯一拿 VANGER 做比較的目的——不是要幫 VANGER 也做一套 persona，是用它當鏡子，照出 ORINGO 客群真正的樣子。</p>
+    <div class="compare-panel">
+      <div class="compare-side oringo">
+        <h4>ORINGO</h4>
+        <p class="headline">時尚 = 個人風格與工藝認同</p>
+        <ul>
+          <li>命名圍繞工法/構造（Blucher、Bookbinder、雕花），要懂才會心動</li>
+          <li>核心客群把買鞋當成關係經營，重視店員記得自己、故事講得深</li>
+          <li>價格帶明顯更高，靠信任與工藝深度留客，不靠折扣</li>
+        </ul>
+      </div>
+      <div class="compare-side vanger">
+        <h4>VANGER</h4>
+        <p class="headline">時尚 = 場合規範與實用便利</p>
+        <ul>
+          <li>命名圍繞場景痛點（免繫帶、商務靜音、防水），不用懂工藝也能被說服</li>
+          <li>主力客群把皮鞋當工作制服，重視方便/耐用/價格</li>
+          <li>唯一跟 ORINGO 重疊的，是一小群本來就懂行的紳士社群意見領袖——這批人被 VANGER 用官方代言合作綁住，是兩品牌真正在爭奪的稀缺資源</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3 class="sub">商品開發優先順序</h3>
+    <div class="table-wrap">
+      <table class="tier-table">
+        <thead><tr><th>層級</th><th>對應 Persona</th><th>該做什麼</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:var(--rust);">核心主力</b></td><td>工藝老饕（陳彥廷）</td><td>旗艦鞋款開發依他的標準——消費動機跟現有定價策略完全同軸，效益外溢最大。</td></tr>
+          <tr><td><b style="color:var(--forest);">成長槓桿</b></td><td>率性百搭女子（林品萱）</td><td>擴充女鞋 SKU 數量與價格帶上限，這是可以直接靠商品開發補上的缺口。</td></tr>
+          <tr><td>周邊延伸</td><td>節慶送禮人／一次性嘗鮮客</td><td>對應禮盒包裝、品牌故事包裝、入門款＋回訪機制，不是新鞋款開發的依據。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="cta-box">
+    <p>接下來是四個真實人物誌——把上面這些數字變成看得到、聊得出來的人。</p>
+    <a href="persona-profiles.html" id="nextLinkBtn">看最終人物誌 →</a>
+  </div>
+
+  <footer>
+    完整方法論、原始數據與逐項來源請見完整版研究報告（ig_persona_report.html）。內部討論用，非對外發布文件。
+  </footer>
+</div>
