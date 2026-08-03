@@ -78,6 +78,16 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   max-width:700px;margin:0 auto}
 @keyframes slide-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .step-card.article-mode{max-width:920px;padding:44px 64px}
+.article-section > *{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease}
+.article-section.revealed > *{opacity:1;transform:translateY(0)}
+.article-section > *:nth-child(1){transition-delay:.02s}
+.article-section > *:nth-child(2){transition-delay:.1s}
+.article-section > *:nth-child(3){transition-delay:.18s}
+.article-section > *:nth-child(4){transition-delay:.26s}
+.article-section > *:nth-child(5){transition-delay:.34s}
+@media(prefers-reduced-motion:reduce){
+  .article-section > *{opacity:1;transform:none;transition:none}
+}
 .step-kicker{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;
   color:var(--gray-pink);text-transform:uppercase;margin-bottom:10px}
 .step-photo{width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-bottom:12px;
@@ -671,6 +681,31 @@ function renderReadStep() {
     else finishModule();
   });
   window.scrollTo({ top: 0, behavior: 'instant' });
+  revealSectionsOnScroll();
+}
+
+// 段落隨捲動輕輕浮現，讓閱讀長文的過程更有節奏感、不無聊。
+// 用 scroll + getBoundingClientRect 而不是 IntersectionObserver，避免在部分瀏覽器/
+// 內嵌環境下 observer callback 不觸發的問題。
+function revealSectionsOnScroll() {
+  const sections = Array.from(document.querySelectorAll('.article-section'));
+  function checkReveal() {
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    let remaining = false;
+    sections.forEach(s => {
+      if (s.classList.contains('revealed')) return;
+      const r = s.getBoundingClientRect();
+      if (r.top < vh * 0.92 && r.bottom > 0) s.classList.add('revealed');
+      else remaining = true;
+    });
+    if (!remaining) {
+      window.removeEventListener('scroll', checkReveal);
+      window.removeEventListener('resize', checkReveal);
+    }
+  }
+  window.addEventListener('scroll', checkReveal, { passive: true });
+  window.addEventListener('resize', checkReveal);
+  checkReveal();
 }
 
 function renderQuizStep() {
