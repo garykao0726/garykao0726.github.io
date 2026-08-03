@@ -81,6 +81,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .step-photo{width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-bottom:18px;
   display:block;box-shadow:0 4px 14px rgba(40,66,52,.1)}
 .step-photo-cap{font-size:11px;color:var(--text-muted);margin:-10px 0 18px;font-family:'Space Mono',monospace;letter-spacing:.5px}
+.article-section{margin-top:22px}
+.article-section:first-of-type{margin-top:20px}
+.article-section-title{font-size:16px;font-weight:700;color:var(--green);margin-bottom:12px}
+.article-divider{height:1px;background:var(--border);margin:26px 0}
 .step-title{font-size:19px;font-weight:700;color:var(--green);margin-bottom:16px;line-height:1.5}
 .step-body{font-size:14.5px;line-height:1.9;color:var(--text)}
 .step-body strong{color:var(--rust)}
@@ -575,38 +579,45 @@ function renderStep() {
   else renderQuizStep();
 }
 
+// 讀的階段不再一張卡片一張卡片翻頁——整個模組的知識內容一次全部顯示成一篇完整
+// 文章，讓夥伴用「看文章」的方式從頭讀到尾，讀完才進入測驗，而不是每讀一小段
+// 就要點一次「下一步」翻頁。
 function renderReadStep() {
-  const step = readSteps[readIdx];
-  const isLast = readIdx === readSteps.length - 1;
-  $('progress-label').textContent = '閱讀 ' + (readIdx + 1) + ' / ' + readSteps.length;
-  $('progress-fill').style.width = (readSteps.length ? Math.round((readIdx / readSteps.length) * 50) : 50) + '%';
+  $('progress-label').textContent = '閱讀完整內容';
+  $('progress-fill').style.width = '8%';
 
-  const photoHtml = step.photo
-    ? `<img class="step-photo" src="${step.photo}" alt="${step.title}" loading="lazy">${step.photoCap ? '<div class="step-photo-cap">📷 '+step.photoCap+'</div>' : ''}`
-    : '';
+  const sectionsHtml = readSteps.map(step => {
+    const photoHtml = step.photo
+      ? `<img class="step-photo" src="${step.photo}" alt="${step.title}" loading="lazy">${step.photoCap ? '<div class="step-photo-cap">📷 '+step.photoCap+'</div>' : ''}`
+      : '';
+    return `
+      <div class="article-section">
+        <div class="article-section-title">${step.title}</div>
+        ${photoHtml}
+        <div class="step-body">${step.body}</div>
+      </div>`;
+  }).join('<div class="article-divider"></div>');
+
   const card = $('step-card');
   card.innerHTML = `
-    <div class="step-kicker">${currentModule.title} · 閱讀</div>
-    <div class="step-title">${step.title}</div>
-    ${photoHtml}
-    <div class="step-body">${step.body}</div>
-    <div class="step-nav">
-      <button class="btn btn-ghost" id="btn-prev" ${readIdx===0?'disabled':''}>上一步</button>
-      <button class="btn btn-primary" id="btn-next">${isLast ? (quizSteps.length ? '讀完了，開始測驗 →' : '完成模組') : '下一步'}</button>
+    <div class="step-kicker">${currentModule.title} · 閱讀完整內容（共 ${readSteps.length} 段，讀完才開始測驗）</div>
+    <div class="step-title">${currentModule.title}</div>
+    ${sectionsHtml}
+    <div class="step-nav" style="justify-content:center;margin-top:8px">
+      <button class="btn btn-primary" id="btn-next" style="width:100%;max-width:360px">${quizSteps.length ? '讀完了，開始測驗 →' : '完成模組'}</button>
     </div>`;
   $('btn-next').addEventListener('click', () => {
-    if (!isLast) { readIdx++; renderStep(); return; }
     if (quizSteps.length) { currentPhase = 'quiz'; quizIdx = 0; renderStep(); }
     else finishModule();
   });
-  $('btn-prev').addEventListener('click', () => { if (readIdx > 0) { readIdx--; renderStep(); } });
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 function renderQuizStep() {
   const step = quizSteps[quizIdx];
   const isLast = quizIdx === quizSteps.length - 1;
   $('progress-label').textContent = '測驗 ' + (quizIdx + 1) + ' / ' + quizSteps.length;
-  $('progress-fill').style.width = (50 + Math.round((quizIdx / quizSteps.length) * 50)) + '%';
+  $('progress-fill').style.width = (10 + Math.round((quizIdx / quizSteps.length) * 90)) + '%';
 
   const prevAnswer = answers[quizIdx];
   const card = $('step-card');
@@ -633,9 +644,10 @@ function renderQuizStep() {
   });
   $('btn-prev').addEventListener('click', () => {
     if (quizIdx > 0) { quizIdx--; renderStep(); }
-    else { currentPhase = 'read'; readIdx = readSteps.length - 1; renderStep(); }
+    else { currentPhase = 'read'; renderStep(); }
   });
   if (prevAnswer) showQuizFeedback(prevAnswer.picked, true);
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 function selectAnswer(pickedIdx) {
