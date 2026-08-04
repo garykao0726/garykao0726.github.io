@@ -49,6 +49,23 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 /* ── Container ── */
 .container{max-width:980px;margin:0 auto;padding:2.4rem 1.5rem 4rem}
 
+/* ── Overview / 稱號卡 ── */
+.overview-card{background:linear-gradient(135deg,var(--green),var(--dark));border-radius:18px;
+  padding:24px 26px;margin-bottom:20px;color:var(--sand);box-shadow:0 6px 22px rgba(40,66,52,.18)}
+.overview-title-row{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.overview-icon{font-size:34px;width:52px;height:52px;border-radius:50%;background:rgba(226,206,185,.12);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.overview-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;
+  color:var(--gray-pink);text-transform:uppercase;margin-bottom:3px}
+.overview-title{font-size:19px;font-weight:700;color:var(--sand)}
+.overview-stats{display:flex;gap:28px;margin-bottom:14px}
+.overview-stat-num{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--sand)}
+.overview-stat-label{font-size:11px;color:rgba(226,206,185,.65);margin-top:2px}
+.overview-bar-track{height:8px;border-radius:5px;background:rgba(226,206,185,.15);overflow:hidden}
+.overview-bar-fill{height:100%;background:linear-gradient(90deg,var(--rust),#d97a42);border-radius:5px;
+  transition:width .5s ease}
+.overview-next{font-size:11.5px;color:rgba(226,206,185,.7);margin-top:12px;line-height:1.6}
+
 /* ── Module grid ── */
 .module-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
 .module-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;
@@ -198,6 +215,23 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <div class="intro" id="intro-text">
     把<strong>商品知識手冊</strong>拆成一個個小知識點，讀完一小段就來一題小測驗。<br>
     全部讀完＋答完，就等於完整複習了一次商品知識！完成後會自動記錄你的分數。
+  </div>
+
+  <!-- 個人進度總覽（自己跟自己比，不跟別人比） -->
+  <div class="overview-card" id="overview-card">
+    <div class="overview-title-row">
+      <div class="overview-icon" id="overview-icon">🌱</div>
+      <div>
+        <div class="overview-label">目前稱號</div>
+        <div class="overview-title" id="overview-title">新手夥伴</div>
+      </div>
+    </div>
+    <div class="overview-stats">
+      <div class="overview-stat"><div class="overview-stat-num" id="overview-modules">0/4</div><div class="overview-stat-label">模組完成</div></div>
+      <div class="overview-stat"><div class="overview-stat-num" id="overview-accuracy">–</div><div class="overview-stat-label">整體正確率</div></div>
+    </div>
+    <div class="overview-bar-track"><div class="overview-bar-fill" id="overview-bar-fill" style="width:0%"></div></div>
+    <div class="overview-next" id="overview-next"></div>
   </div>
 
   <!-- 模組列表 -->
@@ -614,6 +648,50 @@ function renderModuleGrid() {
     card.addEventListener('click', () => startModule(m.id));
     grid.appendChild(card);
   });
+  renderOverview();
+}
+
+// 稱號是跟自己比，不是跟別人比：完成的模組越多，稱號跟著晉升。
+const TITLES = [
+  { min: 0, label: '新手夥伴', icon: '🌱' },
+  { min: 1, label: '見習店員', icon: '📚' },
+  { min: 2, label: '熟手店員', icon: '🧵' },
+  { min: 3, label: '資深顧問', icon: '🎯' },
+  { min: 4, label: '林果達人', icon: '🏅' }
+];
+
+function renderOverview() {
+  const doneIds = Object.keys(progressCache);
+  const doneCount = doneIds.length;
+  const totalModules = MODULES.length;
+  const totalScore = doneIds.reduce((sum, id) => sum + (Number(progressCache[id].score) || 0), 0);
+  const totalQuestions = doneIds.reduce((sum, id) => sum + (Number(progressCache[id].total) || 0), 0);
+  const overallPercent = totalQuestions ? Math.round((totalScore / totalQuestions) * 100) : null;
+
+  let tier = TITLES[0];
+  for (const t of TITLES) if (doneCount >= t.min) tier = t;
+  let title = tier.label, icon = tier.icon;
+  if (doneCount === totalModules && overallPercent !== null && overallPercent >= 90) {
+    title = '林果大師'; icon = '👑';
+  }
+
+  $('overview-icon').textContent = icon;
+  $('overview-title').textContent = title;
+  $('overview-modules').textContent = doneCount + '/' + totalModules;
+  $('overview-accuracy').textContent = overallPercent === null ? '–' : overallPercent + '%';
+  $('overview-bar-fill').style.width = Math.round((doneCount / totalModules) * 100) + '%';
+
+  const nextEl = $('overview-next');
+  if (doneCount >= totalModules) {
+    nextEl.textContent = overallPercent !== null && overallPercent >= 90
+      ? '全部模組通關，而且正確率超過90%——你已經是林果大師了！'
+      : '全部模組都完成了！把正確率拚到 90% 以上，就能晉升「林果大師」。';
+  } else {
+    const nextTier = TITLES.find(t => t.min === doneCount + 1);
+    nextEl.textContent = nextTier
+      ? `再完成 1 個模組，就能從「${title}」晉升「${nextTier.label}」`
+      : '';
+  }
 }
 
 function startModule(id) {
@@ -773,15 +851,24 @@ function finishModule() {
   const total = quizSteps.length;
   const score = quizSteps.filter((s, i) => answers[i] && answers[i].correct).length;
   const percent = total ? Math.round((score/total)*100) : 100;
+  const prevRecord = progressCache[currentModule.id]; // 記下這次覆蓋前的成績，跟自己比
 
   $('lesson-wrap').classList.remove('show');
   $('result-wrap').classList.add('show');
   $('result-emoji').textContent = percent >= 80 ? '🎉' : (percent >= 50 ? '💪' : '📖');
   $('result-title').textContent = currentModule.title + ' · 完成！';
   $('result-score').innerHTML = score + ' / ' + total + '<small> 題答對</small>';
-  $('result-sub').textContent = percent >= 80
+
+  let subText = percent >= 80
     ? '表現很棒，這個模組你已經掌握得不錯了！'
     : (percent >= 50 ? '基本掌握了，建議重新測驗一次加深印象。' : '建議重新讀過一次，把答錯的觀念再確認清楚。');
+  if (prevRecord && typeof prevRecord.percent === 'number') {
+    const diff = percent - prevRecord.percent;
+    if (diff > 0) subText = `↑ 比上次進步了 ${diff} 分（上次 ${prevRecord.percent}% → 這次 ${percent}%），跟自己比一直在變好！`;
+    else if (diff < 0) subText = `這次 ${percent}%，比上次(${prevRecord.percent}%)低一點，再挑戰一次找回手感吧。`;
+    else subText = `跟上次一樣是 ${percent}%，穩定發揮！想再進步一階，可以重新測驗看看。`;
+  }
+  $('result-sub').textContent = subText;
 
   const email = getEmail();
   if (email && GAS_URL) {
@@ -792,8 +879,10 @@ function finishModule() {
         moduleId: currentModule.id, moduleTitle: currentModule.title,
         score, total
       })
-    }).then(() => { progressCache[currentModule.id] = { moduleTitle: currentModule.title, score, total, percent }; })
-      .catch(e => console.warn('進度記錄失敗', e));
+    }).then(() => {
+      progressCache[currentModule.id] = { moduleTitle: currentModule.title, score, total, percent };
+      renderOverview();
+    }).catch(e => console.warn('進度記錄失敗', e));
   }
 }
 
