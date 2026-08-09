@@ -199,16 +199,42 @@ const FALLBACK_MONTHS = {
       '東門': { rev:1178568, cogs:377835, gp:800733,  gpPct:67.94, wPct:10.90, rPct:10.83, mktPct:1.77,  opProfit:133006, pretax:133006, pretaxPct:11.29, target:1100000 },
     },
   },
+  '2026/06': {
+    ym:'2026/06', label:'6月', confirmed:true,
+    rev:5069586, cogs:1637498, gp:3432088, gpPct:67.70,
+    sell:1957024, sellPct:38.60,
+      w6100:758577, wPct6100:14.96, r6114:452794, rPct6114:8.93,
+      mkt:308756, mktPct:6.09,
+        mktPhoto:0, mktMedia:231756, mktPrint:0, mktEvent:0, mktPR:77000,
+      freight:46301, sys:123553, cardFee:97119, sample:32988,
+    mgmt:1091507, mgmtPct:21.53,
+      w6201:671390, wPct6201:13.24, r6202:179000, depr:66402,
+    opProfit:383557, opPct:7.57,
+    nonOpIn:80212, nonOpOut:45433,
+    pretax:418336, tax:58000, ni:360336, niPct:7.11,
+    /* 去年同期 2025/06（來源：Drive 損益表_202506；去年6月為虧損月）+ 累計
+       折舊 2026 起改列 6250（管理），故 depr 全數屬管理費用 */
+    prevRev:4188153, prevNI:-577993, yoyRevPct:21.05,  // 已扣裕隆城，原始4,554,681
+    prevYtdRev:30885288, prevYtdNI:-443304,
+    prevGpPct:62.27, prevSellPct:47.80, prevMgmtPct:27.23, prevNiPct:-12.69,
+    storeData: {
+      '電商': { rev:891310,  cogs:265033, gp:626277,  gpPct:70.26, wPct:6.45,  rPct:0,     mktPct:15.00, opProfit:83140,  pretax:83140,  pretaxPct:9.33,  target:900000 },
+      '中山': { rev:1229602, cogs:388275, gp:841327,  gpPct:68.42, wPct:21.17, rPct:10.57, mktPct:1.80,  opProfit:113866, nonOpIn:60000, pretax:173866, pretaxPct:14.14, target:1250000 },
+      '松菸': { rev:1223504, cogs:386471, gp:837033,  gpPct:68.41, wPct:9.37,  rPct:10.37, mktPct:1.81,  opProfit:253458, pretax:253458, pretaxPct:20.72, target:1100000 },
+      '台中': { rev:699394,  cogs:231001, gp:468393,  gpPct:66.97, wPct:27.07, rPct:9.76,  mktPct:3.17,  opProfit:-122230, pretax:-122230, pretaxPct:-17.48, target:950000 },
+      '東門': { rev:901174,  cogs:291793, gp:609381,  gpPct:67.62, wPct:14.56, rPct:14.16, mktPct:2.46,  opProfit:12086,  pretax:12086,  pretaxPct:1.34,  target:1000000 },
+    },
+  },
 };
 
 /* MONTHS 為目前實際使用的資料源：預設=保底資料，登入後 loadMonthly() 若成功會整包替換為 Sheet 動態資料 */
 let MONTHS = FALLBACK_MONTHS;
 
 /* ── 衍生資料：月度比較陣列 + 逐月累計 YTD + 月度營收目標（可重複呼叫，切換資料源後重算） ── */
-let CMP_KEYS = ['2026/01','2026/02','2026/03','2026/04','2026/05'];
+let CMP_KEYS = ['2026/01','2026/02','2026/03','2026/04','2026/05','2026/06'];
 /* 保底包裝費表：FALLBACK_MONTHS 本身沒有 pkg/pkgPrev 欄位，動態 Sheet 資料才有，故留此表當保底來源 */
-const FALLBACK_PKG      = { '2026/01':105321, '2026/02':86556,  '2026/03':37740,  '2026/04':286662, '2026/05':95843 };
-const FALLBACK_PKG_PREV = { '2026/01':32191,  '2026/02':66224,  '2026/03':null,   '2026/04':25433,  '2026/05':52411 };
+const FALLBACK_PKG      = { '2026/01':105321, '2026/02':86556,  '2026/03':37740,  '2026/04':286662, '2026/05':95843, '2026/06':30000 };
+const FALLBACK_PKG_PREV = { '2026/01':32191,  '2026/02':66224,  '2026/03':null,   '2026/04':25433,  '2026/05':52411, '2026/06':164867 };
 let CMP, PKG, PKG_PREV;
 function rebuildDerived(){
   CMP = CMP_KEYS.map(k => MONTHS[k]);
@@ -232,7 +258,7 @@ function rebuildDerived(){
 rebuildDerived();
 
 /* 目前檢視的月份（預設最新月）；render 函式皆讀取全域 S */
-let CUR_YM = '2026/05';
+let CUR_YM = '2026/06';
 let S = MONTHS[CUR_YM];
 </script>
 
@@ -2004,6 +2030,34 @@ function buildInsights(ym) {
         { sev:'green', tag:'YoY', title:`對比去年 5 月大逆轉 —— 去年還虧 34.9 萬，今年淨賺、營收 +${M.yoyRevPct.toFixed(1)}%`,
           body:`去年 5 月是<b>虧損月</b>（本期損益 −34.9 萬、營業淨利 −32.1 萬、營業淨利率 −6.7%），今年 5 月營收 <b>${w(M.rev)}</b>（YoY <b>+${M.yoyRevPct.toFixed(1)}%</b>）、本期損益翻正到 <b>+${w(M.ni)}</b>。改善來自三塊：毛利率 +1.3pp（${M.prevGpPct.toFixed(1)}%→${M.gpPct.toFixed(1)}%）、推銷費率大降（去年 47.1%→今年 40.6%，主要是人事）、營收本身放量。<b>唯一逆風是廣告費率從 7.5% 拉到 12.3%</b>——去年同月才 35.8 萬、今年 74.6 萬，翻了一倍多，更凸顯本月最該檢視的就是這筆投放的回報。`,
           data:`YoY：營收 ${w(M.prevRev)}→${w(M.rev)}（+${M.yoyRevPct.toFixed(1)}%）｜本期損益 ${w(M.prevNI)}→+${w(M.ni)}｜毛利率 ${M.prevGpPct.toFixed(1)}%→${M.gpPct.toFixed(1)}%｜廣告費率 7.5%→${M.mktPct.toFixed(1)}%` },
+      ];
+    }
+
+    case '2026/06': {
+      const sd = M.storeData;
+      const may = MONTHS['2026/05'];
+      const momRev = (M.rev - may.rev) / may.rev * 100;
+      const opPct = st => (sd[st].opProfit / sd[st].rev * 100);
+      return [
+        { sev:'green', tag:'YoY', title:`對比去年 6 月大逆轉 —— 去年虧 57.8 萬，今年淨賺 ${w(M.ni)}、營收 +${M.yoyRevPct.toFixed(1)}%`,
+          body:`去年 6 月是<b>虧損月</b>（本期損益 −57.8 萬、營業淨利 −58.1 萬、營業淨利率 −12.8%），今年 6 月營收 <b>${w(M.rev)}</b>（YoY <b>+${M.yoyRevPct.toFixed(1)}%</b>）、本期損益翻正到 <b>+${w(M.ni)}</b>、營業淨利率 <b>${M.opPct.toFixed(1)}%</b>。改善主要來自毛利率大幅拉升（${M.prevGpPct.toFixed(1)}%→${M.gpPct.toFixed(1)}%）與推銷費率下降（去年 ${M.prevSellPct.toFixed(1)}%→今年 ${M.sellPct.toFixed(1)}%）。`,
+          data:`YoY：營收 ${w(M.prevRev)}→${w(M.rev)}（+${M.yoyRevPct.toFixed(1)}%）｜本期損益 ${w(M.prevNI)}→+${w(M.ni)}｜毛利率 ${M.prevGpPct.toFixed(1)}%→${M.gpPct.toFixed(1)}%` },
+
+        { sev:'green', tag:'廣告費', title:`廣告費回歸正常 ${M.mktPct.toFixed(1)}% —— 印證 5 月 12.3% 是一次性投放、非常態`,
+          body:`6 月廣告費 <b>${w(M.mkt)}</b>、佔營收 <b>${M.mktPct.toFixed(1)}%</b>，從 5 月暴衝的 12.3% 收斂回 6% 上限附近。5 月那波公關＋活動投放沒有延續，支持「一次性」判讀。本月主力是媒體採買 ${w(M.mktMedia)}、公關 ${w(M.mktPR)}。`,
+          data:`廣告費率：3月 8.7%｜4月 8.1%｜5月 12.3%｜6月 ${M.mktPct.toFixed(1)}%（媒體 ${w(M.mktMedia)}＋公關 ${w(M.mktPR)}）` },
+
+        { sev:'amber', tag:'淡季', title:`營收季節性回落 —— 較 5 月 ${momRev.toFixed(0)}%，但仍守住 ${M.opPct.toFixed(1)}% 營業淨利率`,
+          body:`6 月營收 <b>${w(M.rev)}</b>（較 5 月 ${momRev>=0?'+':''}${momRev.toFixed(0)}%），是夏季淡月。即便營收回落，營業淨利仍有 <b>${w(M.opProfit)}</b>（${M.opPct.toFixed(1)}%）、本期損益 ${w(M.ni)}，體質穩定。`,
+          data:`營收 ${w(M.rev)}（5月 607.8萬）｜營業淨利 ${w(M.opProfit)}（${M.opPct.toFixed(1)}%）｜毛利率 ${M.gpPct.toFixed(1)}%` },
+
+        { sev:'red', tag:'門市', title:`台中轉虧 —— 營業淨利 ${w(sd['台中'].opProfit)}、薪資率 ${sd['台中'].wPct.toFixed(1)}% 全公司最高`,
+          body:`台中 6 月營業淨利 <b>${w(sd['台中'].opProfit)}</b>（${opPct('台中').toFixed(1)}%），是五通路唯一虧損。核心是<b>薪資率 ${sd['台中'].wPct.toFixed(1)}%</b>（其他店 6–21%）＋營收規模最小（${w(sd['台中'].rev)}），固定成本占比過重。台中是最需要盯「損益兩平所需營收」的一家。`,
+          data:`台中：營收 ${w(sd['台中'].rev)}｜營業淨利 ${w(sd['台中'].opProfit)}（${opPct('台中').toFixed(1)}%）｜薪資率 ${sd['台中'].wPct.toFixed(1)}%` },
+
+        { sev:'green', tag:'通路', title:`松菸獨強、電商穩定獲利 —— 除台中外四通路皆賺`,
+          body:`松菸營業淨利 <b>${w(sd['松菸'].opProfit)}</b>（${opPct('松菸').toFixed(1)}%）本月最強；電商 <b>+${w(sd['電商'].opProfit)}</b>（${opPct('電商').toFixed(1)}%）持續獲利；中山 ${w(sd['中山'].opProfit)}（${opPct('中山').toFixed(1)}%）；東門幾乎打平 ${w(sd['東門'].opProfit)}（${opPct('東門').toFixed(1)}%）。`,
+          data:`各店營業淨利率：松菸 ${opPct('松菸').toFixed(1)}%｜電商 ${opPct('電商').toFixed(1)}%｜中山 ${opPct('中山').toFixed(1)}%｜東門 ${opPct('東門').toFixed(1)}%｜台中 ${opPct('台中').toFixed(1)}%` },
       ];
     }
 
