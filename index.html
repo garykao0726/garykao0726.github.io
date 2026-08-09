@@ -21,30 +21,29 @@
 body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100vh}
 
 /* ── Header ── */
-.hdr{position:sticky;top:0;z-index:100;background:var(--green);height:54px;
-  display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
+.hdr{position:sticky;top:0;z-index:100;background:var(--sand-light);height:54px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 2rem;
+  border-bottom:1px solid var(--border)}
 .brand{display:flex;align-items:center;gap:14px}
-.brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--sand)}
-.brand-sep{width:1px;height:16px;background:rgba(226,206,185,.3)}
-.brand-sub{font-size:10px;color:var(--gray-pink);font-family:'Space Mono',monospace}
+.brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--green)}
+.brand-sep{width:1px;height:16px;background:var(--border2)}
+.brand-sub{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace}
 .hdr-r{display:flex;align-items:center;gap:10px}
-.live-dot{width:7px;height:7px;border-radius:50%;background:#5be8a0;
-  box-shadow:0 0 8px #5be8a0;animation:blink 2.5s infinite}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#2f9e5f;
+  box-shadow:0 0 8px rgba(47,158,95,.4);animation:blink 2.5s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.hdr-clock{font-family:'Space Mono',monospace;font-size:11px;color:var(--gray-pink)}
+.hdr-clock{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)}
 
 /* ── Hero ── */
-.hero{background:var(--green);padding:4rem 2rem 3.5rem;text-align:center;
-  border-bottom:1px solid rgba(226,206,185,.15)}
+.hero{background:var(--surface);padding:4rem 2rem 3.5rem;text-align:center;
+  border-bottom:1px solid var(--border)}
 .hero-eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:5px;
-  color:var(--gray-pink);text-transform:uppercase;margin-bottom:20px}
-.hero-rule{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:20px}
-.hero-line{width:56px;height:1px;background:rgba(226,206,185,.3)}
-.hero-icon{font-size:22px}
+  color:var(--brown);text-transform:uppercase;margin-bottom:20px}
+.hero-rule{width:56px;height:1px;background:var(--border2);margin:0 auto 20px}
 .hero-title{font-family:'Space Mono',monospace;font-size:clamp(28px,4vw,46px);
-  font-weight:700;color:var(--sand);letter-spacing:-.02em;line-height:1.1;margin-bottom:10px}
+  font-weight:700;color:var(--green);letter-spacing:-.02em;line-height:1.1;margin-bottom:10px}
 .hero-sub{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;
-  color:rgba(207,162,148,.7);text-transform:uppercase}
+  color:var(--text-muted);text-transform:uppercase}
 
 /* ── Container ── */
 .container{max-width:1080px;margin:0 auto;padding:3rem 2rem 4rem}
@@ -76,9 +75,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
 /* Card inner */
 .card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
-.card-icon{width:46px;height:46px;border-radius:10px;background:var(--sand-light);
-  display:flex;align-items:center;justify-content:center;font-size:21px;
-  border:1px solid var(--border)}
+.card-icon{width:46px;height:46px;border-radius:8px;background:var(--sand-light);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.5px;
+  color:var(--rust);border:1px solid var(--border)}
 .card-status{flex-shrink:0}
 .card-title{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;
   color:var(--green);margin-bottom:8px;line-height:1.3}
@@ -116,11 +116,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 <!-- Hero -->
 <div class="hero">
   <div class="hero-eyebrow">Internal Tools &amp; Dashboards</div>
-  <div class="hero-rule">
-    <div class="hero-line"></div>
-    <div class="hero-icon">👟</div>
-    <div class="hero-line"></div>
-  </div>
+  <div class="hero-rule"></div>
   <div class="hero-title">林果良品<br>營運中控中心</div>
   <div class="hero-sub">ORINGO OPERATIONS HUB</div>
 </div>
@@ -137,7 +133,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <a class="card" href="operation.html" target="_blank">
       <div class="card-top">
-        <div class="card-icon">📊</div>
+        <div class="card-icon">OP</div>
         <div class="card-status"><span class="badge live">LIVE</span></div>
       </div>
       <div class="card-title">營運績效儀表板</div>
@@ -146,7 +142,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <a class="card" href="marketing.html" target="_blank">
       <div class="card-top">
-        <div class="card-icon">📣</div>
+        <div class="card-icon">MK</div>
         <div class="card-status"><span class="badge live">LIVE</span></div>
       </div>
       <div class="card-title">行銷儀表板</div>
@@ -155,25 +151,16 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <a class="card" href="customer.html" target="_blank">
       <div class="card-top">
-        <div class="card-icon">👥</div>
+        <div class="card-icon">CX</div>
         <div class="card-status"><span class="badge live">LIVE</span></div>
       </div>
       <div class="card-title">顧客分析</div>
       <div class="card-desc">3 年資料分析新客、回購客、VIP 三大族群；世代留存矩陣、跨年度 LTV、各店消費習性比較。</div>
     </a>
 
-    <a class="card" href="persona-analysis.html" target="_blank">
-      <div class="card-top">
-        <div class="card-icon">🎭</div>
-        <div class="card-status"><span class="badge live">NEW</span></div>
-      </div>
-      <div class="card-title">顧客 Persona 研究</div>
-      <div class="card-desc">整合 IG／FB／顧客後台／Google 評論／真實訂單／VANGER 對照的完整調查：報告分析＋四個最終人物誌。內部討論用。</div>
-    </a>
-
     <a class="card" href="vip-proposal.html" target="_blank">
       <div class="card-top">
-        <div class="card-icon">📑</div>
+        <div class="card-icon">VIP</div>
         <div class="card-status"><span class="badge live">NEW</span></div>
       </div>
       <div class="card-title">VIP 制度改造提案</div>
@@ -182,7 +169,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <a class="card" href="products.html" target="_blank">
       <div class="card-top">
-        <div class="card-icon">📦</div>
+        <div class="card-icon">PD</div>
         <div class="card-status"><span class="badge live">LIVE</span></div>
       </div>
       <div class="card-title">商品銷售分析</div>
@@ -191,7 +178,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <a class="card" href="seo.html" target="_blank">
       <div class="card-top">
-        <div class="card-icon">🔍</div>
+        <div class="card-icon">SEO</div>
         <div class="card-status"><span class="badge live">LIVE</span></div>
       </div>
       <div class="card-title">SEO 監控</div>
@@ -200,7 +187,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <a class="card" href="repair.html" target="_blank">
       <div class="card-top">
-        <div class="card-icon">🔧</div>
+        <div class="card-icon">RPR</div>
         <div class="card-status"><span class="badge live">LIVE</span></div>
       </div>
       <div class="card-title">維修工單追蹤</div>
@@ -209,7 +196,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <a class="card" href="custom.html" target="_blank">
       <div class="card-top">
-        <div class="card-icon">✏️</div>
+        <div class="card-icon">CUS</div>
         <div class="card-status"><span class="badge live">LIVE</span></div>
       </div>
       <div class="card-title">訂製單</div>
@@ -218,7 +205,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <a class="card" href="shorturl.html" target="_blank">
       <div class="card-top">
-        <div class="card-icon">🔗</div>
+        <div class="card-icon">URL</div>
         <div class="card-status"><span class="badge live">LIVE</span></div>
       </div>
       <div class="card-title">短網址管理</div>
@@ -227,7 +214,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <a class="card restricted" href="finance.html" target="_blank">
       <div class="card-top">
-        <div class="card-icon">🔒</div>
+        <div class="card-icon">FIN</div>
         <div class="card-status"><span class="badge restricted">RESTRICTED</span></div>
       </div>
       <div class="card-title">財務報表</div>
@@ -236,7 +223,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <a class="card" href="announcements.html" target="_blank">
       <div class="card-top">
-        <div class="card-icon">📋</div>
+        <div class="card-icon">HR</div>
         <div class="card-status"><span class="badge live">NEW</span></div>
       </div>
       <div class="card-title">人事小管家</div>
@@ -245,20 +232,11 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <a class="card" href="knowledge.html" target="_blank">
       <div class="card-top">
-        <div class="card-icon">📚</div>
+        <div class="card-icon">KB</div>
         <div class="card-status"><span class="badge live">NEW</span></div>
       </div>
       <div class="card-title">林果小博士</div>
       <div class="card-desc">商品確認單與品牌知識集中管理。問商品材質、尺寸、保固、保養、賣點，林果小博士幫你找答案並附上原文連結。</div>
-    </a>
-
-    <a class="card" href="training.html" target="_blank">
-      <div class="card-top">
-        <div class="card-icon">🎓</div>
-        <div class="card-status"><span class="badge live">NEW</span></div>
-      </div>
-      <div class="card-title">林果學苑</div>
-      <div class="card-desc">把商品知識手冊拆成小知識卡＋隨堂測驗，邊讀邊答、自動記錄分數，是更好上手的教育訓練學習方式。</div>
     </a>
 
   </div>
