@@ -33,10 +33,9 @@
     }));
   }
 
-  /* ── 逐頁權限：檔名 → 權限 key（沒列到的頁面＝登入即可看）── */
+  /* ── 逐頁權限：只有財務頁需要額外授權，其他頁面名單內即可看 ── */
   const PAGE_ID_OF_FILE = {
-    'operation.html': 'operation', 'products.html': 'products',
-    'marketing.html': 'marketing', 'seo.html': 'seo', 'finance.html': 'finance'
+    'finance.html': 'finance'
   };
   function currentPageId() {
     const f = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
@@ -84,7 +83,7 @@
   /* ── 名單制：以 admin.html 使用者管理的名單為準 ── */
   const PERM_GAS_URL = 'https://script.google.com/macros/s/AKfycbyno4dWC9uaZjiCLYRqAJf7HrX8fUsOnqU6R0giYNBq1ECE3lkBOV5GZJmZwGIyC93Jbw/exec';
   const ALLOWLIST_CACHE = 'oringo_allowlist_v1';
-  const ADMIN_PERMS = { operation: true, products: true, marketing: true, seo: true, finance: true };
+  const ADMIN_PERMS = { finance: true };
 
   // 回傳使用者物件（含 perms）或 null（不在名單／停用）
   async function resolveUser(email) {

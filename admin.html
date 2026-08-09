@@ -67,18 +67,11 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
 .user-email{font-size:.73rem;color:var(--text-muted);font-family:'Space Mono',monospace}
 
 /* Permission toggles */
-.perm-row{display:flex;gap:6px;flex-wrap:wrap}
 .perm-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:.72rem;font-weight:500;cursor:pointer;border:1.5px solid transparent;transition:all .15s;user-select:none}
 .perm-tag.on{background:#e8f4ef;color:var(--pos);border-color:#a8d5bc}
 .perm-tag.off{background:#f7f7f7;color:#aaa;border-color:#e0e0e0}
 .perm-tag:hover{filter:brightness(.95)}
 .perm-tag.finance.on{background:#fff0e8;color:var(--rust);border-color:#f4c4a0}
-
-/* Role badge */
-.role-badge{display:inline-block;padding:3px 10px;border-radius:5px;font-size:.72rem;font-weight:700;letter-spacing:.04em}
-.role-admin{background:var(--dark);color:var(--sand)}
-.role-exec{background:#e8f0fe;color:#1a57c8}
-.role-staff{background:var(--sand-light);color:var(--text-sub)}
 
 /* Status toggle */
 .status-toggle{display:flex;align-items:center;gap:6px;cursor:pointer}
@@ -105,22 +98,6 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
 .form-input{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;color:var(--text);outline:none;transition:border-color .15s}
 .form-input:focus{border-color:var(--green)}
 .form-select{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;color:var(--text);outline:none;background:#fff;cursor:pointer}
-.role-panel{background:#fff;border:1.5px solid var(--border2);border-radius:12px;padding:18px 20px;margin-bottom:22px}
-.role-panel-title{font-weight:700;font-size:1rem;color:var(--green)}
-.role-panel-sub{font-size:.78rem;color:#888;margin-top:3px;line-height:1.5}
-.role-card{border:1px solid var(--border2);border-radius:9px;padding:12px 14px;margin-top:12px}
-.role-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
-.role-card-name{font-weight:700;color:var(--green)}
-.role-card-count{font-size:.72rem;color:#999;font-weight:400;margin-left:8px}
-.role-card .perm-check-row{display:flex;flex-wrap:wrap;gap:8px}
-.role-card.locked{opacity:.65}
-.role-save-btn{background:var(--green);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.78rem;cursor:pointer}
-.role-save-btn:disabled{opacity:.45;cursor:default}
-.role-hint{background:#f7faf8;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:.8rem;color:#555;line-height:1.6}
-.perm-check-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.perm-check{display:flex;align-items:center;gap:6px;font-size:.8rem;cursor:pointer;padding:5px 10px;border:1.5px solid var(--border2);border-radius:6px;transition:all .15s}
-.perm-check input{accent-color:var(--green)}
-.perm-check:has(input:checked){background:#e8f4ef;border-color:#a8d5bc;color:var(--pos)}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
 .btn-cancel{padding:9px 20px;border:1px solid var(--border2);border-radius:8px;background:#fff;color:var(--text);font-size:.85rem;font-family:'Noto Sans TC',sans-serif;cursor:pointer}
 .btn-save{padding:9px 20px;border:none;border-radius:8px;background:var(--green);color:#fff;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;cursor:pointer;font-weight:500}
@@ -153,34 +130,26 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
   <div class="page-hd">
     <div>
       <div class="page-title">使用者權限管理</div>
-      <div class="page-sub">管理各成員對各頁面的存取權限。變更後立即生效。</div>
+      <div class="page-sub">名單內的人都能看所有儀表板頁面；只有「主管」身分才能進財務報表。變更後立即生效。</div>
     </div>
-    <button class="btn-add" onclick="openAddModal()">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      邀請使用者
-    </button>
+    <div style="display:flex;gap:10px">
+      <button class="btn-add" id="migrate-btn" style="display:none;background:var(--rust)" onclick="migrateExistingUsers()">
+        套用簡化政策
+      </button>
+      <button class="btn-add" onclick="openAddModal()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        邀請使用者
+      </button>
+    </div>
   </div>
 
   <div class="stats-row" id="stats-row"></div>
 
-  <!-- 角色權限設定：勾選每個角色能看的儀表板，指派角色給人即可 -->
-  <div class="role-panel">
-    <div class="role-panel-head">
-      <div>
-        <div class="role-panel-title">🎭 角色權限設定</div>
-        <div class="role-panel-sub">勾選每個角色能看到的儀表板。改完按「儲存」會套用到所有該角色的人。指派使用者時只要選角色即可。</div>
-      </div>
-    </div>
-    <div id="role-cards"></div>
-  </div>
-
   <div class="filter-bar">
     <input class="filter-input" type="text" id="search-input" placeholder="搜尋姓名或 Email…" oninput="renderTable()">
-    <button class="filter-btn active" data-role="all" onclick="setRoleFilter(this,'all')">全部</button>
-    <button class="filter-btn" data-role="admin" onclick="setRoleFilter(this,'admin')">管理員</button>
-    <button class="filter-btn" data-role="exec" onclick="setRoleFilter(this,'exec')">高級主管</button>
-    <button class="filter-btn" data-role="manager" onclick="setRoleFilter(this,'manager')">主管</button>
-    <button class="filter-btn" data-role="staff" onclick="setRoleFilter(this,'staff')">一般員工</button>
+    <button class="filter-btn active" data-fin="all" onclick="setFinFilter(this,'all')">全部</button>
+    <button class="filter-btn" data-fin="finance" onclick="setFinFilter(this,'finance')">主管</button>
+    <button class="filter-btn" data-fin="general" onclick="setFinFilter(this,'general')">一般成員</button>
   </div>
 
   <div class="table-wrap">
@@ -188,8 +157,7 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
       <thead>
         <tr>
           <th>姓名 / Email</th>
-          <th>角色</th>
-          <th>頁面存取權限</th>
+          <th>身分</th>
           <th>狀態</th>
           <th>操作</th>
         </tr>
@@ -219,16 +187,11 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
       <input class="form-input" id="f-email" type="email" placeholder="xxx@oringoshoes.com">
     </div>
     <div class="form-group">
-      <label class="form-label">角色</label>
-      <select class="form-select" id="f-role" onchange="renderRoleHint()">
-        <option value="staff">一般員工</option>
-        <option value="manager">主管</option>
-        <option value="exec">高級主管</option>
-        <option value="admin">管理員（含後台管理）</option>
+      <label class="form-label">身分</label>
+      <select class="form-select" id="f-role">
+        <option value="general">一般成員 — 可看除財務外的所有頁面</option>
+        <option value="manager">主管 — 額外可看財務報表</option>
       </select>
-    </div>
-    <div class="form-group">
-      <div class="role-hint" id="role-hint"></div>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">取消</button>
@@ -245,58 +208,35 @@ const ADMIN_EMAIL = 'gary@oringoshoes.com';
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyno4dWC9uaZjiCLYRqAJf7HrX8fUsOnqU6R0giYNBq1ECE3lkBOV5GZJmZwGIyC93Jbw/exec';
 
-// 頁面定義
-const PAGES = [
-  { id: 'operation', label: '運營績效', emoji: '📊' },
-  { id: 'products',  label: '商品分析', emoji: '👟' },
-  { id: 'marketing', label: '行銷',     emoji: '📣' },
-  { id: 'seo',       label: 'SEO',      emoji: '🔍' },
-  { id: 'finance',   label: '財務報表', emoji: '💰' },
-];
+// 非財務頁面 key（存到 GAS 的 perms 欄位仍用這個結構，跟舊資料相容，但一律開放）
+const OPEN_PAGES = ['operation', 'products', 'marketing', 'seo'];
 
-// 角色定義（順序 = 由高到低顯示）
-const ROLES = [
-  { id: 'admin',   label: '管理員',   note: '全部 + 後台管理' },
-  { id: 'exec',    label: '高級主管', note: '' },
-  { id: 'manager', label: '主管',     note: '' },
-  { id: 'staff',   label: '一般員工', note: '' },
-];
-function roleLabel(r){ const o = ROLES.find(x=>x.id===r); return o ? o.label : '一般員工'; }
-
-// 各角色「預設」看得到的頁面（實際定義以名單中同角色使用者為準，可在角色權限面板調整）
-const ROLE_PERMS = {
-  admin:   { operation: true, products: true, marketing: true, seo: true, finance: true },
-  exec:    { operation: true, products: true, marketing: true, seo: true, finance: true },
-  manager: { operation: true, products: true, marketing: true, seo: true, finance: false },
-  staff:   { operation: true, products: true, marketing: true, seo: true, finance: false },
-};
-
-// 取某角色目前的權限定義：以名單中該角色第一位使用者為準，沒有則用預設
-function getRoleDef(role){
-  const u = USERS.find(x => x.role === role && x.perms);
-  const src = (u && u.perms) || ROLE_PERMS[role] || ROLE_PERMS.staff;
-  const out = {};
-  PAGES.forEach(p => { out[p.id] = !!src[p.id]; });
-  return out;
+// 依身分算出要送給後端的 perms 物件：一般頁面全開，只有主管才給財務權限
+function permsFor(isManager) {
+  const p = { finance: !!isManager };
+  OPEN_PAGES.forEach(k => p[k] = true);
+  return p;
 }
+function isManagerUser(u) { return !!(u.perms && u.perms.finance); }
 
-// 初始使用者資料（之後從 GAS 讀取）
+// 初始使用者資料（之後從 GAS 讀取最新名單）
 let USERS = [
-  { id:1,  name:'Gary Kao',       email:'gary@oringoshoes.com',       role:'admin', active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:true} },
-  { id:2,  name:'杜衣倢',          email:'gill.tu@oringoshoes.com',     role:'exec',  active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:true} },
-  { id:3,  name:'江選忠',          email:'ray.chiang@oringoshoes.com',  role:'exec',  active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:true} },
-  { id:4,  name:'曾信儒',          email:'rintseng@oringoshoes.com',    role:'exec',  active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:true} },
-  { id:5,  name:'楊茜雯',          email:'qianwen@oringoshoes.com',     role:'exec',  active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:true} },
-  { id:6,  name:'惠貞',           email:'erin.chen@oringoshoes.com',   role:'staff', active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:false} },
-  { id:7,  name:'黃筱凌',          email:'linda@oringoshoes.com',       role:'staff', active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:false} },
-  { id:8,  name:'鄭宇志',          email:'miller@oringoshoes.com',      role:'staff', active:true,  perms:{operation:true,products:true,marketing:true,seo:true,finance:false} },
-  { id:9,  name:'建威',           email:'wei.chen@oringoshoes.com',    role:'staff', active:true,  perms:{operation:true,products:true,marketing:true,seo:false,finance:false} },
-  { id:10, name:'林果倉管-惠美',    email:'wh@oringoshoes.com',          role:'staff', active:true,  perms:{operation:true,products:true,marketing:false,seo:false,finance:false} },
-  { id:11, name:'中山店',          email:'store.zs@oringoshoes.com',    role:'staff', active:true,  perms:{operation:true,products:false,marketing:false,seo:false,finance:false} },
-  { id:12, name:'台中店',          email:'store.tc@oringoshoes.com',    role:'staff', active:true,  perms:{operation:true,products:false,marketing:false,seo:false,finance:false} },
-  { id:13, name:'東門店',          email:'store.dm@oringoshoes.com',    role:'staff', active:true,  perms:{operation:true,products:false,marketing:false,seo:false,finance:false} },
-  { id:14, name:'松菸店',          email:'store.sy@oringoshoes.com',    role:'staff', active:true,  perms:{operation:true,products:false,marketing:false,seo:false,finance:false} },
-  { id:15, name:'新店店',          email:'store.xd@oringoshoes.com',    role:'staff', active:true,  perms:{operation:true,products:false,marketing:false,seo:false,finance:false} },
+  { id:1,  name:'Gary Kao',       email:'gary@oringoshoes.com',       role:'admin',   active:true, perms:permsFor(true) },
+  { id:2,  name:'杜衣倢',          email:'gill.tu@oringoshoes.com',     role:'manager', active:true, perms:permsFor(true) },
+  { id:3,  name:'江選忠',          email:'ray.chiang@oringoshoes.com',  role:'manager', active:true, perms:permsFor(true) },
+  { id:4,  name:'曾信儒',          email:'rintseng@oringoshoes.com',    role:'manager', active:true, perms:permsFor(true) },
+  { id:5,  name:'楊茜雯',          email:'qianwen@oringoshoes.com',     role:'manager', active:true, perms:permsFor(true) },
+  { id:6,  name:'Steve',          email:'steve05315@gmail.com',       role:'manager', active:true, perms:permsFor(true) },
+  { id:7,  name:'惠貞',           email:'erin.chen@oringoshoes.com',   role:'general', active:true, perms:permsFor(false) },
+  { id:8,  name:'黃筱凌',          email:'linda@oringoshoes.com',       role:'general', active:true, perms:permsFor(false) },
+  { id:9,  name:'鄭宇志',          email:'miller@oringoshoes.com',      role:'general', active:true, perms:permsFor(false) },
+  { id:10, name:'建威',           email:'wei.chen@oringoshoes.com',    role:'general', active:true, perms:permsFor(false) },
+  { id:11, name:'林果倉管-惠美',    email:'wh@oringoshoes.com',          role:'general', active:true, perms:permsFor(false) },
+  { id:12, name:'中山店',          email:'store.zs@oringoshoes.com',    role:'general', active:true, perms:permsFor(false) },
+  { id:13, name:'台中店',          email:'store.tc@oringoshoes.com',    role:'general', active:true, perms:permsFor(false) },
+  { id:14, name:'東門店',          email:'store.dm@oringoshoes.com',    role:'general', active:true, perms:permsFor(false) },
+  { id:15, name:'松菸店',          email:'store.sy@oringoshoes.com',    role:'general', active:true, perms:permsFor(false) },
+  { id:16, name:'新店店',          email:'store.xd@oringoshoes.com',    role:'general', active:true, perms:permsFor(false) },
 ];
 
 /* ══════════════════════════════════════════
@@ -319,7 +259,6 @@ function grantOrDenyAdmin() {
     document.getElementById('app').style.display = 'block';
     renderStats();
     renderTable();
-    renderRolePanel();
     loadFromGAS(); // 嘗試從 GAS 讀最新資料
   } else if (currentAdminEmail) {
     // 有登入但不是 admin
@@ -346,7 +285,7 @@ async function loadFromGAS() {
       USERS = data.users;
       renderStats();
       renderTable();
-      renderRolePanel();
+      maybeShowMigrateBtn();
     }
   } catch(e) {
     console.warn('GAS 連線失敗，使用本機資料', e);
@@ -384,8 +323,7 @@ function renderStats() {
   const stats = [
     { num: USERS.length,                              label: '總使用者' },
     { num: active.length,                             label: '已啟用' },
-    { num: USERS.filter(u=>u.role==='exec'||u.role==='admin').length, label: '高階主管' },
-    { num: USERS.filter(u=>u.perms?.finance).length,  label: '財務權限' },
+    { num: USERS.filter(isManagerUser).length,        label: '主管' },
   ];
   document.getElementById('stats-row').innerHTML = stats.map(s => `
     <div class="stat-card">
@@ -397,10 +335,10 @@ function renderStats() {
 /* ══════════════════════════════════════════
    Table
 ══════════════════════════════════════════ */
-let roleFilter = 'all';
+let finFilter = 'all';
 
-function setRoleFilter(btn, role) {
-  roleFilter = role;
+function setFinFilter(btn, f) {
+  finFilter = f;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderTable();
@@ -409,9 +347,10 @@ function setRoleFilter(btn, role) {
 function renderTable() {
   const q = document.getElementById('search-input').value.toLowerCase();
   const filtered = USERS.filter(u => {
-    const matchRole = roleFilter === 'all' || u.role === roleFilter;
+    const mgr = isManagerUser(u);
+    const matchFin = finFilter === 'all' || (finFilter === 'finance' ? mgr : !mgr);
     const matchQ = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
-    return matchRole && matchQ;
+    return matchFin && matchQ;
   });
 
   document.getElementById('user-tbody').innerHTML = filtered.map(u => `
@@ -423,16 +362,10 @@ function renderTable() {
         </div>
       </td>
       <td>
-        <span class="role-badge role-${u.role}">${roleLabel(u.role)}</span>
-      </td>
-      <td>
-        <div class="perm-row">
-          ${PAGES.map(p => `
-            <span class="perm-tag ${p.id} ${u.perms?.[p.id] ? 'on' : 'off'}"
-                  title="由角色決定，請至上方『角色權限設定』調整">
-              ${p.emoji} ${p.label}
-            </span>`).join('')}
-        </div>
+        <span class="perm-tag finance ${isManagerUser(u) ? 'on' : 'off'}" style="cursor:pointer"
+              onclick="toggleManager(${u.id})" title="點一下切換主管／一般成員">
+          ${isManagerUser(u) ? '💰 主管' : '一般成員'}
+        </span>
       </td>
       <td>
         <div class="status-toggle" onclick="toggleActive(${u.id},this)">
@@ -449,53 +382,15 @@ function renderTable() {
     </tr>`).join('');
 }
 
-/* ══════════════════════════════════════════
-   Permission Toggle
-══════════════════════════════════════════ */
-/* ══════════════════════════════════════════
-   角色權限面板
-══════════════════════════════════════════ */
-function renderRolePanel() {
-  document.getElementById('role-cards').innerHTML = ROLES.map(r => {
-    const def = getRoleDef(r.id);
-    const count = USERS.filter(u => u.role === r.id).length;
-    const locked = (r.id === 'admin'); // 管理員固定全開，不可調
-    return `
-    <div class="role-card ${locked ? 'locked' : ''}">
-      <div class="role-card-head">
-        <div class="role-card-name">${r.label}<span class="role-card-count">${count} 人${r.note ? ' · ' + r.note : ''}</span></div>
-        ${locked ? '<span style="font-size:.72rem;color:#999">全部頁面（不可調整）</span>'
-                 : `<button class="role-save-btn" id="rs-${r.id}" onclick="saveRoleDef('${r.id}')">儲存並套用</button>`}
-      </div>
-      <div class="perm-check-row">
-        ${PAGES.map(p => `
-          <label class="perm-check">
-            <input type="checkbox" data-role="${r.id}" data-page="${p.id}"
-                   ${def[p.id] ? 'checked' : ''} ${locked ? 'disabled' : ''}>
-            ${p.emoji} ${p.label}
-          </label>`).join('')}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function saveRoleDef(role) {
-  const perms = {};
-  document.querySelectorAll(`#role-cards input[data-role="${role}"]`).forEach(cb => {
-    perms[cb.dataset.page] = cb.checked;
-  });
-  const targets = USERS.filter(u => u.role === role);
-  const btn = document.getElementById('rs-' + role);
-  if (btn) { btn.disabled = true; btn.textContent = '套用中…'; }
-  let ok = true;
-  for (const u of targets) {
-    u.perms = { ...perms };
-    const r = await saveToGAS({ action: 'updateUser', id: u.id, name: u.name, email: u.email, role: u.role, perms });
-    if (!r) ok = false;
-  }
-  if (btn) { btn.disabled = false; btn.textContent = '儲存並套用'; }
-  showToast(ok ? `✅ 已套用「${roleLabel(role)}」權限給 ${targets.length} 人` : '❌ 部分套用失敗，請重試');
+async function toggleManager(id) {
+  const user = USERS.find(u => u.id === id);
+  if (!user) return;
+  const next = !isManagerUser(user);
+  user.perms = permsFor(next);
+  user.role = next ? 'manager' : 'general';
   renderTable();
+  renderStats();
+  await saveToGAS({ action: 'updateUser', id: user.id, name: user.name, email: user.email, role: user.role, perms: user.perms });
 }
 
 async function toggleActive(id, toggleEl) {
@@ -511,26 +406,44 @@ async function toggleActive(id, toggleEl) {
 }
 
 /* ══════════════════════════════════════════
+   一次性遷移：把既有名單裡「非財務頁」被個別鎖住的人全部打開
+   （簡化政策上線前的舊資料可能有 products/marketing/seo:false）
+══════════════════════════════════════════ */
+function maybeShowMigrateBtn() {
+  const needsFix = USERS.some(u => OPEN_PAGES.some(k => u.perms && u.perms[k] === false));
+  const btn = document.getElementById('migrate-btn');
+  if (btn) btn.style.display = needsFix ? 'inline-flex' : 'none';
+}
+
+async function migrateExistingUsers() {
+  if (!confirm('會把名單內每一個人的「運營／商品／行銷／SEO」頁面權限打開（財務權限維持不變）。確定套用？')) return;
+  const btn = document.getElementById('migrate-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '套用中…'; }
+  let ok = true;
+  for (const u of USERS) {
+    const mgr = isManagerUser(u);
+    u.perms = permsFor(mgr);
+    u.role = mgr ? 'manager' : 'general';
+    const r = await saveToGAS({ action: 'updateUser', id: u.id, name: u.name, email: u.email, role: u.role, perms: u.perms });
+    if (!r) ok = false;
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '✅ 已套用簡化政策'; btn.style.display = 'none'; }
+  showToast(ok ? `✅ 已幫 ${USERS.length} 人套用簡化政策` : '❌ 部分套用失敗，請重試');
+  renderTable();
+  renderStats();
+}
+
+/* ══════════════════════════════════════════
    Modal
 ══════════════════════════════════════════ */
 let editingId = null;
-
-function renderRoleHint() {
-  const role = document.getElementById('f-role').value;
-  const def = getRoleDef(role);
-  const can = PAGES.filter(p => def[p.id]).map(p => p.emoji + p.label);
-  document.getElementById('role-hint').innerHTML =
-    `此角色目前可看：<b>${can.length ? can.join('、') : '（未設定）'}</b><br>` +
-    `<span style="color:#999">頁面權限由角色決定，可在上方「角色權限設定」調整。</span>`;
-}
 
 function openAddModal() {
   editingId = null;
   document.getElementById('modal-title').textContent = '新增使用者';
   document.getElementById('f-name').value = '';
   document.getElementById('f-email').value = '';
-  document.getElementById('f-role').value = 'staff';
-  renderRoleHint();
+  document.getElementById('f-role').value = 'general';
   document.getElementById('modal').style.display = 'flex';
 }
 
@@ -541,8 +454,7 @@ function openEditModal(id) {
   document.getElementById('modal-title').textContent = '編輯使用者';
   document.getElementById('f-name').value = user.name;
   document.getElementById('f-email').value = user.email;
-  document.getElementById('f-role').value = user.role;
-  renderRoleHint();
+  document.getElementById('f-role').value = isManagerUser(user) ? 'manager' : 'general';
   document.getElementById('modal').style.display = 'flex';
 }
 
@@ -553,11 +465,8 @@ function closeModal() {
 async function saveUser() {
   const name  = document.getElementById('f-name').value.trim();
   const email = document.getElementById('f-email').value.trim().toLowerCase();
-  const role  = document.getElementById('f-role').value;
-  // 權限直接套用該角色目前的定義（管理員固定全開）
-  const perms = role === 'admin'
-    ? { operation:true, products:true, marketing:true, seo:true, finance:true }
-    : getRoleDef(role);
+  const role  = document.getElementById('f-role').value; // 'manager' | 'general'
+  const perms = permsFor(role === 'manager');
 
   if (!name || !email) { alert('請填寫姓名與 Email'); return; }
   if (!email.includes('@')) { alert('Email 格式不正確'); return; }
@@ -575,7 +484,6 @@ async function saveUser() {
   closeModal();
   renderStats();
   renderTable();
-  renderRolePanel();
 }
 
 async function deleteUser(id) {
@@ -586,7 +494,6 @@ async function deleteUser(id) {
   await saveToGAS({ action: 'deleteUser', id });
   renderStats();
   renderTable();
-  renderRolePanel();
 }
 
 /* ══════════════════════════════════════════
