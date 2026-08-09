@@ -28,7 +28,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 /* ── Header ── */
 .hdr{position:sticky;top:0;z-index:100;background:var(--sand-light);height:54px;
   display:flex;align-items:center;justify-content:space-between;padding:0 var(--space-6);
-  border-bottom:1px solid var(--border)}
+  border-bottom:2px solid var(--green)}
 .brand{display:flex;align-items:center;gap:var(--space-3)}
 .brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--green)}
 .brand-sep{width:1px;height:16px;background:var(--border2)}
@@ -44,7 +44,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   border-bottom:1px solid var(--border)}
 .hero-eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:5px;
   color:var(--brown);text-transform:uppercase;margin-bottom:var(--space-4)}
-.hero-rule{width:56px;height:1px;background:var(--border2);margin:0 auto var(--space-4)}
+.hero-rule{width:56px;height:2px;background:var(--green);margin:0 auto var(--space-4)}
 .hero-title{font-family:'Noto Sans TC',sans-serif;font-size:clamp(22px,3.4vw,32px);
   font-weight:600;color:var(--green);letter-spacing:.04em;line-height:1.25;margin-bottom:var(--space-2)}
 .hero-sub{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;
@@ -54,8 +54,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .container{max-width:980px;margin:0 auto;padding:var(--space-7) var(--space-5) var(--space-8)}
 
 /* ── Overview / 熟悉度卡 ── */
-.overview-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-md);
-  padding:var(--space-5);margin-bottom:var(--space-5);color:var(--text)}
+.overview-card{background:var(--surface);border:1.5px solid var(--border);border-left:3px solid var(--green);
+  border-radius:var(--radius-md);padding:var(--space-5);margin-bottom:var(--space-5);color:var(--text)}
 .overview-title-row{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4)}
 .overview-icon{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;width:52px;height:52px;
   border-radius:50%;background:var(--sand-light);color:var(--green);border:1px solid var(--border);
@@ -73,11 +73,11 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
 /* ── Module grid ── */
 .module-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-4)}
-.module-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-md);
-  padding:var(--space-5);cursor:pointer;transition:.18s;
+.module-card{background:var(--surface);border:1.5px solid var(--border);border-top:3px solid var(--green);
+  border-radius:var(--radius-md);padding:var(--space-5);cursor:pointer;transition:.18s;
   display:flex;flex-direction:column;gap:var(--space-3)}
 .module-card:hover{border-color:var(--green);transform:translateY(-2px);box-shadow:var(--shadow-float)}
-.module-icon{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:1px;color:var(--rust)}
+.module-icon{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:1px;color:var(--green)}
 .module-title{font-size:15px;font-weight:600;color:var(--green)}
 .module-desc{font-size:12px;color:var(--text-muted);line-height:1.6;flex:1}
 .module-badge{align-self:flex-start;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.5px;
