@@ -45,15 +45,14 @@ const COMPANY_MKT_BUDGET = 4140000;   // 年度廣告費預算：6,900萬 × 6% 
 /* ── 廣告費效益分析：2025 逐月公司級（來源：總公司_2025年度損益表_月份比較，已對帳
       全年 rev 69,025,980／mkt 5,379,107(7.79%)／營業淨利 1,406,129）── */
 const HIST_CO_2025 = [
-  /* 1–6月有完整明細（來源：總公司2025年度損益表_月份比較＋損益表_202505 逐月核對，
-     rev-cogs-sell-mgmt=opProfit 已驗證吻合）；業外/稅前/所得稅/總人事費(6100+6201) 無逐月來源，
-     故 Q1/Q2/H1報表對應列仍顯示「—」，不用不完整資料湊數 */
-  { ym:'2025/01', rev:6620786, cogs:2271791, sell:2377920, mgmt:1395043, mkt:317870,  opProfit:576032,  ni:520778,  pkg:32191 },
-  { ym:'2025/02', rev:6010360, cogs:2060511, sell:2205035, mgmt:1250343, mkt:330949,  opProfit:494471,  ni:450087,  pkg:66224 },
-  { ym:'2025/03', rev:5697649, cogs:1993832, sell:2352003, mgmt:1277404, mkt:395855,  opProfit:74410,   ni:55790,   pkg:151065 },
-  { ym:'2025/04', rev:5936770, cogs:2519666, sell:2271569, mgmt:1648807, mkt:267864,  opProfit:-503272, ni:-543295, pkg:25433 },
-  { ym:'2025/05', rev:4804243, cogs:1575743, sell:2261044, mgmt:1288363, mkt:358457,  opProfit:-320907, ni:-348671, pkg:52411 },
-  { ym:'2025/06', rev:4554681, cogs:1718546, sell:2176914, mgmt:1240191, mkt:288854,  opProfit:-580970, ni:-577993, pkg:164867 },
+  /* 1–6月有完整明細（來源：總公司2025年度損益表_月份比較＋各月損益表_YYYYMM 逐月核對，
+     rev-cogs-sell-mgmt=opProfit、pretax=opProfit+nonOpIn-nonOpOut、ni=pretax-tax 均已驗證吻合） */
+  { ym:'2025/01', rev:6620786, cogs:2271791, sell:2377920, mgmt:1395043, mkt:317870,  opProfit:576032,  ni:520778,  pkg:32191,  nonOpIn:57123,  nonOpOut:66377, pretax:566778,  tax:46000, wage:1881650 },
+  { ym:'2025/02', rev:6010360, cogs:2060511, sell:2205035, mgmt:1250343, mkt:330949,  opProfit:494471,  ni:450087,  pkg:66224,  nonOpIn:69293,  nonOpOut:67677, pretax:496087,  tax:46000, wage:1688398 },
+  { ym:'2025/03', rev:5697649, cogs:1993832, sell:2352003, mgmt:1277404, mkt:395855,  opProfit:74410,   ni:55790,   pkg:151065, nonOpIn:82515,  nonOpOut:55135, pretax:101790,  tax:46000, wage:1777038 },
+  { ym:'2025/04', rev:5936770, cogs:2519666, sell:2271569, mgmt:1648807, mkt:267864,  opProfit:-503272, ni:-543295, pkg:25433,  nonOpIn:58539,  nonOpOut:52562, pretax:-497295, tax:46000, wage:2104731 },
+  { ym:'2025/05', rev:4804243, cogs:1575743, sell:2261044, mgmt:1288363, mkt:358457,  opProfit:-320907, ni:-348671, pkg:52411,  nonOpIn:66859,  nonOpOut:48623, pretax:-302671, tax:46000, wage:1847859 },
+  { ym:'2025/06', rev:4554681, cogs:1718546, sell:2176914, mgmt:1240191, mkt:288854,  opProfit:-580970, ni:-577993, pkg:164867, nonOpIn:100915, nonOpOut:51938, pretax:-531993, tax:46000, wage:1828331 },
   { ym:'2025/07', rev:6005784, mkt:1077015, opProfit:-197539 },
   { ym:'2025/08', rev:4917834, mkt:377261,  opProfit:-287962 },
   { ym:'2025/09', rev:4578507, mkt:549588,  opProfit:-707320 },
@@ -702,7 +701,20 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       <table class="cmp-table" id="h1-table"></table>
     </div>
     <div style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.7">
-      ＊ 金額單位：<strong>萬元（未稅）</strong>，括號內為佔該期營收比例；費用列以「−」表示扣減。<strong>去年H1</strong>欄僅有營收／廣告費／營業淨利可對照（來源：總公司2025年度損益表，無完整科目明細）。
+      ＊ 金額單位：<strong>萬元（未稅）</strong>，括號內為佔該期營收比例；費用列以「−」表示扣減（來源：總公司2025年度損益表_月份比較＋各月損益表_YYYYMM 逐月核對）。
+    </div>
+
+    <!-- 各店＋電商 Q1／Q2／H1 比較（固定區塊，與月份切換無關） -->
+    <div class="sec" style="margin-top:1.75rem" id="sec-store-h1">各店＋電商 Q1／Q2／H1 比較（不隨月份切換變動）</div>
+    <div class="chart-card">
+      <div class="chart-card-title">各通路營收 — Q1 vs Q2 vs H1合計</div>
+      <div class="chart-wrap-sm" style="height:260px"><canvas id="store-h1-rev-chart"></canvas></div>
+    </div>
+    <div class="cmp-table-wrap">
+      <table class="cmp-table" id="store-h1-table"></table>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.7" id="store-h1-note">
+      ＊ 淨利統一採「營業淨利」（不含業外收支、未扣稅），與月別頁一致；達成率分母為各店累計月目標。無可靠去年同期分店別數據（僅總公司層級有完整去年比較），故此表僅呈現 2026 年 Q1／Q2／H1 三期比較。
     </div>
 
     <!-- Monthly Comparison -->
@@ -1041,6 +1053,7 @@ function renderStaticSections() {
   renderAdEffect();
   renderStrategyOverview();
   renderH1Report();
+  renderStoreH1Report();
   renderQ1Chart();
   renderCompareTable();
   renderInsights();
@@ -1766,8 +1779,8 @@ function renderH1Report() {
   });
   const Q1 = agg(q1Months), Q2 = agg(q2Months), H1 = agg(h1Months);
 
-  /* 去年同期 Q1／Q2／H1（1–6月來源 HIST_CO_2025 有完整明細；缺 nonOp/pretax/tax/wage，
-     這幾項只加總「有資料的月份」，若整期缺任一月份資料則整體回傳 null，避免用不完整月份湊出誤導數字） */
+  /* 去年同期 Q1／Q2／H1（1–6月來源 HIST_CO_2025 已補齊完整明細，含業外/稅前/所得稅/人事費；
+     沿用 sumIfComplete：若整期缺任一月份資料則整體回傳 null，避免用不完整月份湊出誤導數字） */
   const sumIfComplete = (months, fn) => {
     const vals = months.map(fn);
     return vals.some(v => v === undefined) ? null : vals.reduce((a,b)=>a+b, 0);
@@ -1781,10 +1794,17 @@ function renderH1Report() {
     mgmt: sumIfComplete(months, h=>h.mgmt),
     ni:   sumIfComplete(months, h=>h.ni),
     pkg:  sumIfComplete(months, h=>h.pkg),
+    nonOpIn:  sumIfComplete(months, h=>h.nonOpIn),
+    nonOpOut: sumIfComplete(months, h=>h.nonOpOut),
+    pretax:   sumIfComplete(months, h=>h.pretax),
+    tax:      sumIfComplete(months, h=>h.tax),
+    wage:     sumIfComplete(months, h=>h.wage),
   });
   const prevQ1 = prevAgg(HIST_CO_2025.filter(h => monthNum(h.ym) <= 3));
   const prevQ2 = prevAgg(HIST_CO_2025.filter(h => monthNum(h.ym) >= 4 && monthNum(h.ym) <= 6));
   const prevH1 = prevAgg(HIST_CO_2025.filter(h => monthNum(h.ym) <= 6));
+  const prevNonOp = p => (p.nonOpIn===null||p.nonOpOut===null) ? null : p.nonOpIn - p.nonOpOut;
+  const prevNonOpQ1 = prevNonOp(prevQ1), prevNonOpQ2 = prevNonOp(prevQ2), prevNonOpH1 = prevNonOp(prevH1);
 
   const revYoy = (cur, prev) => prev ? chg((cur - prev) / prev * 100) : '—';
   /* 營業淨利可能由虧轉盈／由盈轉虧，單純算%會失真，先處理正負號翻轉的情況 */
@@ -1862,9 +1882,10 @@ function renderH1Report() {
   /* 明細表：每期（Q1／Q2／H1合計）各自都有「今年｜去年｜YoY」三欄，共 9 個數值欄 */
   const tableEl = document.getElementById('h1-table');
   if (tableEl) {
-    const na3 = { q1p:'—', q1y:'—', q2p:'—', q2y:'—', h1p:'—', h1y:'—' };
     /* 去年成本類科目：有值才比較，sumIfComplete 缺資料時回傳 null → 顯示「—」而非誤導數字 */
     const costCmp = (cur, prev) => prev === null ? { p:'—', y:'—' } : { p: money(-prev), y: revYoy(cur, prev) };
+    /* 業外淨額／稅前損益可能正負翻轉，比照營業淨利用 opYoy 處理由盈轉虧等情況 */
+    const flipCmp = (cur, prev) => prev === null ? { p:'—', y:'—' } : { p: money(prev), y: opYoy(cur, prev) };
     const pctCmp  = (curA, curB, prevA, prevB) => (prevA === null || prevB === null) ? '—' : pctStr(prevA, prevB);
     const prevGpQ1 = prevQ1.cogs === null ? null : prevQ1.rev - prevQ1.cogs;
     const prevGpQ2 = prevQ2.cogs === null ? null : prevQ2.rev - prevQ2.cogs;
@@ -1878,6 +1899,12 @@ function renderH1Report() {
     /* 包裝費是備忘列，今年欄顯示正數（非減項），去年欄比照不取負號 */
     const memoCmp = (cur, prev) => prev === null ? { p:'—', y:'—' } : { p: money(prev), y: revYoy(cur, prev) };
     const p1 = memoCmp(Q1.pkg, prevQ1.pkg), p2 = memoCmp(Q2.pkg, prevQ2.pkg), pH = memoCmp(H1.pkg, prevH1.pkg);
+    const n1 = flipCmp(Q1.nonOp, prevNonOpQ1), n2 = flipCmp(Q2.nonOp, prevNonOpQ2), nH = flipCmp(H1.nonOp, prevNonOpH1);
+    const pt1 = flipCmp(Q1.pretax, prevQ1.pretax), pt2 = flipCmp(Q2.pretax, prevQ2.pretax), ptH = flipCmp(H1.pretax, prevH1.pretax);
+    const t1 = costCmp(Q1.tax, prevQ1.tax), t2 = costCmp(Q2.tax, prevQ2.tax), tH = costCmp(H1.tax, prevH1.tax);
+    const w1 = prevQ1.wage===null?null:{ p:`${money(prevQ1.wage)}（${pctStr(prevQ1.wage,prevQ1.rev)}）`, y:revYoy(Q1.wage,prevQ1.wage) },
+          w2 = prevQ2.wage===null?null:{ p:`${money(prevQ2.wage)}（${pctStr(prevQ2.wage,prevQ2.rev)}）`, y:revYoy(Q2.wage,prevQ2.wage) },
+          wH = prevH1.wage===null?null:{ p:`${money(prevH1.wage)}（${pctStr(prevH1.wage,prevH1.rev)}）`, y:revYoy(H1.wage,prevH1.wage) };
 
     const rows = [
       { label:'營業收入',   cls:'r-strong', q1:money(Q1.rev),  q2:money(Q2.rev),  h1:money(H1.rev),
@@ -1904,9 +1931,12 @@ function renderH1Report() {
         q1p:prevQ1.rev?pctStr(prevQ1.op,prevQ1.rev):'—', q1y:'—',
         q2p:prevQ2.rev?pctStr(prevQ2.op,prevQ2.rev):'—', q2y:'—',
         h1p:prevH1.rev?pctStr(prevH1.op,prevH1.rev):'—', h1y:'—' },
-      { label:'業外淨額',   cls:'r-sub',    q1:money(Q1.nonOp),q2:money(Q2.nonOp),h1:money(H1.nonOp), ...na3 },
-      { label:'稅前損益',   cls:'',         q1:money(Q1.pretax),q2:money(Q2.pretax),h1:money(H1.pretax), ...na3 },
-      { label:'所得稅',     cls:'r-sub',    q1:money(-Q1.tax), q2:money(-Q2.tax), h1:money(-H1.tax), ...na3 },
+      { label:'業外淨額',   cls:'r-sub',    q1:money(Q1.nonOp),q2:money(Q2.nonOp),h1:money(H1.nonOp),
+        q1p:n1.p, q1y:n1.y, q2p:n2.p, q2y:n2.y, h1p:nH.p, h1y:nH.y },
+      { label:'稅前損益',   cls:'',         q1:money(Q1.pretax),q2:money(Q2.pretax),h1:money(H1.pretax),
+        q1p:pt1.p, q1y:pt1.y, q2p:pt2.p, q2y:pt2.y, h1p:ptH.p, h1y:ptH.y },
+      { label:'所得稅',     cls:'r-sub',    q1:money(-Q1.tax), q2:money(-Q2.tax), h1:money(-H1.tax),
+        q1p:t1.p, q1y:t1.y, q2p:t2.p, q2y:t2.y, h1p:tH.p, h1y:tH.y },
       { label:'本期損益',   cls:'r-strong', q1:`<span class="${npColor(Q1.ni/Q1.rev*100)}">${money(Q1.ni)}</span>`,
                                              q2:`<span class="${npColor(Q2.ni/Q2.rev*100)}">${money(Q2.ni)}</span>`,
                                              h1:`<span class="${npColor(H1.ni/H1.rev*100)}">${money(H1.ni)}</span>`,
@@ -1923,7 +1953,8 @@ function renderH1Report() {
         q2p:`${money(prevQ2.mkt)}（${pctStr(prevQ2.mkt,prevQ2.rev)}）`, q2y:revYoy(Q2.mkt,prevQ2.mkt),
         h1p:`${money(prevH1.mkt)}（${pctStr(prevH1.mkt,prevH1.rev)}）`, h1y:revYoy(H1.mkt,prevH1.mkt) },
       { label:'總人事費 (6100+6201)', cls:'r-memo', q1:`${money(Q1.wage)}（${pctStr(Q1.wage,Q1.rev)}）`, q2:`${money(Q2.wage)}（${pctStr(Q2.wage,Q2.rev)}）`,
-        h1:`${money(H1.wage)}（${pctStr(H1.wage,H1.rev)}）`, ...na3 },
+        h1:`${money(H1.wage)}（${pctStr(H1.wage,H1.rev)}）`,
+        q1p:w1?w1.p:'—', q1y:w1?w1.y:'—', q2p:w2?w2.p:'—', q2y:w2?w2.y:'—', h1p:wH?wH.p:'—', h1y:wH?wH.y:'—' },
       { label:'包裝費 (5539)', cls:'r-memo', q1:`${money(Q1.pkg)}（${pctStr(Q1.pkg,Q1.rev)}）`, q2:`${money(Q2.pkg)}（${pctStr(Q2.pkg,Q2.rev)}）`,
         h1:`${money(H1.pkg)}（${pctStr(H1.pkg,H1.rev)}）`,
         q1p:p1.p==='—'?'—':`${p1.p}（${pctStr(prevQ1.pkg,prevQ1.rev)}）`, q1y:p1.y,
@@ -1945,6 +1976,114 @@ function renderH1Report() {
       <td class="col-tot">${r.h1}</td><td>${r.h1p}</td><td>${r.h1y}</td>
     </tr>`).join('')}</tbody>`;
     tableEl.innerHTML = head + body;
+  }
+}
+
+/* ── 各店＋電商 Q1／Q2／H1 比較（固定區塊，讀 CMP/storeData，不隨 S 切換）──
+   只做 2026 年內部三期比較，不做去年同期：分店別的去年拆分數字（部門比較累計表）
+   跟本季逐月驗證過的 storeData 對不起來（誤差約30萬），寧可不比較也不用有疑慮的數字 */
+function renderStoreH1Report() {
+  const W0    = v => Math.round(v / 10000);
+  const money = v => (v < 0 ? '−' : '') + W0(Math.abs(v)).toLocaleString('en-US');
+  const pctStr = (a, b) => (b ? a / b * 100 : 0).toFixed(1) + '%';
+  const mIdxOf = m => monthNum(m.ym) - 1;
+
+  const q1Months = CMP.filter(m => monthNum(m.ym) <= 3 && m.storeData);
+  const q2Months = CMP.filter(m => monthNum(m.ym) >= 4 && monthNum(m.ym) <= 6 && m.storeData);
+  const h1Months = CMP.filter(m => monthNum(m.ym) <= 6 && m.storeData);
+  if (!h1Months.length) return;
+
+  const storeAgg = (months, st) => {
+    let rev = 0, op = 0, tgt = 0, partial = false;
+    months.forEach(m => {
+      const d = m.storeData[st];
+      if (!d) return;
+      rev += d.rev; op += d.opProfit;
+      tgt += (MONTHLY_TARGETS[st][mIdxOf(m)] || 0) * 10000;
+      if (d.partial) partial = true;
+    });
+    return { rev, op, tgt, partial, monthCount: months.length };
+  };
+
+  const periods = [
+    { key:'q1', label:'Q1',     months:q1Months, color:'#284234' },
+    { key:'q2', label:'Q2',     months:q2Months, color:'#378ADD' },
+    { key:'h1', label:'H1合計', months:h1Months, color:'#A54A1A' },
+  ];
+  const data = {};
+  STORES.forEach(st => { data[st] = {}; periods.forEach(p => { data[st][p.key] = storeAgg(p.months, st); }); });
+
+  mkChart('store-h1-rev-chart', {
+    type: 'bar',
+    data: {
+      labels: STORES,
+      datasets: periods.map(p => ({
+        label: p.label,
+        data: STORES.map(st => W0(data[st][p.key].rev)),
+        backgroundColor: p.color, borderRadius: 3,
+      }))
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ position:'top', labels:{ color:'#b09a88', font:{size:11}, boxWidth:12 } },
+        tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+c.parsed.y.toLocaleString('en-US')+'萬' } }
+      },
+      scales:{
+        x:{ grid:{display:false}, ticks:{ color:'#b09a88', font:{size:11} } },
+        y:{ grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{size:11}, callback:v=>v+'萬' } }
+      }
+    }
+  });
+
+  const tableEl = document.getElementById('store-h1-table');
+  if (tableEl) {
+    const rowOf = st => {
+      const q1 = data[st].q1, q2 = data[st].q2, h1 = data[st].h1;
+      const flagged = q1.partial || q2.partial || h1.partial;
+      return {
+        label: st + (flagged ? '＊' : ''), cls: '',
+        q1rev:money(q1.rev), q1ach:q1.tgt?pctStr(q1.rev,q1.tgt):'—', q1op:money(q1.op), q1opPct:q1.rev?pctStr(q1.op,q1.rev):'—',
+        q2rev:money(q2.rev), q2ach:q2.tgt?pctStr(q2.rev,q2.tgt):'—', q2op:money(q2.op), q2opPct:q2.rev?pctStr(q2.op,q2.rev):'—',
+        h1rev:money(h1.rev), h1ach:h1.tgt?pctStr(h1.rev,h1.tgt):'—', h1op:money(h1.op), h1opPct:h1.rev?pctStr(h1.op,h1.rev):'—',
+      };
+    };
+    const rows = STORES.map(rowOf);
+
+    const sumKey = (key, field) => STORES.reduce((s,st)=>s+data[st][key][field],0);
+    const totalRow = { label:'五店＋電商合計', cls:'r-strong' };
+    periods.forEach(p => {
+      const rev = sumKey(p.key,'rev'), op = sumKey(p.key,'op'), tgt = sumKey(p.key,'tgt');
+      totalRow[p.key+'rev'] = money(rev);
+      totalRow[p.key+'ach'] = tgt ? pctStr(rev,tgt) : '—';
+      totalRow[p.key+'op']  = money(op);
+      totalRow[p.key+'opPct'] = rev ? pctStr(op,rev) : '—';
+    });
+    const allRows = [...rows, totalRow];
+
+    const head = `<thead><tr>
+      <th rowspan="2">通路（萬元）</th>
+      <th colspan="4">Q1</th><th colspan="4">Q2</th><th colspan="4" class="col-tot">H1合計</th>
+    </tr><tr>
+      <th>營收</th><th>達成率</th><th>營業淨利</th><th>淨利率</th>
+      <th>營收</th><th>達成率</th><th>營業淨利</th><th>淨利率</th>
+      <th class="col-tot">營收</th><th>達成率</th><th>營業淨利</th><th>淨利率</th>
+    </tr></thead>`;
+    const body = `<tbody>${allRows.map(r => `<tr class="${r.cls}">
+      <td class="row-label">${r.label}</td>
+      <td>${r.q1rev}</td><td>${r.q1ach}</td><td>${r.q1op}</td><td>${r.q1opPct}</td>
+      <td>${r.q2rev}</td><td>${r.q2ach}</td><td>${r.q2op}</td><td>${r.q2opPct}</td>
+      <td class="col-tot">${r.h1rev}</td><td>${r.h1ach}</td><td>${r.h1op}</td><td>${r.h1opPct}</td>
+    </tr>`).join('')}</tbody>`;
+    tableEl.innerHTML = head + body;
+  }
+
+  const noteEl = document.getElementById('store-h1-note');
+  if (noteEl) {
+    const hasPartial = STORES.some(st => data[st].q1.partial || data[st].h1.partial);
+    noteEl.innerHTML =
+      '＊ 淨利統一採「營業淨利」（不含業外收支、未扣稅），與月別頁一致；達成率分母為各店累計月目標。無可靠去年同期分店別數據（僅總公司層級有完整去年比較），故此表僅呈現 2026 年 Q1／Q2／H1 三期比較。' +
+      (hasPartial ? '　電商列標「＊」：2月部門報表僅含官網、缺電商平台拆分，Q1／H1電商數字因此偏低，僅供參考。' : '');
   }
 }
 
