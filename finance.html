@@ -415,6 +415,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .cmp-table td.cur{background:rgba(165,74,26,.08);font-weight:700}
 .cmp-table th.cur{background:var(--rust)}
 .cmp-table .col-tot{border-left:2px solid var(--border2);color:var(--text)}
+/* 第一欄（項目/通路名稱）左側凍結：橫向捲動時永遠看得到是哪一列，不會捲到只剩數字看不懂欄位意義 */
+.cmp-table th:first-child,.cmp-table td:first-child{position:sticky;left:0;z-index:1}
+.cmp-table thead th:first-child{z-index:2}
+.cmp-table tbody td:first-child{background:var(--surface)}
 
 /* ── 深入觀察 ── */
 .insight-list{display:flex;flex-direction:column;gap:12px}
