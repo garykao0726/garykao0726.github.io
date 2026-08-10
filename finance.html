@@ -1807,69 +1807,97 @@ function renderH1Report() {
   });
   const Q1 = agg(q1Months), Q2 = agg(q2Months), H1 = agg(h1Months);
 
-  /* 去年 H1（僅 rev/mkt/opProfit 可對照，來源 HIST_CO_2025） */
-  const prevH1 = HIST_CO_2025.filter(h => monthNum(h.ym) <= 6);
-  const prevRev = prevH1.reduce((s,h)=>s+h.rev, 0);
-  const prevOp  = prevH1.reduce((s,h)=>s+h.opProfit, 0);
-  const yoyRevPct = prevRev ? (H1.rev - prevRev) / prevRev * 100 : null;
+  /* 去年同期 Q1／Q2／H1（僅 rev/mkt/opProfit 可對照，來源 HIST_CO_2025） */
+  const prevAgg = months => ({
+    rev: months.reduce((s,h)=>s+h.rev,0),
+    op:  months.reduce((s,h)=>s+h.opProfit,0),
+  });
+  const prevQ1 = prevAgg(HIST_CO_2025.filter(h => monthNum(h.ym) <= 3));
+  const prevQ2 = prevAgg(HIST_CO_2025.filter(h => monthNum(h.ym) >= 4 && monthNum(h.ym) <= 6));
+  const prevH1 = prevAgg(HIST_CO_2025.filter(h => monthNum(h.ym) <= 6));
 
-  /* 摘要卡：Q1／Q2／H1／H1 YoY */
+  const revYoy = (cur, prev) => prev ? chg((cur - prev) / prev * 100) : '—';
+  /* 營業淨利可能由虧轉盈／由盈轉虧，單純算%會失真，先處理正負號翻轉的情況 */
+  const opYoy = (cur, prev) => {
+    if (!prev) return cur > 0 ? '由0轉正' : '—';
+    if (prev < 0 && cur >= 0) return '由虧轉盈';
+    if (prev > 0 && cur <= 0) return '由盈轉虧';
+    return chg((cur - prev) / Math.abs(prev) * 100);
+  };
+
+  /* 摘要卡：Q1／Q2／H1／H1 營業淨利率，Q1、Q2、H1 皆對照去年同期 */
   const cardsEl = document.getElementById('h1-summary-cards');
   if (cardsEl) {
-    const card = (label, period, val, sub, accent) => `
+    const card = (label, period, val, prevVal, accent) => `
       <div class="kpi">
         <div class="kpi-label">${label}<span style="color:var(--text-muted);font-weight:400">（${period}，${val.monthCount}個月）</span></div>
         <div class="kpi-val">${money(val.rev)}萬</div>
         <div class="kpi-sub">營業淨利 ${money(val.op)}萬（${pctStr(val.op, val.rev)}）</div>
-        <div class="kpi-delta">${sub}</div>
+        <div class="kpi-delta">${prevVal.rev ? `YoY 營收 ${revYoy(val.rev, prevVal.rev)}｜營業淨利 ${opYoy(val.op, prevVal.op)}（去年同期 ${money(prevVal.rev)}萬）` : '去年同期待補'}</div>
         <div class="kpi-accent" style="background:${accent}"></div>
       </div>`;
     cardsEl.innerHTML =
-      card('Q1', q1Months.map(m=>monthNum(m.ym)).join('/')+'月', Q1, `毛利率 ${pctStr(Q1.gp,Q1.rev)}｜廣告費率 ${pctStr(Q1.mkt,Q1.rev)}`, '#284234') +
-      card('Q2', q2Months.map(m=>monthNum(m.ym)).join('/')+'月', Q2, `毛利率 ${pctStr(Q2.gp,Q2.rev)}｜廣告費率 ${pctStr(Q2.mkt,Q2.rev)}`, '#378ADD') +
-      card('H1 上半年合計', h1Months.map(m=>monthNum(m.ym)).join('/')+'月', H1,
-        yoyRevPct === null ? '去年同期待補' : `YoY 營收 ${chg(yoyRevPct)}（去年H1 ${money(prevRev)}萬）`, '#A54A1A') +
+      card('Q1', q1Months.map(m=>monthNum(m.ym)).join('/')+'月', Q1, prevQ1, '#284234') +
+      card('Q2', q2Months.map(m=>monthNum(m.ym)).join('/')+'月', Q2, prevQ2, '#378ADD') +
+      card('H1 上半年合計', h1Months.map(m=>monthNum(m.ym)).join('/')+'月', H1, prevH1, '#A54A1A') +
       `<div class="kpi">
         <div class="kpi-label">H1 營業淨利率</div>
         <div class="kpi-val ${npColor(H1.op/H1.rev*100)}">${pctStr(H1.op, H1.rev)}</div>
         <div class="kpi-sub">目標 8%</div>
-        <div class="kpi-delta ${npColor(H1.op/H1.rev*100)}">${prevRev ? `去年H1營業淨利率 ${pctStr(prevOp, prevRev)}` : '去年同期待補'}</div>
+        <div class="kpi-delta ${npColor(H1.op/H1.rev*100)}">${prevH1.rev ? `去年H1營業淨利率 ${pctStr(prevH1.op, prevH1.rev)}` : '去年同期待補'}</div>
         <div class="kpi-accent" style="background:${cSSColor(npColor(H1.op/H1.rev*100))}"></div>
       </div>`;
   }
 
-  /* 明細表：Q1｜Q2｜H1合計｜去年H1｜YoY% */
+  /* 明細表：每期（Q1／Q2／H1合計）各自都有「今年｜去年｜YoY」三欄，共 9 個數值欄 */
   const tableEl = document.getElementById('h1-table');
   if (tableEl) {
+    const na3 = { q1p:'—', q1y:'—', q2p:'—', q2y:'—', h1p:'—', h1y:'—' };
     const rows = [
-      { label:'營業收入',   cls:'r-strong', q1:money(Q1.rev),  q2:money(Q2.rev),  h1:money(H1.rev),  prev:prevRev?money(prevRev):'—', yoy:yoyRevPct===null?'—':chg(yoyRevPct) },
-      { label:'銷貨成本',   cls:'r-sub',    q1:money(-Q1.cogs),q2:money(-Q2.cogs),h1:money(-H1.cogs),prev:'—', yoy:'—' },
-      { label:'營業毛利',   cls:'r-strong', q1:money(Q1.gp),   q2:money(Q2.gp),   h1:money(H1.gp),   prev:'—', yoy:'—' },
-      { label:'毛利率',     cls:'r-sub',    q1:pctStr(Q1.gp,Q1.rev), q2:pctStr(Q2.gp,Q2.rev), h1:pctStr(H1.gp,H1.rev), prev:'—', yoy:'—' },
-      { label:'推銷費用',   cls:'r-sub',    q1:money(-Q1.sell),q2:money(-Q2.sell),h1:money(-H1.sell),prev:'—', yoy:'—' },
-      { label:'管理費用',   cls:'r-sub',    q1:money(-Q1.mgmt),q2:money(-Q2.mgmt),h1:money(-H1.mgmt),prev:'—', yoy:'—' },
-      { label:'營業淨利',   cls:'r-strong', q1:money(Q1.op),   q2:money(Q2.op),   h1:money(H1.op),   prev:prevOp?money(prevOp):'—',
-        yoy: prevOp ? chg((H1.op-prevOp)/Math.abs(prevOp)*100) : '—' },
+      { label:'營業收入',   cls:'r-strong', q1:money(Q1.rev),  q2:money(Q2.rev),  h1:money(H1.rev),
+        q1p:money(prevQ1.rev), q1y:revYoy(Q1.rev,prevQ1.rev),
+        q2p:money(prevQ2.rev), q2y:revYoy(Q2.rev,prevQ2.rev),
+        h1p:money(prevH1.rev), h1y:revYoy(H1.rev,prevH1.rev) },
+      { label:'銷貨成本',   cls:'r-sub',    q1:money(-Q1.cogs),q2:money(-Q2.cogs),h1:money(-H1.cogs), ...na3 },
+      { label:'營業毛利',   cls:'r-strong', q1:money(Q1.gp),   q2:money(Q2.gp),   h1:money(H1.gp),    ...na3 },
+      { label:'毛利率',     cls:'r-sub',    q1:pctStr(Q1.gp,Q1.rev), q2:pctStr(Q2.gp,Q2.rev), h1:pctStr(H1.gp,H1.rev), ...na3 },
+      { label:'推銷費用',   cls:'r-sub',    q1:money(-Q1.sell),q2:money(-Q2.sell),h1:money(-H1.sell), ...na3 },
+      { label:'管理費用',   cls:'r-sub',    q1:money(-Q1.mgmt),q2:money(-Q2.mgmt),h1:money(-H1.mgmt), ...na3 },
+      { label:'營業淨利',   cls:'r-strong', q1:money(Q1.op),   q2:money(Q2.op),   h1:money(H1.op),
+        q1p:money(prevQ1.op), q1y:opYoy(Q1.op,prevQ1.op),
+        q2p:money(prevQ2.op), q2y:opYoy(Q2.op,prevQ2.op),
+        h1p:money(prevH1.op), h1y:opYoy(H1.op,prevH1.op) },
       { label:'營業淨利率', cls:'r-sub',    q1:pctStr(Q1.op,Q1.rev), q2:pctStr(Q2.op,Q2.rev), h1:pctStr(H1.op,H1.rev),
-        prev:prevRev?pctStr(prevOp,prevRev):'—', yoy:'—' },
-      { label:'業外淨額',   cls:'r-sub',    q1:money(Q1.nonOp),q2:money(Q2.nonOp),h1:money(H1.nonOp),prev:'—', yoy:'—' },
-      { label:'稅前損益',   cls:'',         q1:money(Q1.pretax),q2:money(Q2.pretax),h1:money(H1.pretax),prev:'—', yoy:'—' },
-      { label:'所得稅',     cls:'r-sub',    q1:money(-Q1.tax), q2:money(-Q2.tax), h1:money(-H1.tax), prev:'—', yoy:'—' },
+        q1p:prevQ1.rev?pctStr(prevQ1.op,prevQ1.rev):'—', q1y:'—',
+        q2p:prevQ2.rev?pctStr(prevQ2.op,prevQ2.rev):'—', q2y:'—',
+        h1p:prevH1.rev?pctStr(prevH1.op,prevH1.rev):'—', h1y:'—' },
+      { label:'業外淨額',   cls:'r-sub',    q1:money(Q1.nonOp),q2:money(Q2.nonOp),h1:money(H1.nonOp), ...na3 },
+      { label:'稅前損益',   cls:'',         q1:money(Q1.pretax),q2:money(Q2.pretax),h1:money(H1.pretax), ...na3 },
+      { label:'所得稅',     cls:'r-sub',    q1:money(-Q1.tax), q2:money(-Q2.tax), h1:money(-H1.tax), ...na3 },
       { label:'本期損益',   cls:'r-strong', q1:`<span class="${npColor(Q1.ni/Q1.rev*100)}">${money(Q1.ni)}</span>`,
                                              q2:`<span class="${npColor(Q2.ni/Q2.rev*100)}">${money(Q2.ni)}</span>`,
-                                             h1:`<span class="${npColor(H1.ni/H1.rev*100)}">${money(H1.ni)}</span>`, prev:'—', yoy:'—' },
-      { label:'本期損益率', cls:'r-sub',    q1:pctStr(Q1.ni,Q1.rev), q2:pctStr(Q2.ni,Q2.rev), h1:pctStr(H1.ni,H1.rev), prev:'—', yoy:'—' },
+                                             h1:`<span class="${npColor(H1.ni/H1.rev*100)}">${money(H1.ni)}</span>`, ...na3 },
+      { label:'本期損益率', cls:'r-sub',    q1:pctStr(Q1.ni,Q1.rev), q2:pctStr(Q2.ni,Q2.rev), h1:pctStr(H1.ni,H1.rev), ...na3 },
       { label:'廣告費 (6117)', cls:'r-memo', q1:`${money(Q1.mkt)}（${pctStr(Q1.mkt,Q1.rev)}）`, q2:`${money(Q2.mkt)}（${pctStr(Q2.mkt,Q2.rev)}）`,
-        h1:`${money(H1.mkt)}（${pctStr(H1.mkt,H1.rev)}）`, prev:'—', yoy:'—' },
+        h1:`${money(H1.mkt)}（${pctStr(H1.mkt,H1.rev)}）`, ...na3 },
       { label:'總人事費 (6100+6201)', cls:'r-memo', q1:`${money(Q1.wage)}（${pctStr(Q1.wage,Q1.rev)}）`, q2:`${money(Q2.wage)}（${pctStr(Q2.wage,Q2.rev)}）`,
-        h1:`${money(H1.wage)}（${pctStr(H1.wage,H1.rev)}）`, prev:'—', yoy:'—' },
+        h1:`${money(H1.wage)}（${pctStr(H1.wage,H1.rev)}）`, ...na3 },
       { label:'包裝費 (5539)', cls:'r-memo', q1:`${money(Q1.pkg)}（${pctStr(Q1.pkg,Q1.rev)}）`, q2:`${money(Q2.pkg)}（${pctStr(Q2.pkg,Q2.rev)}）`,
-        h1:`${money(H1.pkg)}（${pctStr(H1.pkg,H1.rev)}）`, prev:'—', yoy:'—' },
+        h1:`${money(H1.pkg)}（${pctStr(H1.pkg,H1.rev)}）`, ...na3 },
     ];
-    const head = `<thead><tr><th>項目（萬元）</th><th>Q1</th><th>Q2</th><th class="col-tot">H1合計</th><th>去年H1</th><th>YoY</th></tr></thead>`;
+    const head = `<thead><tr>
+      <th rowspan="2">項目（萬元）</th>
+      <th colspan="3">Q1</th><th colspan="3">Q2</th><th colspan="3" class="col-tot">H1合計</th>
+    </tr><tr>
+      <th>今年</th><th>去年</th><th>YoY</th>
+      <th>今年</th><th>去年</th><th>YoY</th>
+      <th class="col-tot">今年</th><th>去年</th><th>YoY</th>
+    </tr></thead>`;
     const body = `<tbody>${rows.map(r => `<tr class="${r.cls}">
       <td class="row-label">${r.label}</td>
-      <td>${r.q1}</td><td>${r.q2}</td><td class="col-tot">${r.h1}</td><td>${r.prev}</td><td>${r.yoy}</td>
+      <td>${r.q1}</td><td>${r.q1p}</td><td>${r.q1y}</td>
+      <td>${r.q2}</td><td>${r.q2p}</td><td>${r.q2y}</td>
+      <td class="col-tot">${r.h1}</td><td>${r.h1p}</td><td>${r.h1y}</td>
     </tr>`).join('')}</tbody>`;
     tableEl.innerHTML = head + body;
   }
