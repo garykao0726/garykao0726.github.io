@@ -47,12 +47,15 @@ const COMPANY_MKT_BUDGET = 4140000;   // 年度廣告費預算：6,900萬 × 6% 
 /* ── 廣告費效益分析：2025 逐月公司級（來源：總公司_2025年度損益表_月份比較，已對帳
       全年 rev 69,025,980／mkt 5,379,107(7.79%)／營業淨利 1,406,129）── */
 const HIST_CO_2025 = [
-  { ym:'2025/01', rev:6620786, mkt:317870,  opProfit:576032 },
-  { ym:'2025/02', rev:6010360, mkt:330949,  opProfit:494471 },
-  { ym:'2025/03', rev:5697649, mkt:395855,  opProfit:74410 },
-  { ym:'2025/04', rev:5936770, mkt:267864,  opProfit:-503272 },
-  { ym:'2025/05', rev:4804243, mkt:358457,  opProfit:-320907 },
-  { ym:'2025/06', rev:4554681, mkt:288854,  opProfit:-580970 },
+  /* 1–6月有完整明細（來源：總公司2025年度損益表_月份比較＋損益表_202505 逐月核對，
+     rev-cogs-sell-mgmt=opProfit 已驗證吻合）；業外/稅前/所得稅/總人事費(6100+6201) 無逐月來源，
+     故 Q1/Q2/H1報表對應列仍顯示「—」，不用不完整資料湊數 */
+  { ym:'2025/01', rev:6620786, cogs:2271791, sell:2377920, mgmt:1395043, mkt:317870,  opProfit:576032,  ni:520778,  pkg:32191 },
+  { ym:'2025/02', rev:6010360, cogs:2060511, sell:2205035, mgmt:1250343, mkt:330949,  opProfit:494471,  ni:450087,  pkg:66224 },
+  { ym:'2025/03', rev:5697649, cogs:1993832, sell:2352003, mgmt:1277404, mkt:395855,  opProfit:74410,   ni:55790,   pkg:151065 },
+  { ym:'2025/04', rev:5936770, cogs:2519666, sell:2271569, mgmt:1648807, mkt:267864,  opProfit:-503272, ni:-543295, pkg:25433 },
+  { ym:'2025/05', rev:4804243, cogs:1575743, sell:2261044, mgmt:1288363, mkt:358457,  opProfit:-320907, ni:-348671, pkg:52411 },
+  { ym:'2025/06', rev:4554681, cogs:1718546, sell:2176914, mgmt:1240191, mkt:288854,  opProfit:-580970, ni:-577993, pkg:164867 },
   { ym:'2025/07', rev:6005784, mkt:1077015, opProfit:-197539 },
   { ym:'2025/08', rev:4917834, mkt:377261,  opProfit:-287962 },
   { ym:'2025/09', rev:4578507, mkt:549588,  opProfit:-707320 },
@@ -1825,10 +1828,21 @@ function renderH1Report() {
   });
   const Q1 = agg(q1Months), Q2 = agg(q2Months), H1 = agg(h1Months);
 
-  /* 去年同期 Q1／Q2／H1（僅 rev/mkt/opProfit 可對照，來源 HIST_CO_2025） */
+  /* 去年同期 Q1／Q2／H1（1–6月來源 HIST_CO_2025 有完整明細；缺 nonOp/pretax/tax/wage，
+     這幾項只加總「有資料的月份」，若整期缺任一月份資料則整體回傳 null，避免用不完整月份湊出誤導數字） */
+  const sumIfComplete = (months, fn) => {
+    const vals = months.map(fn);
+    return vals.some(v => v === undefined) ? null : vals.reduce((a,b)=>a+b, 0);
+  };
   const prevAgg = months => ({
-    rev: months.reduce((s,h)=>s+h.rev,0),
-    op:  months.reduce((s,h)=>s+h.opProfit,0),
+    rev:  months.reduce((s,h)=>s+h.rev,0),
+    op:   months.reduce((s,h)=>s+h.opProfit,0),
+    mkt:  months.reduce((s,h)=>s+h.mkt,0),
+    cogs: sumIfComplete(months, h=>h.cogs),
+    sell: sumIfComplete(months, h=>h.sell),
+    mgmt: sumIfComplete(months, h=>h.mgmt),
+    ni:   sumIfComplete(months, h=>h.ni),
+    pkg:  sumIfComplete(months, h=>h.pkg),
   });
   const prevQ1 = prevAgg(HIST_CO_2025.filter(h => monthNum(h.ym) <= 3));
   const prevQ2 = prevAgg(HIST_CO_2025.filter(h => monthNum(h.ym) >= 4 && monthNum(h.ym) <= 6));
@@ -1911,16 +1925,39 @@ function renderH1Report() {
   const tableEl = document.getElementById('h1-table');
   if (tableEl) {
     const na3 = { q1p:'—', q1y:'—', q2p:'—', q2y:'—', h1p:'—', h1y:'—' };
+    /* 去年成本類科目：有值才比較，sumIfComplete 缺資料時回傳 null → 顯示「—」而非誤導數字 */
+    const costCmp = (cur, prev) => prev === null ? { p:'—', y:'—' } : { p: money(-prev), y: revYoy(cur, prev) };
+    const pctCmp  = (curA, curB, prevA, prevB) => (prevA === null || prevB === null) ? '—' : pctStr(prevA, prevB);
+    const prevGpQ1 = prevQ1.cogs === null ? null : prevQ1.rev - prevQ1.cogs;
+    const prevGpQ2 = prevQ2.cogs === null ? null : prevQ2.rev - prevQ2.cogs;
+    const prevGpH1 = prevH1.cogs === null ? null : prevH1.rev - prevH1.cogs;
+    const gpCmp = (cur, prevGp) => prevGp === null ? { p:'—', y:'—' } : { p: money(prevGp), y: revYoy(cur, prevGp) };
+
+    const c1 = costCmp(Q1.cogs, prevQ1.cogs), c2 = costCmp(Q2.cogs, prevQ2.cogs), cH = costCmp(H1.cogs, prevH1.cogs);
+    const g1 = gpCmp(Q1.gp, prevGpQ1), g2 = gpCmp(Q2.gp, prevGpQ2), gH = gpCmp(H1.gp, prevGpH1);
+    const s1 = costCmp(Q1.sell, prevQ1.sell), s2 = costCmp(Q2.sell, prevQ2.sell), sH = costCmp(H1.sell, prevH1.sell);
+    const m1 = costCmp(Q1.mgmt, prevQ1.mgmt), m2 = costCmp(Q2.mgmt, prevQ2.mgmt), mH = costCmp(H1.mgmt, prevH1.mgmt);
+    /* 包裝費是備忘列，今年欄顯示正數（非減項），去年欄比照不取負號 */
+    const memoCmp = (cur, prev) => prev === null ? { p:'—', y:'—' } : { p: money(prev), y: revYoy(cur, prev) };
+    const p1 = memoCmp(Q1.pkg, prevQ1.pkg), p2 = memoCmp(Q2.pkg, prevQ2.pkg), pH = memoCmp(H1.pkg, prevH1.pkg);
+
     const rows = [
       { label:'營業收入',   cls:'r-strong', q1:money(Q1.rev),  q2:money(Q2.rev),  h1:money(H1.rev),
         q1p:money(prevQ1.rev), q1y:revYoy(Q1.rev,prevQ1.rev),
         q2p:money(prevQ2.rev), q2y:revYoy(Q2.rev,prevQ2.rev),
         h1p:money(prevH1.rev), h1y:revYoy(H1.rev,prevH1.rev) },
-      { label:'銷貨成本',   cls:'r-sub',    q1:money(-Q1.cogs),q2:money(-Q2.cogs),h1:money(-H1.cogs), ...na3 },
-      { label:'營業毛利',   cls:'r-strong', q1:money(Q1.gp),   q2:money(Q2.gp),   h1:money(H1.gp),    ...na3 },
-      { label:'毛利率',     cls:'r-sub',    q1:pctStr(Q1.gp,Q1.rev), q2:pctStr(Q2.gp,Q2.rev), h1:pctStr(H1.gp,H1.rev), ...na3 },
-      { label:'推銷費用',   cls:'r-sub',    q1:money(-Q1.sell),q2:money(-Q2.sell),h1:money(-H1.sell), ...na3 },
-      { label:'管理費用',   cls:'r-sub',    q1:money(-Q1.mgmt),q2:money(-Q2.mgmt),h1:money(-H1.mgmt), ...na3 },
+      { label:'銷貨成本',   cls:'r-sub',    q1:money(-Q1.cogs),q2:money(-Q2.cogs),h1:money(-H1.cogs),
+        q1p:c1.p, q1y:c1.y, q2p:c2.p, q2y:c2.y, h1p:cH.p, h1y:cH.y },
+      { label:'營業毛利',   cls:'r-strong', q1:money(Q1.gp),   q2:money(Q2.gp),   h1:money(H1.gp),
+        q1p:g1.p, q1y:g1.y, q2p:g2.p, q2y:g2.y, h1p:gH.p, h1y:gH.y },
+      { label:'毛利率',     cls:'r-sub',    q1:pctStr(Q1.gp,Q1.rev), q2:pctStr(Q2.gp,Q2.rev), h1:pctStr(H1.gp,H1.rev),
+        q1p:pctCmp(Q1.gp,Q1.rev,prevGpQ1,prevQ1.rev), q1y:'—',
+        q2p:pctCmp(Q2.gp,Q2.rev,prevGpQ2,prevQ2.rev), q2y:'—',
+        h1p:pctCmp(H1.gp,H1.rev,prevGpH1,prevH1.rev), h1y:'—' },
+      { label:'推銷費用',   cls:'r-sub',    q1:money(-Q1.sell),q2:money(-Q2.sell),h1:money(-H1.sell),
+        q1p:s1.p, q1y:s1.y, q2p:s2.p, q2y:s2.y, h1p:sH.p, h1y:sH.y },
+      { label:'管理費用',   cls:'r-sub',    q1:money(-Q1.mgmt),q2:money(-Q2.mgmt),h1:money(-H1.mgmt),
+        q1p:m1.p, q1y:m1.y, q2p:m2.p, q2y:m2.y, h1p:mH.p, h1y:mH.y },
       { label:'營業淨利',   cls:'r-strong', q1:money(Q1.op),   q2:money(Q2.op),   h1:money(H1.op),
         q1p:money(prevQ1.op), q1y:opYoy(Q1.op,prevQ1.op),
         q2p:money(prevQ2.op), q2y:opYoy(Q2.op,prevQ2.op),
@@ -1934,14 +1971,26 @@ function renderH1Report() {
       { label:'所得稅',     cls:'r-sub',    q1:money(-Q1.tax), q2:money(-Q2.tax), h1:money(-H1.tax), ...na3 },
       { label:'本期損益',   cls:'r-strong', q1:`<span class="${npColor(Q1.ni/Q1.rev*100)}">${money(Q1.ni)}</span>`,
                                              q2:`<span class="${npColor(Q2.ni/Q2.rev*100)}">${money(Q2.ni)}</span>`,
-                                             h1:`<span class="${npColor(H1.ni/H1.rev*100)}">${money(H1.ni)}</span>`, ...na3 },
-      { label:'本期損益率', cls:'r-sub',    q1:pctStr(Q1.ni,Q1.rev), q2:pctStr(Q2.ni,Q2.rev), h1:pctStr(H1.ni,H1.rev), ...na3 },
+                                             h1:`<span class="${npColor(H1.ni/H1.rev*100)}">${money(H1.ni)}</span>`,
+        q1p:prevQ1.ni===null?'—':money(prevQ1.ni), q1y:prevQ1.ni===null?'—':opYoy(Q1.ni,prevQ1.ni),
+        q2p:prevQ2.ni===null?'—':money(prevQ2.ni), q2y:prevQ2.ni===null?'—':opYoy(Q2.ni,prevQ2.ni),
+        h1p:prevH1.ni===null?'—':money(prevH1.ni), h1y:prevH1.ni===null?'—':opYoy(H1.ni,prevH1.ni) },
+      { label:'本期損益率', cls:'r-sub',    q1:pctStr(Q1.ni,Q1.rev), q2:pctStr(Q2.ni,Q2.rev), h1:pctStr(H1.ni,H1.rev),
+        q1p:(prevQ1.ni===null||!prevQ1.rev)?'—':pctStr(prevQ1.ni,prevQ1.rev), q1y:'—',
+        q2p:(prevQ2.ni===null||!prevQ2.rev)?'—':pctStr(prevQ2.ni,prevQ2.rev), q2y:'—',
+        h1p:(prevH1.ni===null||!prevH1.rev)?'—':pctStr(prevH1.ni,prevH1.rev), h1y:'—' },
       { label:'廣告費 (6117)', cls:'r-memo', q1:`${money(Q1.mkt)}（${pctStr(Q1.mkt,Q1.rev)}）`, q2:`${money(Q2.mkt)}（${pctStr(Q2.mkt,Q2.rev)}）`,
-        h1:`${money(H1.mkt)}（${pctStr(H1.mkt,H1.rev)}）`, ...na3 },
+        h1:`${money(H1.mkt)}（${pctStr(H1.mkt,H1.rev)}）`,
+        q1p:`${money(prevQ1.mkt)}（${pctStr(prevQ1.mkt,prevQ1.rev)}）`, q1y:revYoy(Q1.mkt,prevQ1.mkt),
+        q2p:`${money(prevQ2.mkt)}（${pctStr(prevQ2.mkt,prevQ2.rev)}）`, q2y:revYoy(Q2.mkt,prevQ2.mkt),
+        h1p:`${money(prevH1.mkt)}（${pctStr(prevH1.mkt,prevH1.rev)}）`, h1y:revYoy(H1.mkt,prevH1.mkt) },
       { label:'總人事費 (6100+6201)', cls:'r-memo', q1:`${money(Q1.wage)}（${pctStr(Q1.wage,Q1.rev)}）`, q2:`${money(Q2.wage)}（${pctStr(Q2.wage,Q2.rev)}）`,
         h1:`${money(H1.wage)}（${pctStr(H1.wage,H1.rev)}）`, ...na3 },
       { label:'包裝費 (5539)', cls:'r-memo', q1:`${money(Q1.pkg)}（${pctStr(Q1.pkg,Q1.rev)}）`, q2:`${money(Q2.pkg)}（${pctStr(Q2.pkg,Q2.rev)}）`,
-        h1:`${money(H1.pkg)}（${pctStr(H1.pkg,H1.rev)}）`, ...na3 },
+        h1:`${money(H1.pkg)}（${pctStr(H1.pkg,H1.rev)}）`,
+        q1p:p1.p==='—'?'—':`${p1.p}（${pctStr(prevQ1.pkg,prevQ1.rev)}）`, q1y:p1.y,
+        q2p:p2.p==='—'?'—':`${p2.p}（${pctStr(prevQ2.pkg,prevQ2.rev)}）`, q2y:p2.y,
+        h1p:pH.p==='—'?'—':`${pH.p}（${pctStr(prevH1.pkg,prevH1.rev)}）`, h1y:pH.y },
     ];
     const head = `<thead><tr>
       <th rowspan="2">項目（萬元）</th>
