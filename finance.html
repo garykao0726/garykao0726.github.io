@@ -10,8 +10,6 @@
 
 <script>
 /* ════ 設定區 ════ */
-const GOOGLE_CLIENT_ID = '777948523832-cap96sjc0riu0guvvsiamih91egg8rvq.apps.googleusercontent.com';
-
 // GAS 端點（部署後填入，與 admin.html 相同）
 const PERM_GAS_URL = 'https://script.google.com/macros/s/AKfycbyno4dWC9uaZjiCLYRqAJf7HrX8fUsOnqU6R0giYNBq1ECE3lkBOV5GZJmZwGIyC93Jbw/exec';
 
@@ -291,12 +289,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .gate-icon{font-size:48px}
 .gate-title{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--green);text-align:center}
 .gate-sub{font-size:13px;color:var(--text-muted);text-align:center;line-height:1.9;max-width:360px}
-.signin-btn{display:flex;align-items:center;gap:10px;padding:11px 22px;border-radius:8px;border:1.5px solid var(--border2);background:#fff;cursor:pointer;font-family:'Noto Sans TC',sans-serif;font-size:14px;color:var(--text);transition:all .15s}
-.signin-btn:hover{border-color:var(--green);box-shadow:0 2px 8px rgba(40,66,52,.12)}
-.signin-btn svg{width:20px;height:20px;flex-shrink:0}
-.denied-box{background:#fff3f0;border:1px solid rgba(192,57,43,.18);border-radius:12px;padding:18px 24px;text-align:center;max-width:360px;display:none}
-.denied-box strong{color:var(--neg);display:block;margin-bottom:6px}
-.denied-box span{font-size:12px;color:var(--text-muted)}
 
 /* ── Main content ── */
 #main-content{display:none}
@@ -547,7 +539,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
   <div class="hdr-r">
     <span class="lock-badge">🔒 RESTRICTED</span>
-    <div id="user-chip" class="user-chip" style="display:none" onclick="signOut()">
+    <div id="user-chip" class="user-chip" style="display:none" onclick="oriAuthLogout()">
       <img id="user-avatar" class="user-avatar" src="" alt="">
       <span id="user-name" class="user-name"></span>
     </div>
@@ -555,21 +547,12 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
 </div>
 
-<!-- Auth gate -->
+<!-- Auth gate（一般情況下 auth.js 完成登入後這裡會直接被隱藏並進入 main-content；
+     只有「驗證中」的瞬間或「無權限」時才會看到這個畫面） -->
 <div id="auth-gate">
   <div class="gate-icon">🔒</div>
   <div class="gate-title">財務報表 — 限制存取</div>
-  <div class="gate-sub">此頁面包含公司淨利與財務資料，僅限授權主管檢視。<br>請使用公司 Google 帳號登入，系統將驗證存取權限。</div>
-  <button class="signin-btn" id="signin-btn">
-    <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
-    使用 Google 帳號登入
-  </button>
-  <div id="loading-auth" style="display:none;color:var(--text-muted);font-size:12px">驗證中…</div>
-  <div class="denied-box" id="denied-msg">
-    <strong>存取遭拒</strong>
-    <span id="denied-email"></span><br>
-    <span>此帳號未獲授權，請聯絡系統管理員。</span>
-  </div>
+  <div class="gate-sub">正在核對主管權限…</div>
 </div>
 
 <!-- Main content -->
@@ -911,7 +894,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
 </div>
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
 /* ════════════════ 第二道門：主管權限檢查 ════════════════ */
 function showAccessDenied(email) {
@@ -943,10 +925,19 @@ async function isFinanceExec(email) {
   return FINANCE_EXECS_FALLBACK.has(em);
 }
 
+// 單一登入：auth.js 完成 Google 登入後，這裡只再核對「是不是授權主管」，
+// 通過就直接放行，不再另外跳一次 Google 登入視窗。
 async function checkExecAccess(email) {
   if (!email) return;
   const em = email.toLowerCase();
-  if (!(await isFinanceExec(em))) showAccessDenied(em);
+  if (await isFinanceExec(em)) {
+    grantAccess(em);
+    renderStaticSections();
+    loadMonthly();
+    loadHistoricalData();
+  } else {
+    showAccessDenied(em);
+  }
 }
 
 // 情境 A：已有 session（重訪或同 tab 切換）
@@ -961,70 +952,17 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('oriAuthComplete', e => checkExecAccess(e.detail?.email));
 
 /* ════════════════ AUTH ════════════════ */
+// 保留 accessToken＝null：下方 loadMonthly/loadHistoricalData 抓 Google Sheets 即時資料時
+// 若無此權杖會自動退回內建靜態月報資料（頁面不受影響），不再強制要求二次登入取得權杖。
 let accessToken = null;
-let tokenClient;
 
-window.addEventListener('load', () => {
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: GOOGLE_CLIENT_ID,
-    scope: 'openid email profile https://www.googleapis.com/auth/spreadsheets.readonly',
-    callback: handleTokenResponse,
-  });
-  document.getElementById('signin-btn').addEventListener('click', () => {
-    document.getElementById('signin-btn').style.display = 'none';
-    document.getElementById('loading-auth').style.display = 'block';
-    tokenClient.requestAccessToken({ prompt: 'select_account' });
-  });
-});
-
-async function handleTokenResponse(resp) {
-  const la = document.getElementById('loading-auth');
-  if (resp.error) {
-    la.style.display = 'none';
-    document.getElementById('signin-btn').style.display = 'flex';
-    return;
-  }
-  // 登入成功 → 全程顯示進度，避免等 GAS 查權限時畫面看起來像當掉
-  la.textContent = '登入成功，正在驗證權限…';
-  la.style.display = 'block';
-  accessToken = resp.access_token;
-  const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-    headers: { Authorization: 'Bearer ' + accessToken }
-  }).then(r => r.json());
-  if (await isFinanceExec(info.email)) {
-    la.textContent = '驗證通過，載入財務資料中…';
-    grantAccess(info);
-    renderStaticSections();
-    loadMonthly();
-    loadHistoricalData();
-    la.style.display = 'none';
-    la.textContent = '驗證中…';
-  } else {
-    la.style.display = 'none';
-    la.textContent = '驗證中…';
-    document.getElementById('denied-email').textContent = info.email;
-    document.getElementById('denied-msg').style.display = 'block';
-    document.getElementById('signin-btn').style.display = 'flex';
-  }
-}
-
-function grantAccess(user) {
+function grantAccess(email) {
   document.getElementById('auth-gate').style.display = 'none';
   document.getElementById('main-content').style.display = 'block';
   document.getElementById('user-chip').style.display = 'flex';
-  document.getElementById('user-avatar').src = user.picture || '';
-  document.getElementById('user-name').textContent = user.name || user.email;
-  document.getElementById('logged-email').textContent = user.email;
-}
-
-function signOut() {
-  google.accounts.oauth2.revoke(accessToken, () => {});
-  accessToken = null;
-  document.getElementById('auth-gate').style.display = 'flex';
-  document.getElementById('main-content').style.display = 'none';
-  document.getElementById('user-chip').style.display = 'none';
-  document.getElementById('signin-btn').style.display = 'flex';
-  document.getElementById('denied-msg').style.display = 'none';
+  document.getElementById('user-avatar').style.display = 'none';
+  document.getElementById('user-name').textContent = email;
+  document.getElementById('logged-email').textContent = email;
 }
 
 /* ════════════════ HELPERS ════════════════ */
