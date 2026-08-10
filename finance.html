@@ -60,6 +60,20 @@ const HIST_CO_2025 = [
   { ym:'2025/11', rev:6634521, mkt:527241,  opProfit:1034141 },
   { ym:'2025/12', rev:7339721, mkt:426790,  opProfit:1696653 },
 ];
+/* 各店＋電商 2025年1–6月 去年同期資料（來源：損益課別比較表_YYYYMM「小計」列，逐月核對，
+   五店+電商營收加總+業務部(B2B)+誠品生活新店 = 公司總營收，已逐月驗證吻合）
+   電商 = 電商平台 + 官網（線上）加總，與 2026 storeData 的口徑一致 */
+const HIST_STORE_REV_2025 = {
+  '2025/01': { '電商':1040231, '中山':1409223, '松菸':1293605, '台中':1049185, '東門':1115128 },
+  '2025/02': { '電商':962929,  '中山':1343876, '松菸':1130854, '台中':929382,  '東門':998624  },
+  '2025/03': { '電商':929242,  '中山':1243363, '松菸':1316705, '台中':715401,  '東門':914922  },
+  '2025/04': { '電商':709378,  '中山':978260,  '松菸':1129701, '台中':564119,  '東門':715903  },
+  '2025/05': { '電商':607105,  '中山':1250827, '松菸':1033210, '台中':609513,  '東門':797164  },
+  '2025/06': { '電商':635580,  '中山':938036,  '松菸':843702,  '台中':738844,  '東門':855027  },
+};
+/* 各店 2025年「營業淨利」逐月實績：待從損益課別比較表逐月「營業淨利」列補齊（該列位置在
+   推銷費用/管理費用明細之後，需要讀取更深的表格內容），補齊前 YoY 淨利比較顯示「—」 */
+const HIST_STORE_OP_2025 = {};
 /* 邊際貢獻率 = 毛利率66% − 隨營收變動的推銷費(刷卡/運費/包裝/抽成 ~4%) */
 const CONTRIB_MARGIN  = 0.62;
 const BREAKEVEN_ROAS  = 1 / CONTRIB_MARGIN;   // ≈1.61：每1元廣告至少帶回的營收
@@ -389,6 +403,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .cmp-table thead th{position:sticky;top:0;background:var(--green);color:var(--sand);font-family:'Space Mono',monospace;font-size:11px;font-weight:700}
 .cmp-table th:first-child,.cmp-table td:first-child{text-align:left}
 .cmp-table tbody td{border-bottom:1px solid var(--border);font-family:'Space Mono',monospace}
+.scroll-hint{display:none;font-size:10px;color:var(--text-muted);text-align:right;margin-top:4px;opacity:.75}
+@media (max-width:900px){.scroll-hint{display:block}}
 .cmp-table tbody tr:last-child td{border-bottom:none}
 .cmp-table .row-label{font-family:'Noto Sans TC',sans-serif;color:var(--text)}
 .cmp-table .r-strong td{font-weight:700;background:rgba(40,66,52,.04)}
@@ -706,15 +722,31 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
     <!-- 各店＋電商 Q1／Q2／H1 比較（固定區塊，與月份切換無關） -->
     <div class="sec" style="margin-top:1.75rem" id="sec-store-h1">各店＋電商 Q1／Q2／H1 比較（不隨月份切換變動）</div>
-    <div class="chart-card">
-      <div class="chart-card-title">各通路營收 — Q1 vs Q2 vs H1合計</div>
-      <div class="chart-wrap-sm" style="height:260px"><canvas id="store-h1-rev-chart"></canvas></div>
+    <div class="two-col">
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">各店營收 — H1 今年 vs 去年</div>
+        <div class="chart-wrap-sm" style="height:230px"><canvas id="store-h1-rev-yoy-chart"></canvas></div>
+      </div>
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">各店營業淨利 — H1 今年 vs 去年</div>
+        <div class="chart-wrap-sm" style="height:230px"><canvas id="store-h1-op-yoy-chart"></canvas></div>
+      </div>
     </div>
+
+    <div class="chart-card-title" style="margin:1.25rem 0 8px">今年配速 — 營收達成率／營業淨利率（Q1／Q2／H1）</div>
     <div class="cmp-table-wrap">
       <table class="cmp-table" id="store-h1-table"></table>
     </div>
+    <div class="scroll-hint">← 左右滑動可看完整 Q1／Q2／H1 →</div>
+
+    <div class="chart-card-title" style="margin:1.25rem 0 8px">今年 vs 去年同期 — 營收與營業淨利</div>
+    <div class="cmp-table-wrap">
+      <table class="cmp-table" id="store-h1-yoy-table"></table>
+    </div>
+    <div class="scroll-hint">← 左右滑動可看完整 Q1／Q2／H1 →</div>
+
     <div style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.7" id="store-h1-note">
-      ＊ 淨利統一採「營業淨利」（不含業外收支、未扣稅），與月別頁一致；達成率分母為各店累計月目標。無可靠去年同期分店別數據（僅總公司層級有完整去年比較），故此表僅呈現 2026 年 Q1／Q2／H1 三期比較。
+      ＊ 淨利統一採「營業淨利」（不含業外收支、未扣稅），與月別頁一致；達成率分母為各店累計月目標。
     </div>
 
     <!-- Monthly Comparison -->
@@ -2006,22 +2038,46 @@ function renderStoreH1Report() {
   };
 
   const periods = [
-    { key:'q1', label:'Q1',     months:q1Months, color:'#284234' },
-    { key:'q2', label:'Q2',     months:q2Months, color:'#378ADD' },
-    { key:'h1', label:'H1合計', months:h1Months, color:'#A54A1A' },
+    { key:'q1', label:'Q1',     months:q1Months, ymTest: ym => monthNum(ym) <= 3 },
+    { key:'q2', label:'Q2',     months:q2Months, ymTest: ym => monthNum(ym) >= 4 && monthNum(ym) <= 6 },
+    { key:'h1', label:'H1合計', months:h1Months, ymTest: ym => monthNum(ym) <= 6 },
   ];
   const data = {};
   STORES.forEach(st => { data[st] = {}; periods.forEach(p => { data[st][p.key] = storeAgg(p.months, st); }); });
 
-  mkChart('store-h1-rev-chart', {
+  /* 去年同期：營收來自 HIST_STORE_REV_2025（逐月核對過，可靠）；營業淨利來自 HIST_STORE_OP_2025，
+     未補齊的月份會讓該期整體回傳 null，顯示「—」而不是用不完整資料湊數 */
+  const prevStoreAgg = (ymTest, st) => {
+    const yms = Object.keys(HIST_STORE_REV_2025).filter(ymTest);
+    let rev = 0, op = 0, opComplete = true;
+    yms.forEach(ym => {
+      rev += HIST_STORE_REV_2025[ym][st] || 0;
+      const opVal = HIST_STORE_OP_2025[ym] && HIST_STORE_OP_2025[ym][st];
+      if (opVal === undefined) opComplete = false; else op += opVal;
+    });
+    return { rev, op: opComplete ? op : null, monthCount: yms.length };
+  };
+  const prevData = {};
+  STORES.forEach(st => { prevData[st] = {}; periods.forEach(p => { prevData[st][p.key] = prevStoreAgg(p.ymTest, st); }); });
+
+  const revYoy = (cur, prev) => prev ? chg((cur - prev) / prev * 100) : '—';
+  const opYoy = (cur, prev) => {
+    if (prev === null) return '—';
+    if (!prev) return cur > 0 ? '由0轉正' : '—';
+    if (prev < 0 && cur >= 0) return '由虧轉盈';
+    if (prev > 0 && cur <= 0) return '由盈轉虧';
+    return chg((cur - prev) / Math.abs(prev) * 100);
+  };
+
+  /* ── 圖：H1 各店營收／營業淨利，今年 vs 去年 ── */
+  mkChart('store-h1-rev-yoy-chart', {
     type: 'bar',
     data: {
       labels: STORES,
-      datasets: periods.map(p => ({
-        label: p.label,
-        data: STORES.map(st => W0(data[st][p.key].rev)),
-        backgroundColor: p.color, borderRadius: 3,
-      }))
+      datasets: [
+        { label:'今年H1', data: STORES.map(st => W0(data[st].h1.rev)), backgroundColor:'#284234', borderRadius:3 },
+        { label:'去年H1', data: STORES.map(st => W0(prevData[st].h1.rev)), backgroundColor:'#CFA294', borderRadius:3 },
+      ]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
@@ -2035,17 +2091,45 @@ function renderStoreH1Report() {
       }
     }
   });
+  mkChart('store-h1-op-yoy-chart', {
+    type: 'bar',
+    data: {
+      labels: STORES,
+      datasets: [
+        { label:'今年H1', data: STORES.map(st => W0(data[st].h1.op)),
+          backgroundColor: STORES.map(st => data[st].h1.op < 0 ? '#c0392b' : '#1D9E75'), borderRadius:3 },
+        { label:'去年H1', data: STORES.map(st => prevData[st].h1.op === null ? 0 : W0(prevData[st].h1.op)),
+          backgroundColor: STORES.map(st => (prevData[st].h1.op || 0) < 0 ? '#c0392b' : '#e8b4a8'), borderRadius:3 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ position:'top', labels:{ color:'#b09a88', font:{size:11}, boxWidth:12 } },
+        tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+(c.parsed.y<0?'−':'+')+Math.abs(c.parsed.y).toLocaleString('en-US')+'萬' } }
+      },
+      scales:{
+        x:{ grid:{display:false}, ticks:{ color:'#b09a88', font:{size:11} } },
+        y:{ grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{size:11}, callback:v=>v+'萬' } }
+      }
+    }
+  });
 
+  /* ── 表 1：今年配速（達成率／淨利率），負值／偏低淨利率用色標出 ── */
   const tableEl = document.getElementById('store-h1-table');
   if (tableEl) {
+    /* 只標「虧損」不標「低毛利」：跟 npColor 的8%/5%三段式不同，這裡單純看正負號 */
+    const lossColor = v => v < 0 ? 'neg' : (v > 0 ? 'pos' : '');
+    const opCell  = (v, rev) => `<span class="${lossColor(v)}">${money(v)}</span>`;
+    const pctCell = (v, rev) => `<span class="${lossColor(v)}">${rev ? pctStr(v, rev) : '—'}</span>`;
     const rowOf = st => {
       const q1 = data[st].q1, q2 = data[st].q2, h1 = data[st].h1;
       const flagged = q1.partial || q2.partial || h1.partial;
       return {
         label: st + (flagged ? '＊' : ''), cls: '',
-        q1rev:money(q1.rev), q1ach:q1.tgt?pctStr(q1.rev,q1.tgt):'—', q1op:money(q1.op), q1opPct:q1.rev?pctStr(q1.op,q1.rev):'—',
-        q2rev:money(q2.rev), q2ach:q2.tgt?pctStr(q2.rev,q2.tgt):'—', q2op:money(q2.op), q2opPct:q2.rev?pctStr(q2.op,q2.rev):'—',
-        h1rev:money(h1.rev), h1ach:h1.tgt?pctStr(h1.rev,h1.tgt):'—', h1op:money(h1.op), h1opPct:h1.rev?pctStr(h1.op,h1.rev):'—',
+        q1rev:money(q1.rev), q1ach:q1.tgt?pctStr(q1.rev,q1.tgt):'—', q1op:opCell(q1.op,q1.rev), q1opPct:pctCell(q1.op,q1.rev),
+        q2rev:money(q2.rev), q2ach:q2.tgt?pctStr(q2.rev,q2.tgt):'—', q2op:opCell(q2.op,q2.rev), q2opPct:pctCell(q2.op,q2.rev),
+        h1rev:money(h1.rev), h1ach:h1.tgt?pctStr(h1.rev,h1.tgt):'—', h1op:opCell(h1.op,h1.rev), h1opPct:pctCell(h1.op,h1.rev),
       };
     };
     const rows = STORES.map(rowOf);
@@ -2056,8 +2140,8 @@ function renderStoreH1Report() {
       const rev = sumKey(p.key,'rev'), op = sumKey(p.key,'op'), tgt = sumKey(p.key,'tgt');
       totalRow[p.key+'rev'] = money(rev);
       totalRow[p.key+'ach'] = tgt ? pctStr(rev,tgt) : '—';
-      totalRow[p.key+'op']  = money(op);
-      totalRow[p.key+'opPct'] = rev ? pctStr(op,rev) : '—';
+      totalRow[p.key+'op']  = opCell(op, rev);
+      totalRow[p.key+'opPct'] = pctCell(op, rev);
     });
     const allRows = [...rows, totalRow];
 
@@ -2078,11 +2162,52 @@ function renderStoreH1Report() {
     tableEl.innerHTML = head + body;
   }
 
+  /* ── 表 2：今年 vs 去年同期（營收／營業淨利），每店兩列 ── */
+  const yoyTableEl = document.getElementById('store-h1-yoy-table');
+  if (yoyTableEl) {
+    const rows = [];
+    STORES.forEach(st => {
+      const q1 = data[st].q1, q2 = data[st].q2, h1 = data[st].h1;
+      const pq1 = prevData[st].q1, pq2 = prevData[st].q2, ph1 = prevData[st].h1;
+      rows.push({
+        label: st + '　營收', cls:'r-sub',
+        q1:money(q1.rev), q1p:money(pq1.rev), q1y:revYoy(q1.rev,pq1.rev),
+        q2:money(q2.rev), q2p:money(pq2.rev), q2y:revYoy(q2.rev,pq2.rev),
+        h1:money(h1.rev), h1p:money(ph1.rev), h1y:revYoy(h1.rev,ph1.rev),
+      });
+      const opSpan = v => `<span class="${v < 0 ? 'neg' : (v > 0 ? 'pos' : '')}">${money(v)}</span>`;
+      rows.push({
+        label: st + '　營業淨利', cls:'',
+        q1:opSpan(q1.op), q1p: pq1.op===null?'—':money(pq1.op), q1y: opYoy(q1.op,pq1.op),
+        q2:opSpan(q2.op), q2p: pq2.op===null?'—':money(pq2.op), q2y: opYoy(q2.op,pq2.op),
+        h1:opSpan(h1.op), h1p: ph1.op===null?'—':money(ph1.op), h1y: opYoy(h1.op,ph1.op),
+      });
+    });
+
+    const head = `<thead><tr>
+      <th rowspan="2">通路 × 項目（萬元）</th>
+      <th colspan="3">Q1</th><th colspan="3">Q2</th><th colspan="3" class="col-tot">H1合計</th>
+    </tr><tr>
+      <th>今年</th><th>去年</th><th>YoY</th>
+      <th>今年</th><th>去年</th><th>YoY</th>
+      <th class="col-tot">今年</th><th>去年</th><th>YoY</th>
+    </tr></thead>`;
+    const body = `<tbody>${rows.map(r => `<tr class="${r.cls}">
+      <td class="row-label">${r.label}</td>
+      <td>${r.q1}</td><td>${r.q1p}</td><td>${r.q1y}</td>
+      <td>${r.q2}</td><td>${r.q2p}</td><td>${r.q2y}</td>
+      <td class="col-tot">${r.h1}</td><td>${r.h1p}</td><td>${r.h1y}</td>
+    </tr>`).join('')}</tbody>`;
+    yoyTableEl.innerHTML = head + body;
+  }
+
   const noteEl = document.getElementById('store-h1-note');
   if (noteEl) {
     const hasPartial = STORES.some(st => data[st].q1.partial || data[st].h1.partial);
+    const opPending = STORES.some(st => prevData[st].h1.op === null);
     noteEl.innerHTML =
-      '＊ 淨利統一採「營業淨利」（不含業外收支、未扣稅），與月別頁一致；達成率分母為各店累計月目標。無可靠去年同期分店別數據（僅總公司層級有完整去年比較），故此表僅呈現 2026 年 Q1／Q2／H1 三期比較。' +
+      '＊ 淨利統一採「營業淨利」（不含業外收支、未扣稅），與月別頁一致；達成率分母為各店累計月目標。去年同期營收來源：損益課別比較表逐月「小計」列（已與公司總營收核對吻合）。' +
+      (opPending ? '　去年同期營業淨利部分月份尚待補齊，顯示為「—」。' : '') +
       (hasPartial ? '　電商列標「＊」：2月部門報表僅含官網、缺電商平台拆分，Q1／H1電商數字因此偏低，僅供參考。' : '');
   }
 }
