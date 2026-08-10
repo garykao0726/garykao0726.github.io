@@ -694,6 +694,24 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <!-- Q1／Q2／上半年報（固定區塊，與月份切換無關，永遠顯示完整H1） -->
     <div class="sec" style="margin-top:1.75rem" id="sec-h1">Q1／Q2／上半年報（不隨月份切換變動）</div>
     <div class="kpi-grid" id="h1-summary-cards" style="margin-bottom:1.25rem"></div>
+    <div class="two-col">
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">營收比較 — 今年 vs 去年同期</div>
+        <div class="chart-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#284234"></div>今年</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#CFA294"></div>去年</div>
+        </div>
+        <div class="chart-wrap-sm" style="height:230px"><canvas id="h1-rev-chart"></canvas></div>
+      </div>
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-card-title">營業淨利比較 — 今年 vs 去年同期</div>
+        <div class="chart-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#1D9E75"></div>今年</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#c0392b"></div>去年（負值＝虧損）</div>
+        </div>
+        <div class="chart-wrap-sm" style="height:230px"><canvas id="h1-op-chart"></canvas></div>
+      </div>
+    </div>
     <div class="cmp-table-wrap">
       <table class="cmp-table" id="h1-table"></table>
     </div>
@@ -1848,6 +1866,46 @@ function renderH1Report() {
         <div class="kpi-accent" style="background:${cSSColor(npColor(H1.op/H1.rev*100))}"></div>
       </div>`;
   }
+
+  /* 圖：營收／營業淨利，今年 vs 去年同期，Q1／Q2／H1合計 並排比較 */
+  const periodLabels = ['Q1', 'Q2', 'H1合計'];
+  mkChart('h1-rev-chart', {
+    type: 'bar',
+    data: {
+      labels: periodLabels,
+      datasets: [
+        { label:'今年', data:[W0(Q1.rev), W0(Q2.rev), W0(H1.rev)], backgroundColor:'#284234', borderRadius:3 },
+        { label:'去年', data:[W0(prevQ1.rev), W0(prevQ2.rev), W0(prevH1.rev)], backgroundColor:'#CFA294', borderRadius:3 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+c.parsed.y.toLocaleString('en-US')+'萬' } } },
+      scales:{
+        x:{ grid:{display:false}, ticks:{ color:'#b09a88', font:{size:11} } },
+        y:{ grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{size:11}, callback:v=>v+'萬' } }
+      }
+    }
+  });
+  mkChart('h1-op-chart', {
+    type: 'bar',
+    data: {
+      labels: periodLabels,
+      datasets: [
+        { label:'今年', data:[W0(Q1.op), W0(Q2.op), W0(H1.op)], backgroundColor:'#1D9E75', borderRadius:3 },
+        { label:'去年', data:[W0(prevQ1.op), W0(prevQ2.op), W0(prevH1.op)],
+          backgroundColor:[prevQ1.op,prevQ2.op,prevH1.op].map(v=>v<0?'#c0392b':'#e8b4a8'), borderRadius:3 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+(c.parsed.y<0?'−':'+')+Math.abs(c.parsed.y).toLocaleString('en-US')+'萬' } } },
+      scales:{
+        x:{ grid:{display:false}, ticks:{ color:'#b09a88', font:{size:11} } },
+        y:{ grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{size:11}, callback:v=>v+'萬' } }
+      }
+    }
+  });
 
   /* 明細表：每期（Q1／Q2／H1合計）各自都有「今年｜去年｜YoY」三欄，共 9 個數值欄 */
   const tableEl = document.getElementById('h1-table');
