@@ -330,6 +330,19 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .month-btn.active{background:var(--green);color:var(--sand);border-color:var(--green);box-shadow:0 2px 8px rgba(40,66,52,.18)}
 .month-btn .mb-sub{font-size:9px;display:block;font-weight:400;opacity:.8;margin-top:2px}
 
+/* ── 分攤試算分頁（試算版，不影響正式月份檢視） ── */
+.sim-btn{border-style:dashed;border-color:rgba(165,74,26,.45);color:var(--rust)}
+.sim-btn:hover{border-color:var(--rust);color:var(--rust)}
+.sim-btn.active{background:var(--rust);color:#fff;border-color:var(--rust);border-style:solid;box-shadow:0 2px 8px rgba(165,74,26,.18)}
+.hide-for-sim{display:none!important}
+.sim-hero{display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:1rem}
+.sim-hero-num{font-family:'Space Mono',monospace;font-size:56px;font-weight:600;color:var(--green);line-height:1.1;letter-spacing:-.02em}
+.sim-hero-cap{font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted);letter-spacing:.08em;margin-top:6px}
+.sim-formula{font-size:13px;line-height:1.9;color:var(--text-sub)}
+.sim-formula b{color:var(--text)}
+.simcol{background:rgba(40,66,52,.05)}
+@media(max-width:760px){.sim-hero{grid-template-columns:1fr;gap:12px}}
+
 /* ── Section title ── */
 .sec{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);margin:1.75rem 0 .75rem;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:10px}
 .sec::after{content:'';flex:1;height:1px;background:var(--border)}
@@ -604,6 +617,9 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       🔒 本頁資料屬機密，請勿截圖或轉發。目前登入帳號：<strong id="logged-email" style="margin-left:4px"></strong>
       <span style="margin-left:auto;padding-left:12px;border-left:1px solid rgba(40,66,52,.15)">＊ 所有金額均為<strong>未稅</strong>（不含 5% 加值稅）　｜　本頁<strong>淨利＝營業淨利</strong>（不含業外收入與費用、未扣所得稅）</span>
     </div>
+
+    <!-- 分攤試算分頁（試算版，與月份檢視並存；內容由 renderSimView() 渲染） -->
+    <div id="sim-view" style="display:none"></div>
 
     <!-- KPIs -->
     <div class="kpi-grid" id="kpi-grid"></div>
@@ -1060,18 +1076,200 @@ function renderMonthNav() {
   const el = document.getElementById('month-nav');
   if (!el) return;
   el.innerHTML = CMP.map(m => {
-    const active = m.ym === CUR_YM ? ' active' : '';
+    const active = (m.ym === CUR_YM && !SIM_VIEW) ? ' active' : '';
     return `<button class="month-btn${active}" onclick="switchMonth('${m.ym}')">
       ${m.label}<span class="mb-sub">營業淨利 ${(m.opProfit/10000).toFixed(0)}萬</span>
     </button>`;
-  }).join('');
+  }).join('')
+  + `<button class="month-btn sim-btn${SIM_VIEW ? ' active' : ''}" onclick="showSimView(${SIM_VIEW ? 'false' : 'true'})">
+      分攤試算<span class="mb-sub">6月重算・討論用</span>
+    </button>`;
 }
 
 function switchMonth(ym) {
+  if (SIM_VIEW) showSimView(false);
   if (!MONTHS[ym] || ym === CUR_YM) return;
   CUR_YM = ym;
   S = MONTHS[ym];
   renderStaticSections();
+}
+
+/* ═══ 分攤試算分頁：管理費「營收占比」分攤 vs 現行「五通路均分」═══
+   試算版・僅供內部討論；所有數字由 MONTHS[SIM_YM] 即時計算，不改動任何正式資料 */
+const SIM_YM = '2026/06';
+let SIM_VIEW = false;
+
+function showSimView(on) {
+  SIM_VIEW = !!on;
+  document.querySelectorAll('#main-content .container > *').forEach(node => {
+    if (node.id === 'sim-view' || node.classList.contains('page-hd') ||
+        node.classList.contains('month-nav') || node.classList.contains('sensitive-notice')) return;
+    node.classList.toggle('hide-for-sim', SIM_VIEW);
+  });
+  document.getElementById('sim-view').style.display = SIM_VIEW ? 'block' : 'none';
+  if (SIM_VIEW) renderSimView();
+  renderMonthNav();
+  window.scrollTo({ top: 0 });
+}
+
+function renderSimView() {
+  const el = document.getElementById('sim-view');
+  const M = MONTHS[SIM_YM];
+  if (!M || !M.storeData) { el.innerHTML = `<div class="hist-note">找不到 ${SIM_YM} 月資料，無法試算</div>`; return; }
+
+  const F  = v => Math.round(v).toLocaleString('en-US');            // 元（千分位）
+  const Wn = v => (v / 10000).toFixed(1);                            // 萬（1 位小數）
+  const P  = v => v.toFixed(1) + '%';
+
+  const pool = M.mgmt;                       // 管理及稅務費用小計
+  const names = Object.keys(M.storeData).sort((a, b) => M.storeData[b].rev - M.storeData[a].rev);
+  let sumStoreRev = 0; names.forEach(n => sumStoreRev += M.storeData[n].rev);
+  const b2bRev   = Math.max(0, M.rev - sumStoreRev);                 // 批發＝公司總額−五通路殘差
+  const oldAlloc = pool / names.length;                              // 現行：五通路均分
+  const rate     = pool / M.rev;                                     // 試算：統一費率（分母含批發）
+
+  const rows = names.map(n => {
+    const s = M.storeData[n];
+    const newA = s.rev * rate, d = newA - oldAlloc, ni2 = s.opProfit - d;
+    return { n, rev: s.rev, newA, d, ni: s.opProfit, ni2,
+             p: s.opProfit / s.rev * 100, p2: ni2 / s.rev * 100 };
+  });
+  const b2bNewA   = b2bRev * rate;
+  const sumNi     = rows.reduce((a, r) => a + r.ni, 0);
+  const sumNi2    = rows.reduce((a, r) => a + r.ni2, 0);
+
+  const dCell = d => d < 0
+    ? `<span class="pos">−${Wn(-d)}萬</span>`
+    : `<span style="color:var(--text-sub)">+${Wn(d)}萬</span>`;
+
+  const bodyRows = rows.map(r => `
+    <tr>
+      <td class="row-label">${r.n}</td>
+      <td>${F(r.rev)}</td>
+      <td>${F(oldAlloc)}<span style="color:var(--text-muted)">（${P(oldAlloc / r.rev * 100)}）</span></td>
+      <td class="simcol">${F(r.newA)}<span style="color:var(--text-muted)">（${P(rate * 100)}）</span></td>
+      <td>${dCell(r.d)}</td>
+      <td>${F(r.ni)} → <b class="${r.ni2 >= r.ni ? 'pos' : ''}">${F(r.ni2)}</b></td>
+      <td>${P(r.p)} → <b class="${r.p2 >= r.p ? 'pos' : ''}">${P(r.p2)}</b></td>
+    </tr>`).join('');
+
+  /* 南西誠品情境模擬：假設月營收 60 / 80 / 100 萬 */
+  const tcRev = M.storeData['台中'] ? M.storeData['台中'].rev : 0;
+  const nxRows = [600000, 800000, 1000000].map(x => {
+    const r6 = pool / 6;                       // 均分制改 6 家
+    const nr = pool / (M.rev + x);             // 試算制：南西進分母
+    return `<tr>
+      <td class="row-label">${Wn(x)} 萬</td>
+      <td>${Wn(r6)}萬<span style="color:var(--text-muted)">（佔營收 ${P(r6 / x * 100)}）</span></td>
+      <td class="simcol">${Wn(x * nr)}萬<span style="color:var(--text-muted)">（佔營收 ${P(nr * 100)}）</span></td>
+      <td>${Wn(tcRev * rate)}萬 → <span class="pos">${Wn(tcRev * nr)}萬</span></td>
+    </tr>`;
+  }).join('');
+
+  const tc = rows.find(r => r.n === '台中'), dm = rows.find(r => r.n === '東門');
+  const zs = rows.find(r => r.n === '中山'), sy = rows.find(r => r.n === '松菸');
+  const ec = rows.find(r => r.n === '電商');
+  const hasAll = tc && dm && zs && sy && ec;   // 動態資料若缺店別，略過重點差異區塊避免噴錯
+
+  el.innerHTML = `
+    <div class="mkt-alert" style="margin-bottom:1rem">
+      <div class="mkt-alert-hd">試算版・僅供內部討論</div>
+      <div class="mkt-alert-body">正式報表與 ERP 部門比較表目前仍採<b>五通路均分制</b>（各背 20%），本分頁不改動任何現行數字。
+      分攤規則若要調整，需經執行長與財務確認後另行實作。</div>
+    </div>
+
+    <div class="sim-hero">
+      <div>
+        <div class="sim-hero-num">${P(rate * 100)}</div>
+        <div class="sim-hero-cap">2026/06 統一管理費率（試算）</div>
+      </div>
+      <div class="sim-formula">
+        <b>試算公式：該通路分攤 ＝ 管理及稅務費用小計 × 該通路營收 ÷ 全公司營收</b><br>
+        每一塊錢營收，背一樣多的總公司費用——規模大的多背、規模小的少背，每家店的管理費率完全一致。
+        新店（南西誠品）開幕後自動進入分母，按營收吃到自己的份額，規則永遠不用重談。<br>
+        <span style="font-size:11px;color:var(--text-muted)">6月管理費池 ${Wn(pool)} 萬 ÷ 全公司營收 ${Wn(M.rev)} 萬（含批發）＝ ${P(rate * 100)}</span>
+      </div>
+    </div>
+
+    <div class="sec">六月損益重算 — 現行均分 vs 營收占比試算（單位：元，未稅）</div>
+    <div class="cmp-table-wrap">
+      <table class="cmp-table">
+        <thead><tr>
+          <th>通路</th><th>6月營收</th><th>現行分攤・均分（佔營收）</th>
+          <th class="simcol">試算分攤・營收比（佔營收）</th><th>分攤增減</th>
+          <th>營業淨利 現行 → 試算</th><th>淨利率 現行 → 試算</th>
+        </tr></thead>
+        <tbody>
+          ${bodyRows}
+          <tr class="r-sub">
+            <td class="row-label">批發／其他（殘差）</td>
+            <td>${F(b2bRev)}</td>
+            <td>0（0%）</td>
+            <td class="simcol">${F(b2bNewA)}（${P(rate * 100)}）</td>
+            <td><span style="color:var(--text-sub)">+${Wn(b2bNewA)}萬</span></td>
+            <td colspan="2" style="text-align:left;color:var(--text-muted)">批發無獨立損益表，試算後這 ${Wn(b2bNewA)} 萬由批發毛利吸收</td>
+          </tr>
+          <tr class="r-strong">
+            <td class="row-label">合計（全公司）</td>
+            <td>${F(M.rev)}</td>
+            <td>${F(pool)}</td>
+            <td class="simcol">${F(pool)}</td>
+            <td>0</td>
+            <td>${F(M.opProfit)} → ${F(M.opProfit)}</td>
+            <td>${P(M.opPct)}（不變）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="scroll-hint">← 表格可左右捲動 →</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:6px">
+      ＊五通路營業淨利合計：現行 ${Wn(sumNi)} 萬 → 試算 ${Wn(sumNi2)} 萬（差額 ${Wn(sumNi2 - sumNi)} 萬移轉給批發吸收）；<b>全公司營業淨利完全不變</b>，變的只是內部怎麼分。
+    </div>
+
+    ${hasAll ? `
+    <div class="sec">重點差異 — 這樣分之後，誰的報表會變</div>
+    <div class="insight-list">
+      <div class="insight" style="border-left-color:var(--pos)">
+        <div class="insight-hd"><div class="insight-title">台中：帳上虧損有 ${P(-tc.d / -tc.ni * 100)} 是均分規則造成的</div></div>
+        <div class="insight-body">6月帳上虧 <b>${Wn(-tc.ni)} 萬</b>，其中 <b>${Wn(-tc.d)} 萬</b>來自「營收只有中山 57% 卻背一樣的管理費」。
+        試算後虧損縮至 <b>${Wn(-tc.ni2)} 萬</b>——這才是台中真實的經營缺口，該討論的是這個數字。</div>
+      </div>
+      <div class="insight" style="border-left-color:var(--pos)">
+        <div class="insight-hd"><div class="insight-title">東門・電商：脫離損益邊緣</div></div>
+        <div class="insight-body">東門分攤減 ${Wn(-dm.d)} 萬，淨利 ${Wn(dm.ni)} 萬 → <b>${Wn(dm.ni2)} 萬</b>（淨利率 ${P(dm.p)} → ${P(dm.p2)}）；
+        電商減 ${Wn(-ec.d)} 萬，淨利率 ${P(ec.p)} → <b>${P(ec.p2)}</b>。</div>
+      </div>
+      <div class="insight" style="border-left-color:var(--brown)">
+        <div class="insight-hd"><div class="insight-title">中山・松菸：多背絕對金額，但費率跟大家一樣</div></div>
+        <div class="insight-body">中山多背 ${Wn(zs.d)} 萬（淨利率 ${P(zs.p)} → ${P(zs.p2)}）、松菸多背 ${Wn(sy.d)} 萬（${P(sy.p)} → ${P(sy.p2)}）。
+        規模大本來就該背多——兩店背的<b>費率</b>（${P(rate * 100)}）與全公司一致，並不吃虧，淨利仍然扎實。</div>
+      </div>
+    </div>` : ''}
+
+    <div class="sec">南西誠品開店情境模擬（20% 抽成・營收為假設值）</div>
+    <div class="cmp-table-wrap">
+      <table class="cmp-table">
+        <thead><tr>
+          <th>南西月營收（假設）</th><th>均分制分攤（改 6 家均分）</th>
+          <th class="simcol">試算制分攤（營收比）</th><th>台中分攤同步變化</th>
+        </tr></thead>
+        <tbody>${nxRows}</tbody>
+      </table>
+    </div>
+    <div class="scroll-hint">← 表格可左右捲動 →</div>
+    <div class="insight" style="border-left-color:var(--rust);margin-top:12px">
+      <div class="insight-hd"><div class="insight-title">20% 抽成怎麼處理：留在南西自己的損益表，不從管理分攤補償</div></div>
+      <div class="insight-body">抽成是南西的<b>直接租金成本</b>（租金率約 20%，現有門市為 8–11%），必須誠實留在南西損益表的租金列，
+      才能回答「這個點值不值得」。管理分攤若刻意調低去照顧南西，等於把它的租金藏到其他店身上。<br>
+      試算制對南西的真正照顧在 ramp-up 期：營收 60 萬時只背 ${Wn(600000 * pool / (M.rev + 600000))} 萬（均分制要背 ${Wn(pool / 6)} 萬、佔營收 ${P(pool / 6 / 600000 * 100)}，帳面必虧）。
+      粗估參考：月營收 100 萬、毛利 67%、租金 20%、人事 15%、行銷＋雜費 7%、管理分攤約 18% → 淨利率約 7%，可以活，但選品與客單要頂住。</div>
+    </div>
+
+    <div class="hist-note" style="margin-top:1.25rem">
+      資料來源：2026/06 ERP 損益表（已關帳）。「現行分攤」依 ERP 部門比較表之五通路均分（各 20%）；
+      「試算營業淨利」＝現行營業淨利＋（現行分攤−試算分攤）；批發＝公司總額−五通路合計之殘差。
+      本頁為試算版，未經財務確認，不影響正式報表與任何現行數字。
+    </div>`;
 }
 
 /* 依目前月份更新各區塊標題文字 */
