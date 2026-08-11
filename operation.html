@@ -1274,6 +1274,52 @@ function renderMgmt(){
     <div style="margin-top:10px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.6">＊ 長條高度＝該月新客／回購「佔比」（非筆數多寡），滑鼠移到長條上可看該月筆數；標題 pp 變化＝本月新客佔比 vs 今年第一個有資料的月份。</div>
   </div>`;
 
+  /* ── 各店 營收×淨利 月趨勢（2026 vs 2025 同期）：長條＝營收(左軸)、折線＝營業淨利(右軸)，未稅損益口徑 ──
+     資料：STORE_PL_2026（1–actualThru月＝損益表實際，其後為月會估算）；去年同期＝HIST_2025_RAW */
+  const PL26=FIN_DATA.STORE_PL_2026||null;
+  let plTrendSection='', plChartDefs=[];
+  if(PL26&&PL26['中山']){
+    const H25R=FIN_DATA.HIST_2025_RAW||{};
+    const plN=PL26['中山'].rev.length;
+    const plSum=a=>a.reduce((s,v)=>s+(v||0),0);
+    const plTot=(src,key)=>Array.from({length:plN},(_,mi)=>stores.reduce((s,st)=>s+(((src[st]||{})[key]||[])[mi]||0),0));
+    plChartDefs=[
+      ...stores.map((st,i)=>({id:'pl-ch-'+i,name:st,col:sc[st],
+        rev:PL26[st].rev,ni:PL26[st].ni,
+        rev25:(H25R[st]?H25R[st].rev.slice(0,plN):[]),ni25:(H25R[st]?H25R[st].ni.slice(0,plN):[])})),
+      {id:'pl-ch-tot',name:'五店合計',col:'#284234',
+        rev:plTot(PL26,'rev'),ni:plTot(PL26,'ni'),rev25:plTot(H25R,'rev'),ni25:plTot(H25R,'ni')},
+    ];
+    const plCards=plChartDefs.map(c=>{
+      const r26=plSum(c.rev), r25=plSum(c.rev25), n26=plSum(c.ni), n25=plSum(c.ni25);
+      const rYoY=pctChg(r26,r25);
+      return `<div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px;background:var(--surface)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;flex-wrap:wrap;gap:4px">
+          <span style="font-weight:700;font-size:13px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c.col};margin-right:6px;vertical-align:middle"></span>${c.name}</span>
+          <span style="font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted)">1–${plN}月累計</span>
+        </div>
+        <div style="font-size:10.5px;font-family:'Space Mono',monospace;color:var(--text-sub);margin-bottom:8px;line-height:1.6">
+          營收 <b>${fW(r26)}</b>（去年 ${fW(r25)}，YoY ${chgSp(rYoY)}）<br>
+          淨利 <b style="color:${n26>=0?'var(--positive)':'var(--negative)'}">${fW(n26)}</b>（去年 <span style="color:${n25>=0?'var(--text-sub)':'var(--negative)'}">${fW(n25)}</span>${n25<0&&n26>=0?'，轉虧為盈':''}）
+        </div>
+        <div style="position:relative;height:190px"><canvas id="${c.id}"></canvas></div>
+      </div>`;
+    }).join('');
+    plTrendSection=`
+  <!-- 各店 營收×淨利 月趨勢（2026 vs 2025）-->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-hdr">
+      <span class="card-lbl">📈 各店營收×淨利 月趨勢</span>
+      <span class="card-badge">1–${plN}月 · 未稅損益口徑 · vs 2025 同期</span>
+    </div>
+    <div style="font-size:10.5px;color:var(--text-muted);font-family:'Noto Sans TC',sans-serif;margin-bottom:12px;line-height:1.6">
+      <b>長條＝營業額</b>（深色=2026、淺沙=2025，左軸）；<b>折線＝營業淨利</b>（<span style="color:var(--rust)">實線=2026</span>、<span style="color:#CFA294">虛線=2025</span>，右軸，可為負）。月份帶 <b>*</b>＝估算月。
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:12px">${plCards}</div>
+    <div style="margin-top:10px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;line-height:1.7">＊ 全為未稅損益表口徑：1–${PL26.actualThru}月＝損益表實際；之後為月會估算（營收即時實際、淨利試算）。2月電商僅含官網（ERP 部門表無電商平台欄），該月電商營收偏低、虧損放大，YoY 判讀需留意。去年同期＝2025 各店年度損益（HIST_2025_RAW）。</div>
+  </div>`;
+  }
+
   el.innerHTML=`
   <div style="max-width:1400px;margin:0 auto;padding:1.75rem 2rem">
 
@@ -1561,6 +1607,8 @@ function renderMgmt(){
     </div>
   </div>
 
+  ${plTrendSection}
+
   ${noTrendSection}
 
   <!-- Cost / Mkt / Expense cards -->
@@ -1663,6 +1711,26 @@ function renderMgmt(){
   </div>`:''}
 
   </div>`;
+
+  /* ── 月趨勢圖：innerHTML 塞好後建 Chart.js（月份切換重繪前先 destroy 舊實例）── */
+  if(plChartDefs.length&&typeof Chart!=='undefined'){
+    const plLabels=plChartDefs[0].rev.map((_,i)=>(i+1)+'月'+((i+1)>PL26.actualThru?'*':''));
+    const toW=v=>v==null?null:Math.round(v/1000)/10;
+    setTimeout(()=>{plChartDefs.forEach(c=>{
+      const cv=document.getElementById(c.id); if(!cv)return;
+      if(CH[c.id])CH[c.id].destroy();
+      CH[c.id]=new Chart(cv,{data:{labels:plLabels,datasets:[
+        {type:'bar',label:'營收 2026',data:c.rev.map(toW),backgroundColor:c.col+'30',borderColor:c.col,borderWidth:1.5,borderRadius:3,yAxisID:'y',order:3},
+        {type:'bar',label:'營收 2025',data:c.rev25.map(toW),backgroundColor:'rgba(226,206,185,.45)',borderColor:'#CFA294',borderWidth:1,borderRadius:3,yAxisID:'y',order:4},
+        {type:'line',label:'淨利 2026',data:c.ni.map(toW),borderColor:'#A54A1A',borderWidth:2,pointRadius:3,pointBackgroundColor:'#A54A1A',fill:false,tension:.25,yAxisID:'y2',order:1},
+        {type:'line',label:'淨利 2025',data:c.ni25.map(toW),borderColor:'#CFA294',borderWidth:1.5,borderDash:[4,3],pointRadius:2.5,pointBackgroundColor:'#CFA294',fill:false,tension:.25,yAxisID:'y2',order:2},
+      ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'rgba(40,66,52,.15)',borderWidth:1,titleColor:'#284234',bodyColor:'#8D5531',titleFont:{family:'Space Mono',size:11},bodyFont:{family:'Space Mono',size:11},padding:10,cornerRadius:8,callbacks:{label:x=>` ${x.dataset.label}: ${x.parsed.y==null?'—':x.parsed.y.toFixed(1)+'萬'}`}}},
+        scales:{x:{grid:{display:false},ticks:{color:'#b09a88',font:{family:'Space Mono',size:9}}},
+          y:{position:'left',grid:{color:'rgba(40,66,52,.05)'},ticks:{color:'#b09a88',font:{family:'Space Mono',size:9},callback:v=>v+'萬'}},
+          y2:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#A54A1A',font:{family:'Space Mono',size:9},callback:v=>v+'萬'}}}}});
+    });},60);
+  }
 }
 
 const GBP_STORES=['台北松菸店','台北東門店','台北中山店','台中園道店'];
