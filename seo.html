@@ -131,6 +131,28 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .goal-sub-bar-fill{height:100%;border-radius:3px}
 .goal-sub-val{font-size:11px;font-family:'Space Mono',monospace;font-weight:700;white-space:nowrap}
 
+/* ── GEO 引用追蹤 ── */
+.geo-g2{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;margin-bottom:1.25rem}
+@media(max-width:900px){.geo-g2{grid-template-columns:1fr}}
+.geo-spark{display:flex;align-items:flex-end;gap:4px;height:38px;margin:.7rem 0 .3rem}
+.geo-spark-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;position:relative}
+.geo-spark-bar{width:100%;border-radius:2px 2px 0 0;min-height:2px;transition:height .6s cubic-bezier(.4,0,.2,1)}
+.geo-spark-x{display:flex;gap:4px;font-size:8px;color:var(--text-muted);font-family:'Space Mono',monospace}
+.geo-spark-x span{flex:1;text-align:center}
+.geo-dead{background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.25);border-radius:8px;padding:.6rem .8rem;font-size:10px;color:var(--negative);line-height:1.5;margin-top:.6rem}
+.geo-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.geo-tbl th{text-align:left;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;padding:0 8px 7px;border-bottom:1px solid var(--border);font-weight:600}
+.geo-tbl th.c,.geo-tbl td.c{text-align:center;width:88px}
+.geo-tbl td{padding:8px;border-bottom:1px solid var(--border);color:var(--text)}
+.geo-tbl tr:last-child td{border-bottom:none}
+.geo-q{font-weight:600}
+.geo-layer{font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:2px}
+.geo-yes{color:var(--positive);font-weight:700}
+.geo-no{color:var(--text-muted)}
+.geo-err{color:var(--negative);font-size:9px;font-family:'Space Mono',monospace}
+.geo-chg{font-size:9px;font-family:'Space Mono',monospace;margin-left:3px}
+.geo-urls{margin-top:1rem;padding-top:.9rem;border-top:1px solid var(--border);font-size:10px;color:var(--text-sub);line-height:1.8;word-break:break-all}
+
 /* ── Pending ── */
 .pending-box{background:#fdf6e0;border:1px solid #e8c84a;border-radius:8px;padding:1.1rem 1.35rem;margin-bottom:1.25rem;font-size:.84rem;color:#8a6200;display:flex;align-items:center;gap:.75rem}
 
@@ -170,6 +192,26 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <div class="pending-box">⏳ <span>年度目標追蹤還沒有資料——會在下週一 SEO/GEO 週報自動執行後第一次出現，或請 Gary 在 Apps Script 編輯器手動跑一次 <code>testTrackAnnualGoals()</code>。</span></div>
   </div>
   <div class="g3" id="goal-cards" style="display:none"></div>
+
+  <!-- AI 引用追蹤（GEO） -->
+  <div class="sec-hdr">
+    <div class="sec-title">AI 引用追蹤（GEO）</div>
+    <div class="sec-date" id="geo-updated">—</div>
+  </div>
+  <div id="geo-pending" style="display:none">
+    <div class="pending-box">⏳ <span>GEO 追蹤還沒有資料——每週一 10:00 的 Mr.O 週報跑完後會自動出現。</span></div>
+  </div>
+  <div id="geo-wrap" style="display:none">
+    <div class="geo-g2" id="geo-engines"></div>
+    <div class="card" style="margin-bottom:1.25rem">
+      <div class="card-hdr">
+        <span class="card-lbl">核心題逐題狀態</span>
+        <span class="card-badge" id="geo-tbl-badge">—</span>
+      </div>
+      <div style="overflow-x:auto"><table class="geo-tbl" id="geo-tbl"></table></div>
+      <div class="geo-urls" id="geo-urls"></div>
+    </div>
+  </div>
 
   <!-- KPI summary -->
   <div class="sec-hdr">
@@ -233,6 +275,21 @@ function loadGviz(sheetName){
   return new Promise((resolve,reject)=>{
     const cb='_gvizCb'+(++_gvizSeq);
     window[cb]=function(resp){delete window[cb];resolve((resp.table.rows||[]).map(r=>(r.c||[]).map(c=>c?c.v:null)));};
+    const s=document.createElement('script');
+    s.onerror=()=>reject(new Error('Load failed'));
+    s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}`;
+    document.head.appendChild(s);
+  });
+}
+
+// 跟 loadGviz 一樣，但連欄位名稱一起回傳（GEO追蹤 欄位多，用名稱對照比用位置安全）
+function loadGvizTable(sheetName){
+  return new Promise((resolve,reject)=>{
+    const cb='_gvizCb'+(++_gvizSeq);
+    window[cb]=function(resp){delete window[cb];resolve({
+      cols:(resp.table.cols||[]).map(c=>c?(c.label||c.id):''),
+      rows:(resp.table.rows||[]).map(r=>(r.c||[]).map(c=>c?c.v:null))
+    });};
     const s=document.createElement('script');
     s.onerror=()=>reject(new Error('Load failed'));
     s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}`;
@@ -376,6 +433,135 @@ async function loadGoalData(){
         </div>
       </div>`;
   }catch(e){console.error(e);document.getElementById('goal-pending').style.display='block';}
+}
+
+// ── AI 引用追蹤（GEO）─────────────────────────────────────────
+// 讀「GEO追蹤」分頁。三個刻意的設計決定：
+// 1. 主指標是 4 週滾動平均，不是單週——單週 12 題一題翻面就跳 8.3pp，週對週比大多在讀雜訊
+// 2. 「查詢失敗」不進分母（金鑰壞掉不等於內容表現差，2026-08 就被這個騙過一次）
+// 3. 逐題狀態變化才是可行動的訊號，也天然免疫於題數增減
+const GEO_ENGINES=[{name:'Gemini',target:90},{name:'Perplexity',target:80}];
+
+// ⚠️ gviz 的日期欄位回傳的是字串 "Date(2026,7,3)"（月份 0-based），不是 Date 物件。
+// 沒有正規化就直接排序的話會拿字串比大小：'Date(2026,7,17)' < 'Date(2026,7,3)'，
+// 最新一週會被判成 8/3 而不是 8/17。一律轉成 yyyy-MM-dd 才排得對。
+function geoNormDate(v){
+  const p=n=>String(n).padStart(2,'0');
+  if(v instanceof Date)return`${v.getFullYear()}-${p(v.getMonth()+1)}-${p(v.getDate())}`;
+  const s=String(v||'');
+  const g=s.match(/^Date\((\d+),(\d+),(\d+)/);
+  if(g)return`${g[1]}-${p(+g[2]+1)}-${p(+g[3])}`;
+  const m=s.match(/^\d{4}-\d{2}-\d{2}/);
+  if(m)return m[0];
+  const d=new Date(s);
+  return isNaN(d.getTime())?s:`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+
+async function loadGeoData(){
+  try{
+    const {cols,rows}=await loadGvizTable('GEO追蹤');
+    const ix=n=>cols.indexOf(n);
+    const I={date:ix('日期'),q:ix('問題'),eng:ix('引擎'),men:ix('有提及林果'),url:ix('引用林果網址'),sum:ix('回應摘要'),type:ix('類型')};
+    if(!rows||!rows.length||I.date<0||I.eng<0||I.men<0){document.getElementById('geo-pending').style.display='block';return;}
+
+    const byDate={},urlsByDate={};
+    rows.forEach(r=>{
+      const d=geoNormDate(r[I.date]),eng=String(r[I.eng]||'');
+      if(!d||!eng)return;
+      if(I.url>=0&&r[I.url]){
+        urlsByDate[d]=urlsByDate[d]||new Set();
+        String(r[I.url]).split('、').filter(Boolean).forEach(u=>urlsByDate[d].add(u));
+      }
+      if(I.type>=0&&String(r[I.type]||'').indexOf('核心')!==0)return; // 只有核心題算 KPI
+      byDate[d]=byDate[d]||{};
+      const slot=byDate[d][eng]=byDate[d][eng]||{total:0,mentioned:0,failed:0,byPrompt:{}};
+      const v=String(r[I.men]||'');
+      // 2026-08-18 前的舊資料，查詢失敗也是寫「否」，只能靠回應摘要認出來
+      //（例：金鑰失效那兩週 21 題全是「否 + HTTP 400」，當成沒被提到會把提及率壓低）
+      const sum=I.sum>=0?String(r[I.sum]||''):'';
+      const failed=(v==='查詢失敗')||/^HTTP \d/.test(sum)||sum.indexOf('尚未設定')===0||sum.indexOf('本月')===0;
+      if(!failed&&(v==='是'||v==='否')){slot.total++;if(v==='是')slot.mentioned++;slot.byPrompt[String(r[I.q])]=(v==='是');}
+      else slot.failed++; // 查詢失敗：記下來但不進分母
+    });
+
+    const dates=Object.keys(byDate).sort().reverse();
+    if(!dates.length){document.getElementById('geo-pending').style.display='block';return;}
+
+    const rolling=(eng,weeks)=>{
+      let total=0,mentioned=0,used=0;
+      for(const d of dates){
+        if(used>=weeks)break;
+        const s=byDate[d][eng];
+        if(!s||!s.total)continue;
+        total+=s.total;mentioned+=s.mentioned;used++;
+      }
+      return total?{pct:Math.round(mentioned/total*1000)/10,mentioned,total,weeks:used}:null;
+    };
+
+    document.getElementById('geo-updated').textContent='最近一次掃描：'+dates[0];
+    document.getElementById('geo-wrap').style.display='block';
+
+    // ── 每個引擎一張卡：4週滾動平均 + 最近 8 週趨勢 + 健康狀態 ──
+    const spark=dates.slice(0,8).reverse();
+    document.getElementById('geo-engines').innerHTML=GEO_ENGINES.map(({name,target})=>{
+      const roll=rolling(name,4),latest=byDate[dates[0]][name];
+      const dead=!latest||(!latest.total&&latest.failed);
+      const ok=roll&&roll.pct>=target;
+      const clr=dead?'var(--negative)':ok?'var(--positive)':'#b87a00';
+      const bars=spark.map(d=>{
+        const s=byDate[d][name];
+        const pct=s&&s.total?Math.round(s.mentioned/s.total*100):null;
+        const h=pct==null?100:Math.max(pct,3);
+        const bg=pct==null?'rgba(192,57,43,.25)':(pct>=target?'var(--positive)':'var(--sand)');
+        const tip=pct==null?`${d}：沒有有效資料`:`${d}：${pct}%`;
+        return`<div class="geo-spark-col" title="${tip}"><div class="geo-spark-bar" style="height:${h}%;background:${bg}"></div></div>`;
+      }).join('');
+      // 最新一次掛掉時，滾動平均是「上次還撈得到資料」那幾週的值，要標清楚不是現況
+      const lastOk=dates.find(d=>byDate[d][name]&&byDate[d][name].total);
+      return`<div class="goal-card">
+        <div class="goal-hdr">
+          <span class="goal-title">${name}（目標 ${target}%）</span>
+          <span class="goal-status ${dead?'behind':ok?'ahead':'behind'}">${dead?'⚠️ 沒資料':ok?'✅ 達標':'⚠️ 未達標'}</span>
+        </div>
+        <div class="goal-metric-row">
+          <span class="goal-metric-val" style="color:${clr}">${roll?roll.pct+'%':'—'}</span>
+          <span class="goal-metric-of">4 週滾動平均${roll?`（${roll.mentioned}/${roll.total}，${roll.weeks} 週）`:''}${dead&&lastOk?`<br>⚠️ 這是 ${lastOk} 的舊值，非現況`:''}</span>
+        </div>
+        <div class="goal-track"><div class="goal-fill" style="width:${roll?Math.min(roll.pct,100):0}%;background:${clr}"></div></div>
+        <div class="geo-spark">${bars}</div>
+        <div class="geo-spark-x">${spark.map(d=>`<span>${d.slice(5).replace('-','/')}</span>`).join('')}</div>
+        ${dead?`<div class="geo-dead">最近一次掃描 ${latest?latest.failed:0} 題全部查詢失敗，這不是「內容沒被提到」，是這個引擎當週沒撈到資料（多半是 API 金鑰失效）。修好前不要把這欄當表現數據讀。</div>`:''}
+      </div>`;
+    }).join('');
+
+    // ── 逐題狀態表：最新一次 vs 上一次 ──
+    const prompts=[];
+    GEO_ENGINES.forEach(({name})=>{
+      const s=byDate[dates[0]][name];
+      if(s)Object.keys(s.byPrompt).forEach(p=>{if(!prompts.includes(p))prompts.push(p);});
+    });
+    const cell=(eng,p)=>{
+      const cur=byDate[dates[0]][eng],prev=dates[1]?byDate[dates[1]][eng]:null;
+      if(!cur||!(p in cur.byPrompt))return`<span class="geo-err">失敗/未跑</span>`;
+      const now=cur.byPrompt[p];
+      let chg='';
+      if(prev&&p in prev.byPrompt){
+        if(prev.byPrompt[p]&&!now)chg=`<span class="geo-chg" style="color:var(--negative)">↘掉了</span>`;
+        if(!prev.byPrompt[p]&&now)chg=`<span class="geo-chg" style="color:var(--positive)">↗新拿到</span>`;
+      }
+      return (now?`<span class="geo-yes">✅ 有提到</span>`:`<span class="geo-no">— 沒提到</span>`)+chg;
+    };
+    document.getElementById('geo-tbl-badge').textContent=`${prompts.length} 題核心 · ${dates[0]}${dates[1]?` vs ${dates[1]}`:''}`;
+    document.getElementById('geo-tbl').innerHTML=
+      `<thead><tr><th>核心題</th>${GEO_ENGINES.map(e=>`<th class="c">${e.name}</th>`).join('')}</tr></thead><tbody>`+
+      prompts.map(p=>`<tr><td class="geo-q">${p}</td>${GEO_ENGINES.map(e=>`<td class="c">${cell(e.name,p)}</td>`).join('')}</tr>`).join('')+
+      `</tbody>`;
+
+    const urls=[...(urlsByDate[dates[0]]||[])];
+    document.getElementById('geo-urls').innerHTML=urls.length
+      ?`<strong>🔗 最近一次被 AI 引用的林果網址（${urls.length}）</strong><br>${urls.slice(0,10).map(u=>`<a href="${u}" target="_blank" rel="noopener" style="color:var(--rust)">${u}</a>`).join('<br>')}`
+      :`<strong>🔗 最近一次沒有任何 AI 回答引用林果的網址。</strong>`;
+  }catch(e){console.error(e);document.getElementById('geo-pending').style.display='block';}
 }
 
 function renderKpi(own,comp){
@@ -542,6 +728,7 @@ function renderCompetitors(own,comp){
 (function tick(){const n=new Date();document.getElementById('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>('0'+v).slice(-2)).join(':');setTimeout(tick,1000);})();
 loadSeoData();
 loadGoalData();
+loadGeoData();
 </script>
 </body>
 </html>
