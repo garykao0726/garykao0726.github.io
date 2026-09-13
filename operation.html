@@ -141,6 +141,67 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .yr-btn.active{background:var(--green);color:var(--sand)}
 .tab-panel{display:none}.tab-panel.active{display:block}
 .footer{background:var(--green);text-align:center;padding:1.25rem;font-size:11px;font-family:'Space Mono',monospace;color:var(--gray-pink);margin-top:2rem}
+/* Nanxi */
+.nx-banner{background:var(--dark);border-radius:12px;padding:1.5rem 1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
+.nx-banner::before{content:'南西誠品';position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-family:'Space Mono',monospace;font-size:120px;font-weight:700;color:rgba(226,206,185,.03);line-height:1;pointer-events:none}
+.nx-eyebrow{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;color:var(--gray-pink);opacity:.7;text-transform:uppercase;margin-bottom:.3rem}
+.nx-title{font-size:18px;font-weight:700;color:#fff;margin-bottom:.3rem}
+.nx-sub{font-family:'Space Mono',monospace;font-size:10px;color:var(--gray-pink);opacity:.7;letter-spacing:.05em}
+.nx-meta{display:flex;gap:1.75rem;margin-top:1.1rem;padding-top:1rem;border-top:1px solid rgba(226,206,185,.1)}
+.nx-mi{display:flex;flex-direction:column;gap:.1rem}
+.nx-ml{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-pink);opacity:.6}
+.nx-mv{font-family:'Space Mono',monospace;font-size:13px;color:var(--sand)}
+.nx-kpi4{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.25rem}
+@media(max-width:900px){.nx-kpi4{grid-template-columns:1fr 1fr}}
+.nx-kc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;border-left:3px solid var(--border)}
+.nx-kc.a{border-left-color:var(--rust)}.nx-kc.w{border-left-color:#c49a00}.nx-kc.g{border-left-color:var(--green)}
+.nx-kc-l{font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.25rem}
+.nx-kc-v{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--text);line-height:1}
+.nx-kc-s{font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:.2rem}
+.nx-prog-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem}
+.nx-prog-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.6rem}
+.nx-prog-title{font-size:11px;color:var(--text-muted)}
+.nx-prog-nums{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)}
+.nx-prog-track{height:6px;background:var(--sand);border-radius:99px;overflow:hidden}
+.nx-prog-fill{height:100%;background:linear-gradient(90deg,var(--green),#3d5c4a);border-radius:99px}
+.nx-prog-foot{display:flex;justify-content:space-between;margin-top:.4rem}
+.nx-prog-pct{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--green)}
+.nx-prog-gap{font-family:'Space Mono',monospace;font-size:10px;color:var(--rust)}
+.nx-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.nx-tbl thead tr{background:var(--dark);color:var(--sand)}
+.nx-tbl thead th{padding:.5rem .8rem;text-align:left;font-size:8px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;white-space:nowrap}
+.nx-tbl thead th.nr{text-align:right}
+.nx-tbl tbody tr:nth-child(even){background:var(--surface2)}
+.nx-tbl tbody tr:hover td{background:rgba(40,66,52,.05)}
+.nx-tbl tbody td{padding:.45rem .8rem;border-top:1px solid var(--border);color:var(--text);white-space:nowrap}
+.nx-tbl td.nr{text-align:right;font-family:'Space Mono',monospace;font-size:10px}
+.nx-badge{display:inline-block;font-family:'Space Mono',monospace;font-size:8px;padding:.1rem .35rem;border-radius:3px;font-weight:700}
+.nx-bg{background:#d1ead8;color:#1a5c2a}.nx-bo{background:#faecd0;color:#7a4a00}.nx-bl{background:#fad8d8;color:#7a1a1a}.nx-bh{background:var(--dark);color:var(--sand)}
+.nx-theme-grid{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.25rem}
+.nx-theme-row{background:var(--surface);padding:.85rem 1.1rem;display:grid;grid-template-columns:1.6rem 1fr;gap:.65rem;align-items:start}
+.nx-theme-num{font-family:'Space Mono',monospace;font-size:9px;color:var(--rust);font-weight:700;padding-top:.1rem}
+.nx-theme-title{font-weight:700;font-size:12px;margin-bottom:.2rem}
+.nx-theme-text{font-size:11px;color:var(--text-muted);line-height:1.6}
+.nx-chip{display:inline-block;font-size:9px;padding:.08rem .38rem;border-radius:3px;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-family:'Space Mono',monospace;margin-right:.2rem;margin-bottom:.2rem}
+.nx-action-list{list-style:none;padding:0;margin:0;display:grid;gap:.5rem}
+.nx-action-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;display:flex;align-items:flex-start;gap:.65rem;font-size:11px}
+.nx-dot{width:5px;height:5px;border-radius:50%;background:var(--rust);flex-shrink:0;margin-top:.4rem}
+.nx-dot.ok{background:var(--green)}.nx-dot.warn{background:#c49a00}
+.nx-action-text strong{color:var(--rust)}.nx-dot.ok+.nx-action-text strong{color:var(--green)}
+.nx-2col{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
+@media(max-width:720px){.nx-2col{grid-template-columns:1fr}}
+.nx-cmp-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.1rem}
+.nx-cmp-title{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.75rem;border-bottom:1px solid var(--border);padding-bottom:.4rem;font-family:'Space Mono',monospace}
+.nx-cmp-row{display:flex;justify-content:space-between;align-items:baseline;padding:.25rem 0;border-bottom:1px solid var(--border);font-size:11px}
+.nx-cmp-row:last-child{border-bottom:none}
+.nx-cmp-key{color:var(--text-muted)}
+.nx-cmp-wk{font-family:'Space Mono',monospace;font-weight:700;color:var(--green)}
+.nx-cmp-wd{font-family:'Space Mono',monospace;color:var(--text-muted)}
+.nx-pct-bar{display:flex;align-items:center;gap:.4rem}
+.nx-pct-track{flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden;min-width:48px}
+.nx-pct-fill{height:100%;background:var(--green);border-radius:99px}
+.nx-pct-lbl{font-family:'Space Mono',monospace;font-size:9px;color:var(--text-muted);min-width:2.4rem;text-align:right}
+
 /* GBP */
 .gbp-mock-banner{background:#fffbe6;border:1px solid #d4a72c;border-radius:8px;padding:10px 16px;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;font-size:11px;font-family:'Space Mono',monospace;color:#b8860b;gap:12px}
 .g-gbp{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:1.25rem}
@@ -187,6 +248,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <button class="tab" onclick="switchTab('annual',this)">年度總覽</button>
   <button class="tab" onclick="switchTab('gbp',this)">📍 GBP 門市流量</button>
   <button class="tab" onclick="switchTab('mgmt',this)">📋 月會管理報表</button>
+  <button class="tab" onclick="switchTab('nanxi',this)">🏬 南西誠品</button>
 </nav>
 <div class="container">
 
@@ -393,6 +455,176 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 <div class="tab-panel" id="panel-mgmt">
   <div id="mgmt-content"></div>
 </div>
+
+<!-- ══ 南西誠品 ══ -->
+<div class="tab-panel" id="panel-nanxi">
+
+  <!-- Banner -->
+  <div class="nx-banner">
+    <div class="nx-eyebrow">Oringo 林果良品 · 誠品生活南西 · 開幕分析</div>
+    <div class="nx-title">2026 年 9 月上半月營業分析</div>
+    <div class="nx-sub">2026/09/01 – 09/13 &nbsp;·&nbsp; 13 天完整紀錄 &nbsp;·&nbsp; POS 銷售 + Dashboard + 手寫日誌</div>
+    <div class="nx-meta">
+      <div class="nx-mi"><span class="nx-ml">月目標</span><span class="nx-mv">NT$ 800,000</span></div>
+      <div class="nx-mi"><span class="nx-ml">本期累計</span><span class="nx-mv">NT$ 325,783</span></div>
+      <div class="nx-mi"><span class="nx-ml">達成率</span><span class="nx-mv">40.7%</span></div>
+      <div class="nx-mi"><span class="nx-ml">距目標</span><span class="nx-mv" style="color:#e87a5a">−$474,217</span></div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="nx-kpi4">
+    <div class="nx-kc a"><div class="nx-kc-l">累計營業額</div><div class="nx-kc-v">$325,783</div><div class="nx-kc-s">月目標 40.7%</div></div>
+    <div class="nx-kc w"><div class="nx-kc-l">距月目標</div><div class="nx-kc-v">−$474,217</div><div class="nx-kc-s">剩 18 天</div></div>
+    <div class="nx-kc g"><div class="nx-kc-l">總來客數</div><div class="nx-kc-v">240 人</div><div class="nx-kc-s">日均 18.5 人</div></div>
+    <div class="nx-kc"><div class="nx-kc-l">平均客單價</div><div class="nx-kc-v">$4,936</div><div class="nx-kc-s">66 筆成交</div></div>
+  </div>
+
+  <!-- Progress -->
+  <div class="nx-prog-wrap">
+    <div class="nx-prog-hdr"><span class="nx-prog-title">月目標進度</span><span class="nx-prog-nums">NT$325,783 / NT$800,000</span></div>
+    <div class="nx-prog-track"><div class="nx-prog-fill" style="width:40.7%"></div></div>
+    <div class="nx-prog-foot"><span class="nx-prog-pct">40.7% 達成</span><span class="nx-prog-gap">尚差 NT$474,217</span></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="g2" style="margin-bottom:1.25rem">
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">每日營業額（NT$）</span><span class="card-badge">9/1–9/13</span></div>
+      <div class="ch240"><canvas id="nx-chart-rev"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">每日來客數 &amp; 成交率</span><span class="card-badge">雙軸</span></div>
+      <div class="ch240"><canvas id="nx-chart-vis"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Daily Table -->
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-hdr"><span class="card-lbl">每日完整數據</span><span class="card-badge">手寫日誌 ＋ Dashboard</span></div>
+    <div style="overflow-x:auto">
+      <table class="nx-tbl">
+        <thead>
+          <tr><th>日期</th><th>星期</th><th class="nr">目標</th><th class="nr">達成率</th><th class="nr">營業額</th><th class="nr">來客</th><th class="nr">成交</th><th class="nr">成交率</th><th class="nr">客單價</th><th>備注</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><b>9/1</b></td><td>二</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bl">26%</span></td><td class="nr">5,188</td><td class="nr">5</td><td class="nr">1</td><td class="nr"><span class="nx-badge nx-bl">20%</span></td><td class="nr">5,188</td><td>前Vanger客人</td></tr>
+          <tr><td><b>9/2</b></td><td>三</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bl">41%</span></td><td class="nr">8,208</td><td class="nr">12</td><td class="nr">2</td><td class="nr"><span class="nx-badge nx-bl">17%</span></td><td class="nr">4,104</td><td>缺1702奶色、尺碼問題</td></tr>
+          <tr><td><b>9/3</b></td><td>四</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bl">24%</span></td><td class="nr">4,770</td><td class="nr">12</td><td class="nr">2</td><td class="nr"><span class="nx-badge nx-bl">17%</span></td><td class="nr">2,385</td><td>港客、Beara客轉介</td></tr>
+          <tr><td><b>9/4</b></td><td>五</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bl">24%</span></td><td class="nr">10,748</td><td class="nr">9</td><td class="nr">2</td><td class="nr"><span class="nx-badge nx-bo">22%</span></td><td class="nr">5,374</td><td>灰410斷貨、1702-42缺</td></tr>
+          <tr><td><b>9/5</b></td><td style="color:var(--rust);font-weight:700">六</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bh">173%</span></td><td class="nr" style="font-weight:700">78,013</td><td class="nr">41</td><td class="nr">16</td><td class="nr"><span class="nx-badge nx-bg">39%</span></td><td class="nr">4,876</td><td>開幕週六高峰</td></tr>
+          <tr><td><b>9/6</b></td><td style="color:var(--rust)">日</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bo">45%</span></td><td class="nr">9,058</td><td class="nr">38</td><td class="nr">5</td><td class="nr"><span class="nx-badge nx-bl">13%</span></td><td class="nr">1,812</td><td>高流量低成交，瀏覽型</td></tr>
+          <tr><td><b>9/7</b></td><td>一</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bh">115%</span></td><td class="nr">23,051</td><td class="nr">15</td><td class="nr">4</td><td class="nr"><span class="nx-badge nx-bg">27%</span></td><td class="nr">5,763</td><td>1702/8501成交</td></tr>
+          <tr><td><b>9/8</b></td><td>二</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bo">51%</span></td><td class="nr">10,226</td><td class="nr">12</td><td class="nr">3</td><td class="nr"><span class="nx-badge nx-bo">25%</span></td><td class="nr">3,409</td><td>5202+3202成交</td></tr>
+          <tr><td><b>9/9</b></td><td>三</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bl">5%</span></td><td class="nr" style="color:var(--negative);font-weight:700">980</td><td class="nr">15</td><td class="nr">1</td><td class="nr"><span class="nx-badge nx-bl">7%</span></td><td class="nr">980</td><td style="color:var(--negative)">等誠品週年慶；1702奶茶42缺貨</td></tr>
+          <tr><td><b>9/10</b></td><td>四</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bh">159%</span></td><td class="nr">31,838</td><td class="nr">9</td><td class="nr">3</td><td class="nr"><span class="nx-badge nx-bg">33%</span></td><td class="nr" style="font-weight:700">10,613</td><td>最高客單價，回購力強</td></tr>
+          <tr><td><b>9/11</b></td><td>五</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bo">86%</span></td><td class="nr">38,482</td><td class="nr">21</td><td class="nr">5</td><td class="nr"><span class="nx-badge nx-bo">24%</span></td><td class="nr">7,696</td><td>部分客等週年慶</td></tr>
+          <tr><td><b>9/12</b></td><td style="color:var(--rust);font-weight:700">六</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bh">159%</span></td><td class="nr" style="font-weight:700">71,343</td><td class="nr">30</td><td class="nr">14</td><td class="nr"><span class="nx-badge nx-bh">47%</span></td><td class="nr">5,096</td><td>7位回購客，最高成交率</td></tr>
+          <tr><td><b>9/13</b></td><td style="color:var(--rust)">日</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bh">169%</span></td><td class="nr">33,878</td><td class="nr">21</td><td class="nr">8</td><td class="nr"><span class="nx-badge nx-bg">38%</span></td><td class="nr">4,235</td><td>週日成交率明顯回升</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Weekend vs Weekday -->
+  <div class="nx-2col">
+    <div class="nx-cmp-box">
+      <div class="nx-cmp-title">週末（六、日）× 4 天</div>
+      <div class="nx-cmp-row"><span class="nx-cmp-key">累計營業額</span><span class="nx-cmp-wk">$192,292</span></div>
+      <div class="nx-cmp-row"><span class="nx-cmp-key">佔期間總額</span><span class="nx-cmp-wk">59.1%</span></div>
+      <div class="nx-cmp-row"><span class="nx-cmp-key">總來客 / 成交</span><span class="nx-cmp-wk">130 人 / 43 筆</span></div>
+      <div class="nx-cmp-row"><span class="nx-cmp-key">成交率</span><span class="nx-cmp-wk">33%</span></div>
+      <div class="nx-cmp-row"><span class="nx-cmp-key">客群特徵</span><span style="font-size:10px;color:var(--text-muted)">路過客為主，不知林果比例高</span></div>
+    </div>
+    <div class="nx-cmp-box">
+      <div class="nx-cmp-title">平日（一～五）× 9 天</div>
+      <div class="nx-cmp-row"><span class="nx-cmp-key">累計營業額</span><span class="nx-cmp-wd">$133,491</span></div>
+      <div class="nx-cmp-row"><span class="nx-cmp-key">佔期間總額</span><span class="nx-cmp-wd">40.9%</span></div>
+      <div class="nx-cmp-row"><span class="nx-cmp-key">總來客 / 成交</span><span class="nx-cmp-wd">110 人 / 23 筆</span></div>
+      <div class="nx-cmp-row"><span class="nx-cmp-key">成交率</span><span class="nx-cmp-wd">21%</span></div>
+      <div class="nx-cmp-row"><span class="nx-cmp-key">客群特徵</span><span style="font-size:10px;color:var(--text-muted)">知品牌目的性客為主</span></div>
+    </div>
+  </div>
+
+  <!-- Products + Journal 2-col -->
+  <div class="g2" style="margin-bottom:1.25rem">
+
+    <!-- Top Products -->
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">Top 銷售品項</span><span class="card-badge">POS 9/1–9/13</span></div>
+      <table class="nx-tbl">
+        <thead><tr><th>品項</th><th class="nr">件數</th><th class="nr">淨額</th><th>佔比</th></tr></thead>
+        <tbody>
+          <tr><td>棋盤格紋紳士襪 沉穩藍</td><td class="nr">6</td><td class="nr">—</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:100%"></div></div><span class="nx-pct-lbl">4.2%</span></div></td></tr>
+          <tr><td>LibreSole XV1（女）</td><td class="nr">5</td><td class="nr">25,275</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:83%"></div></div><span class="nx-pct-lbl">3.5%</span></div></td></tr>
+          <tr><td>皮革基礎保養組</td><td class="nr">5</td><td class="nr">—</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:83%"></div></div><span class="nx-pct-lbl">3.5%</span></div></td></tr>
+          <tr><td>VIP 紳士歡迎禮</td><td class="nr">4</td><td class="nr">—</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:67%"></div></div><span class="nx-pct-lbl">2.8%</span></div></td></tr>
+          <tr><td>Bookbinder 便士樂福 黑</td><td class="nr">4</td><td class="nr">21,402</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:67%"></div></div><span class="nx-pct-lbl">2.8%</span></div></td></tr>
+          <tr><td>Combo 皮革休閒鞋 黑</td><td class="nr">3</td><td class="nr">15,949</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:50%"></div></div><span class="nx-pct-lbl">2.1%</span></div></td></tr>
+          <tr><td>鑲邊飾線德比鞋</td><td class="nr">3</td><td class="nr">15,832</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:50%"></div></div><span class="nx-pct-lbl">2.1%</span></div></td></tr>
+          <tr><td>U-Tip 馬克縫德比鞋</td><td class="nr">3</td><td class="nr">14,111</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:50%"></div></div><span class="nx-pct-lbl">2.1%</span></div></td></tr>
+        </tbody>
+      </table>
+      <div style="font-size:9px;color:var(--text-muted);margin-top:.5rem;font-family:'Space Mono',monospace">總計 142 件·138 訂單 | Beara Beara / Tuesday Evening 聯名：0 件</div>
+    </div>
+
+    <!-- Journal Themes -->
+    <div class="card">
+      <div class="card-hdr"><span class="card-lbl">手寫日誌洞察</span><span class="card-badge">13 天現場紀錄</span></div>
+      <div class="nx-theme-grid">
+        <div class="nx-theme-row">
+          <div class="nx-theme-num">01</div>
+          <div><div class="nx-theme-title">週年慶壓制購買意願</div>
+          <div class="nx-theme-text">9/9 明確等週年慶，當日僅 980 元（最低）。澳洲客隔天回國，因 1702 奶茶 42 缺貨未能成交。</div>
+          <div style="margin-top:.3rem"><span class="nx-chip">9/9 $980</span><span class="nx-chip">9/10</span><span class="nx-chip">9/11</span></div></div>
+        </div>
+        <div class="nx-theme-row">
+          <div class="nx-theme-num">02</div>
+          <div><div class="nx-theme-title">1702 奶茶色 42 號反覆缺貨</div>
+          <div class="nx-theme-text">9/4 起持續漏失銷售，澳洲客漏失最直接。另有灰410斷貨、5201酒紅9.5缺。</div>
+          <div style="margin-top:.3rem"><span class="nx-chip">1702-42</span><span class="nx-chip">灰410</span><span class="nx-chip">5201酒紅</span></div></div>
+        </div>
+        <div class="nx-theme-row">
+          <div class="nx-theme-num">03</div>
+          <div><div class="nx-theme-title">Vanger / Ranger 競品客持續轉化</div>
+          <div class="nx-theme-text">9/2、9/7、9/8、9/10 均有競品前客人詢問，定位清晰轉換路徑有效。</div></div>
+        </div>
+        <div class="nx-theme-row">
+          <div class="nx-theme-num">04</div>
+          <div><div class="nx-theme-title">外籍客有潛力但語言是障礙</div>
+          <div class="nx-theme-text">港客（9/3、9/10）、澳客（9/9）、日客（9/9）均有出現，建議準備英日品牌說明卡。</div></div>
+        </div>
+        <div class="nx-theme-row">
+          <div class="nx-theme-num">05</div>
+          <div><div class="nx-theme-title">9/12 七位回購客 · 品牌基本盤成形</div>
+          <div class="nx-theme-text">9/12（六）最高成交率 47%，同時 7 位回購客，開幕兩週後老客群已開始回流。</div>
+          <div style="margin-top:.3rem"><span class="nx-chip">9/12 = 7 回購</span><span class="nx-chip">成交率 47%</span></div></div>
+        </div>
+        <div class="nx-theme-row">
+          <div class="nx-theme-num">06</div>
+          <div><div class="nx-theme-title">產品缺口：1619平底牛皮版 / 皮底防滑說明</div>
+          <div class="nx-theme-text">9/10 客人詢問 1619 平底牛皮版（無流蘇）目前無此款；皮底防滑應列入標準話術。</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Action Items -->
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-hdr"><span class="card-lbl">行動建議</span><span class="card-badge">優先事項</span></div>
+    <ul class="nx-action-list">
+      <li class="nx-action-item"><div class="nx-dot"></div><div class="nx-action-text"><strong>【緊急】補貨 1702 奶茶色 42 號</strong> — 多天、多位客人漏失銷售，若有庫存請立即調貨至南西並通知等候客人。</div></li>
+      <li class="nx-action-item"><div class="nx-dot"></div><div class="nx-action-text"><strong>【緊急】盤查缺貨清單</strong> — 灰410斷貨、5201酒紅9.5、9551 size 46、8605 均有記錄需求，確認補貨來源。</div></li>
+      <li class="nx-action-item"><div class="nx-dot warn"></div><div class="nx-action-text"><strong>【週年慶策略】評估是否參與誠品週年慶</strong> — 9/9 單日 980 元主因客人在等活動，若能以某種形式參與可挽回延遲需求。</div></li>
+      <li class="nx-action-item"><div class="nx-dot warn"></div><div class="nx-action-text"><strong>【週日成交率】提升瀏覽型客人轉化</strong> — 9/6 週日 38 人僅成交 5 筆（13%），分析 9/13 週日（38%）的差異並制度化。</div></li>
+      <li class="nx-action-item"><div class="nx-dot ok"></div><div class="nx-action-text"><strong>【標準話術】皮底防滑說明 + 品牌 vs Vanger 說法</strong> — 多天記錄同類問題，制式化後全員演練。</div></li>
+      <li class="nx-action-item"><div class="nx-dot ok"></div><div class="nx-action-text"><strong>【外籍客】製作英日品牌說明卡</strong> — 至少一頁 A5 英文簡介（製程、皮革、MIT）放在展示區。</div></li>
+      <li class="nx-action-item"><div class="nx-dot ok"></div><div class="nx-action-text"><strong>【下半月目標】剩 18 天需達 NT$474,217</strong> — 日均需 26,346 元，週末高峰是主要機會窗口。</div></li>
+    </ul>
+  </div>
+
+</div><!-- /panel-nanxi -->
 
 </div>
 
@@ -805,7 +1037,7 @@ function renderYoyChart(){const lbs=['1','2','3','4','5','6','7','8','9','10','1
 function renderSdGrid(){const d=annualYr===2026?D26:D25,opp=annualYr===2026?D25:D26;document.getElementById('sd-grid').innerHTML=STORES.map((s,i)=>`<div class="card"><div class="card-hdr"><span class="card-lbl" style="color:${S_COL[i]}">${S_EMO[i]} ${s}</span><span class="card-badge" style="color:${S_COL[i]};border-color:${S_COL[i]}33">${(getTgt(s,0)>0?((d[s]||[]).reduce((a,b)=>a+b,0)/getTgt(s,0)*100).toFixed(1):0)}%</span></div><div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:10px">NT$${fw((d[s]||[]).reduce((a,b)=>a+b,0))}萬 / 目標 ${fw(getTgt(s,0))}萬</div><div style="position:relative;height:130px"><canvas id="sc${i}"></canvas></div></div>`).join('');setTimeout(()=>{const curMo=new Date().getMonth()+1;STORES.forEach((s,i)=>{const c=document.getElementById('sc'+i);if(!c)return;if(CH['sc'+i])CH['sc'+i].destroy();const d2=annualYr===2026?D26:D25,d3=annualYr===2026?D25:D26;const d2Series=annualYr===2026?(d2[s]||[]).map((v,mi)=>(mi+1)>curMo?null:v):d2[s];CH['sc'+i]=new Chart(c,{data:{labels:['1','2','3','4','5','6','7','8','9','10','11','12'].map(m=>m+'月'),datasets:[{type:'bar',label:String(annualYr),data:d2Series,backgroundColor:S_COL[i]+'30',borderColor:S_COL[i],borderWidth:1.5,borderRadius:3},{type:'bar',label:String(annualYr===2026?2025:2024),data:d3[s],backgroundColor:'rgba(226,206,185,.4)',borderColor:'#CFA294',borderWidth:1,borderRadius:3},{type:'line',label:'目標',data:TARGETS[s],borderColor:'#A54A1A55',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[4,4]}]},options:{...cOpts(),scales:{x:{grid:{display:false},ticks:{color:'#b09a88',font:{family:'Space Mono',size:9}}},y:{grid:{color:'rgba(40,66,52,.04)'},ticks:{color:'#b09a88',font:{family:'Space Mono',size:9}}}}}});});},100);}
 function renderYoyTable(){const lbs=['1','2','3','4','5','6','7','8','9','10','11','12'];const curMo=new Date().getMonth()+1;document.getElementById('yoy-tbl').innerHTML=`<thead><tr><th>月份</th>${STORES4.map((s,i)=>`<th style="color:${S_COL[i]}">${s} 2025</th><th style="color:${S_COL[i]}">2026</th><th>YoY</th>`).join('')}</tr></thead><tbody>`+lbs.map((_,mi)=>`<tr><td style="color:var(--text-muted)">${mi+1}月</td>${STORES4.map(s=>{const future=(mi+1)>curMo;const a=future?null:D26[s][mi];const b=D25[s][mi];const yoy=(!future&&b>0&&a!==null)?parseFloat(((a-b)/b*100).toFixed(1)):null;return`<td style="color:var(--text-muted)">${b||'—'}</td><td style="font-weight:700">${(a===null||!a)?'—':a}</td><td class="${yoy!==null?(yoy>=0?'tp':'tn'):''}">${yoy!==null?(yoy>=0?'▲ +':'▼ ')+Math.abs(yoy)+'%':'—'}</td>`;}).join('')}</tr>`).join('')+'</tbody>';}
 function selectAnnualYear(y,btn){annualYr=y;document.querySelectorAll('.yr-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnnual();}
-function switchTab(tab,btn){document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.tab-panel').forEach(el=>el.classList.remove('active'));document.getElementById('panel-'+tab).classList.add('active');const extLinks=document.getElementById('ext-links');if(extLinks)extLinks.style.display=tab==='mgmt'?'none':'';if(tab==='monthly')renderMonthly();if(tab==='annual')renderAnnual();if(tab==='gbp')loadGbpData();if(tab==='mgmt')renderMgmt();}
+function switchTab(tab,btn){document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.tab-panel').forEach(el=>el.classList.remove('active'));document.getElementById('panel-'+tab).classList.add('active');const extLinks=document.getElementById('ext-links');if(extLinks)extLinks.style.display=(tab==='mgmt'||tab==='nanxi')?'none':'';if(tab==='monthly')renderMonthly();if(tab==='annual')renderAnnual();if(tab==='gbp')loadGbpData();if(tab==='mgmt')renderMgmt();if(tab==='nanxi')renderNanxi();}
 
 let _mgmtYm=null;
 function switchMgmtMonth(ym){ _mgmtYm=ym; renderMgmt(); }
@@ -2097,6 +2329,78 @@ loadGbpData=async function(){
     switchGbpMonth(GBP_CUR_M);
   }catch(e){console.error('loadGbpMonthly',e);renderGbpWithMock&&renderGbpWithMock(true);}
 };
+</script>
+
+<script>
+// ── 南西誠品分析 ──
+let nxChartsBuilt = false;
+function renderNanxi() {
+  if (nxChartsBuilt) return;
+  nxChartsBuilt = true;
+
+  const labels = ['9/1','9/2','9/3','9/4','9/5','9/6','9/7','9/8','9/9','9/10','9/11','9/12','9/13'];
+  const revenue  = [5188,8208,4770,10748,78013,9058,23051,10226,980,31838,38482,71343,33878];
+  const visitors = [5,12,12,9,41,38,15,12,15,9,21,30,21];
+  const convRate = [20,17,17,22,39,13,27,25,7,33,24,47,38];
+  const targets  = [20000,20000,20000,45000,45000,20000,20000,20000,20000,20000,45000,45000,20000];
+
+  const textC = '#b09a88';
+  const gridC = 'rgba(40,66,52,.06)';
+
+  // Revenue Bar
+  new Chart(document.getElementById('nx-chart-rev').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'目標', data:targets, type:'line', backgroundColor:'transparent',
+          borderColor:'rgba(40,66,52,.3)', borderWidth:1.5, pointRadius:0,
+          borderDash:[4,3], tension:0, order:0 },
+        { label:'營業額', data:revenue,
+          backgroundColor: revenue.map((_,i) => i===4||i===11?'#284234':i===8?'#c07050':'#8a6a4a'),
+          borderRadius:3, order:1 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c=>' NT$ '+c.parsed.y.toLocaleString() }}},
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:textC,font:{family:'Space Mono',size:9}} },
+        y:{ grid:{color:gridC}, ticks:{color:textC,font:{family:'Space Mono',size:9},
+          callback: v=>v>=1000?'$'+(v/1000).toFixed(0)+'k':v }}
+      }
+    }
+  });
+
+  // Visitors + Conversion
+  new Chart(document.getElementById('nx-chart-vis').getContext('2d'), {
+    data: {
+      labels,
+      datasets: [
+        { type:'bar', label:'來客數', data:visitors,
+          backgroundColor:'rgba(40,66,52,.18)', borderRadius:3, yAxisID:'yV', order:1 },
+        { type:'line', label:'成交率', data:convRate,
+          borderColor:'#A54A1A', backgroundColor:'transparent',
+          pointBackgroundColor:'#A54A1A', pointRadius:3, tension:.3,
+          borderWidth:2, yAxisID:'yC', order:0 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{color:textC,font:{size:9},boxWidth:10} },
+        tooltip:{ callbacks:{ label: c=>c.dataset.label==='成交率'?' '+c.parsed.y+'%':' '+c.parsed.y+' 人' }}},
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:textC,font:{family:'Space Mono',size:9}} },
+        yV:{ position:'left', grid:{color:gridC},
+          ticks:{color:textC,font:{family:'Space Mono',size:9}},
+          title:{display:true,text:'人數',color:textC,font:{size:9}} },
+        yC:{ position:'right', grid:{display:false}, max:60,
+          ticks:{color:'#A54A1A',font:{family:'Space Mono',size:9},callback:v=>v+'%'},
+          title:{display:true,text:'成交率',color:'#A54A1A',font:{size:9}} }
+      }
+    }
+  });
+}
 </script>
 </body>
 </html>
