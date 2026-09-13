@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜南西誠品 9 月營業分析</title>
+<link rel="icon" href="/favicon.png" type="image/png">
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;
+  --rust:#A54A1A;--rust-lt:#f0ddd1;--gray-pink:#CFA294;--brown:#8D5531;
+  --bg:#F5EDE3;--surface:#ffffff;--surface2:#FAF5EF;
+  --border:rgba(40,66,52,.10);--border2:rgba(40,66,52,.22);
+  --text:#284234;--text-muted:#b09a88;--text-dim:#c4a882;
+  --chip-bg:#eae0d2;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100vh}
+.mono{font-family:'Space Mono',monospace;font-variant-numeric:tabular-nums}
+
+/* ── Header ── */
+.hdr{position:sticky;top:0;z-index:100;background:var(--green);height:54px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--sand)}
+.brand-sep{width:1px;height:16px;background:rgba(226,206,185,.3)}
+.brand-sub{font-size:10px;color:var(--gray-pink);font-family:'Space Mono',monospace}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.back-link{font-family:'Space Mono',monospace;font-size:11px;color:var(--gray-pink);text-decoration:none;
+  border:1px solid rgba(226,206,185,.25);padding:3px 10px;border-radius:20px;transition:all .15s}
+.back-link:hover{color:var(--sand);border-color:var(--sand)}
+.data-tag{padding:3px 10px;border-radius:20px;border:1px solid rgba(226,206,185,.25);
+  font-size:10px;font-family:'Space Mono',monospace;color:var(--gray-pink)}
+
+/* ── Page Header Banner ── */
+.page-banner{background:var(--dark);padding:2.25rem 2.5rem 1.75rem}
+.banner-inner{max-width:900px;margin:0 auto}
+.banner-eyebrow{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--gray-pink);opacity:.75;margin-bottom:.35rem}
+.banner-title{font-size:1.6rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:.4rem}
+.banner-sub{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--gray-pink);opacity:.75;letter-spacing:.06em}
+.banner-meta{display:flex;gap:2rem;margin-top:1.25rem;padding-top:1.1rem;
+  border-top:1px solid rgba(226,206,185,.12)}
+.meta-item{display:flex;flex-direction:column;gap:.1rem}
+.meta-label{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-pink);opacity:.65}
+.meta-val{font-family:'Space Mono',monospace;font-size:.85rem;color:var(--sand)}
+
+/* ── Content ── */
+.content{max-width:900px;margin:0 auto;padding:2.25rem 2.5rem}
+
+/* ── Section ── */
+.section{margin-bottom:2.75rem}
+.sec-eyebrow{font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;color:var(--rust);font-weight:700;margin-bottom:.4rem}
+.sec-title{font-size:1rem;font-weight:700;color:var(--green);margin:0 0 1.1rem;
+  padding-bottom:.55rem;border-bottom:2px solid var(--border2)}
+
+/* ── KPI Tiles ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.75rem}
+.kpi{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:.9rem 1rem}
+.kpi.accent{border-left:3px solid var(--rust)}
+.kpi.warn{border-left:3px solid #c49a00}
+.kpi.good{border-left:3px solid var(--green)}
+.kpi-label{font-size:.65rem;letter-spacing:.07em;color:var(--text-muted);margin-bottom:.25rem;text-transform:uppercase}
+.kpi-val{font-family:'Space Mono',monospace;font-size:1.4rem;font-weight:700;color:var(--green);line-height:1.1}
+.kpi-sub{font-size:.68rem;color:var(--text-dim);margin-top:.2rem;font-family:'Space Mono',monospace}
+
+/* ── Target Bar ── */
+.target-bar-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+  padding:1.1rem 1.4rem;margin-bottom:1.75rem}
+.target-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.7rem}
+.target-title{font-size:.75rem;color:var(--text-muted)}
+.target-nums{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--text-muted)}
+.progress-track{height:7px;background:var(--border2);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green),#3d5c4a);border-radius:99px}
+.target-foot{display:flex;justify-content:space-between;margin-top:.45rem}
+.target-pct{font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700;color:var(--green)}
+.target-gap{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--rust)}
+
+/* ── Charts ── */
+.chart-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+  padding:1.1rem 1.4rem;margin-bottom:1.25rem}
+.chart-title{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-muted);margin-bottom:.9rem}
+
+/* ── Table ── */
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border2)}
+table{width:100%;border-collapse:collapse;font-size:.8rem;background:var(--surface)}
+thead tr{background:var(--dark);color:var(--sand)}
+thead th{padding:.55rem .85rem;text-align:left;font-size:.6rem;letter-spacing:.1em;
+  text-transform:uppercase;font-weight:700;white-space:nowrap}
+thead th.num{text-align:right}
+tbody tr:nth-child(even){background:var(--surface2)}
+tbody tr:hover{background:var(--chip-bg)}
+tbody td{padding:.5rem .85rem;border-top:1px solid var(--border);color:var(--text);white-space:nowrap}
+td.num{text-align:right;font-family:'Space Mono',monospace;font-size:.75rem}
+td.day-label{font-weight:500}
+.badge{display:inline-block;font-family:'Space Mono',monospace;font-size:.58rem;
+  padding:.1rem .38rem;border-radius:3px;font-weight:700}
+.bg{background:#d1ead8;color:#1a5c2a}
+.bo{background:#faecd0;color:#7a4a00}
+.bl{background:#fad8d8;color:#7a1a1a}
+.bh{background:var(--dark);color:var(--sand)}
+
+/* ── Two-col / Compare ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:1.25rem}
+.compare-box{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:1.1rem 1.4rem}
+.compare-title{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-muted);margin-bottom:.9rem;border-bottom:1px solid var(--border);padding-bottom:.45rem}
+.compare-row{display:flex;justify-content:space-between;align-items:baseline;
+  padding:.28rem 0;border-bottom:1px solid var(--border);font-size:.78rem}
+.compare-row:last-child{border-bottom:none}
+.compare-key{color:var(--text-muted)}
+.cw{font-family:'Space Mono',monospace;font-weight:700;color:var(--green)}
+.cd{font-family:'Space Mono',monospace;color:var(--text-muted)}
+
+/* ── Insight Cards ── */
+.insight-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.insight{background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+  padding:1rem 1.15rem;border-left:3px solid var(--border2)}
+.insight.alert{border-left-color:var(--rust)}
+.insight.note{border-left-color:#c49a00}
+.insight.pos{border-left-color:var(--green)}
+.insight-title{font-size:.75rem;font-weight:700;margin-bottom:.35rem}
+.insight-body{font-size:.75rem;color:var(--text-muted);line-height:1.55}
+.tag{display:inline-block;font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.07em;
+  text-transform:uppercase;padding:.1rem .4rem;border-radius:3px;margin-bottom:.4rem;font-weight:700}
+.tag-alert{background:var(--rust-lt);color:var(--rust)}
+.tag-note{background:#faecd0;color:#7a4a00}
+.tag-pos{background:#d1ead8;color:#1a5c2a}
+
+/* ── Product Table ── */
+.pct-bar{display:flex;align-items:center;gap:.45rem}
+.pct-track{flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden;min-width:50px}
+.pct-fill{height:100%;background:var(--green);border-radius:99px}
+.pct-label{font-family:'Space Mono',monospace;font-size:.66rem;color:var(--text-dim);min-width:2.5rem;text-align:right}
+
+/* ── Journal Themes ── */
+.journal-themes{display:grid;grid-template-columns:1fr;gap:1px;background:var(--border2);
+  border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:1.5rem}
+.theme-block{background:var(--surface);padding:.9rem 1.15rem;display:grid;
+  grid-template-columns:1.8rem 1fr;gap:.7rem;align-items:start}
+.theme-num{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--rust);font-weight:700;padding-top:.1rem}
+.theme-title{font-weight:700;font-size:.82rem;margin-bottom:.2rem}
+.theme-text{font-size:.76rem;color:var(--text-muted);line-height:1.55}
+.chip{display:inline-block;font-size:.62rem;padding:.08rem .4rem;border-radius:3px;
+  background:var(--chip-bg);color:var(--text-muted);font-family:'Space Mono',monospace;margin-right:.25rem;margin-bottom:.2rem}
+
+/* ── Action Items ── */
+.action-list{list-style:none;padding:0;margin:0;display:grid;gap:.55rem}
+.action-item{background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+  padding:.75rem 1rem .75rem .9rem;display:flex;align-items:flex-start;gap:.7rem;font-size:.78rem}
+.action-dot{width:5px;height:5px;border-radius:50%;background:var(--rust);flex-shrink:0;margin-top:.45rem}
+.action-dot.ok{background:var(--green)}
+.action-dot.warn{background:#c49a00}
+.action-text{color:var(--text);line-height:1.5}
+.action-text strong{color:var(--rust)}
+.action-dot.ok + .action-text strong{color:var(--green)}
+
+/* ── Footer ── */
+.footer{background:var(--dark);color:var(--gray-pink);opacity:.65;text-align:center;
+  font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.1em;padding:1.1rem 2rem;margin-top:.5rem}
+
+@media(max-width:680px){
+  .content{padding:1.5rem 1.1rem}
+  .page-banner{padding:1.5rem 1.1rem}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .two-col{grid-template-columns:1fr}
+  .insight-grid{grid-template-columns:1fr}
+  .banner-meta{flex-wrap:wrap;gap:.9rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="hdr">
+  <div class="brand">
+    <span class="brand-name">ORINGO</span>
+    <div class="brand-sep"></div>
+    <span class="brand-sub">南西誠品 · 九月分析</span>
+  </div>
+  <div class="hdr-r">
+    <span class="data-tag">2026.09.01–09.13</span>
+    <a class="back-link" href="/">← 首頁</a>
+  </div>
+</header>
+
+<!-- ── Page Banner ── -->
+<div class="page-banner">
+  <div class="banner-inner">
+    <div class="banner-eyebrow">Oringo 林果良品 · 誠品生活南西</div>
+    <h1 class="banner-title">2026 年 9 月上半月營業分析</h1>
+    <div class="banner-sub">2026/09/01 – 09/13 &nbsp;·&nbsp; 13 天完整紀錄 &nbsp;·&nbsp; POS 銷售 + Dashboard + 手寫日誌</div>
+    <div class="banner-meta">
+      <div class="meta-item">
+        <span class="meta-label">月目標</span>
+        <span class="meta-val">NT$ 800,000</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">本期累計</span>
+        <span class="meta-val">NT$ 325,783</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">達成率</span>
+        <span class="meta-val">40.7%</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">距目標</span>
+        <span class="meta-val" style="color:#e87a5a">− NT$ 474,217</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main Content ── -->
+<main class="content">
+
+  <!-- 1. KPI -->
+  <section class="section">
+    <div class="sec-eyebrow">執行摘要</div>
+    <h2 class="sec-title">關鍵指標 — 9/1–9/13</h2>
+
+    <div class="kpi-grid">
+      <div class="kpi accent">
+        <div class="kpi-label">累計營業額</div>
+        <div class="kpi-val mono">$325,783</div>
+        <div class="kpi-sub">月目標 40.7%</div>
+      </div>
+      <div class="kpi warn">
+        <div class="kpi-label">距月目標</div>
+        <div class="kpi-val mono">−$474,217</div>
+        <div class="kpi-sub">剩 18 天</div>
+      </div>
+      <div class="kpi good">
+        <div class="kpi-label">總來客數</div>
+        <div class="kpi-val mono">240 人</div>
+        <div class="kpi-sub">日均 18.5 人</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">平均客單價</div>
+        <div class="kpi-val mono">$4,936</div>
+        <div class="kpi-sub">66 筆成交</div>
+      </div>
+    </div>
+
+    <div class="target-bar-wrap">
+      <div class="target-header">
+        <span class="target-title">月目標進度</span>
+        <span class="target-nums mono">NT$325,783 / NT$800,000</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:40.7%"></div>
+      </div>
+      <div class="target-foot">
+        <span class="target-pct mono">40.7% 達成</span>
+        <span class="target-gap mono">尚差 NT$474,217</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Charts -->
+  <section class="section">
+    <div class="sec-eyebrow">每日績效</div>
+    <h2 class="sec-title">營業額 · 來客 · 成交率</h2>
+
+    <div class="chart-wrap">
+      <div class="chart-title">每日營業額（NT$）</div>
+      <canvas id="chartRevenue" height="160"></canvas>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-title">每日來客數 &amp; 成交率</div>
+      <canvas id="chartVisitors" height="140"></canvas>
+    </div>
+  </section>
+
+  <!-- 3. Daily Table -->
+  <section class="section">
+    <div class="sec-eyebrow">日別明細</div>
+    <h2 class="sec-title">每日完整數據（手寫日誌 ＋ Dashboard）</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>日期</th><th>星期</th><th class="num">目標</th><th class="num">達成率</th>
+            <th class="num">營業額</th><th class="num">來客</th><th class="num">成交</th>
+            <th class="num">成交率</th><th class="num">客單價</th><th>備注</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="day-label mono">9/1</td><td>二</td><td class="num mono">20,000</td><td class="num"><span class="badge bl">26%</span></td><td class="num mono">5,188</td><td class="num mono">5</td><td class="num mono">1</td><td class="num"><span class="badge bl">20%</span></td><td class="num mono">5,188</td><td>開幕初期，前Vanger客人</td></tr>
+          <tr><td class="day-label mono">9/2</td><td>三</td><td class="num mono">20,000</td><td class="num"><span class="badge bl">41%</span></td><td class="num mono">8,208</td><td class="num mono">12</td><td class="num mono">2</td><td class="num"><span class="badge bl">17%</span></td><td class="num mono">4,104</td><td>缺1702奶色、尺碼問題</td></tr>
+          <tr><td class="day-label mono">9/3</td><td>四</td><td class="num mono">20,000</td><td class="num"><span class="badge bl">24%</span></td><td class="num mono">4,770</td><td class="num mono">12</td><td class="num mono">2</td><td class="num"><span class="badge bl">17%</span></td><td class="num mono">2,385</td><td>港客、Beara客轉介</td></tr>
+          <tr><td class="day-label mono">9/4</td><td>五</td><td class="num mono">45,000</td><td class="num"><span class="badge bl">24%</span></td><td class="num mono">10,748</td><td class="num mono">9</td><td class="num mono">2</td><td class="num"><span class="badge bo">22%</span></td><td class="num mono">5,374</td><td>灰410斷貨、1702-42缺</td></tr>
+          <tr><td class="day-label mono">9/5</td><td style="color:var(--rust);font-weight:700">六</td><td class="num mono">45,000</td><td class="num"><span class="badge bh">173%</span></td><td class="num mono" style="font-weight:700">78,013</td><td class="num mono">41</td><td class="num mono">16</td><td class="num"><span class="badge bg">39%</span></td><td class="num mono">4,876</td><td>開幕週六高峰，路過客多</td></tr>
+          <tr><td class="day-label mono">9/6</td><td style="color:var(--rust)">日</td><td class="num mono">20,000</td><td class="num"><span class="badge bo">45%</span></td><td class="num mono">9,058</td><td class="num mono">38</td><td class="num mono">5</td><td class="num"><span class="badge bl">13%</span></td><td class="num mono">1,812</td><td>高流量低成交，週日瀏覽型</td></tr>
+          <tr><td class="day-label mono">9/7</td><td>一</td><td class="num mono">20,000</td><td class="num"><span class="badge bh">115%</span></td><td class="num mono">23,051</td><td class="num mono">15</td><td class="num mono">4</td><td class="num"><span class="badge bg">27%</span></td><td class="num mono">5,763</td><td>週一最佳，1702/8501成交</td></tr>
+          <tr><td class="day-label mono">9/8</td><td>二</td><td class="num mono">20,000</td><td class="num"><span class="badge bo">51%</span></td><td class="num mono">10,226</td><td class="num mono">12</td><td class="num mono">3</td><td class="num"><span class="badge bo">25%</span></td><td class="num mono">3,409</td><td>5202+3202成交，Vanger客</td></tr>
+          <tr><td class="day-label mono">9/9</td><td>三</td><td class="num mono">20,000</td><td class="num"><span class="badge bl">5%</span></td><td class="num mono" style="color:var(--rust)">980</td><td class="num mono">15</td><td class="num mono">1</td><td class="num"><span class="badge bl">7%</span></td><td class="num mono">980</td><td style="color:var(--rust);font-weight:500">明確等誠品週年慶；1702奶茶42缺貨</td></tr>
+          <tr><td class="day-label mono">9/10</td><td>四</td><td class="num mono">20,000</td><td class="num"><span class="badge bh">159%</span></td><td class="num mono">31,838</td><td class="num mono">9</td><td class="num mono">3</td><td class="num"><span class="badge bg">33%</span></td><td class="num mono" style="font-weight:700">10,613</td><td>最高客單價，回購力強</td></tr>
+          <tr><td class="day-label mono">9/11</td><td>五</td><td class="num mono">45,000</td><td class="num"><span class="badge bo">86%</span></td><td class="num mono">38,482</td><td class="num mono">21</td><td class="num mono">5</td><td class="num"><span class="badge bo">24%</span></td><td class="num mono">7,696</td><td>9551熱門但部分等週年慶</td></tr>
+          <tr><td class="day-label mono">9/12</td><td style="color:var(--rust);font-weight:700">六</td><td class="num mono">45,000</td><td class="num"><span class="badge bh">159%</span></td><td class="num mono" style="font-weight:700">71,343</td><td class="num mono">30</td><td class="num mono">14</td><td class="num"><span class="badge bh">47%</span></td><td class="num mono">5,096</td><td>7位回購客，週六最高成交率</td></tr>
+          <tr><td class="day-label mono">9/13</td><td style="color:var(--rust)">日</td><td class="num mono">20,000</td><td class="num"><span class="badge bh">169%</span></td><td class="num mono">33,878</td><td class="num mono">21</td><td class="num mono">8</td><td class="num"><span class="badge bg">38%</span></td><td class="num mono">4,235</td><td>週日成交率明顯回升</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 4. Weekend vs Weekday -->
+  <section class="section">
+    <div class="sec-eyebrow">客流結構</div>
+    <h2 class="sec-title">週末 vs 平日比較</h2>
+
+    <div class="two-col">
+      <div class="compare-box">
+        <div class="compare-title">週末（六、日）× 4 天</div>
+        <div class="compare-row"><span class="compare-key">累計營業額</span><span class="cw mono">$192,292</span></div>
+        <div class="compare-row"><span class="compare-key">佔期間總額</span><span class="cw mono">59.1%</span></div>
+        <div class="compare-row"><span class="compare-key">總來客</span><span class="cw mono">130 人</span></div>
+        <div class="compare-row"><span class="compare-key">總成交</span><span class="cw mono">43 筆</span></div>
+        <div class="compare-row"><span class="compare-key">成交率</span><span class="cw mono">33%</span></div>
+        <div class="compare-row"><span class="compare-key">不知林果比例</span><span class="cw mono">高（路過客為主）</span></div>
+      </div>
+      <div class="compare-box">
+        <div class="compare-title">平日（一～五）× 9 天</div>
+        <div class="compare-row"><span class="compare-key">累計營業額</span><span class="cd mono">$133,491</span></div>
+        <div class="compare-row"><span class="compare-key">佔期間總額</span><span class="cd mono">40.9%</span></div>
+        <div class="compare-row"><span class="compare-key">總來客</span><span class="cd mono">110 人</span></div>
+        <div class="compare-row"><span class="compare-key">總成交</span><span class="cd mono">23 筆</span></div>
+        <div class="compare-row"><span class="compare-key">成交率</span><span class="cd mono">21%</span></div>
+        <div class="compare-row"><span class="compare-key">知林果比例</span><span class="cd mono">高（知品牌目的性客）</span></div>
+      </div>
+    </div>
+
+    <div class="compare-box">
+      <div class="compare-title">週日現象：高流量、低成交 → 改善趨勢</div>
+      <div class="compare-row"><span class="compare-key">9/6（日）來客 38 人，僅成交 5 筆</span><span class="cd mono">成交率 13%</span></div>
+      <div class="compare-row"><span class="compare-key">9/13（日）來客 21 人，成交 8 筆</span><span class="cw mono">成交率 38% ↑</span></div>
+      <div class="compare-row"><span class="compare-key">觀察</span><span style="font-size:.74rem;color:var(--text-muted)">第二週週日品牌認知度提升後轉換率明顯回升</span></div>
+    </div>
+  </section>
+
+  <!-- 5. Products -->
+  <section class="section">
+    <div class="sec-eyebrow">商品分析</div>
+    <h2 class="sec-title">Top 銷售品項（POS 9/1–9/13）</h2>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>品項</th><th class="num">件數</th><th class="num">淨額</th><th>佔比（件數）</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>棋盤格紋紳士襪 沉穩藍</td><td class="num mono">6</td><td class="num mono">—</td><td><div class="pct-bar"><div class="pct-track"><div class="pct-fill" style="width:100%"></div></div><span class="pct-label">4.2%</span></div></td></tr>
+          <tr><td>LibreSole XV1 皮革小白鞋（女）</td><td class="num mono">5</td><td class="num mono">25,275</td><td><div class="pct-bar"><div class="pct-track"><div class="pct-fill" style="width:83%"></div></div><span class="pct-label">3.5%</span></div></td></tr>
+          <tr><td>皮革基礎保養組</td><td class="num mono">5</td><td class="num mono">—</td><td><div class="pct-bar"><div class="pct-track"><div class="pct-fill" style="width:83%"></div></div><span class="pct-label">3.5%</span></div></td></tr>
+          <tr><td>Bookbinder 便士樂福鞋 經典黑</td><td class="num mono">4</td><td class="num mono">21,402</td><td><div class="pct-bar"><div class="pct-track"><div class="pct-fill" style="width:67%"></div></div><span class="pct-label">2.8%</span></div></td></tr>
+          <tr><td>VIP 紳士歡迎禮</td><td class="num mono">4</td><td class="num mono">—</td><td><div class="pct-bar"><div class="pct-track"><div class="pct-fill" style="width:67%"></div></div><span class="pct-label">2.8%</span></div></td></tr>
+          <tr><td>Combo 手作皮革休閒鞋 黑</td><td class="num mono">3</td><td class="num mono">15,949</td><td><div class="pct-bar"><div class="pct-track"><div class="pct-fill" style="width:50%"></div></div><span class="pct-label">2.1%</span></div></td></tr>
+          <tr><td>鑲邊飾線德比鞋</td><td class="num mono">3</td><td class="num mono">15,832</td><td><div class="pct-bar"><div class="pct-track"><div class="pct-fill" style="width:50%"></div></div><span class="pct-label">2.1%</span></div></td></tr>
+          <tr><td>U-Tip 馬克縫雷根底德比鞋</td><td class="num mono">3</td><td class="num mono">14,111</td><td><div class="pct-bar"><div class="pct-track"><div class="pct-fill" style="width:50%"></div></div><span class="pct-label">2.1%</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.7rem;color:var(--text-dim);margin-top:.55rem">總計 142 件、138 筆訂單；Beara Beara / Tuesday Evening 聯名商品 0 件（已有商品但零銷售）</p>
+  </section>
+
+  <!-- 6. Journal Insights -->
+  <section class="section">
+    <div class="sec-eyebrow">手寫日誌洞察</div>
+    <h2 class="sec-title">13 天現場紀錄 · 重要主題彙整</h2>
+
+    <div class="journal-themes">
+      <div class="theme-block">
+        <div class="theme-num">01</div>
+        <div>
+          <div class="theme-title">誠品週年慶壓制購買意願</div>
+          <div class="theme-text">9/9 明確記錄多位客人說「等週年慶再買」，直接造成當日僅 980 元營收（最低紀錄）。9/10、9/11 也出現相同情況。澳洲客人隔天就要回國，特地想買 1702 奶茶 42，卻因缺貨未能成交——這是最直接的損失案例。</div>
+          <div style="margin-top:.4rem"><span class="chip">9/9</span><span class="chip">9/10</span><span class="chip">9/11</span><span class="chip">$980</span></div>
+        </div>
+      </div>
+      <div class="theme-block">
+        <div class="theme-num">02</div>
+        <div>
+          <div class="theme-title">1702 奶茶色 42 號缺貨 · 反覆漏失銷售</div>
+          <div class="theme-text">9/4 首次出現缺貨記錄；9/9 明確寫「全無貨，澳洲客明天回國找不到」。多天、多位客人的相同反饋，屬高優先補貨項目。另有灰色 410 斷貨、5201 酒紅 9.5 缺貨、9551 size 46 偏大問題。</div>
+          <div style="margin-top:.4rem"><span class="chip">1702 奶茶-42</span><span class="chip">410 灰斷貨</span><span class="chip">5201 酒紅-9.5</span></div>
+        </div>
+      </div>
+      <div class="theme-block">
+        <div class="theme-num">03</div>
+        <div>
+          <div class="theme-title">Vanger 客群持續轉化</div>
+          <div class="theme-text">9/2、9/7、9/8 均有前 Vanger 客人主動詢問品牌差異，部分完成試穿。定位清晰、競品轉換路徑有效。9/10 也有 Ranger 客人比較肉墊，需正面回應此顧慮。</div>
+          <div style="margin-top:.4rem"><span class="chip">9/2</span><span class="chip">9/7</span><span class="chip">9/8</span><span class="chip">競品轉換</span></div>
+        </div>
+      </div>
+      <div class="theme-block">
+        <div class="theme-num">04</div>
+        <div>
+          <div class="theme-title">產品缺口 · 客人明確需求未被滿足</div>
+          <div class="theme-text"><strong>① 1619 平底牛皮版（無流蘇）</strong>：9/10 明確詢問，目前無此款。<br><strong>② 4605 外型 × 8501 材質</strong>：9/7 款式跨越需求。<br><strong>③ 皮底防滑加工</strong>：9/4 老太太擔心滑，應列入標準話術。</div>
+        </div>
+      </div>
+      <div class="theme-block">
+        <div class="theme-num">05</div>
+        <div>
+          <div class="theme-title">觀光客 &amp; 外籍客人有潛力</div>
+          <div class="theme-text">香港客（9/3、9/10）、澳洲客（9/9）、日本客（9/9）均有出現。澳洲客是最直接的漏失案例。日本客因語言隔閡未能深入介紹，建議準備簡易英日版品牌說明卡。</div>
+          <div style="margin-top:.4rem"><span class="chip">港客</span><span class="chip">澳客</span><span class="chip">日客</span><span class="chip">語言支援</span></div>
+        </div>
+      </div>
+      <div class="theme-block">
+        <div class="theme-num">06</div>
+        <div>
+          <div class="theme-title">9/12 七位回購客 · 品牌忠誠度明確</div>
+          <div class="theme-text">9/12（六）是期間最高成交率（47%），同時記錄了 7 位回購客，是所有日子中最高的回購人數。開店兩週後老客群已開始回流，品牌基本盤形成。</div>
+          <div style="margin-top:.4rem"><span class="chip">9/12 = 7 回購</span><span class="chip">9/5 = 5 回購</span><span class="chip">成交率 47%</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Actions -->
+  <section class="section">
+    <div class="sec-eyebrow">行動建議</div>
+    <h2 class="sec-title">優先事項</h2>
+
+    <ul class="action-list">
+      <li class="action-item"><div class="action-dot"></div><div class="action-text"><strong>【緊急】補貨 1702 奶茶色 42 號</strong> — 已在多天、多位客人紀錄漏失銷售。若有庫存請立即調貨至南西，並通知等候的回購客人。</div></li>
+      <li class="action-item"><div class="action-dot"></div><div class="action-text"><strong>【緊急】盤查缺貨清單並排優先級</strong> — 灰410斷貨、5201酒紅9.5、9551 size 46、8605特定色號均有記錄需求，確認補貨來源。</div></li>
+      <li class="action-item"><div class="action-dot warn"></div><div class="action-text"><strong>【週年慶策略】評估是否參與 / 搭配誠品週年慶</strong> — 9/9 單日 980 元，主因客人明確說在等週年慶。若能以某種形式參與活動，應可挽回延遲購買的需求。</div></li>
+      <li class="action-item"><div class="action-dot warn"></div><div class="action-text"><strong>【週日成交率】提升瀏覽型客人的轉化</strong> — 9/6 週日 38 人來店僅成交 5 筆（13%）。分析 9/13 週日（38%）的差異，找出可複製操作。</div></li>
+      <li class="action-item"><div class="action-dot ok"></div><div class="action-text"><strong>【標準話術】建立皮底防滑說明 &amp; 品牌 vs Vanger 說法</strong> — 多天記錄有客人問皮底防滑；Vanger 轉換客持續出現，制式化這兩個場景的銷售話術。</div></li>
+      <li class="action-item"><div class="action-dot ok"></div><div class="action-text"><strong>【外籍客準備】製作簡易英日品牌說明</strong> — 至少準備一頁 A5 英文品牌簡介（製程、皮革、MIT）放在展示區。</div></li>
+      <li class="action-item"><div class="action-dot ok"></div><div class="action-text"><strong>【下半月目標】需達 NT$474,217</strong> — 剩 18 天平均需日銷 26,346 元。週年慶效應若能爭取，週末仍是主要機會窗口。</div></li>
+    </ul>
+  </section>
+
+</main>
+
+<div class="footer">ORINGO 林果良品 &nbsp;·&nbsp; 南西誠品 &nbsp;·&nbsp; 2026.09.13 生成 &nbsp;·&nbsp; INTERNAL USE ONLY</div>
+
+<script>
+const labels = ['9/1','9/2','9/3','9/4','9/5','9/6','9/7','9/8','9/9','9/10','9/11','9/12','9/13'];
+const revenue = [5188,8208,4770,10748,78013,9058,23051,10226,980,31838,38482,71343,33878];
+const visitors = [5,12,12,9,41,38,15,12,15,9,21,30,21];
+const convRate = [20,17,17,22,39,13,27,25,7,33,24,47,38];
+const targets  = [20000,20000,20000,45000,45000,20000,20000,20000,20000,20000,45000,45000,20000];
+
+const textC = '#b09a88';
+const gridC = 'rgba(40,66,52,.07)';
+
+new Chart(document.getElementById('chartRevenue').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [
+      { label:'目標', data: targets, backgroundColor:'transparent', borderColor:'rgba(40,66,52,.25)', borderWidth:1, type:'line', pointRadius:0, borderDash:[4,3], tension:0, order:0 },
+      { label:'營業額', data: revenue, backgroundColor: revenue.map((v,i) => i===4||i===11?'#284234':i===8?'#c07050':'#8a6a4a'), borderRadius:3, order:1 }
+    ]
+  },
+  options: {
+    responsive:true,
+    plugins: { legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ` NT$ ${ctx.parsed.y.toLocaleString()}` } } },
+    scales: {
+      x: { grid:{display:false}, ticks:{color:textC,font:{family:'Space Mono',size:10}} },
+      y: { grid:{color:gridC}, ticks:{color:textC,font:{family:'Space Mono',size:10},callback:v=>v>=1000?`$${(v/1000).toFixed(0)}k`:v} }
+    }
+  }
+});
+
+new Chart(document.getElementById('chartVisitors').getContext('2d'), {
+  data: {
+    labels,
+    datasets: [
+      { type:'bar', label:'來客數', data:visitors, backgroundColor:'rgba(40,66,52,.18)', borderRadius:3, yAxisID:'yVis', order:1 },
+      { type:'line', label:'成交率', data:convRate, borderColor:'#A54A1A', backgroundColor:'transparent', pointBackgroundColor:'#A54A1A', pointRadius:4, tension:.3, borderWidth:2, yAxisID:'yConv', order:0 }
+    ]
+  },
+  options: {
+    responsive:true,
+    plugins: { legend:{ labels:{color:textC,font:{size:10},boxWidth:12} }, tooltip:{ callbacks:{ label: ctx => ctx.dataset.label==='成交率' ? ` ${ctx.parsed.y}%` : ` ${ctx.parsed.y} 人` } } },
+    scales: {
+      x: { grid:{display:false}, ticks:{color:textC,font:{family:'Space Mono',size:10}} },
+      yVis: { position:'left', grid:{color:gridC}, ticks:{color:textC,font:{family:'Space Mono',size:10}}, title:{display:true,text:'人數',color:textC,font:{size:10}} },
+      yConv: { position:'right', grid:{display:false}, max:60, ticks:{color:'#A54A1A',font:{family:'Space Mono',size:10},callback:v=>`${v}%`}, title:{display:true,text:'成交率',color:'#A54A1A',font:{size:10}} }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
