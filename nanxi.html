@@ -183,7 +183,7 @@ td.day-label{font-weight:500}
     <span class="brand-sub">南西誠品 · 九月分析</span>
   </div>
   <div class="hdr-r">
-    <span class="data-tag">2026.09.01–09.13</span>
+    <span class="data-tag">2026.09.01–09.20</span>
     <a class="back-link" href="/">← 首頁</a>
   </div>
 </header>
@@ -424,7 +424,121 @@ td.day-label{font-weight:500}
     </div>
   </section>
 
-  <!-- 7. Actions -->
+  <!-- 7. Cross-store Cannibalization -->
+  <section class="section">
+    <div class="sec-eyebrow">跨店客源分析 · 9/2–9/20</div>
+    <h2 class="sec-title">南西是否蠶食其他門市？</h2>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">有帳號的南西買家</div>
+        <div class="kpi-val mono">86 人</div>
+        <div class="kpi-sub">9/2–9/20 完整資料</div>
+      </div>
+      <div class="kpi warn">
+        <div class="kpi-label">有任何門市歷史</div>
+        <div class="kpi-val mono">26 人</div>
+        <div class="kpi-sub">占比 30.2%</div>
+      </div>
+      <div class="kpi accent">
+        <div class="kpi-label">確定蠶食（≤6個月）</div>
+        <div class="kpi-val mono">4 人</div>
+        <div class="kpi-sub">主要來自松菸</div>
+      </div>
+      <div class="kpi good">
+        <div class="kpi-label">增量召回（>18個月沉睡）</div>
+        <div class="kpi-val mono">9 人</div>
+        <div class="kpi-sub">對原門市無實質影響</div>
+      </div>
+    </div>
+
+    <!-- 各門市流失人數 -->
+    <div class="two-col" style="margin-bottom:1.25rem">
+      <div class="compare-box">
+        <div class="compare-title">各門市在南西出現的舊客數</div>
+        <div class="compare-row"><span class="compare-key">台北中山店</span><span class="cw mono">15 人</span></div>
+        <div class="compare-row"><span class="compare-key">台北松菸店</span><span class="cw mono">12 人</span></div>
+        <div class="compare-row"><span class="compare-key">台北東門店</span><span class="cw mono">8 人</span></div>
+        <div class="compare-row"><span class="compare-key">台中園道店</span><span class="cw mono">5 人</span></div>
+        <div class="compare-row" style="border-top:1px solid var(--border2);margin-top:.3rem;padding-top:.3rem">
+          <span class="compare-key" style="font-size:.65rem;color:var(--text-dim)">同一人可能去過多間店，各自計算</span>
+        </div>
+      </div>
+      <div class="compare-box">
+        <div class="compare-title">蠶食 vs 增量拆分（依最後購買間隔）</div>
+        <div class="compare-row"><span class="compare-key">⚠️ 確定蠶食（≤6個月）</span><span style="font-family:'Space Mono',monospace;color:var(--rust);font-weight:700">4 人 · $10,343</span></div>
+        <div class="compare-row"><span class="compare-key">🔶 灰色地帶（7–18個月）</span><span class="cd mono">12 人</span></div>
+        <div class="compare-row"><span class="compare-key">✅ 增量召回（>18個月）</span><span style="font-family:'Space Mono',monospace;color:var(--green);font-weight:700">9 人 · $67,812</span></div>
+        <div class="compare-row" style="border-top:1px solid var(--border2);margin-top:.3rem;padding-top:.3rem">
+          <span class="compare-key" style="font-size:.65rem;color:var(--text-dim)">POS資料截至2026/04，5–8月中的轉移未計入</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 客源分群消費比較 -->
+    <div class="tbl-wrap" style="margin-bottom:1.25rem">
+      <table>
+        <thead>
+          <tr>
+            <th>客群</th>
+            <th class="num">人數</th>
+            <th class="num">南西總消費</th>
+            <th class="num">平均客單</th>
+            <th>說明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge bh">電商帳號客</span></td>
+            <td class="num mono">48</td>
+            <td class="num mono">$347,426</td>
+            <td class="num mono" style="font-weight:700;color:var(--green)">$7,238</td>
+            <td style="font-size:.72rem;color:var(--text-muted)">本來只在網路買，南西讓他們第一次進實體</td>
+          </tr>
+          <tr>
+            <td><span class="badge bo">實體舊客</span></td>
+            <td class="num mono">26</td>
+            <td class="num mono">$134,302</td>
+            <td class="num mono">$5,165</td>
+            <td style="font-size:.72rem;color:var(--text-muted)">曾去過任何實體門市；含蠶食+灰色+召回</td>
+          </tr>
+          <tr>
+            <td><span class="badge bg">POS 純新客</span></td>
+            <td class="num mono">12</td>
+            <td class="num mono">$56,133</td>
+            <td class="num mono">$4,678</td>
+            <td style="font-size:.72rem;color:var(--text-muted)">在南西第一次辦卡，POS 歷史找不到記錄</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Insights -->
+    <div class="insight-grid">
+      <div class="insight pos">
+        <div class="tag tag-pos">關鍵發現</div>
+        <div class="insight-title">南西最大貢獻：把電商客拉進實體</div>
+        <div class="insight-body">48位電商帳號客平均客單 $7,238，是三組中最高，也是最大一群（56%）。這些人品牌已知但從未進店，誠品選址成功讓他們完成首次實體體驗。</div>
+      </div>
+      <div class="insight alert">
+        <div class="tag tag-alert">蠶食警示</div>
+        <div class="insight-title">真正蠶食只有 4 人，主要搶的是松菸</div>
+        <div class="insight-body">4位確定蠶食的客人（距上次購買 ≤6個月）有3位是松菸常客，不是中山。林冠廷（松菸16筆）和張家豪（松菸15筆）是最典型案例，可能是交通動線改變。</div>
+      </div>
+      <div class="insight pos">
+        <div class="tag tag-pos">增量</div>
+        <div class="insight-title">沉睡客召回貢獻是蠶食的 6.5 倍</div>
+        <div class="insight-body">9位超過18個月未購買的舊客在南西消費 $67,812，遠高於確定蠶食的 $10,343。南西對整體品牌的貢獻，更像「品牌召回站」而非搶奪其他門市的流量。</div>
+      </div>
+      <div class="insight note">
+        <div class="tag tag-note">待確認</div>
+        <div class="insight-title">中山9月下滑主因仍需另行驗證</div>
+        <div class="insight-body">中山9月業績約達標45%（截至9/21），直接可歸因南西蠶食的部分估計 ~4–8萬/月，僅占中山缺口的15–25%。其餘缺口另有原因，不應全歸咎南西開幕。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Actions -->
   <section class="section">
     <div class="sec-eyebrow">行動建議</div>
     <h2 class="sec-title">優先事項</h2>
