@@ -462,35 +462,35 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <!-- Banner -->
   <div class="nx-banner">
     <div class="nx-eyebrow">Oringo 林果良品 · 誠品生活南西 · 開幕分析</div>
-    <div class="nx-title">2026 年 9 月上半月營業分析</div>
-    <div class="nx-sub">2026/09/01 – 09/13 &nbsp;·&nbsp; 13 天完整紀錄 &nbsp;·&nbsp; POS 銷售 + Dashboard + 手寫日誌</div>
+    <div class="nx-title">2026 年 9 月營業分析（9/1–9/20）</div>
+    <div class="nx-sub">2026/09/01 – 09/20 &nbsp;·&nbsp; 20 天完整紀錄 &nbsp;·&nbsp; POS 銷售 + Dashboard + 手寫日誌</div>
     <div class="nx-meta">
       <div class="nx-mi"><span class="nx-ml">月目標</span><span class="nx-mv">NT$ 800,000</span></div>
-      <div class="nx-mi"><span class="nx-ml">本期累計</span><span class="nx-mv">NT$ 325,783</span></div>
-      <div class="nx-mi"><span class="nx-ml">達成率</span><span class="nx-mv">40.7%</span></div>
-      <div class="nx-mi"><span class="nx-ml">距目標</span><span class="nx-mv" style="color:#e87a5a">−$474,217</span></div>
+      <div class="nx-mi"><span class="nx-ml">本期累計</span><span class="nx-mv">NT$ 523,506</span></div>
+      <div class="nx-mi"><span class="nx-ml">達成率</span><span class="nx-mv">65.4%</span></div>
+      <div class="nx-mi"><span class="nx-ml">距目標</span><span class="nx-mv" style="color:#e87a5a">−$276,494</span></div>
     </div>
   </div>
 
   <!-- KPI -->
   <div class="nx-kpi4">
-    <div class="nx-kc a"><div class="nx-kc-l">累計營業額</div><div class="nx-kc-v">$325,783</div><div class="nx-kc-s">月目標 40.7%</div></div>
-    <div class="nx-kc w"><div class="nx-kc-l">距月目標</div><div class="nx-kc-v">−$474,217</div><div class="nx-kc-s">剩 18 天</div></div>
-    <div class="nx-kc g"><div class="nx-kc-l">總來客數</div><div class="nx-kc-v">240 人</div><div class="nx-kc-s">日均 18.5 人</div></div>
-    <div class="nx-kc"><div class="nx-kc-l">平均客單價</div><div class="nx-kc-v">$4,936</div><div class="nx-kc-s">66 筆成交</div></div>
+    <div class="nx-kc a"><div class="nx-kc-l">累計營業額</div><div class="nx-kc-v">$523,506</div><div class="nx-kc-s">月目標 65.4%</div></div>
+    <div class="nx-kc w"><div class="nx-kc-l">距月目標</div><div class="nx-kc-v">−$276,494</div><div class="nx-kc-s">剩 10 天</div></div>
+    <div class="nx-kc g"><div class="nx-kc-l">總來客數</div><div class="nx-kc-v">338 人</div><div class="nx-kc-s">日均 16.9 人</div></div>
+    <div class="nx-kc"><div class="nx-kc-l">平均客單價</div><div class="nx-kc-v">$5,034</div><div class="nx-kc-s">104 筆成交</div></div>
   </div>
 
   <!-- Progress -->
   <div class="nx-prog-wrap">
-    <div class="nx-prog-hdr"><span class="nx-prog-title">月目標進度</span><span class="nx-prog-nums">NT$325,783 / NT$800,000</span></div>
-    <div class="nx-prog-track"><div class="nx-prog-fill" style="width:40.7%"></div></div>
-    <div class="nx-prog-foot"><span class="nx-prog-pct">40.7% 達成</span><span class="nx-prog-gap">尚差 NT$474,217</span></div>
+    <div class="nx-prog-hdr"><span class="nx-prog-title">月目標進度</span><span class="nx-prog-nums">NT$523,506 / NT$800,000</span></div>
+    <div class="nx-prog-track"><div class="nx-prog-fill" style="width:65.4%"></div></div>
+    <div class="nx-prog-foot"><span class="nx-prog-pct">65.4% 達成</span><span class="nx-prog-gap">尚差 NT$276,494</span></div>
   </div>
 
   <!-- Charts -->
   <div class="g2" style="margin-bottom:1.25rem">
     <div class="card">
-      <div class="card-hdr"><span class="card-lbl">每日營業額（NT$）</span><span class="card-badge">9/1–9/13</span></div>
+      <div class="card-hdr"><span class="card-lbl">每日營業額（NT$）</span><span class="card-badge">9/1–9/20</span></div>
       <div class="ch240"><canvas id="nx-chart-rev"></canvas></div>
     </div>
     <div class="card">
@@ -521,6 +521,13 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
           <tr><td><b>9/11</b></td><td>五</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bo">86%</span></td><td class="nr">38,482</td><td class="nr">21</td><td class="nr">5</td><td class="nr"><span class="nx-badge nx-bo">24%</span></td><td class="nr">7,696</td><td>部分客等週年慶</td></tr>
           <tr><td><b>9/12</b></td><td style="color:var(--rust);font-weight:700">六</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bh">159%</span></td><td class="nr" style="font-weight:700">71,343</td><td class="nr">30</td><td class="nr">14</td><td class="nr"><span class="nx-badge nx-bh">47%</span></td><td class="nr">5,096</td><td>7位回購客，最高成交率</td></tr>
           <tr><td><b>9/13</b></td><td style="color:var(--rust)">日</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bh">169%</span></td><td class="nr">33,878</td><td class="nr">21</td><td class="nr">8</td><td class="nr"><span class="nx-badge nx-bg">38%</span></td><td class="nr">4,235</td><td>週日成交率明顯回升</td></tr>
+          <tr><td><b>9/14</b></td><td>一</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bo">67%</span></td><td class="nr">13,435</td><td class="nr">18</td><td class="nr">2</td><td class="nr"><span class="nx-badge nx-bl">11%</span></td><td class="nr">6,718</td><td>週年慶前普通週一</td></tr>
+          <tr><td><b>9/15</b></td><td>二</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bo">73%</span></td><td class="nr">14,676</td><td class="nr">8</td><td class="nr">2</td><td class="nr"><span class="nx-badge nx-bo">25%</span></td><td class="nr">7,338</td><td>週年慶前夕，客單最高</td></tr>
+          <tr><td><b>9/16</b></td><td>三</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bh">370%</span></td><td class="nr" style="font-weight:700">73,915</td><td class="nr">12</td><td class="nr">15</td><td class="nr"><span class="nx-badge nx-bh">125%</span></td><td class="nr">4,928</td><td>誠品週年慶首日，單日最高</td></tr>
+          <tr><td><b>9/17</b></td><td>四</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bl">0%</span></td><td class="nr" style="color:var(--negative);font-weight:700">0</td><td class="nr">8</td><td class="nr">0</td><td class="nr"><span class="nx-badge nx-bl">0%</span></td><td class="nr">—</td><td style="color:var(--negative)">無成交紀錄</td></tr>
+          <tr><td><b>9/18</b></td><td>五</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bo">73%</span></td><td class="nr">32,916</td><td class="nr">18</td><td class="nr">5</td><td class="nr"><span class="nx-badge nx-bg">28%</span></td><td class="nr">6,583</td><td>週年慶期間</td></tr>
+          <tr><td><b>9/19</b></td><td style="color:var(--rust);font-weight:700">六</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bo">76%</span></td><td class="nr">34,063</td><td class="nr">18</td><td class="nr">9</td><td class="nr"><span class="nx-badge nx-bh">50%</span></td><td class="nr">3,785</td><td>週年慶六，高成交率但客單低</td></tr>
+          <tr><td><b>9/20</b></td><td style="color:var(--rust)">日</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bh">144%</span></td><td class="nr">28,718</td><td class="nr">16</td><td class="nr">5</td><td class="nr"><span class="nx-badge nx-bg">31%</span></td><td class="nr">5,744</td><td>週年慶末日，成績超標</td></tr>
         </tbody>
       </table>
     </div>
@@ -2402,11 +2409,11 @@ function renderNanxi() {
   if (nxChartsBuilt) return;
   nxChartsBuilt = true;
 
-  const labels = ['9/1','9/2','9/3','9/4','9/5','9/6','9/7','9/8','9/9','9/10','9/11','9/12','9/13'];
-  const revenue  = [5188,8208,4770,10748,78013,9058,23051,10226,980,31838,38482,71343,33878];
-  const visitors = [5,12,12,9,41,38,15,12,15,9,21,30,21];
-  const convRate = [20,17,17,22,39,13,27,25,7,33,24,47,38];
-  const targets  = [20000,20000,20000,45000,45000,20000,20000,20000,20000,20000,45000,45000,20000];
+  const labels = ['9/1','9/2','9/3','9/4','9/5','9/6','9/7','9/8','9/9','9/10','9/11','9/12','9/13','9/14','9/15','9/16','9/17','9/18','9/19','9/20'];
+  const revenue  = [5188,8208,4770,10748,78013,9058,23051,10226,980,31838,38482,71343,33878,13435,14676,73915,0,32916,34063,28718];
+  const visitors = [5,12,12,9,41,38,15,12,15,9,21,30,21,18,8,12,8,18,18,16];
+  const convRate = [20,17,17,22,39,13,27,25,7,33,24,47,38,11,25,125,0,28,50,31];
+  const targets  = [20000,20000,20000,45000,45000,20000,20000,20000,20000,20000,45000,45000,20000,20000,20000,20000,20000,45000,45000,20000];
 
   const textC = '#b09a88';
   const gridC = 'rgba(40,66,52,.06)';
@@ -2421,7 +2428,7 @@ function renderNanxi() {
           borderColor:'rgba(40,66,52,.3)', borderWidth:1.5, pointRadius:0,
           borderDash:[4,3], tension:0, order:0 },
         { label:'營業額', data:revenue,
-          backgroundColor: revenue.map((_,i) => i===4||i===11?'#284234':i===8?'#c07050':'#8a6a4a'),
+          backgroundColor: revenue.map((_,i) => i===4||i===11||i===15?'#284234':i===8||i===16?'#c07050':'#8a6a4a'),
           borderRadius:3, order:1 }
       ]
     },
@@ -2458,7 +2465,7 @@ function renderNanxi() {
         yV:{ position:'left', grid:{color:gridC},
           ticks:{color:textC,font:{family:'Space Mono',size:9}},
           title:{display:true,text:'人數',color:textC,font:{size:9}} },
-        yC:{ position:'right', grid:{display:false}, max:60,
+        yC:{ position:'right', grid:{display:false},
           ticks:{color:'#A54A1A',font:{family:'Space Mono',size:9},callback:v=>v+'%'},
           title:{display:true,text:'成交率',color:'#A54A1A',font:{size:9}} }
       }
