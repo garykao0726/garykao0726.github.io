@@ -330,6 +330,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       <button class="tab-btn" onclick="switchStore('松菸店',this)">松菸店</button>
       <button class="tab-btn" onclick="switchStore('台中店',this)">台中店</button>
       <button class="tab-btn" onclick="switchStore('東門店',this)">東門店</button>
+      <button class="tab-btn" onclick="switchStore('誠品南西店',this)">誠品南西店</button>
     </div>
     <div class="tab-bar" id="pos-period-bar" style="margin-top:6px">
       <button class="tab-btn active" onclick="switchPosPeriod('week',this)">本週</button>
@@ -383,6 +384,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     <button class="tab-btn" data-store="松菸店" onclick="switchMonthStore('松菸店',this)">松菸店</button>
     <button class="tab-btn" data-store="台中店" onclick="switchMonthStore('台中店',this)">台中店</button>
     <button class="tab-btn" data-store="東門店" onclick="switchMonthStore('東門店',this)">東門店</button>
+    <button class="tab-btn" data-store="誠品南西店" onclick="switchMonthStore('誠品南西店',this)">誠品南西店</button>
   </div>
   <div id="month-store-content"></div>
 
@@ -465,7 +467,7 @@ const S_PERIOD=1, S_STORE=2, S_WREV=3, S_WTGT=4, S_WACH=5, S_VISITORS=6,
 
 const STORE_COLORS = {
   '中山店':'#378ADD','松菸店':'#1D9E75','東門店':'#D4537E',
-  '台中店':'#EF9F27','官網':'#284234'
+  '台中店':'#EF9F27','官網':'#284234','誠品南西店':'#8D5531'
 };
 
 const CHART_COLORS = ['#284234','#A54A1A','#1D9E75','#D4537E','#EF9F27','#378ADD','#8D5531','#CFA294'];
@@ -762,7 +764,7 @@ const TOP_STORE = 10;
 /* 歷史月份模組狀態 */
 let _monthSelected = null;     // 'YYYY-MM' e.g. '2026-04'
 let _monthStore    = '官網';
-const MONTH_STORES = ['官網','中山店','松菸店','台中店','東門店'];
+const MONTH_STORES = ['官網','中山店','松菸店','台中店','東門店','誠品南西店'];
 
 function switchStore(storeName, btn) {
   _posCurrentStore = storeName;
