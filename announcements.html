@@ -293,6 +293,25 @@ function clearAnswer() {
   sourcesWrap.style.display = 'none';
 }
 
+// 向後端問答，收到非 JSON（echo 偶發逾時回 HTML）時自動重試，避免顯示「連線失敗」
+async function postAsk(body) {
+  let lastErr;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const resp = await fetch(WEBAPI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(body),
+        redirect: 'follow'
+      });
+      const text = await resp.text();
+      try { return JSON.parse(text); }
+      catch (e) { lastErr = e; if (attempt < 2) await new Promise(r => setTimeout(r, 1500)); }
+    } catch (e) { lastErr = e; if (attempt < 2) await new Promise(r => setTimeout(r, 1500)); }
+  }
+  throw lastErr || new Error('無法取得回應');
+}
+
 async function askQuestion(question) {
   if (!question || !question.trim()) return;
   btn.disabled = true;
@@ -302,18 +321,11 @@ async function askQuestion(question) {
   setStatus('人事小管家思考中…');
 
   try {
-    const resp = await fetch(WEBAPI_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 避免 CORS preflight
-      body: JSON.stringify({
-        question: question.trim(),
-        scope: WEBAPI_SCOPE,
-        token: WEBAPI_TOKEN
-      }),
-      redirect: 'follow'
+    const data = await postAsk({
+      question: question.trim(),
+      scope: WEBAPI_SCOPE,
+      token: WEBAPI_TOKEN
     });
-
-    const data = await resp.json();
     setStatus(null);
 
     if (data.error) {
