@@ -270,10 +270,12 @@ function rebuildDerived(){
     PKG[m.ym] = (m.pkg !== undefined && m.pkg !== null) ? m.pkg : (FALLBACK_PKG[m.ym] || 0);
     PKG_PREV[m.ym] = (m.pkgPrev !== undefined) ? m.pkgPrev : (FALLBACK_PKG_PREV[m.ym] !== undefined ? FALLBACK_PKG_PREV[m.ym] : null);
   });
-  let cumRev = 0, cumNI = 0, cumOp = 0;
+  let cumRev = 0, cumNI = 0, cumOp = 0, cumMkt = 0;
   CMP.forEach(m => {
-    cumRev += m.rev; cumNI += m.ni; cumOp += m.opProfit;
+    cumRev += m.rev; cumNI += m.ni; cumOp += m.opProfit; cumMkt += (m.mkt || 0);
     m.ytdRev = cumRev; m.ytdNI = cumNI; m.ytdOp = cumOp;
+    m.ytdMkt = cumMkt;
+    m.ytdMktPct = cumRev ? cumMkt / cumRev * 100 : 0;
     m.ytdNIPct = cumRev ? cumNI / cumRev * 100 : 0;
     m.ytdOpPct = cumRev ? cumOp / cumRev * 100 : 0;
     const mi = parseInt(m.ym.split('/')[1], 10) - 1;
@@ -660,7 +662,12 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       <div>
         <div class="mkt-alert" id="mkt-alert"></div>
         <div class="chart-card" style="margin-bottom:0">
-          <div class="chart-card-title">廣告費率月趨勢（1–4月）</div>
+          <div class="chart-card-title" id="mkt-trend-title">廣告費率：單月 vs 年度累計</div>
+          <div class="chart-legend">
+            <div class="leg-item"><div class="leg-dot" style="background:#A54A1A"></div>單月費率</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#284234"></div>年度累計費率</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#b09a88"></div>6% 上限（虛線）</div>
+          </div>
           <div class="chart-wrap-sm"><canvas id="mkt-trend-chart"></canvas></div>
         </div>
       </div>
@@ -1286,7 +1293,7 @@ function updateMonthLabels() {
   set('wf-source', `來源：ERP 損益表 ${S.ym} · 管理帳`);
   set('ach-month-hd', `本月（${S.ym}）`);
   set('ach-ytd-hd', `年度完成進度（1–${mNum}月累計 / 全年目標）`);
-  set('sec-mkt', `廣告費用分析（本月 ${fmtPct(S.mktPct)}${S.mktPct > 6 ? ' — 超出上限 6%' : ' — 控制於上限 6% 內'}）`);
+  set('sec-mkt', `廣告費用分析（1–${mNum}月累計 ${fmtPct(S.ytdMktPct)}${S.ytdMktPct > 6 ? ' — 高於年度 6%' : ' — 在年度 6% 內'}；本月 ${fmtPct(S.mktPct)}）`);
   set('sec-store', S.storeData ? '各門市當月績效' : '各門市績效（本月僅有總公司合併損益，暫無分店別資料）');
   set('sec-insight', `深入觀察 — ${y}年${mNum}月值得拉出來討論（現行分析未涵蓋）`);
 }
@@ -1679,11 +1686,15 @@ function renderMktBreakdown() {
   const over      = S.mkt > budget6Pct;            // 是否超出月上限
   const diff      = Math.abs(S.mkt - budget6Pct);
 
-  /* 累計廣告費（1月~本月）與年度預算使用率 */
-  const ytdMkt     = CMP.slice(0, mIdx + 1).reduce((s, m) => s + m.mkt, 0);
-  const ytdMktRate = S.ytdRev ? ytdMkt / S.ytdRev * 100 : 0;
+  /* 累計廣告費（1月~本月）、年度預算使用率；6% 以年度累計判斷，單月超過屬檔期波動 */
+  const ytdMkt     = S.ytdMkt;
+  const ytdMktRate = S.ytdMktPct;
+  const ytdOver    = ytdMktRate > 6;
   const budgetUsed = ytdMkt / COMPANY_MKT_BUDGET * 100;
   const remainMkt  = COMPANY_MKT_BUDGET - ytdMkt;
+  /* 全年要回到 6%：剩餘月份可用的平均費率＝剩餘預算 ÷ 剩餘營收基準（ANNUAL_MKT_BASE 6,900萬） */
+  const remainRevBase = ANNUAL_MKT_BASE - S.ytdRev;
+  const remainRate = (mIdx < 11 && remainRevBase > 0) ? Math.max(remainMkt, 0) / remainRevBase * 100 : null;
 
   /* detail card title */
   document.getElementById('mkt-detail-title').textContent =
@@ -1711,33 +1722,49 @@ function renderMktBreakdown() {
   const ranked = cats.map((c, i) => ({ c, v: vals[i] })).filter(x => x.v > 0).sort((a, b) => b.v - a.v);
   const top = ranked[0] || { c:'—', v:0 };
   const top2 = ranked[1];
-  const budgetState = ytdMktRate <= 6
-    ? `<span style="color:var(--pos)">仍在年度預算率內（6%）</span>`
-    : `<span style="color:var(--neg)">已超出年度預算率（6%）</span>`;
-  document.getElementById('mkt-alert').innerHTML = over
-    ? `<div class="mkt-alert-hd">⚠ 廣告費超標原因分析</div>
-       <div class="mkt-alert-body">
-         本月廣告費 <strong>${fmtW(S.mkt)}</strong>（佔營收 ${fmtPct(S.mktPct)}），超出月上限 6%（${fmtW(budget6Pct)}）。<br><br>
-         最大項目為<strong>${top.c}</strong> ${fmtW(top.v)}（佔廣告費 ${(top.v/S.mkt*100).toFixed(0)}%）${top2 ? `，其次為${top2.c} ${fmtW(top2.v)}` : ''}。<br><br>
-         1–${mIdx+1}月累計廣告費率 ${fmtPct(ytdMktRate)}，${budgetState}，
-         年度預算已使用 ${fmtPct(budgetUsed)}，剩餘 ${fmtW(remainMkt)}，需控管後續月份。
-       </div>`
-    : `<div class="mkt-alert-hd" style="color:var(--pos)">✓ 廣告費控管良好</div>
-       <div class="mkt-alert-body">
-         本月廣告費 <strong>${fmtW(S.mkt)}</strong>（佔營收 ${fmtPct(S.mktPct)}），控制於月上限 6% 內（${fmtW(budget6Pct)}）。<br><br>
-         最大項目為<strong>${top.c}</strong> ${fmtW(top.v)}（佔廣告費 ${(top.v/S.mkt*100).toFixed(0)}%）。<br><br>
-         1–${mIdx+1}月累計廣告費率 ${fmtPct(ytdMktRate)}，${budgetState}，
-         年度預算已使用 ${fmtPct(budgetUsed)}，剩餘 ${fmtW(remainMkt)}。
-       </div>`;
+  const ytdState = ytdOver
+    ? `<span style="color:var(--neg)">高於年度 6%</span>`
+    : `<span style="color:var(--pos)">在年度 6% 內</span>`;
+  const budgetLine = remainMkt >= 0
+    ? `年度預算已使用 ${fmtPct(budgetUsed)}，剩餘 ${fmtW(remainMkt)}。`
+    : `年度預算已用完，超出 ${fmtW(-remainMkt)}。`;
+  const remainLine = (ytdOver && remainRate !== null)
+    ? `<br><br>要讓全年回到 6%，${mIdx + 2}–12 月的廣告費率平均要壓在 <strong>${fmtPct(remainRate)}</strong> 以內（以年度營收基準 ${(ANNUAL_MKT_BASE / 10000).toLocaleString()} 萬計）。`
+    : '';
+  const topLine = `最大項目為<strong>${top.c}</strong> ${fmtW(top.v)}（佔廣告費 ${(top.v/S.mkt*100).toFixed(0)}%）${top2 ? `，其次為${top2.c} ${fmtW(top2.v)}` : ''}。`;
+  const hd = ytdOver ? { t:'⚠ 年度累計廣告費率高於 6%', c:'' }
+           : over    ? { t:'本月偏高，年度累計仍在 6% 內', c:'var(--warn)' }
+           :           { t:'✓ 廣告費控管良好', c:'var(--pos)' };
+  document.getElementById('mkt-alert').innerHTML = `
+    <div class="mkt-alert-hd"${hd.c ? ` style="color:${hd.c}"` : ''}>${hd.t}</div>
+    <div class="mkt-alert-body">
+      1–${mIdx+1}月累計廣告費率 <strong>${fmtPct(ytdMktRate)}</strong>（${fmtW(ytdMkt)}），${ytdState}；${budgetLine}${remainLine}<br><br>
+      本月廣告費 ${fmtW(S.mkt)}（佔營收 ${fmtPct(S.mktPct)}）${over ? '，高於 6%' : '，在 6% 內'}。${topLine}
+      ${!ytdOver && over ? '<br><br>拍攝、活動多為一次性支出，單月超過 6% 屬檔期波動，以年度累計判斷即可。' : ''}
+    </div>`;
 
-  /* 廣告費率月趨勢（1–4月，標示目前月份） */
+  /* 廣告費率趨勢：單月 vs 年度累計（標示目前月份） */
+  document.getElementById('mkt-trend-title').textContent =
+    `廣告費率：單月 vs 年度累計（${CMP[0].label}–${CMP[CMP.length - 1].label}）`;
+  const mktYMax = Math.max(12, Math.ceil(Math.max(...CMP.map(m => m.mktPct || 0)) + 1));
   mkChart('mkt-trend-chart', {
     type: 'line',
     data: {
       labels: CMP.map(m => m.label),
       datasets: [
         {
-          label: '廣告費率 %',
+          label: '年度累計費率 %',
+          data: CMP.map(m => m.ytdMktPct),
+          borderColor: '#284234',
+          backgroundColor: 'transparent',
+          fill: false,
+          borderWidth: 2.5, tension: 0.3,
+          pointRadius: CMP.map(m => m.ym === S.ym ? 6 : 3),
+          pointBackgroundColor: '#284234',
+          pointBorderColor: '#284234',
+        },
+        {
+          label: '單月費率 %',
           data: CMP.map(m => m.mktPct),
           borderColor: '#A54A1A',
           backgroundColor: 'rgba(165,74,26,.1)',
@@ -1761,7 +1788,7 @@ function renderMktBreakdown() {
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.raw.toFixed(2) + '%' } } },
       scales: {
         x: { grid:{ display:false }, ticks:{ color:'#b09a88', font:{ size:11 } } },
-        y: { grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{ size:11 }, callback: v => v + '%' }, min: 0, max: 12 }
+        y: { grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{ size:11 }, callback: v => v + '%' }, min: 0, max: mktYMax }
       }
     }
   });
