@@ -2394,8 +2394,32 @@ async function renderNanxi() {
   const NX_SSID = '1N_02nfF7KitPExgIp2iZjVD9t4ZqczItP1l-KoyqPY8';
   const NX_SHEET = '林果dashboard_南西誠品';
   const NX_MTG = 800000;
+  // 備用靜態資料（Sheet 尚未公開或網路失敗時顯示）
+  const NX_FALLBACK = [
+    {date:'9/1',weekday:'一',target:20000,revenue:5188,visitors:5,txn:1,convRate:20},
+    {date:'9/2',weekday:'二',target:20000,revenue:8208,visitors:12,txn:2,convRate:17},
+    {date:'9/3',weekday:'三',target:20000,revenue:4770,visitors:12,txn:2,convRate:17},
+    {date:'9/4',weekday:'四',target:20000,revenue:10748,visitors:9,txn:2,convRate:22},
+    {date:'9/5',weekday:'五',target:45000,revenue:78013,visitors:41,txn:16,convRate:39},
+    {date:'9/6',weekday:'六',target:45000,revenue:9058,visitors:38,txn:5,convRate:13},
+    {date:'9/7',weekday:'日',target:20000,revenue:23051,visitors:15,txn:4,convRate:27},
+    {date:'9/8',weekday:'一',target:20000,revenue:10226,visitors:12,txn:3,convRate:25},
+    {date:'9/9',weekday:'二',target:20000,revenue:980,visitors:15,txn:1,convRate:7},
+    {date:'9/10',weekday:'三',target:20000,revenue:31838,visitors:9,txn:3,convRate:33},
+    {date:'9/11',weekday:'四',target:45000,revenue:38482,visitors:21,txn:5,convRate:24},
+    {date:'9/12',weekday:'五',target:45000,revenue:71343,visitors:30,txn:14,convRate:47},
+    {date:'9/13',weekday:'六',target:20000,revenue:33878,visitors:21,txn:8,convRate:38},
+    {date:'9/14',weekday:'日',target:20000,revenue:13435,visitors:18,txn:2,convRate:11},
+    {date:'9/15',weekday:'一',target:20000,revenue:14676,visitors:8,txn:2,convRate:25},
+    {date:'9/16',weekday:'二',target:20000,revenue:73915,visitors:12,txn:15,convRate:125},
+    {date:'9/17',weekday:'三',target:20000,revenue:0,visitors:8,txn:0,convRate:0},
+    {date:'9/18',weekday:'四',target:45000,revenue:32916,visitors:18,txn:5,convRate:28},
+    {date:'9/19',weekday:'五',target:45000,revenue:34063,visitors:18,txn:9,convRate:50},
+    {date:'9/20',weekday:'六',target:20000,revenue:28718,visitors:16,txn:5,convRate:31},
+  ].map(d=>({...d,achPct:d.target>0?Math.round(d.revenue/d.target*100):0,ticket:d.txn>0?Math.round(d.revenue/d.txn):0}));
+
   let rows = [];
-  try { rows = await loadGvizFrom(NX_SSID, NX_SHEET, 'A6:R40'); } catch(e) { console.error('南西資料載入失敗', e); }
+  try { rows = await loadGvizFrom(NX_SSID, NX_SHEET, 'A6:R40'); } catch(e) { console.error('南西資料載入失敗，使用備用資料', e); }
   const days = [];
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
@@ -2416,14 +2440,16 @@ async function renderNanxi() {
     const ticket = txn>0?Math.round(revenue/txn):0;
     days.push({date:dateStr,weekday,target,revenue,visitors,txn,convRate,achPct,ticket});
   }
-  const totRev=days.reduce((s,d)=>s+d.revenue,0);
-  const totVis=days.reduce((s,d)=>s+d.visitors,0);
-  const totTxn=days.reduce((s,d)=>s+d.txn,0);
+  // 如果 Sheet 抓不到資料，用備用資料
+  const src = days.length > 0 ? days : NX_FALLBACK;
+  const totRev=src.reduce((s,d)=>s+d.revenue,0);
+  const totVis=src.reduce((s,d)=>s+d.visitors,0);
+  const totTxn=src.reduce((s,d)=>s+d.txn,0);
   const avgTicket=totTxn>0?Math.round(totRev/totTxn):0;
   const achRate=Math.round(totRev/NX_MTG*1000)/10;
   const gap=NX_MTG-totRev;
-  const nDays=days.length;
-  const lastDay=days.length>0?days[days.length-1].date:'';
+  const nDays=src.length;
+  const lastDay=src.length>0?src[src.length-1].date:'';
   const daysLeft=Math.max(0,30-nDays);
   const achBadge=p=>p>=100?'nx-bh':p>=50?'nx-bo':'nx-bl';
   const convBadge=p=>p>=40?'nx-bh':p>=26?'nx-bg':p>=20?'nx-bo':'nx-bl';
@@ -2438,18 +2464,18 @@ async function renderNanxi() {
   if ($('nx-prog-pct')) $('nx-prog-pct').textContent=achRate+'% 達成';
   if ($('nx-prog-gap')) $('nx-prog-gap').textContent=(gap>0?'尚差 NT$':'超標 NT$')+Math.abs(gap).toLocaleString();
   const tbody=$('nx-tbl-body');
-  if (tbody) tbody.innerHTML=days.map(d=>{
+  if (tbody) tbody.innerHTML=src.map(d=>{
     const ws=d.weekday==='六'?'style="color:var(--rust);font-weight:700"':d.weekday==='日'?'style="color:var(--rust)"':'';
     const rs=d.revenue===0?'style="color:var(--negative);font-weight:700"':d.revenue>60000?'style="font-weight:700"':'';
     return '<tr><td><b>'+d.date+'</b></td><td '+ws+'>'+d.weekday+'</td><td class="nr">'+d.target.toLocaleString()+'</td><td class="nr"><span class="nx-badge '+achBadge(d.achPct)+'">'+d.achPct+'%</span></td><td class="nr" '+rs+'>'+d.revenue.toLocaleString()+'</td><td class="nr">'+d.visitors+'</td><td class="nr">'+d.txn+'</td><td class="nr"><span class="nx-badge '+convBadge(d.convRate)+'">'+d.convRate+'%</span></td><td class="nr">'+(d.ticket>0?d.ticket.toLocaleString():'—')+'</td><td></td></tr>';
   }).join('');
-  const labels=days.map(d=>d.date);
-  const revenue=days.map(d=>d.revenue);
-  const visitors=days.map(d=>d.visitors);
-  const convRate=days.map(d=>d.convRate);
-  const targets=days.map(d=>d.target);
+  const labels=src.map(d=>d.date);
+  const revenue=src.map(d=>d.revenue);
+  const visitors=src.map(d=>d.visitors);
+  const convRate=src.map(d=>d.convRate);
+  const targets=src.map(d=>d.target);
   const textC='#b09a88', gridC='rgba(40,66,52,.06)';
-  new Chart(document.getElementById('nx-chart-rev').getContext('2d'),{type:'bar',data:{labels,datasets:[{label:'目標',data:targets,type:'line',backgroundColor:'transparent',borderColor:'rgba(40,66,52,.3)',borderWidth:1.5,pointRadius:0,borderDash:[4,3],tension:0,order:0},{label:'營業額',data:revenue,backgroundColor:revenue.map((_,i)=>days[i].revenue===0?'#c07050':days[i].revenue>60000?'#284234':'#8a6a4a'),borderRadius:3,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' NT$ '+c.parsed.y.toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{color:textC,font:{family:'Space Mono',size:9}}},y:{grid:{color:gridC},ticks:{color:textC,font:{family:'Space Mono',size:9},callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'k':v}}}}});
+  new Chart(document.getElementById('nx-chart-rev').getContext('2d'),{type:'bar',data:{labels,datasets:[{label:'目標',data:targets,type:'line',backgroundColor:'transparent',borderColor:'rgba(40,66,52,.3)',borderWidth:1.5,pointRadius:0,borderDash:[4,3],tension:0,order:0},{label:'營業額',data:revenue,backgroundColor:revenue.map((_,i)=>src[i].revenue===0?'#c07050':src[i].revenue>60000?'#284234':'#8a6a4a'),borderRadius:3,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' NT$ '+c.parsed.y.toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{color:textC,font:{family:'Space Mono',size:9}}},y:{grid:{color:gridC},ticks:{color:textC,font:{family:'Space Mono',size:9},callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'k':v}}}}});
   new Chart(document.getElementById('nx-chart-vis').getContext('2d'),{data:{labels,datasets:[{type:'bar',label:'來客數',data:visitors,backgroundColor:'rgba(40,66,52,.18)',borderRadius:3,yAxisID:'yV',order:1},{type:'line',label:'成交率',data:convRate,borderColor:'#A54A1A',backgroundColor:'transparent',pointBackgroundColor:'#A54A1A',pointRadius:3,tension:.3,borderWidth:2,yAxisID:'yC',order:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:textC,font:{size:9},boxWidth:10}},tooltip:{callbacks:{label:c=>c.dataset.label==='成交率'?' '+c.parsed.y+'%':' '+c.parsed.y+' 人'}}},scales:{x:{grid:{display:false},ticks:{color:textC,font:{family:'Space Mono',size:9}}},yV:{position:'left',grid:{color:gridC},ticks:{color:textC,font:{family:'Space Mono',size:9}},title:{display:true,text:'人數',color:textC,font:{size:9}}},yC:{position:'right',grid:{display:false},ticks:{color:'#A54A1A',font:{family:'Space Mono',size:9},callback:v=>v+'%'},title:{display:true,text:'成交率',color:'#A54A1A',font:{size:9}}}}}});
 }
 </script>
