@@ -462,8 +462,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <!-- Banner -->
   <div class="nx-banner">
     <div class="nx-eyebrow">Oringo 林果良品 · 誠品生活南西 · 開幕分析</div>
-    <div class="nx-title">2026 年 9 月營業分析（9/1–9/20）</div>
-    <div class="nx-sub">2026/09/01 – 09/20 &nbsp;·&nbsp; 20 天完整紀錄 &nbsp;·&nbsp; POS 銷售 + Dashboard + 手寫日誌</div>
+    <div class="nx-title" id="nx-title">2026 年 9 月營業分析</div>
+    <div class="nx-sub" id="nx-sub">2026/09/01 – 09/20 &nbsp;·&nbsp; 20 天 &nbsp;·&nbsp; POS 銷售 + Dashboard</div>
     <div class="nx-meta">
       <div class="nx-mi"><span class="nx-ml">月目標</span><span class="nx-mv">NT$ 800,000</span></div>
       <div class="nx-mi"><span class="nx-ml">本期累計</span><span class="nx-mv">NT$ 523,506</span></div>
@@ -474,17 +474,17 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
   <!-- KPI -->
   <div class="nx-kpi4">
-    <div class="nx-kc a"><div class="nx-kc-l">累計營業額</div><div class="nx-kc-v">$523,506</div><div class="nx-kc-s">月目標 65.4%</div></div>
-    <div class="nx-kc w"><div class="nx-kc-l">距月目標</div><div class="nx-kc-v">−$276,494</div><div class="nx-kc-s">剩 10 天</div></div>
-    <div class="nx-kc g"><div class="nx-kc-l">總來客數</div><div class="nx-kc-v">338 人</div><div class="nx-kc-s">日均 16.9 人</div></div>
-    <div class="nx-kc"><div class="nx-kc-l">平均客單價</div><div class="nx-kc-v">$5,034</div><div class="nx-kc-s">104 筆成交</div></div>
+    <div class="nx-kc a"><div class="nx-kc-l">累計營業額</div><div class="nx-kc-v" id="nx-kpi-rev">$523,506</div><div class="nx-kc-s" id="nx-kpi-rev-s">月目標 65.4%</div></div>
+    <div class="nx-kc w"><div class="nx-kc-l">距月目標</div><div class="nx-kc-v" id="nx-kpi-gap">−$276,494</div><div class="nx-kc-s" id="nx-kpi-gap-s">剩 10 天</div></div>
+    <div class="nx-kc g"><div class="nx-kc-l">總來客數</div><div class="nx-kc-v" id="nx-kpi-vis">338 人</div><div class="nx-kc-s" id="nx-kpi-vis-s">日均 16.9 人</div></div>
+    <div class="nx-kc"><div class="nx-kc-l">平均客單價</div><div class="nx-kc-v" id="nx-kpi-ticket">$5,034</div><div class="nx-kc-s" id="nx-kpi-ticket-s">104 筆成交</div></div>
   </div>
 
   <!-- Progress -->
   <div class="nx-prog-wrap">
-    <div class="nx-prog-hdr"><span class="nx-prog-title">月目標進度</span><span class="nx-prog-nums">NT$523,506 / NT$800,000</span></div>
-    <div class="nx-prog-track"><div class="nx-prog-fill" style="width:65.4%"></div></div>
-    <div class="nx-prog-foot"><span class="nx-prog-pct">65.4% 達成</span><span class="nx-prog-gap">尚差 NT$276,494</span></div>
+    <div class="nx-prog-hdr"><span class="nx-prog-title">月目標進度</span><span class="nx-prog-nums" id="nx-prog-nums">NT$523,506 / NT$800,000</span></div>
+    <div class="nx-prog-track"><div class="nx-prog-fill" id="nx-prog-fill" style="width:65.4%"></div></div>
+    <div class="nx-prog-foot"><span class="nx-prog-pct" id="nx-prog-pct">65.4% 達成</span><span class="nx-prog-gap" id="nx-prog-gap">尚差 NT$276,494</span></div>
   </div>
 
   <!-- Charts -->
@@ -507,27 +507,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
         <thead>
           <tr><th>日期</th><th>星期</th><th class="nr">目標</th><th class="nr">達成率</th><th class="nr">營業額</th><th class="nr">來客</th><th class="nr">成交</th><th class="nr">成交率</th><th class="nr">客單價</th><th>備注</th></tr>
         </thead>
-        <tbody>
-          <tr><td><b>9/1</b></td><td>二</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bl">26%</span></td><td class="nr">5,188</td><td class="nr">5</td><td class="nr">1</td><td class="nr"><span class="nx-badge nx-bl">20%</span></td><td class="nr">5,188</td><td>前Vanger客人</td></tr>
-          <tr><td><b>9/2</b></td><td>三</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bl">41%</span></td><td class="nr">8,208</td><td class="nr">12</td><td class="nr">2</td><td class="nr"><span class="nx-badge nx-bl">17%</span></td><td class="nr">4,104</td><td>缺1702奶色、尺碼問題</td></tr>
-          <tr><td><b>9/3</b></td><td>四</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bl">24%</span></td><td class="nr">4,770</td><td class="nr">12</td><td class="nr">2</td><td class="nr"><span class="nx-badge nx-bl">17%</span></td><td class="nr">2,385</td><td>港客、Beara客轉介</td></tr>
-          <tr><td><b>9/4</b></td><td>五</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bl">24%</span></td><td class="nr">10,748</td><td class="nr">9</td><td class="nr">2</td><td class="nr"><span class="nx-badge nx-bo">22%</span></td><td class="nr">5,374</td><td>灰410斷貨、1702-42缺</td></tr>
-          <tr><td><b>9/5</b></td><td style="color:var(--rust);font-weight:700">六</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bh">173%</span></td><td class="nr" style="font-weight:700">78,013</td><td class="nr">41</td><td class="nr">16</td><td class="nr"><span class="nx-badge nx-bg">39%</span></td><td class="nr">4,876</td><td>開幕週六高峰</td></tr>
-          <tr><td><b>9/6</b></td><td style="color:var(--rust)">日</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bo">45%</span></td><td class="nr">9,058</td><td class="nr">38</td><td class="nr">5</td><td class="nr"><span class="nx-badge nx-bl">13%</span></td><td class="nr">1,812</td><td>高流量低成交，瀏覽型</td></tr>
-          <tr><td><b>9/7</b></td><td>一</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bh">115%</span></td><td class="nr">23,051</td><td class="nr">15</td><td class="nr">4</td><td class="nr"><span class="nx-badge nx-bg">27%</span></td><td class="nr">5,763</td><td>1702/8501成交</td></tr>
-          <tr><td><b>9/8</b></td><td>二</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bo">51%</span></td><td class="nr">10,226</td><td class="nr">12</td><td class="nr">3</td><td class="nr"><span class="nx-badge nx-bo">25%</span></td><td class="nr">3,409</td><td>5202+3202成交</td></tr>
-          <tr><td><b>9/9</b></td><td>三</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bl">5%</span></td><td class="nr" style="color:var(--negative);font-weight:700">980</td><td class="nr">15</td><td class="nr">1</td><td class="nr"><span class="nx-badge nx-bl">7%</span></td><td class="nr">980</td><td style="color:var(--negative)">等誠品週年慶；1702奶茶42缺貨</td></tr>
-          <tr><td><b>9/10</b></td><td>四</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bh">159%</span></td><td class="nr">31,838</td><td class="nr">9</td><td class="nr">3</td><td class="nr"><span class="nx-badge nx-bg">33%</span></td><td class="nr" style="font-weight:700">10,613</td><td>最高客單價，回購力強</td></tr>
-          <tr><td><b>9/11</b></td><td>五</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bo">86%</span></td><td class="nr">38,482</td><td class="nr">21</td><td class="nr">5</td><td class="nr"><span class="nx-badge nx-bo">24%</span></td><td class="nr">7,696</td><td>部分客等週年慶</td></tr>
-          <tr><td><b>9/12</b></td><td style="color:var(--rust);font-weight:700">六</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bh">159%</span></td><td class="nr" style="font-weight:700">71,343</td><td class="nr">30</td><td class="nr">14</td><td class="nr"><span class="nx-badge nx-bh">47%</span></td><td class="nr">5,096</td><td>7位回購客，最高成交率</td></tr>
-          <tr><td><b>9/13</b></td><td style="color:var(--rust)">日</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bh">169%</span></td><td class="nr">33,878</td><td class="nr">21</td><td class="nr">8</td><td class="nr"><span class="nx-badge nx-bg">38%</span></td><td class="nr">4,235</td><td>週日成交率明顯回升</td></tr>
-          <tr><td><b>9/14</b></td><td>一</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bo">67%</span></td><td class="nr">13,435</td><td class="nr">18</td><td class="nr">2</td><td class="nr"><span class="nx-badge nx-bl">11%</span></td><td class="nr">6,718</td><td>週年慶前普通週一</td></tr>
-          <tr><td><b>9/15</b></td><td>二</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bo">73%</span></td><td class="nr">14,676</td><td class="nr">8</td><td class="nr">2</td><td class="nr"><span class="nx-badge nx-bo">25%</span></td><td class="nr">7,338</td><td>週年慶前夕，客單最高</td></tr>
-          <tr><td><b>9/16</b></td><td>三</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bh">370%</span></td><td class="nr" style="font-weight:700">73,915</td><td class="nr">12</td><td class="nr">15</td><td class="nr"><span class="nx-badge nx-bh">125%</span></td><td class="nr">4,928</td><td>誠品週年慶首日，單日最高</td></tr>
-          <tr><td><b>9/17</b></td><td>四</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bl">0%</span></td><td class="nr" style="color:var(--negative);font-weight:700">0</td><td class="nr">8</td><td class="nr">0</td><td class="nr"><span class="nx-badge nx-bl">0%</span></td><td class="nr">—</td><td style="color:var(--negative)">無成交紀錄</td></tr>
-          <tr><td><b>9/18</b></td><td>五</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bo">73%</span></td><td class="nr">32,916</td><td class="nr">18</td><td class="nr">5</td><td class="nr"><span class="nx-badge nx-bg">28%</span></td><td class="nr">6,583</td><td>週年慶期間</td></tr>
-          <tr><td><b>9/19</b></td><td style="color:var(--rust);font-weight:700">六</td><td class="nr">45,000</td><td class="nr"><span class="nx-badge nx-bo">76%</span></td><td class="nr">34,063</td><td class="nr">18</td><td class="nr">9</td><td class="nr"><span class="nx-badge nx-bh">50%</span></td><td class="nr">3,785</td><td>週年慶六，高成交率但客單低</td></tr>
-          <tr><td><b>9/20</b></td><td style="color:var(--rust)">日</td><td class="nr">20,000</td><td class="nr"><span class="nx-badge nx-bh">144%</span></td><td class="nr">28,718</td><td class="nr">16</td><td class="nr">5</td><td class="nr"><span class="nx-badge nx-bg">31%</span></td><td class="nr">5,744</td><td>週年慶末日，成績超標</td></tr>
+        <tbody id="nx-tbl-body">
+          <tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:1.5rem;font-size:12px">資料載入中…</td></tr>
         </tbody>
       </table>
     </div>
@@ -765,6 +746,7 @@ let MOPS={};  // 月度營運：MOPS[店名][月-1]={visitors,vNew,vOld,vRep,txn
 let WK={};STORES.forEach(s=>WK[s]={rev:0,tgt:0,vis:0,conv:0,ticket:0,newTxn:0,oldTxn:0,repVis:0,repConv:0,weekOrders:0,mtdRev:0,monthTarget:0,monthAch:0,newMembers:0,wkSessions:0,wkUsers:0,wkGaConv:0,moSessions:0,moUsers:0});
 let allWk={};STORES.forEach(s=>allWk[s]=[]);
 let _gvizSeq=0;function loadGviz(sheetName){return new Promise((resolve,reject)=>{const cb='_gvizCb'+(++_gvizSeq);window[cb]=function(resp){delete window[cb];const rows=(resp.table.rows||[]).map(r=>(r.c||[]).map(cell=>cell?cell.v:null));resolve(rows);};const s=document.createElement('script');s.onerror=()=>reject(new Error('Load failed: '+sheetName));s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}`;document.head.appendChild(s);});}
+function loadGvizFrom(ssId,sheetName,range){return new Promise((resolve,reject)=>{const cb='_gvizCb'+(++_gvizSeq);window[cb]=function(resp){delete window[cb];try{const rows=(resp.table.rows||[]).map(r=>(r.c||[]).map(cell=>cell?cell.v:null));resolve(rows);}catch(e){reject(e);}};const s=document.createElement('script');s.onerror=()=>reject(new Error('gviz load failed'));s.src=`https://docs.google.com/spreadsheets/d/${ssId}/gviz/tq?tqx=responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}`+(range?`&range=${range}`:'');document.head.appendChild(s);});}
 async function loadData(){try{const [wkRows,moRows,opRows]=await Promise.all([loadGviz('週報數據'),loadGviz('月度數據'),loadGviz('月度營運').catch(()=>[])]);opRows.forEach(r=>{const yr=Number(r[0]),mo=Number(r[1]),s=r[2];if(yr===2026&&mo>=1&&mo<=12&&s){if(!MOPS[s])MOPS[s]=[];MOPS[s][mo-1]={visitors:+r[3]||0,vNew:+r[4]||0,vOld:+r[5]||0,vRep:+r[6]||0,txn:+r[7]||0,tNew:+r[8]||0,tOld:+r[9]||0,ticket:+r[10]||0,conv:+r[11]||0,rev:+r[12]||0,orders:+r[13]||0,sessions:+r[14]||0,gaConv:+r[15]||0,tCoupon:r[17]!=null?+r[17]:null};}});const _now=new Date();const _daysInMo=new Date(_now.getFullYear(),_now.getMonth()+1,0).getDate();const _weeksInMo=_daysInMo/7;wkRows.forEach(r=>{const s=r[2];if(!s||!WK[s])return;const sb=STORE_BENCHMARKS[s];const tk=sb?sb.ticket:TARGET_TICKET;const cv=sb?sb.conv:TARGET_CONV;WK[s].rev=r[3]||0;WK[s].tgt=r[4]||0;WK[s].vis=r[6]||0;WK[s].newVis=r[7]||0;WK[s].oldVis=r[8]||0;WK[s].repVis=r[9]||0;WK[s].newTxn=r[10]||0;WK[s].oldTxn=r[11]||0;WK[s].ticket=r[13]||0;WK[s].conv=r[14]||0;WK[s].mtdRev=r[15]||0;WK[s].monthTarget=r[16]||0;WK[s].monthAch=r[17]||0;WK[s].weekOrders=r[18]||0;WK[s].repConv=r[19]||0;WK[s].newMembers=r[20]||0;WK[s].wkSessions=r[21]||0;WK[s].wkUsers=r[22]||0;WK[s].wkGaConv=r[23]||0;WK[s].moSessions=r[24]||0;WK[s].moUsers=r[25]||0;WK[s].visTgt=WK[s].monthTarget>0?Math.round(WK[s].monthTarget/tk/cv/_weeksInMo):0;const _p=String(r[1]||'');const _sp=_p.split('~')[0].trim().split('/');const _mo=_sp.length>=2?parseInt(_sp[1]):0;const _he={period:_p,month:_mo,rev:r[3]||0,tgt:r[4]||0,vis:r[6]||0,repVis:r[9]||0,newTxn:r[10]||0,oldTxn:r[11]||0,ticket:r[13]||0,conv:r[14]||0,weekOrders:r[18]||0,repConv:r[19]||0,mtdRev:r[15]||0,monthTarget:r[16]||0};const _ei=allWk[s].findIndex(e=>e.period===_p);if(_ei>=0)allWk[s][_ei]=_he;else allWk[s].push(_he);});moRows.forEach(r=>{const yr=Number(r[0]),mo=Number(r[1]),s=r[2],rev=r[3];if(yr===2026&&mo>=1&&mo<=12&&D26[s])D26[s][mo-1]=Math.round((rev||0)/10000);});const wkLabel=wkRows[0]?wkRows[0][1]||'':'';if(wkLabel)document.getElementById('wk-date').textContent=wkLabel;const updTime=wkRows[0]?wkRows[0][0]||'':'';document.getElementById('data-tag').textContent=updTime?'更新 '+updTime:'LIVE DATA';}catch(e){console.error('Dashboard data load error',e);document.getElementById('data-tag').textContent='載入失敗';}renderWeekly();}
 const HEATMAP={'週一':[18,22,31,28,42,55,60,48,35,20],'週二':[15,20,28,35,48,58,65,50,38,22],'週三':[20,25,33,30,45,52,58,45,32,18],'週四':[22,28,36,40,55,65,70,60,42,25],'週五':[28,35,45,55,72,88,95,80,58,35],'週六':[42,58,72,85,95,105,110,98,75,48],'週日':[38,55,68,78,88,98,100,90,68,42]};
 const WK8=[1388,1412,1395,1440,1455,1460,1478,1459];
@@ -2406,72 +2388,69 @@ loadGbpData=async function(){
 <script>
 // ── 南西誠品分析 ──
 let nxChartsBuilt = false;
-function renderNanxi() {
+async function renderNanxi() {
   if (nxChartsBuilt) return;
   nxChartsBuilt = true;
-
-  const labels = ['9/1','9/2','9/3','9/4','9/5','9/6','9/7','9/8','9/9','9/10','9/11','9/12','9/13','9/14','9/15','9/16','9/17','9/18','9/19','9/20'];
-  const revenue  = [5188,8208,4770,10748,78013,9058,23051,10226,980,31838,38482,71343,33878,13435,14676,73915,0,32916,34063,28718];
-  const visitors = [5,12,12,9,41,38,15,12,15,9,21,30,21,18,8,12,8,18,18,16];
-  const convRate = [20,17,17,22,39,13,27,25,7,33,24,47,38,11,25,125,0,28,50,31];
-  const targets  = [20000,20000,20000,45000,45000,20000,20000,20000,20000,20000,45000,45000,20000,20000,20000,20000,20000,45000,45000,20000];
-
-  const textC = '#b09a88';
-  const gridC = 'rgba(40,66,52,.06)';
-
-  // Revenue Bar
-  new Chart(document.getElementById('nx-chart-rev').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label:'目標', data:targets, type:'line', backgroundColor:'transparent',
-          borderColor:'rgba(40,66,52,.3)', borderWidth:1.5, pointRadius:0,
-          borderDash:[4,3], tension:0, order:0 },
-        { label:'營業額', data:revenue,
-          backgroundColor: revenue.map((_,i) => i===4||i===11||i===15?'#284234':i===8||i===16?'#c07050':'#8a6a4a'),
-          borderRadius:3, order:1 }
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c=>' NT$ '+c.parsed.y.toLocaleString() }}},
-      scales:{
-        x:{ grid:{display:false}, ticks:{color:textC,font:{family:'Space Mono',size:9}} },
-        y:{ grid:{color:gridC}, ticks:{color:textC,font:{family:'Space Mono',size:9},
-          callback: v=>v>=1000?'$'+(v/1000).toFixed(0)+'k':v }}
-      }
-    }
-  });
-
-  // Visitors + Conversion
-  new Chart(document.getElementById('nx-chart-vis').getContext('2d'), {
-    data: {
-      labels,
-      datasets: [
-        { type:'bar', label:'來客數', data:visitors,
-          backgroundColor:'rgba(40,66,52,.18)', borderRadius:3, yAxisID:'yV', order:1 },
-        { type:'line', label:'成交率', data:convRate,
-          borderColor:'#A54A1A', backgroundColor:'transparent',
-          pointBackgroundColor:'#A54A1A', pointRadius:3, tension:.3,
-          borderWidth:2, yAxisID:'yC', order:0 }
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{color:textC,font:{size:9},boxWidth:10} },
-        tooltip:{ callbacks:{ label: c=>c.dataset.label==='成交率'?' '+c.parsed.y+'%':' '+c.parsed.y+' 人' }}},
-      scales:{
-        x:{ grid:{display:false}, ticks:{color:textC,font:{family:'Space Mono',size:9}} },
-        yV:{ position:'left', grid:{color:gridC},
-          ticks:{color:textC,font:{family:'Space Mono',size:9}},
-          title:{display:true,text:'人數',color:textC,font:{size:9}} },
-        yC:{ position:'right', grid:{display:false},
-          ticks:{color:'#A54A1A',font:{family:'Space Mono',size:9},callback:v=>v+'%'},
-          title:{display:true,text:'成交率',color:'#A54A1A',font:{size:9}} }
-      }
-    }
-  });
+  const NX_SSID = '1N_02nfF7KitPExgIp2iZjVD9t4ZqczItP1l-KoyqPY8';
+  const NX_SHEET = '林果dashboard_南西誠品';
+  const NX_MTG = 800000;
+  let rows = [];
+  try { rows = await loadGvizFrom(NX_SSID, NX_SHEET, 'A6:R40'); } catch(e) { console.error('南西資料載入失敗', e); }
+  const days = [];
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r || r[0] == null) break;
+    let dateStr = '';
+    const dv = r[0];
+    if (dv instanceof Date) dateStr = (dv.getMonth()+1)+'/'+dv.getDate();
+    else { const p = String(dv).split('/'); if (p.length>=3) dateStr = parseInt(p[1])+'/'+parseInt(p[2]); }
+    if (!dateStr) continue;
+    const target = Number(r[2])||0;
+    const convRate = Math.round((Number(r[5])||0)*100);
+    const revenue = Number(r[14])||0;
+    const visitors = Number(r[16])||0;
+    const txn = Number(r[17])||0;
+    const weekday = String(r[1]||'');
+    if (target===0&&revenue===0&&visitors===0&&txn===0) continue;
+    const achPct = target>0?Math.round(revenue/target*100):0;
+    const ticket = txn>0?Math.round(revenue/txn):0;
+    days.push({date:dateStr,weekday,target,revenue,visitors,txn,convRate,achPct,ticket});
+  }
+  const totRev=days.reduce((s,d)=>s+d.revenue,0);
+  const totVis=days.reduce((s,d)=>s+d.visitors,0);
+  const totTxn=days.reduce((s,d)=>s+d.txn,0);
+  const avgTicket=totTxn>0?Math.round(totRev/totTxn):0;
+  const achRate=Math.round(totRev/NX_MTG*1000)/10;
+  const gap=NX_MTG-totRev;
+  const nDays=days.length;
+  const lastDay=days.length>0?days[days.length-1].date:'';
+  const daysLeft=Math.max(0,30-nDays);
+  const achBadge=p=>p>=100?'nx-bh':p>=50?'nx-bo':'nx-bl';
+  const convBadge=p=>p>=40?'nx-bh':p>=26?'nx-bg':p>=20?'nx-bo':'nx-bl';
+  const $=id=>document.getElementById(id);
+  if ($('nx-sub')&&lastDay) $('nx-sub').innerHTML='2026/09/01 – 09/'+lastDay.split('/')[1]+' &nbsp;·&nbsp; '+nDays+' 天 &nbsp;·&nbsp; POS 銷售 + Dashboard';
+  if ($('nx-kpi-rev')) { $('nx-kpi-rev').textContent='$'+totRev.toLocaleString(); $('nx-kpi-rev-s').textContent='月目標 '+achRate+'%'; }
+  if ($('nx-kpi-gap')) { $('nx-kpi-gap').textContent=(gap>0?'−$':'+$')+Math.abs(gap).toLocaleString(); $('nx-kpi-gap-s').textContent='剩 '+daysLeft+' 天'; }
+  if ($('nx-kpi-vis')) { $('nx-kpi-vis').textContent=totVis+' 人'; $('nx-kpi-vis-s').textContent='日均 '+(nDays>0?(totVis/nDays).toFixed(1):0)+' 人'; }
+  if ($('nx-kpi-ticket')) { $('nx-kpi-ticket').textContent='$'+avgTicket.toLocaleString(); $('nx-kpi-ticket-s').textContent=totTxn+' 筆成交'; }
+  const pf=$('nx-prog-fill'); if(pf) pf.style.width=Math.min(achRate,100)+'%';
+  if ($('nx-prog-nums')) $('nx-prog-nums').textContent='NT$'+totRev.toLocaleString()+' / NT$'+NX_MTG.toLocaleString();
+  if ($('nx-prog-pct')) $('nx-prog-pct').textContent=achRate+'% 達成';
+  if ($('nx-prog-gap')) $('nx-prog-gap').textContent=(gap>0?'尚差 NT$':'超標 NT$')+Math.abs(gap).toLocaleString();
+  const tbody=$('nx-tbl-body');
+  if (tbody) tbody.innerHTML=days.map(d=>{
+    const ws=d.weekday==='六'?'style="color:var(--rust);font-weight:700"':d.weekday==='日'?'style="color:var(--rust)"':'';
+    const rs=d.revenue===0?'style="color:var(--negative);font-weight:700"':d.revenue>60000?'style="font-weight:700"':'';
+    return '<tr><td><b>'+d.date+'</b></td><td '+ws+'>'+d.weekday+'</td><td class="nr">'+d.target.toLocaleString()+'</td><td class="nr"><span class="nx-badge '+achBadge(d.achPct)+'">'+d.achPct+'%</span></td><td class="nr" '+rs+'>'+d.revenue.toLocaleString()+'</td><td class="nr">'+d.visitors+'</td><td class="nr">'+d.txn+'</td><td class="nr"><span class="nx-badge '+convBadge(d.convRate)+'">'+d.convRate+'%</span></td><td class="nr">'+(d.ticket>0?d.ticket.toLocaleString():'—')+'</td><td></td></tr>';
+  }).join('');
+  const labels=days.map(d=>d.date);
+  const revenue=days.map(d=>d.revenue);
+  const visitors=days.map(d=>d.visitors);
+  const convRate=days.map(d=>d.convRate);
+  const targets=days.map(d=>d.target);
+  const textC='#b09a88', gridC='rgba(40,66,52,.06)';
+  new Chart(document.getElementById('nx-chart-rev').getContext('2d'),{type:'bar',data:{labels,datasets:[{label:'目標',data:targets,type:'line',backgroundColor:'transparent',borderColor:'rgba(40,66,52,.3)',borderWidth:1.5,pointRadius:0,borderDash:[4,3],tension:0,order:0},{label:'營業額',data:revenue,backgroundColor:revenue.map((_,i)=>days[i].revenue===0?'#c07050':days[i].revenue>60000?'#284234':'#8a6a4a'),borderRadius:3,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' NT$ '+c.parsed.y.toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{color:textC,font:{family:'Space Mono',size:9}}},y:{grid:{color:gridC},ticks:{color:textC,font:{family:'Space Mono',size:9},callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'k':v}}}}});
+  new Chart(document.getElementById('nx-chart-vis').getContext('2d'),{data:{labels,datasets:[{type:'bar',label:'來客數',data:visitors,backgroundColor:'rgba(40,66,52,.18)',borderRadius:3,yAxisID:'yV',order:1},{type:'line',label:'成交率',data:convRate,borderColor:'#A54A1A',backgroundColor:'transparent',pointBackgroundColor:'#A54A1A',pointRadius:3,tension:.3,borderWidth:2,yAxisID:'yC',order:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:textC,font:{size:9},boxWidth:10}},tooltip:{callbacks:{label:c=>c.dataset.label==='成交率'?' '+c.parsed.y+'%':' '+c.parsed.y+' 人'}}},scales:{x:{grid:{display:false},ticks:{color:textC,font:{family:'Space Mono',size:9}}},yV:{position:'left',grid:{color:gridC},ticks:{color:textC,font:{family:'Space Mono',size:9}},title:{display:true,text:'人數',color:textC,font:{size:9}}},yC:{position:'right',grid:{display:false},ticks:{color:'#A54A1A',font:{family:'Space Mono',size:9},callback:v=>v+'%'},title:{display:true,text:'成交率',color:'#A54A1A',font:{size:9}}}}}});
 }
 </script>
 </body>
