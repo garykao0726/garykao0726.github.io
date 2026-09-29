@@ -293,27 +293,34 @@ function clearAnswer() {
   sourcesWrap.style.display = 'none';
 }
 
-// 向後端問答，收到非 JSON（echo 偶發逾時回 HTML）時自動重試，避免顯示「連線失敗」
+// 向後端問答；GAS 兩跳轉址的 echo 偶發回 HTML（慢查詢時），自動重試避免顯示「連線失敗」。
+// 有後端答案快取加持：重試同一題會直接命中快取、秒回也不再花 Gemini。
 async function postAsk(body) {
   let lastErr;
   for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) setStatus('連線較慢，重試中…（' + attempt + '/2）');
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30000); // 單次逾時 30s，卡住就中止重試
     try {
       const resp = await fetch(WEBAPI_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 避免 CORS preflight
         body: JSON.stringify(body),
-        redirect: 'follow'
+        redirect: 'follow',
+        signal: ctrl.signal
       });
       const text = await resp.text();
-      try { return JSON.parse(text); }
-      catch (e) { lastErr = e; if (attempt < 2) await new Promise(r => setTimeout(r, 1500)); }
-    } catch (e) { lastErr = e; if (attempt < 2) await new Promise(r => setTimeout(r, 1500)); }
+      clearTimeout(timer);
+      try { return JSON.parse(text); }               // 收到 HTML 錯誤頁會 parse 失敗 → 重試
+      catch (e) { lastErr = e; if (attempt < 2) await new Promise(r => setTimeout(r, 1200)); }
+    } catch (e) { clearTimeout(timer); lastErr = e; if (attempt < 2) await new Promise(r => setTimeout(r, 1200)); }
   }
   throw lastErr || new Error('無法取得回應');
 }
 
 async function askQuestion(question) {
   if (!question || !question.trim()) return;
+  if (btn.disabled) return; // 查詢進行中，避免 Enter/快捷鈕重複送出
   btn.disabled = true;
   clearAnswer();
   intro.style.display = 'none';
