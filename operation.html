@@ -850,12 +850,12 @@ function renderMonthlyStoreCards(m){
         const vN=mo.vNew||0,vO=mo.vOld||0,vR=mo.vRep||0;
         const nvp=Math.round(vN/mo.visitors*100),ovp=Math.round(vO/mo.visitors*100),rvp=Math.max(0,100-nvp-ovp);
         opsPills+=`<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
-          <div style="font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-bottom:4px">來客組成（新客／舊客回購／維修，三者互斥不重疊）</div>
+          <div style="font-size:9px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-bottom:4px">來客組成（新客／舊客回購／${s==='誠品南西店'?'不知林果':'維修'}，三者互斥不重疊）</div>
           <div class="ratio-bar"><div style="height:100%;float:left;width:${nvp}%;background:var(--green)"></div><div style="height:100%;float:left;width:${ovp}%;background:var(--sand)"></div><div style="height:100%;float:left;width:${rvp}%;background:var(--rust)"></div></div>
           <div style="display:flex;gap:12px;font-size:9px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:4px;flex-wrap:wrap">
             <span><span style="color:var(--green)">■</span> 新客 ${nvp}%（${vN}人）</span>
             <span><span style="color:var(--sand)">■</span> 舊客 ${ovp}%（${vO}人）</span>
-            <span><span style="color:var(--rust)">■</span> 維修 ${rvp}%（${vR}人）</span>
+            <span><span style="color:var(--rust)">■</span> ${s==='誠品南西店'?'不知林果':'維修'} ${rvp}%（${vR}人）</span>
           </div>
         </div>`;
       }
