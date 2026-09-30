@@ -2426,14 +2426,16 @@ async function renderNanxi() {
     if (!r || r[0] == null) break;
     let dateStr = '';
     const dv = r[0];
-    if (dv instanceof Date) dateStr = (dv.getMonth()+1)+'/'+dv.getDate();
+    const dm = String(dv).match(/^Date\((\d+),(\d+),(\d+)\)$/);
+    if (dm) { dateStr = (parseInt(dm[2])+1)+'/'+parseInt(dm[3]); }
+    else if (dv instanceof Date) { dateStr = (dv.getMonth()+1)+'/'+dv.getDate(); }
     else { const p = String(dv).split('/'); if (p.length>=3) dateStr = parseInt(p[1])+'/'+parseInt(p[2]); }
     if (!dateStr) continue;
     const target = Number(r[2])||0;
     const convRate = Math.round((Number(r[5])||0)*100);
-    const revenue = Number(r[14])||0;
-    const visitors = Number(r[16])||0;
-    const txn = Number(r[17])||0;
+    const revenue = Number(r[15])||0;
+    const visitors = Number(r[8])||0;
+    const txn = Number(r[11])||0;
     const weekday = String(r[1]||'');
     if (target===0&&revenue===0&&visitors===0&&txn===0) continue;
     const achPct = target>0?Math.round(revenue/target*100):0;
