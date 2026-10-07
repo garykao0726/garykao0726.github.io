@@ -183,19 +183,55 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
 /* Repair items checklist */
 .items-block{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:1.1rem}
 .items-block h4{font-size:12px;color:var(--text);margin-bottom:10px;font-weight:700}
-.item-row{display:grid;grid-template-columns:24px 1fr auto auto;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.item-row{display:grid;grid-template-columns:24px 1fr auto auto;grid-template-areas:"cb label sides price";align-items:center;gap:0 10px;padding:8px 0;border-bottom:1px solid var(--border)}
 .item-row:last-child{border-bottom:none}
-.item-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--green);cursor:pointer}
+.item-row input[type=checkbox]{grid-area:cb;width:18px;height:18px;accent-color:var(--green);cursor:pointer}
+.item-row .item-main{grid-area:label;min-width:0}
 .item-row .item-label{font-size:13px;color:var(--text)}
-.item-row .item-sides{display:flex;gap:4px}
+.item-row .item-note{font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;margin-top:2px}
+.item-row .item-note:empty{display:none}
+.item-row .item-sides{grid-area:sides;display:none;gap:4px;flex-wrap:wrap}
+.item-row.on .item-sides{display:flex}
 .item-row .side-btn{padding:3px 8px;border-radius:6px;font-size:11px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;color:var(--text-sub);font-family:'Space Mono',monospace}
 .item-row .side-btn.active{background:var(--green);color:var(--sand);border-color:var(--green)}
-.item-row .item-price{width:90px;text-align:right;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--rust)}
+.item-row .side-btn.first-btn{border-style:dashed;border-color:var(--rust);color:var(--rust)}
+.item-row .side-btn.first-btn.active{border-style:solid;background:var(--rust);color:#fff}
+.item-row .item-price{grid-area:price;min-width:96px;text-align:right;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--rust)}
 .item-row.disabled{opacity:.45}
-.item-row .price-input{width:80px;padding:4px 8px;border:1px solid var(--border2);border-radius:6px;font-family:'Space Mono',monospace;font-size:12px;text-align:right}
+.item-row .price-input{grid-area:price;width:96px;padding:4px 8px;border:1px solid var(--border2);border-radius:6px;font-family:'Space Mono',monospace;font-size:12px;text-align:right}
+@media(max-width:560px){
+  .item-row{grid-template-columns:24px 1fr auto;grid-template-areas:"cb label price" ". sides sides"}
+  .item-row .item-sides{margin-top:6px}
+}
+.items-sub-title{font-size:11px;font-weight:700;color:var(--text-sub);margin:12px 0 6px;padding-top:10px;border-top:1px dashed var(--border2)}
+.custom-row{display:grid;grid-template-columns:1fr 110px 34px;gap:8px;align-items:center;margin-bottom:8px}
+.custom-row .form-input{padding:8px 10px;font-size:13px}
+.custom-remove{width:34px;height:34px;border-radius:8px;border:1px solid #FECACA;background:#FEE2E2;color:var(--negative);cursor:pointer;font-size:13px}
+.custom-empty{font-size:11px;color:var(--text-muted);margin-bottom:8px}
+.pending-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0 2px;margin-top:8px;border-top:1px dashed var(--border2)}
+.pending-row .pending-title{font-size:13px;font-weight:700;color:var(--text)}
+.pending-row .pending-sub{font-size:11px;color:var(--text-muted)}
+.switch{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.switch .slider{position:absolute;inset:0;background:#d6cabd;border-radius:24px;cursor:pointer;transition:background .2s}
+.switch .slider::before{content:'';position:absolute;height:18px;width:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s}
+.switch input:checked + .slider{background:var(--rust)}
+.switch input:checked + .slider::before{transform:translateX(18px)}
 .items-total-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0 4px;border-top:2px solid var(--green);margin-top:8px}
 .items-total-l{font-size:13px;color:var(--text);font-weight:700}
 .items-total-v{font-size:18px;font-weight:700;color:var(--rust);font-family:'Space Mono',monospace}
+.items-total-sub{font-size:11px;color:var(--text-muted);text-align:right;margin-top:2px}
+.items-total-sub:empty{display:none}
+
+/* 預計完成日 */
+.due-opts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.due-opt{cursor:pointer}
+.due-opt input{position:absolute;opacity:0;width:0;height:0}
+.due-opt span{display:inline-block;padding:7px 18px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid var(--border2);background:var(--surface);color:var(--text-sub);transition:all .15s}
+.due-opt input:checked + span{background:var(--green);color:var(--sand);border-color:var(--green)}
+.due-opt input:focus-visible + span{outline:2px solid var(--green);outline-offset:2px}
+.due-hint{font-size:11px;color:var(--text-sub);margin-top:6px;line-height:1.5}
+input.form-input[readonly]{background:var(--surface2);color:var(--text-sub);cursor:default;pointer-events:none}
 
 /* Photo upload area */
 .photo-upload-area{border:2px dashed var(--border2);border-radius:8px;padding:1.5rem;text-align:center;cursor:pointer;color:var(--text-muted);transition:all .18s;background:var(--surface2)}
@@ -313,9 +349,9 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
     </div>
 
     <div class="stats-row" id="stats-row">
-      <div class="stat-card" style="--sc-color:var(--status-quote-c)"><div class="stat-l">報價中</div><div class="stat-v" id="stat-quote">—</div></div>
-      <div class="stat-card" style="--sc-color:var(--status-sent-c)"><div class="stat-l">已送修</div><div class="stat-v" id="stat-sent">—</div></div>
+      <div class="stat-card" style="--sc-color:var(--status-sent-c)"><div class="stat-l">送修中</div><div class="stat-v" id="stat-sent">—</div></div>
       <div class="stat-card" style="--sc-color:var(--status-done-c)"><div class="stat-l">已完成</div><div class="stat-v" id="stat-done">—</div></div>
+      <div class="stat-card" style="--sc-color:var(--status-quote-c)"><div class="stat-l">待報價</div><div class="stat-v" id="stat-pending">—</div></div>
       <div class="stat-card" style="--sc-color:var(--green)"><div class="stat-l">本月工單</div><div class="stat-v" id="stat-month">—</div></div>
     </div>
 
@@ -326,8 +362,7 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
       </div>
       <select class="filter-sel" id="filter-status" onchange="renderList()">
         <option value="">全部狀態</option>
-        <option value="報價中">報價中</option>
-        <option value="已送修">已送修</option>
+        <option value="送修中">送修中</option>
         <option value="已完成">已完成</option>
         <option value="已取件">已取件</option>
         <option value="不適合維修">不適合維修</option>
@@ -360,7 +395,7 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
           <div class="detail-meta-row">
             <span class="badge" id="d-badge"></span>
             <span class="badge badge-tag" id="d-tag-official" style="display:none">原廠維修</span>
-            <span class="badge badge-tag" id="d-tag-free" style="display:none">首修免費</span>
+            <span class="badge badge-tag" id="d-tag-free" style="display:none">首次優惠</span>
             <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text-muted)" id="d-store"></span>
             <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--rust);font-weight:700" id="d-price"></span>
           </div>
@@ -387,8 +422,9 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
       </div>
       <div class="detail-section">
         <div class="section-title">維修資訊</div>
-        <div class="field-row"><span class="field-label">款式號碼</span><span class="field-value" id="d-model">—</span></div>
+        <div class="field-row"><span class="field-label">款式（型號 顏色 尺寸）</span><span class="field-value" id="d-model">—</span></div>
         <div class="field-row"><span class="field-label">類別</span><span class="field-value" id="d-category">—</span></div>
+        <div class="field-row"><span class="field-label">服務夥伴</span><span class="field-value" id="d-staff">—</span></div>
         <div class="field-row"><span class="field-label">付款狀態</span><span class="field-value" id="d-payment">—</span></div>
         <div class="field-row"><span class="field-label">預計完成日</span><span class="field-value" id="d-date">—</span></div>
         <div class="field-row"><span class="field-label">最後更新</span><span class="field-value" id="d-updated">—</span></div>
@@ -443,8 +479,8 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
         <select class="form-input" id="d-payment-input" style="max-width:200px">
           <option value="">— 付款狀態 —</option>
           <option value="付清">付清</option>
-          <option value="下次來再結帳">下次來再結帳</option>
-          <option value="待後續報價">待後續報價</option>
+          <option value="未付">未付</option>
+          <option value="待報價">待報價</option>
         </select>
         <button class="btn btn-primary btn-sm" onclick="saveDetailUpdate()">儲存更新</button>
       </div>
@@ -465,7 +501,7 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
         <div class="form-id-preview" id="new-order-id">RP-YYMM-???</div>
       </div>
 
-      <div class="form-grid-3">
+      <div class="form-grid">
         <div class="form-group">
           <label class="form-label">門市 <span>*</span></label>
           <select class="form-input" id="f-store">
@@ -485,13 +521,6 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
             <option value="true">原廠維修</option>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">初始狀態</label>
-          <select class="form-input" id="f-status">
-            <option value="報價中">報價中</option>
-            <option value="已送修">已送修</option>
-          </select>
-        </div>
       </div>
 
       <div class="form-grid-3">
@@ -501,7 +530,7 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
         </div>
         <div class="form-group">
           <label class="form-label">電話 <span>*</span></label>
-          <input type="tel" class="form-input mono" id="f-phone" placeholder="0912345678" onblur="checkFreeRepairOnBlur()">
+          <input type="tel" class="form-input mono" id="f-phone" placeholder="0912345678" onblur="checkFirstRepairOnBlur()">
         </div>
         <div class="form-group">
           <label class="form-label">Email <span style="color:var(--text-muted)">（寄送單據）</span></label>
@@ -509,15 +538,30 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
         </div>
       </div>
 
-      <div class="form-grid">
+      <div class="form-grid-3">
         <div class="form-group">
-          <label class="form-label">款式號碼 <span style="color:var(--text-muted)">（如 8905）</span></label>
-          <input type="text" class="form-input mono" id="f-model" placeholder="例：8905" onblur="checkFreeRepairOnBlur()">
+          <label class="form-label">型號 <span style="color:var(--text-muted)">（如 8605）</span></label>
+          <input type="text" class="form-input mono" id="f-model" placeholder="例：8605" onblur="checkFirstRepairOnBlur()">
         </div>
         <div class="form-group">
-          <label class="form-label">預計完成日</label>
-          <input type="date" class="form-input mono" id="f-date">
+          <label class="form-label">顏色</label>
+          <input type="text" class="form-input" id="f-color" placeholder="例：黑">
         </div>
+        <div class="form-group">
+          <label class="form-label">尺寸</label>
+          <input type="text" class="form-input mono" id="f-size" placeholder="例：7">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">預計完成日 <span style="color:var(--text-muted)">（取件日皆為週五）</span></label>
+        <div class="due-opts">
+          <label class="due-opt"><input type="radio" name="f-due-mode" value="2w" checked onchange="applyDueMode()"><span>兩週</span></label>
+          <label class="due-opt"><input type="radio" name="f-due-mode" value="1m" onchange="applyDueMode()"><span>一個月</span></label>
+          <label class="due-opt"><input type="radio" name="f-due-mode" value="custom" onchange="applyDueMode()"><span>自訂</span></label>
+        </div>
+        <input type="date" class="form-input mono" id="f-date" style="max-width:220px" readonly>
+        <div class="due-hint" id="due-hint"></div>
       </div>
 
       <div id="free-hint" style="display:none;font-size:12px;color:var(--positive);margin-bottom:1rem;background:#D1FAE5;padding:8px 12px;border-radius:6px"></div>
@@ -526,32 +570,47 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
       <div class="items-block">
         <h4>維修項目 <span style="color:var(--text-muted);font-weight:400;font-size:11px">（勾選後自動計算總價）</span></h4>
         <div id="repair-items-list"></div>
+        <div class="items-sub-title">其他維修項目 <span style="color:var(--text-muted);font-weight:400">（不常規的維修，自訂內容與金額）</span></div>
+        <div id="custom-items-list"></div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="addCustomRow()">＋ 新增項目</button>
       </div>
 
-      <!-- 進階保養 -->
+      <!-- 保養 -->
       <div class="items-block">
-        <h4>進階保養 <span style="color:var(--text-muted);font-weight:400;font-size:11px">（費用視情況報價）</span></h4>
+        <h4>保養 <span style="color:var(--text-muted);font-weight:400;font-size:11px">（基礎保養可自行輸入金額；進階項目為固定費用）</span></h4>
         <div id="care-items-list"></div>
+      </div>
+
+      <div class="pending-row">
+        <label class="switch" title="開啟後金額顯示為待定">
+          <input type="checkbox" id="f-pending" onchange="togglePending()">
+          <span class="slider"></span>
+        </label>
+        <div>
+          <div class="pending-title">待報價</div>
+          <div class="pending-sub">金額暫時無法確定時開啟，單據上的金額會顯示為「待定」</div>
+        </div>
       </div>
 
       <div class="items-total-row">
         <div class="items-total-l">合計報價</div>
         <div class="items-total-v" id="total-price">NT$ 0</div>
       </div>
+      <div class="items-total-sub" id="total-sub"></div>
 
       <div class="form-grid" style="margin-top:1.25rem">
         <div class="form-group">
           <label class="form-label">付款狀態</label>
-          <select class="form-input" id="f-payment">
+          <select class="form-input" id="f-payment" onchange="onPaymentChange()">
             <option value="">— 請選擇 —</option>
             <option value="付清">付清</option>
-            <option value="下次來再結帳">下次來再結帳</option>
-            <option value="待後續報價">待後續報價</option>
+            <option value="未付">未付</option>
+            <option value="待報價">待報價</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">服務夥伴</label>
-          <input type="text" class="form-input" id="f-staff" placeholder="（選填）">
+          <label class="form-label">服務夥伴 <span>*</span></label>
+          <input type="text" class="form-input" id="f-staff" placeholder="請輸入服務夥伴姓名">
         </div>
       </div>
 
@@ -661,6 +720,14 @@ function isAlreadyLoggedIn() {
 
 function waitForGSI(cb) {
   if (window.google && google.accounts && google.accounts.oauth2) { cb(); return; }
+  // auth.js 在 session 仍有效時不會載入 GSI（只有重新登入才載入），這裡自己補載一次，否則會一直卡在「載入工單中…」
+  if (!document.getElementById('gsi-client-script')) {
+    const s = document.createElement('script');
+    s.id = 'gsi-client-script';
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true;
+    document.head.appendChild(s);
+  }
   setTimeout(() => waitForGSI(cb), 300);
 }
 
@@ -674,6 +741,8 @@ function initStaffTokenClient() {
       hideAuthorizeBanner();
       loadOrders(); // 不管是靜默還是點了橫幅互動拿到的，拿到就（重新）載入
     },
+    // 靜默取得需要開彈窗，頁面一載入時瀏覽器會擋（popup_failed_to_open）→ 顯示橫幅，讓使用者點一下（有使用者手勢才開得了）
+    error_callback: () => showAuthorizeBanner(),
   });
   staffTokenClient.requestAccessToken({ prompt: '' }); // 先試靜默取得，失敗才顯示橫幅要求手動授權
 }
@@ -703,22 +772,29 @@ function staffTokenQS() {
 // =============================================
 // 維修項目清單（含預設報價）
 // =============================================
+// 細項選取：天皮／前掌類可選 雙(+200)／左(+100)／右(+100)，該項金額 = 基本價 + 加價
+// 首次優惠：天皮、止油水天皮可勾「首次」，該項金額自動扣 500
+const SIDE_ADD = { '雙':200, '左':100, '右':100 };
+const FIRST_DISCOUNT = 500;
 const REPAIR_ITEMS = [
-  { id:'sole',         label:'天皮更換',         price:500, hasSide:true,  freeFirst:true },
-  { id:'front_rubber', label:'前掌橡膠片',       price:500, hasSide:true },
-  { id:'wood_heel',    label:'木根修補',         price:100, hasSide:true, perPiece:true },
-  { id:'insole',       label:'鞋墊更換',         price:500, hasSide:false },
-  { id:'sole_oil',     label:'止油水天皮',       price:700, hasSide:false },
-  { id:'rubber_oil',   label:'止油前掌膠片',     price:700, hasSide:false },
-  { id:'mild_mold',    label:'輕微發霉（鞋底+鞋面）', price:900, hasSide:false },
+  { id:'sole',         label:'天皮更換',     price:500, hasSide:true,  hasFirst:true },
+  { id:'front_rubber', label:'前掌橡膠片',   price:500, hasSide:true },
+  { id:'insole',       label:'鞋墊更換',     price:500, hasSide:false },
+  { id:'sole_oil',     label:'止油水天皮',   price:700, hasSide:true,  hasFirst:true },
+  { id:'rubber_oil',   label:'止油前掌膠片', price:700, hasSide:true },
 ];
+// 保養：基礎保養可手動輸入金額；進階項目勾選即帶入固定費用、不可修改
+// （進階項目價目出自小博士知識庫 05_維修保養.md）
 const CARE_ITEMS = [
-  { id:'basic_care',   label:'基礎保養' },
-  { id:'color_care',   label:'進階補色' },
-  { id:'protect',      label:'進階防護' },
-  { id:'mold_remove',  label:'除霉' },
-  { id:'stain_clean',  label:'污漬淡化' },
+  { id:'basic_care',   label:'基礎保養', manual:true },
+  { id:'color_care',   label:'進階補色', price:500 },
+  { id:'protect',      label:'進階防護', price:900 },
+  { id:'mold_remove',  label:'除霉',     price:900 },
+  { id:'stain_clean',  label:'污漬淡化', price:300 },
 ];
+// 工單狀態：送修中 → 已完成 → 已取件（「不適合維修」是流程外的結案狀態）
+const STATUS_FLOW = ['送修中','已完成','已取件'];
+const STATUS_REJECT = '不適合維修';
 
 // =============================================
 // STATE
@@ -727,17 +803,20 @@ let allOrders = [];
 let currentOrder = null;
 let currentStatus = '';
 let createPhotos = [];
-let formItems = {};   // {id: {checked, side, price, qty}}
+let formItems = {};   // {id: {checked, side, first, price}}
 let careItems = {};   // {id: {checked, price}}
-let freeRepairChecked = false;
+let customRows = [];  // 其他維修項目：[{label, price}]
+let pendingQuote = false;
+let dueMode = '2w';   // 2w 兩週 | 1m 一個月 | custom 自訂
 
 // =============================================
 // INIT
 // =============================================
 window.addEventListener('DOMContentLoaded', () => {
-  setDefaultDate();
+  applyDueMode();
   renderRepairItemsForm();
   renderCareItemsForm();
+  renderCustomRows();
 
   // Customer view?
   const params = new URLSearchParams(location.search);
@@ -753,9 +832,66 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-function setDefaultDate() {
-  const d = new Date(); d.setDate(d.getDate() + 14);
-  document.getElementById('f-date').value = d.toISOString().split('T')[0];
+// =============================================
+// 舊資料相容（只在顯示端換算，不改動 Sheet 內容）
+// 狀態：報價中／已送修 併入「送修中」；付款：下次來再結帳→未付、待後續報價→待報價
+// =============================================
+function normStatus(s) { return (s === '報價中' || s === '已送修') ? '送修中' : s; }
+function normPay(p) { return ({ '下次來再結帳':'未付', '待後續報價':'待報價' })[p] || p || ''; }
+function normalizeOrder(o) {
+  if (o) { o.status = normStatus(o.status); o.paymentStatus = normPay(o.paymentStatus); }
+  return o;
+}
+function hasPrice(o) { return o.price !== '' && o.price !== null && o.price !== undefined; }
+function priceText(o) { return hasPrice(o) ? 'NT$' + numFmt(o.price) : '待報價'; }
+function itemPriceText(it) {
+  if (it.price === null || it.price === undefined || it.price === '') return '待定';
+  return it.price === 0 ? '免費' : 'NT$' + numFmt(it.price);
+}
+function itemNameText(it) {
+  return it.label + (it.side ? ` (${it.side})` : '') + (it.first ? ' · 首次優惠' : '');
+}
+
+// =============================================
+// 預計完成日（取件日一律週五）
+// =============================================
+const WEEKDAY_ZH = ['日','一','二','三','四','五','六'];
+function ymd(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function calcDueDate(mode, from) {
+  const d = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  if (mode === '1m') {
+    // 當天 + 30 天後遇到的第一個週五（剛好落在週五就取當天）
+    d.setDate(d.getDate() + 30);
+    d.setDate(d.getDate() + (5 - d.getDay() + 7) % 7);
+    return d;
+  }
+  // 兩週：週三(含)前送修 → 兩週後的週五；週四(含)後送修 → 三週後的週五（以週一為一週之始）
+  const dow = d.getDay() || 7;
+  d.setDate(d.getDate() + (5 - dow) + (dow <= 3 ? 14 : 21));
+  return d;
+}
+function applyDueMode() {
+  const checked = document.querySelector('input[name="f-due-mode"]:checked');
+  dueMode = checked ? checked.value : '2w';
+  const input = document.getElementById('f-date');
+  const hint = document.getElementById('due-hint');
+  const now = new Date();
+  if (dueMode === 'custom') {
+    input.readOnly = false;
+    if (!input.value) input.value = ymd(calcDueDate('2w', now));
+    hint.textContent = '自訂日期：處理急件或零件缺貨等特殊狀況時，手動選擇日期';
+    return;
+  }
+  const due = calcDueDate(dueMode, now);
+  input.readOnly = true;
+  input.value = ymd(due);
+  const dueTxt = `${ymd(due)}（週${WEEKDAY_ZH[due.getDay()]}）`;
+  if (dueMode === '1m') {
+    hint.textContent = `今天起 30 天後的第一個週五 → ${dueTxt}`;
+  } else {
+    const early = (now.getDay() || 7) <= 3;
+    hint.textContent = `今天週${WEEKDAY_ZH[now.getDay()]}送修 → ${early ? '兩' : '三'}週後的週五 → ${dueTxt}`;
+  }
 }
 
 // =============================================
@@ -769,21 +905,29 @@ function showView(name) {
   if (name === 'create') {
     generateOrderId();
     document.getElementById('free-hint').style.display = 'none';
-    freeRepairChecked = false;
+    applyDueMode(); // 頁面開著跨日時，重新以今天為基準算預計完成日
   }
 }
 
 // =============================================
 // LOAD ORDERS
 // =============================================
+let loadError = '';
 async function loadOrders() {
+  loadError = '';
   try {
     const resp = await fetch(`${GAS_URL}?action=getOrders&type=repair${staffTokenQS()}`, { cache:'no-store' });
     const data = await resp.json();
-    allOrders = (data.success && data.orders) ? data.orders : [];
+    if (data.success && data.orders) {
+      allOrders = data.orders.map(normalizeOrder);
+    } else {
+      allOrders = [];
+      loadError = data.error || '未知錯誤';
+    }
   } catch (e) {
     console.error('載入失敗', e);
     allOrders = [];
+    loadError = '連線失敗，請重新整理';
   }
   renderList();
   renderStats();
@@ -792,16 +936,16 @@ async function loadOrders() {
 function renderStats() {
   const now = new Date();
   const ym = `${String(now.getFullYear()).slice(2)}${String(now.getMonth()+1).padStart(2,'0')}`;
-  let quote=0, sent=0, done=0, month=0;
+  let sent=0, done=0, pending=0, month=0;
   allOrders.forEach(o => {
-    if (o.status === '報價中') quote++;
-    if (o.status === '已送修') sent++;
+    if (o.status === '送修中') sent++;
     if (o.status === '已完成') done++;
+    if (o.paymentStatus === '待報價' && (o.status === '送修中' || o.status === '已完成')) pending++;
     if (o.id && String(o.id).includes(`RP-${ym}`)) month++;
   });
-  document.getElementById('stat-quote').textContent = quote;
   document.getElementById('stat-sent').textContent = sent;
   document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-pending').textContent = pending;
   document.getElementById('stat-month').textContent = month;
 }
 
@@ -811,13 +955,13 @@ function renderList() {
   const fst = document.getElementById('filter-store').value;
 
   const filtered = allOrders.filter(o => {
-    const matchQ = !q || [o.id,o.name,o.phone,o.model,o.email].some(v => String(v||'').toLowerCase().includes(q));
+    const matchQ = !q || [o.id,o.name,o.phone,o.model,o.email,o.staff].some(v => String(v||'').toLowerCase().includes(q));
     const matchS = !fs || o.status === fs;
     const matchSt = !fst || o.store === fst;
     return matchQ && matchS && matchSt;
   });
   filtered.sort((a,b) => {
-    const ord = ['報價中','已送修','已完成','已取件','不適合維修'];
+    const ord = [...STATUS_FLOW, STATUS_REJECT];
     const ai = ord.indexOf(a.status), bi = ord.indexOf(b.status);
     if (ai !== bi) return ai - bi;
     return (b.created||'').localeCompare(a.created||'');
@@ -825,7 +969,8 @@ function renderList() {
 
   const container = document.getElementById('list-container');
   if (!filtered.length) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔧</div><div class="empty-text">${allOrders.length ? '找不到符合的工單' : '尚無工單資料'}</div></div>`;
+    const msg = allOrders.length ? '找不到符合的工單' : (loadError ? `⚠ 工單載入失敗：${esc(loadError)}` : '尚無工單資料');
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔧</div><div class="empty-text">${msg}</div></div>`;
     return;
   }
   container.innerHTML = '<div class="order-list">' + filtered.map(o => `
@@ -838,7 +983,7 @@ function renderList() {
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
           <span class="badge ${badgeClass(o.status)}">${esc(o.status)}</span>
-          ${o.price ? `<span class="order-price">NT$${numFmt(o.price)}</span>` : '<span style="font-size:11px;color:var(--text-muted)">待報價</span>'}
+          ${hasPrice(o) ? `<span class="order-price">NT$${numFmt(o.price)}</span>` : '<span style="font-size:11px;color:var(--text-muted)">待報價</span>'}
         </div>
       </div>
       <div class="order-meta">
@@ -865,62 +1010,104 @@ function renderRepairItemsForm() {
   const container = document.getElementById('repair-items-list');
   formItems = {};
   REPAIR_ITEMS.forEach(it => {
-    formItems[it.id] = { checked:false, side:'雙', qty:1, price:it.price };
+    formItems[it.id] = { checked:false, side:'雙', first:false, price:0 };
   });
   container.innerHTML = REPAIR_ITEMS.map(it => `
     <div class="item-row" id="item-${it.id}">
       <input type="checkbox" id="cb-${it.id}" onchange="toggleItem('${it.id}')">
-      <label for="cb-${it.id}" class="item-label">${it.label}</label>
+      <div class="item-main">
+        <label for="cb-${it.id}" class="item-label">${it.label}</label>
+        <div class="item-note" id="note-${it.id}"></div>
+      </div>
       ${it.hasSide ? `
-        <div class="item-sides" id="sides-${it.id}" style="visibility:hidden">
-          <button type="button" class="side-btn active" onclick="setSide('${it.id}','雙')">雙</button>
-          <button type="button" class="side-btn" onclick="setSide('${it.id}','L')">L</button>
-          <button type="button" class="side-btn" onclick="setSide('${it.id}','R')">R</button>
+        <div class="item-sides" id="sides-${it.id}">
+          ${Object.keys(SIDE_ADD).map(s => `<button type="button" class="side-btn ${s === '雙' ? 'active' : ''}" data-side="${s}" onclick="setSide('${it.id}','${s}')">${s} +${SIDE_ADD[s]}</button>`).join('')}
+          ${it.hasFirst ? `<button type="button" class="side-btn first-btn" id="first-${it.id}" onclick="toggleFirst('${it.id}')">首次 −${FIRST_DISCOUNT}</button>` : ''}
         </div>
-      ` : `<div></div>`}
-      <div class="item-price" id="price-${it.id}">NT$${numFmt(it.price)}</div>
+      ` : ''}
+      <div class="item-price" id="price-${it.id}"></div>
     </div>
   `).join('');
+  REPAIR_ITEMS.forEach(it => updateItemPrice(it.id));
 }
 
 function renderCareItemsForm() {
   const container = document.getElementById('care-items-list');
   careItems = {};
-  CARE_ITEMS.forEach(it => { careItems[it.id] = { checked:false, price:0 }; });
+  CARE_ITEMS.forEach(it => { careItems[it.id] = { checked:false, price: it.manual ? 0 : it.price }; });
   container.innerHTML = CARE_ITEMS.map(it => `
     <div class="item-row" id="care-${it.id}">
       <input type="checkbox" id="cb-care-${it.id}" onchange="toggleCare('${it.id}')">
-      <label for="cb-care-${it.id}" class="item-label">${it.label}</label>
-      <div></div>
-      <input type="number" class="price-input" id="price-care-${it.id}" placeholder="0" oninput="setCarePrice('${it.id}', this.value)">
+      <div class="item-main"><label for="cb-care-${it.id}" class="item-label">${it.label}</label></div>
+      ${it.manual
+        ? `<input type="number" min="0" class="price-input" id="price-care-${it.id}" placeholder="輸入金額" oninput="setCarePrice('${it.id}', this.value)">`
+        : `<div class="item-price">NT$${numFmt(it.price)}</div>`}
     </div>
   `).join('');
 }
 
+// ---- 其他維修項目（多組動態：自訂內容＋自訂金額）----
+function renderCustomRows() {
+  const c = document.getElementById('custom-items-list');
+  c.innerHTML = customRows.length ? customRows.map((r, i) => `
+    <div class="custom-row">
+      <input type="text" class="form-input" placeholder="維修內容（例：鞋跟包邊）" value="${esc(r.label)}" oninput="setCustomField(${i},'label',this.value)">
+      <input type="number" min="0" class="form-input mono" placeholder="金額" value="${esc(r.price)}" oninput="setCustomField(${i},'price',this.value)">
+      <button type="button" class="custom-remove" onclick="removeCustomRow(${i})" aria-label="刪除此項">✕</button>
+    </div>
+  `).join('') : '<div class="custom-empty">尚未新增，需要時按下方「＋ 新增項目」。</div>';
+}
+function addCustomRow() { customRows.push({ label:'', price:'' }); renderCustomRows(); }
+function removeCustomRow(i) { customRows.splice(i, 1); renderCustomRows(); recalcTotal(); }
+function setCustomField(i, field, v) { customRows[i][field] = v; if (field === 'price') recalcTotal(); }
+
 function toggleItem(id) {
-  const cb = document.getElementById('cb-'+id);
-  const sides = document.getElementById('sides-'+id);
-  formItems[id].checked = cb.checked;
-  if (sides) sides.style.visibility = cb.checked ? 'visible' : 'hidden';
+  const st = formItems[id];
+  st.checked = document.getElementById('cb-'+id).checked;
+  if (!st.checked && st.first) { // 取消勾選就一併取消「首次」，避免重新勾選時無聲帶著折扣
+    st.first = false;
+    const fb = document.getElementById('first-'+id);
+    if (fb) fb.classList.remove('active');
+  }
   updateItemPrice(id);
   recalcTotal();
 }
 function setSide(id, side) {
   formItems[id].side = side;
-  document.querySelectorAll(`#sides-${id} .side-btn`).forEach(b => b.classList.toggle('active', b.textContent === side));
+  document.querySelectorAll(`#sides-${id} .side-btn[data-side]`).forEach(b => b.classList.toggle('active', b.dataset.side === side));
   updateItemPrice(id);
   recalcTotal();
 }
+function toggleFirst(id) {
+  formItems[id].first = !formItems[id].first;
+  document.getElementById('first-'+id).classList.toggle('active', formItems[id].first);
+  updateItemPrice(id);
+  recalcTotal();
+}
+// 該項金額 = 基本價 + 雙/左/右加價 − 首次優惠
+function calcItemPrice(meta, st) {
+  let p = meta.price;
+  if (meta.hasSide) p += SIDE_ADD[st.side] || 0;
+  if (meta.hasFirst && st.first) p -= FIRST_DISCOUNT;
+  return Math.max(p, 0);
+}
 function updateItemPrice(id) {
   const meta = REPAIR_ITEMS.find(x => x.id === id);
-  const item = formItems[id];
-  let p = meta.price;
-  // 首修免費：天皮且 freeRepairChecked & eligible
-  if (id === 'sole' && freeRepairChecked && window._freeEligible) p = 0;
-  // 木根修補按隻計價
-  if (meta.perPiece && item.side === '雙') p = meta.price * 2;
-  item.price = item.checked ? p : 0;
-  document.getElementById('price-'+id).textContent = p === 0 && id === 'sole' && freeRepairChecked ? '免費' : 'NT$'+numFmt(p);
+  const st = formItems[id];
+  const p = calcItemPrice(meta, st);
+  st.price = st.checked ? p : 0;
+  document.getElementById('item-'+id).classList.toggle('on', st.checked);
+  document.getElementById('price-'+id).textContent = (st.checked || !meta.hasSide)
+    ? 'NT$' + numFmt(p)
+    : 'NT$' + numFmt(meta.price) + ' 起';
+  const note = document.getElementById('note-'+id);
+  if (st.checked && meta.hasSide) {
+    let t = `基本 ${numFmt(meta.price)} + ${st.side} ${SIDE_ADD[st.side]}`;
+    if (meta.hasFirst && st.first) t += ` − 首次 ${FIRST_DISCOUNT}`;
+    note.textContent = t;
+  } else {
+    note.textContent = '';
+  }
 }
 function toggleCare(id) {
   careItems[id].checked = document.getElementById('cb-care-'+id).checked;
@@ -930,58 +1117,96 @@ function setCarePrice(id, v) {
   careItems[id].price = Number(v) || 0;
   recalcTotal();
 }
-function recalcTotal() {
+
+// ---- 待報價開關：金額待定，付款狀態同步為「待報價」 ----
+function togglePending() {
+  pendingQuote = document.getElementById('f-pending').checked;
+  const pay = document.getElementById('f-payment');
+  if (pendingQuote) pay.value = '待報價';
+  else if (pay.value === '待報價') pay.value = '';
+  recalcTotal();
+}
+function onPaymentChange() {
+  const sw = document.getElementById('f-pending');
+  const isPending = document.getElementById('f-payment').value === '待報價';
+  if (sw.checked !== isPending) {
+    sw.checked = isPending;
+    pendingQuote = isPending;
+    recalcTotal();
+  }
+}
+
+function calcSubtotal() {
   let total = 0;
   Object.values(formItems).forEach(x => { if (x.checked) total += Number(x.price)||0; });
   Object.values(careItems).forEach(x => { if (x.checked) total += Number(x.price)||0; });
-  document.getElementById('total-price').textContent = 'NT$ ' + numFmt(total);
+  customRows.forEach(r => { total += Number(r.price)||0; });
+  return total;
+}
+function recalcTotal() {
+  const sub = calcSubtotal();
+  const el = document.getElementById('total-price');
+  const subEl = document.getElementById('total-sub');
+  if (pendingQuote) {
+    el.textContent = '待定';
+    subEl.textContent = sub ? `已選項目小計 NT$ ${numFmt(sub)}（僅供內部參考）` : '';
+  } else {
+    el.textContent = 'NT$ ' + numFmt(sub);
+    subEl.textContent = '';
+  }
 }
 
 function collectFormItems() {
   const list = [];
   REPAIR_ITEMS.forEach(meta => {
-    const item = formItems[meta.id];
-    if (!item.checked) return;
-    list.push({ id:meta.id, label:meta.label, side:meta.hasSide ? item.side : '', price:item.price });
+    const st = formItems[meta.id];
+    if (!st.checked) return;
+    const it = { id:meta.id, label:meta.label, side:meta.hasSide ? st.side : '', price:st.price };
+    if (st.first) it.first = true;
+    list.push(it);
   });
   CARE_ITEMS.forEach(meta => {
-    const item = careItems[meta.id];
-    if (!item.checked) return;
-    list.push({ id:meta.id, label:meta.label, side:'', price:item.price, isCare:true });
+    const st = careItems[meta.id];
+    if (!st.checked) return;
+    list.push({ id:meta.id, label:meta.label, side:'', price:st.price, isCare:true });
+  });
+  customRows.forEach(r => {
+    const label = r.label.trim();
+    if (!label) return;
+    const hasAmt = String(r.price).trim() !== '';
+    list.push({ id:'custom', label, side:'', price: hasAmt ? Number(r.price) : null, isCustom:true });
   });
   return list;
 }
 
 // =============================================
-// 首修免費判斷
+// 「首次」優惠提示（僅提醒，不自動套用；是否給首次優惠由門市勾選）
+// 依電話＋型號查歷史：同一支電話、同一型號是否已用過「首次」
 // =============================================
-async function checkFreeRepairOnBlur() {
+async function checkFirstRepairOnBlur() {
   const phone = document.getElementById('f-phone').value.trim();
-  const model = document.getElementById('f-model').value.trim();
+  const model = cleanPart(document.getElementById('f-model').value);
   const hint = document.getElementById('free-hint');
-  if (!phone || !model) { hint.style.display = 'none'; freeRepairChecked = false; return; }
+  if (!phone || !model) { hint.style.display = 'none'; return; }
   try {
     const r = await fetch(`${GAS_URL}?action=checkFreeRepair&phone=${encodeURIComponent(phone)}&model=${encodeURIComponent(model)}`);
     const d = await r.json();
-    freeRepairChecked = true;
-    window._freeEligible = !!d.eligible;
     if (d.eligible) {
       hint.style.background = '#D1FAE5';
       hint.style.color = '#065F46';
-      hint.textContent = '✓ 此電話+款式為首次維修，可享天皮免費更換';
+      hint.textContent = '✓ 此電話＋型號尚無「首次」優惠紀錄，天皮／止油水天皮可勾選「首次」';
     } else {
       hint.style.background = '#FEE2E2';
       hint.style.color = '#991B1B';
-      hint.textContent = `⚠ 此電話+款式歷史上已使用過 ${d.usedCount||1} 次首修免費，本次需收費`;
+      hint.textContent = `⚠ 此電話＋型號已使用過 ${d.usedCount||1} 次「首次」優惠，請確認是否仍要給首次優惠`;
     }
     hint.style.display = 'block';
-    updateItemPrice('sole');
-    recalcTotal();
   } catch (e) {
     console.error(e);
-    freeRepairChecked = false;
+    hint.style.display = 'none';
   }
 }
+function cleanPart(s) { return String(s || '').replace(/\s+/g, ''); }
 
 // =============================================
 // DETAIL
@@ -992,7 +1217,7 @@ async function openDetail(id) {
     try {
       const r = await fetch(`${GAS_URL}?action=getOrder&id=${encodeURIComponent(id)}&type=repair${staffTokenQS()}`);
       const d = await r.json();
-      o = d.order;
+      o = normalizeOrder(d.order);
     } catch (e) { toast('載入失敗','error'); return; }
   }
   if (!o) return;
@@ -1006,7 +1231,7 @@ async function openDetail(id) {
   document.getElementById('d-tag-official').style.display = (o.isOfficial === true || o.isOfficial === 'TRUE' || o.isOfficial === 'true') ? 'inline-flex' : 'none';
   document.getElementById('d-tag-free').style.display = (o.isFreeUsed === true || o.isFreeUsed === 'TRUE' || o.isFreeUsed === 'true') ? 'inline-flex' : 'none';
   document.getElementById('d-store').textContent = o.store || '';
-  document.getElementById('d-price').textContent = o.price ? `NT$${numFmt(o.price)}` : '待報價';
+  document.getElementById('d-price').textContent = priceText(o);
   document.getElementById('d-customer-name').textContent = o.name || '—';
   document.getElementById('d-phone').textContent = o.phone || '—';
   document.getElementById('d-email').textContent = o.email || '—';
@@ -1014,10 +1239,11 @@ async function openDetail(id) {
   document.getElementById('d-created').textContent = fmtTs(o.created);
   document.getElementById('d-model').textContent = o.model || '—';
   document.getElementById('d-category').textContent = (o.isOfficial === true || o.isOfficial === 'TRUE' || o.isOfficial === 'true') ? '原廠維修' : '一般維修';
+  document.getElementById('d-staff').textContent = o.staff || '—';
   document.getElementById('d-payment').textContent = o.paymentStatus || '—';
   document.getElementById('d-date').textContent = o.date || '—';
   document.getElementById('d-updated').textContent = fmtTs(o.updated);
-  document.getElementById('d-price-input').value = o.price || '';
+  document.getElementById('d-price-input').value = hasPrice(o) ? o.price : '';
   document.getElementById('d-payment-input').value = o.paymentStatus || '';
 
   // 項目明細
@@ -1025,9 +1251,10 @@ async function openDetail(id) {
   if (items.length) {
     let html = '';
     items.forEach(it => {
-      html += `<tr><td>${esc(it.label)}${it.side ? ` <span style="color:var(--text-muted)">(${esc(it.side)})</span>`:''}</td><td>${it.price === 0 ? '<span style="color:var(--positive)">免費</span>' : 'NT$'+numFmt(it.price)}</td></tr>`;
+      const pt = itemPriceText(it);
+      html += `<tr><td>${esc(it.label)}${it.side ? ` <span style="color:var(--text-muted)">(${esc(it.side)})</span>`:''}${it.first ? ' <span style="color:var(--rust)">· 首次優惠</span>' : ''}</td><td>${pt === '免費' ? '<span style="color:var(--positive)">免費</span>' : pt}</td></tr>`;
     });
-    html += `<tr class="items-total"><td>合計</td><td>NT$${numFmt(o.price||0)}</td></tr>`;
+    html += `<tr class="items-total"><td>合計</td><td>${priceText(o)}</td></tr>`;
     document.getElementById('d-items-table').innerHTML = html;
   } else if (o.desc) {
     document.getElementById('d-items-table').innerHTML = `<tr><td colspan="2" style="text-align:left">${esc(o.desc)}</td></tr>`;
@@ -1055,9 +1282,9 @@ function parseItems(json) {
 }
 
 function renderSteps(status) {
-  const steps = ['報價中','已送修','已完成','已取件'];
+  const steps = STATUS_FLOW;
   const idx = steps.indexOf(status);
-  if (status === '不適合維修') {
+  if (status === STATUS_REJECT) {
     document.getElementById('d-steps').innerHTML = `<div style="text-align:center;color:var(--negative);font-size:12px;padding:8px 0">⊗ 此鞋款不適合維修，已結案</div>`;
     return;
   }
@@ -1070,11 +1297,10 @@ function renderSteps(status) {
 
 function renderStatusButtons(status) {
   const statuses = [
-    {v:'報價中', cls:'status-btn-quote'},
-    {v:'已送修', cls:'status-btn-sent'},
+    {v:'送修中', cls:'status-btn-sent'},
     {v:'已完成', cls:'status-btn-done'},
     {v:'已取件', cls:'status-btn-picked'},
-    {v:'不適合維修', cls:'status-btn-reject'},
+    {v:STATUS_REJECT, cls:'status-btn-reject'},
   ];
   document.getElementById('status-buttons').innerHTML = statuses.map(s =>
     `<button class="status-btn ${s.cls} ${currentStatus===s.v?'active':''}" onclick="selectStatus('${s.v}')">${s.v}</button>`
@@ -1090,6 +1316,11 @@ async function saveDetailUpdate() {
   if (!currentOrder) return;
   const price = document.getElementById('d-price-input').value;
   const payment = document.getElementById('d-payment-input').value;
+  // 已填總價卻仍是「待報價」，單據會同時顯示金額與待報價，擋下來請門市改付款狀態
+  if (price !== '' && Number(price) > 0 && (payment || currentOrder.paymentStatus) === '待報價') {
+    toast('已填總價，請把付款狀態改為「未付」或「付清」', 'error');
+    return;
+  }
   showUploadOverlay(true, '更新中…');
   try {
     const body = { action:'updateOrder', id:currentOrder.id, type:'repair', status:currentStatus };
@@ -1104,7 +1335,7 @@ async function saveDetailUpdate() {
       renderSteps(currentStatus);
       document.getElementById('d-badge').className = 'badge ' + badgeClass(currentStatus);
       document.getElementById('d-badge').textContent = currentStatus;
-      document.getElementById('d-price').textContent = currentOrder.price ? `NT$${numFmt(currentOrder.price)}` : '待報價';
+      document.getElementById('d-price').textContent = priceText(currentOrder);
       document.getElementById('d-payment').textContent = currentOrder.paymentStatus || '—';
       renderStats();
       toast('✓ 已更新');
@@ -1196,17 +1427,33 @@ async function submitOrder() {
   const name = document.getElementById('f-name').value.trim();
   const phone = document.getElementById('f-phone').value.trim();
   const email = document.getElementById('f-email').value.trim();
-  const model = document.getElementById('f-model').value.trim();
+  // 款式 = 型號 + 顏色 + 尺寸（例：8605 黑 7），各欄去掉空白後以單一空格相連
+  const model = [
+    cleanPart(document.getElementById('f-model').value),
+    cleanPart(document.getElementById('f-color').value),
+    cleanPart(document.getElementById('f-size').value),
+  ].filter(Boolean).join(' ');
+  if (dueMode !== 'custom') applyDueMode(); // 表單開著跨日時，以送出當下重算
   const date = document.getElementById('f-date').value;
-  const status = document.getElementById('f-status').value;
+  const staff = document.getElementById('f-staff').value.trim();
+  const status = STATUS_FLOW[0]; // 新單一律「送修中」
   const isOfficial = document.getElementById('f-is-official').value === 'true';
   const internalNote = document.getElementById('f-internal').value.trim();
   const desc = document.getElementById('f-desc').value.trim();
-  const paymentStatus = document.getElementById('f-payment').value;
+  const paymentStatus = pendingQuote ? '待報價' : document.getElementById('f-payment').value;
   const sendEmailFlag = document.getElementById('f-send-email').checked;
 
+  if (!store || !name || !phone || !staff) { toast('請填寫門市、姓名、電話、服務夥伴', 'error'); return; }
+  if (!date) { toast('請選擇預計完成日', 'error'); return; }
+  // 其他維修項目：有內容就要有金額（待報價時金額可先空白），有金額就要有內容
+  for (const r of customRows) {
+    const label = r.label.trim(), amt = String(r.price).trim();
+    if (!label && !amt) continue;
+    if (!label) { toast('「其他維修項目」有填金額但沒填維修內容', 'error'); return; }
+    if (!amt && !pendingQuote) { toast(`請填寫「${label}」的金額，或開啟「待報價」`, 'error'); return; }
+    if (amt && !(Number(amt) >= 0)) { toast(`「${label}」的金額格式不正確`, 'error'); return; }
+  }
   const items = collectFormItems();
-  if (!store || !name || !phone) { toast('請填寫門市、姓名、電話', 'error'); return; }
   if (!items.length && !desc) { toast('請至少勾選一項維修項目或填寫備註', 'error'); return; }
   if (sendEmailFlag && !email) { toast('要寄送 email 請先填寫客戶 email', 'error'); return; }
 
@@ -1216,7 +1463,8 @@ async function submitOrder() {
     : desc;
 
   const total = items.reduce((sum, it) => sum + (Number(it.price)||0), 0);
-  const isFreeUsed = items.some(it => it.id === 'sole' && it.price === 0);
+  const isFreeUsed = items.some(it => it.first); // 有勾「首次」才算用掉首次優惠
+  const price = pendingQuote ? null : (items.length ? total : null); // 待報價 → 金額留空，單據顯示「待報價」
 
   showUploadOverlay(true, '建立中…');
   try {
@@ -1228,9 +1476,10 @@ async function submitOrder() {
         desc: desc || summaryDesc,
         itemsJson: JSON.stringify(items),
         isOfficial, internalNote,
-        price: total || null,
+        price,
         paymentStatus,
         isFreeUsed,
+        staff,
         date, status
       }))
     });
@@ -1287,19 +1536,26 @@ function resetCreateForm() {
   document.getElementById('f-phone').value = '';
   document.getElementById('f-email').value = '';
   document.getElementById('f-model').value = '';
+  document.getElementById('f-color').value = '';
+  document.getElementById('f-size').value = '';
   document.getElementById('f-desc').value = '';
   document.getElementById('f-internal').value = '';
   document.getElementById('f-payment').value = '';
   document.getElementById('f-staff').value = '';
   document.getElementById('f-is-official').value = 'false';
   document.getElementById('free-hint').style.display = 'none';
-  freeRepairChecked = false;
+  document.getElementById('f-pending').checked = false;
+  pendingQuote = false;
+  customRows = [];
   createPhotos = [];
   renderCreatePhotoPreview();
   renderRepairItemsForm();
   renderCareItemsForm();
+  renderCustomRows();
   recalcTotal();
-  setDefaultDate();
+  document.querySelector('input[name="f-due-mode"][value="2w"]').checked = true;
+  document.getElementById('f-date').value = '';
+  applyDueMode();
 }
 
 // =============================================
@@ -1347,16 +1603,16 @@ async function loadCustomerView(id, phone) {
       document.getElementById('customer-card').innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><div class="empty-text">查無此單號，請確認後再試</div></div>';
       return;
     }
-    const o = d.order;
+    const o = normalizeOrder(d.order);
     const items = parseItems(o.itemsJson);
     let itemsHtml = items.length
-      ? `<table class="items-table">${items.map(it => `<tr><td>${esc(it.label)}${it.side ? ' ('+esc(it.side)+')' : ''}</td><td>${it.price===0?'免費':'NT$'+numFmt(it.price)}</td></tr>`).join('')}<tr class="items-total"><td>合計</td><td>NT$${numFmt(o.price||0)}</td></tr></table>`
+      ? `<table class="items-table">${items.map(it => `<tr><td>${esc(itemNameText(it))}</td><td>${itemPriceText(it)}</td></tr>`).join('')}<tr class="items-total"><td>合計</td><td>${priceText(o)}</td></tr></table>`
       : (o.desc ? `<div style="font-size:13px;line-height:1.7;padding:8px 0">${esc(o.desc)}</div>` : '');
 
-    const steps = ['報價中','已送修','已完成','已取件'];
+    const steps = STATUS_FLOW;
     const idx = steps.indexOf(o.status);
     let stepsHtml = '';
-    if (o.status === '不適合維修') {
+    if (o.status === STATUS_REJECT) {
       stepsHtml = `<div style="text-align:center;color:var(--negative);font-size:13px;padding:8px 0">⊗ 此鞋款經評估不適合維修</div>`;
     } else {
       stepsHtml = `<div class="steps">${steps.map((s, i) => {
@@ -1412,7 +1668,7 @@ function doPrint(kind) {
 function renderPrintReceipt(o) {
   const items = parseItems(o.itemsJson);
   const itemsRows = items.length
-    ? items.map(it => `<tr><td>${esc(it.label)}${it.side ? ` (${esc(it.side)})` : ''}</td><td>${it.price===0?'首修免費':'NT$'+numFmt(it.price)}</td></tr>`).join('')
+    ? items.map(it => `<tr><td>${esc(itemNameText(it))}</td><td>${itemPriceText(it)}</td></tr>`).join('')
     : `<tr><td colspan="2">${esc(o.desc || '—')}</td></tr>`;
   return `
     <div class="print-receipt">
@@ -1421,14 +1677,14 @@ function renderPrintReceipt(o) {
       <table class="info-tbl">
         <tr><td>客戶姓名</td><td>${esc(o.name)}</td><td>電話</td><td>${esc(o.phone||'—')}</td></tr>
         <tr><td>送修門市</td><td>${esc(o.store)}</td><td>送修日期</td><td>${esc(fmtTs(o.created).slice(0,10))}</td></tr>
-        <tr><td>款式號碼</td><td>${esc(o.model||'—')}</td><td>預計取件日</td><td>${esc(o.date||'—')}</td></tr>
-        <tr><td>付款狀態</td><td colspan="3">${esc(o.paymentStatus||'—')}</td></tr>
+        <tr><td>款式</td><td>${esc(o.model||'—')}</td><td>預計取件日</td><td>${esc(o.date||'—')}</td></tr>
+        <tr><td>付款狀態</td><td>${esc(o.paymentStatus||'—')}</td><td>服務夥伴</td><td>${esc(o.staff||'—')}</td></tr>
       </table>
       <table class="items-tbl">
         <thead><tr><th>維修項目</th><th>費用</th></tr></thead>
         <tbody>
           ${itemsRows}
-          <tr class="total-row"><td>合計</td><td>NT$${numFmt(o.price||0)}</td></tr>
+          <tr class="total-row"><td>合計</td><td>${priceText(o)}</td></tr>
         </tbody>
       </table>
       <div class="notes">
@@ -1466,15 +1722,14 @@ function renderPrintLabels(o) {
 // =============================================
 function badgeClass(s) {
   return {
-    '報價中':'badge-quote',
-    '已送修':'badge-sent',
+    '送修中':'badge-sent',
     '已完成':'badge-done',
     '已取件':'badge-picked',
     '不適合維修':'badge-reject',
   }[s] || 'badge-picked';
 }
 function numFmt(n) { return Number(n||0).toLocaleString('zh-TW'); }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmtTs(ts) {
   if (!ts) return '—';
   const d = new Date(ts);
