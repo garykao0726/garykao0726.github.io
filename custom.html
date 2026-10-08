@@ -703,6 +703,14 @@ function isAlreadyLoggedIn() {
 }
 function waitForGSI(cb) {
   if (window.google && google.accounts && google.accounts.oauth2) { cb(); return; }
+  // auth.js 在 session 仍有效時不會載入 GSI（只有重新登入才載入），這裡自己補載一次，否則會一直卡在「載入中」
+  if (!document.getElementById('gsi-client-script')) {
+    const s = document.createElement('script');
+    s.id = 'gsi-client-script';
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true;
+    document.head.appendChild(s);
+  }
   setTimeout(() => waitForGSI(cb), 300);
 }
 function initStaffTokenClient() {
@@ -715,6 +723,8 @@ function initStaffTokenClient() {
       hideAuthorizeBanner();
       loadOrders();
     },
+    // 靜默取得需要開彈窗，頁面一載入時瀏覽器會擋（popup_failed_to_open）→ 顯示橫幅，讓使用者點一下（有使用者手勢才開得了）
+    error_callback: () => showAuthorizeBanner(),
   });
   staffTokenClient.requestAccessToken({ prompt: '' });
 }
@@ -783,13 +793,21 @@ function showView(name) {
 // =============================================
 // LOAD ORDERS / PRODUCTS
 // =============================================
+let loadError = '';
 async function loadOrders() {
+  loadError = '';
   try {
     const r = await fetch(`${GAS_URL}?action=getOrders&type=custom${staffTokenQS()}`, { cache:'no-store' });
     const d = await r.json();
-    allOrders = (d.success && d.orders) ? d.orders : [];
+    if (d.success && d.orders) {
+      allOrders = d.orders;
+    } else {
+      allOrders = [];
+      loadError = d.error || '未知錯誤';
+    }
   } catch (e) {
     console.error(e); allOrders = [];
+    loadError = '連線失敗，請重新整理';
   }
   renderList(); renderStats();
 }
@@ -841,7 +859,8 @@ function renderList() {
   });
   const container = document.getElementById('list-container');
   if (!filtered.length) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">👞</div><div class="empty-text">${allOrders.length ? '找不到符合的訂單' : '尚無訂製單資料'}</div></div>`;
+    const msg = allOrders.length ? '找不到符合的訂單' : (loadError ? `⚠ 訂製單載入失敗：${esc(loadError)}` : '尚無訂製單資料');
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">👞</div><div class="empty-text">${msg}</div></div>`;
     return;
   }
   container.innerHTML = '<div class="order-list">' + filtered.map(o => `
