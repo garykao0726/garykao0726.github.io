@@ -226,6 +226,12 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .gbp-bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:10px;transition:width .7s cubic-bezier(.4,0,.2,1)}
 .gbp-bar-val{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#fff}
 .gbp-bar-detail{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);white-space:nowrap;min-width:130px}
+.nx-month-tabs{display:flex;gap:.5rem;padding:.75rem 1.5rem 1.25rem;max-width:1400px;margin:0 auto;flex-wrap:wrap}
+.nx-mtab{padding:.3rem .85rem;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-size:11px;font-family:'Space Mono',monospace;cursor:pointer;transition:all .15s;letter-spacing:.03em}
+.nx-mtab:hover{border-color:var(--green);color:var(--green)}
+.nx-mtab.active{background:var(--green);color:#fff;border-color:var(--green)}
+.nx-month-panel{display:none}
+.nx-month-panel.active{display:block}
 </style>
 </head>
 <body>
@@ -458,6 +464,15 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
 <!-- ══ 南西誠品 ══ -->
 <div class="tab-panel" id="panel-nanxi">
+
+  <!-- Month Tabs -->
+  <div class="nx-month-tabs" id="nx-month-tabs">
+    <button class="nx-mtab active" data-month="202609" onclick="switchNxMonth('202609',this)">2026 / 09</button>
+    <!-- NX_MONTH_TAB_ANCHOR -->
+  </div>
+
+  <!-- ── 2026 / 09 ── -->
+  <div class="nx-month-panel active" id="nx-month-202609">
 
   <!-- Banner -->
   <div class="nx-banner">
@@ -843,6 +858,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     </ul>
   </div>
 
+  </div><!-- /nx-month-202609 -->
+
+  <!-- NX_MONTH_PANEL_ANCHOR -->
+
 </div><!-- /panel-nanxi -->
 
 </div>
@@ -884,6 +903,13 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <span style="opacity:.4;font-size:10px;display:block;margin-top:3px">INTERNAL USE ONLY · ©2026 ORINGO</span>
 </footer>
 <script>
+function switchNxMonth(ym, btn) {
+  document.querySelectorAll('.nx-month-panel').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nx-mtab').forEach(el => el.classList.remove('active'));
+  const panel = document.getElementById('nx-month-' + ym);
+  if (panel) panel.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
 const STORES=['中山店','松菸店','台中店','東門店','誠品南西店','官網'];
 const STORES4=['中山店','松菸店','台中店','東門店'];
 const STORES5=['中山店','松菸店','台中店','東門店','誠品南西店'];
