@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜官網退貨</title>
+<link rel="icon" href="/favicon.png" type="image/png">
+<script src="auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --oringo-green:#284234; --oringo-dark:#002721; --oringo-rust:#A54A1A;
+  --oringo-sand:#E2CEB9; --oringo-sand-light:#F5EDE3; --surface:#FFFFFF;
+  --oringo-brown:#8D5531; --text-primary:#212121; --text-secondary:#757575; --color-error:#D32F2F;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px; --space-7:48px; --space-8:64px;
+  --hairline:1px solid rgba(40,66,52,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--oringo-sand-light);color:var(--text-primary);font-family:'Noto Sans TC',sans-serif;font-size:15px;line-height:1.7;min-height:100vh}
+.mono{font-family:'Space Mono',monospace}
+
+/* Header */
+.hdr{position:sticky;top:0;z-index:50;background:var(--surface);border-bottom:2px solid var(--oringo-green);
+  display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-3) var(--space-5);flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:var(--space-3)}
+.brand b{font-family:'Space Mono',monospace;font-weight:400;font-size:13px;letter-spacing:.12em;color:var(--oringo-green)}
+.brand span{font-size:20px;font-weight:600;color:var(--oringo-green);letter-spacing:-.01em}
+.hdr-r{display:flex;align-items:center;gap:var(--space-3)}
+.mode{font-size:12px;letter-spacing:.02em;padding:var(--space-1) var(--space-3);border:1px solid var(--oringo-brown);color:var(--oringo-brown);border-radius:4px}
+.mode.live{border-color:var(--oringo-green);color:var(--oringo-green);background:var(--oringo-sand-light)}
+.who{display:flex;align-items:center;gap:var(--space-2);font-size:13px;color:var(--text-secondary)}
+.who input{width:96px;padding:var(--space-2) var(--space-3);font-size:14px;min-height:36px}
+
+/* Tabs */
+.tabs{display:flex;gap:var(--space-5);max-width:880px;margin:0 auto;padding:var(--space-5) var(--space-5) 0}
+.tab{background:none;border:none;border-bottom:3px solid transparent;font:inherit;font-size:16px;font-weight:500;color:var(--text-secondary);
+  padding:var(--space-2) 0;min-height:44px;cursor:pointer}
+.tab.on{color:var(--oringo-green);border-bottom-color:var(--oringo-green);font-weight:600}
+.tab .n{font-family:'Space Mono',monospace;font-size:12px;margin-left:var(--space-2);color:var(--oringo-brown)}
+
+.wrap{max-width:880px;margin:0 auto;padding:var(--space-5)}
+.pane{display:none}.pane.on{display:block}
+
+/* Controls */
+input,select,textarea{font:inherit;color:var(--text-primary);background:var(--surface);border:1px solid rgba(40,66,52,.28);border-radius:4px;padding:var(--space-3);min-height:44px;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--oringo-green);outline-offset:1px}
+label.f{display:block;font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-1);letter-spacing:.02em}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);min-height:44px;padding:var(--space-2) var(--space-5);border-radius:4px;
+  font:inherit;font-size:15px;font-weight:500;cursor:pointer;border:1px solid var(--oringo-green);background:var(--oringo-green);color:var(--surface);transition:background .15s}
+.btn:hover{background:var(--oringo-dark)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--oringo-green)}
+.btn.ghost:hover{background:var(--oringo-sand-light)}
+.btn.sm{min-height:44px;padding:var(--space-2) var(--space-4);font-size:14px}
+.btn.link{border:none;background:none;color:var(--oringo-brown);padding:var(--space-2);text-decoration:underline;min-height:44px}
+.row{display:flex;gap:var(--space-3);align-items:flex-end;flex-wrap:wrap}
+.grow{flex:1;min-width:200px}
+
+/* Cards */
+.card{background:var(--surface);border-top:3px solid var(--oringo-green);border-radius:0 0 8px 8px;padding:var(--space-5);margin-top:var(--space-5)}
+.card h2{font-size:18px;font-weight:500;color:var(--oringo-green);margin-bottom:var(--space-4)}
+.sub{font-size:13px;color:var(--text-secondary);letter-spacing:.02em}
+.hr{border:none;border-top:var(--hairline);margin:var(--space-4) 0}
+
+/* 訂單摘要：左資訊，右大數字（尺寸反差） */
+.sum{display:grid;grid-template-columns:1fr auto;gap:var(--space-5);align-items:start}
+.onum{font-family:'Space Mono',monospace;font-size:20px;color:var(--oringo-green);word-break:break-all}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--space-3) var(--space-5);margin-top:var(--space-4)}
+.facts dt{font-size:12px;color:var(--text-secondary);letter-spacing:.02em}
+.facts dd{font-size:15px;color:var(--text-primary)}
+.day{text-align:right;min-width:150px}
+.day .big{font-family:'Space Mono',monospace;font-size:52px;line-height:1;color:var(--oringo-green);font-weight:700}
+.day .big small{font-size:18px;color:var(--text-secondary);font-weight:400}
+.day.over .big{color:var(--oringo-rust)}
+.day .cap{font-size:13px;color:var(--text-secondary);margin-top:var(--space-2)}
+.day.over .cap{color:var(--oringo-rust)}
+
+.msg{padding:var(--space-3) var(--space-4);border-left:3px solid var(--oringo-brown);background:var(--oringo-sand-light);font-size:14px;margin-top:var(--space-3)}
+.msg.err{border-left-color:var(--color-error);color:var(--color-error)}
+.msg.ok{border-left-color:var(--oringo-green)}
+
+/* 商品列 */
+.item{display:grid;grid-template-columns:44px 1fr auto auto;gap:var(--space-3);align-items:center;padding:var(--space-3) 0;border-top:var(--hairline)}
+.item:first-of-type{border-top:none}
+.item input[type=checkbox]{width:24px;height:24px;min-height:24px;margin:10px}
+.item .t{font-weight:500}
+.item .s{font-size:13px;color:var(--text-secondary)}
+.item select{width:76px}
+.price{font-family:'Space Mono',monospace;font-size:14px;color:var(--text-primary);white-space:nowrap}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-4)}
+.chk{display:flex;gap:var(--space-3);align-items:flex-start;padding:var(--space-2) 0;font-size:14px;cursor:pointer}
+.chk input{width:24px;height:24px;min-height:24px;margin:10px 0 0 10px;flex:none}
+.chk span{padding-top:var(--space-2)}
+
+.chip{display:inline-block;font-size:12px;letter-spacing:.02em;padding:2px var(--space-3);border-radius:4px;border:1px solid var(--oringo-brown);color:var(--oringo-brown)}
+.chip.s-done{border-color:var(--oringo-green);color:var(--oringo-green)}
+.chip.s-void{border-color:#9e9e9e;color:#757575}
+.chip.s-mid{background:var(--oringo-sand);border-color:var(--oringo-sand);color:var(--oringo-dark)}
+
+/* 進度卡 */
+.rc{background:var(--surface);border-top:3px solid var(--oringo-green);border-radius:0 0 8px 8px;padding:var(--space-4) var(--space-5);margin-bottom:var(--space-4)}
+.rc-h{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3);flex-wrap:wrap}
+.rc-h .rn{font-family:'Space Mono',monospace;font-size:15px;color:var(--oringo-green)}
+.rc-b{margin-top:var(--space-2);font-size:14px}
+.rc-b .k{color:var(--text-secondary);font-size:12px;letter-spacing:.02em;margin-right:var(--space-2)}
+.rc-live{font-size:13px;color:var(--text-secondary);margin-top:var(--space-2)}
+.rc-a{display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-4);align-items:center}
+.guide{background:var(--oringo-sand-light);padding:var(--space-4);margin-top:var(--space-4);font-size:14px;border-radius:4px}
+.guide ol{padding-left:var(--space-5)}
+.guide li{margin:var(--space-1) 0}
+.bankbox{display:grid;grid-template-columns:auto 1fr auto;gap:var(--space-1) var(--space-3);align-items:center;margin-top:var(--space-3);font-size:14px}
+.bankbox .k{color:var(--text-secondary);font-size:12px}
+.bankbox .v{font-family:'Space Mono',monospace;word-break:break-all}
+.filter{display:flex;gap:var(--space-4);align-items:center;margin-bottom:var(--space-4)}
+.empty{color:var(--text-secondary);padding:var(--space-6) 0;text-align:center}
+
+pre.payload{background:var(--oringo-sand-light);padding:var(--space-4);font-size:12px;overflow:auto;border-radius:4px;margin-top:var(--space-3)}
+textarea.copybox{min-height:132px;font-size:14px;line-height:1.7}
+
+.toast{position:fixed;left:50%;bottom:var(--space-6);transform:translateX(-50%);background:var(--oringo-dark);color:var(--surface);padding:var(--space-3) var(--space-5);
+  border-radius:4px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:99;box-shadow:0 2px 12px rgba(0,39,33,.08)}
+.toast.on{opacity:1}
+.authbar{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--oringo-rust);color:#fff;padding:var(--space-3) var(--space-4);text-align:center;font-size:14px;cursor:pointer}
+
+@media (max-width:768px){
+  .hdr{padding:var(--space-3) var(--space-4)}
+  .wrap,.tabs{padding-left:var(--space-4);padding-right:var(--space-4)}
+  .sum{grid-template-columns:1fr}
+  .day{text-align:left}
+  .item{grid-template-columns:44px 1fr auto}
+  .item .price{grid-column:2 / 4}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="brand"><b>ORINGO</b><span>官網退貨</span></div>
+  <div class="hdr-r">
+    <span class="mode" id="mode">連線中…</span>
+    <div class="who"><label for="staffName">經辦人</label><input id="staffName" maxlength="20" placeholder="你的名字"></div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab on" data-tab="new">建立退貨</button>
+  <button class="tab" data-tab="list">退貨進度<span class="n" id="openCount"></span></button>
+</nav>
+
+<main class="wrap">
+  <!-- ═══ 建立退貨 ═══ -->
+  <section class="pane on" id="pane-new">
+    <div class="row">
+      <div class="grow">
+        <label class="f" for="orderNo">訂單編號</label>
+        <input id="orderNo" class="mono" inputmode="numeric" autocomplete="off" placeholder="貼上 17 碼訂單編號，按 Enter 查詢">
+      </div>
+      <button class="btn" id="btnLookup">查詢訂單</button>
+    </div>
+    <div id="lookupMsg"></div>
+    <div id="orderArea"></div>
+    <div id="resultArea"></div>
+  </section>
+
+  <!-- ═══ 退貨進度 ═══ -->
+  <section class="pane" id="pane-list">
+    <div class="filter">
+      <label class="chk" style="padding:0"><input type="checkbox" id="showAll"><span>顯示已退款／已作廢</span></label>
+      <button class="btn ghost sm" id="btnReload">重新整理</button>
+    </div>
+    <div id="listArea"><div class="empty">載入中…</div></div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+// CONFIG
+// =============================================
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwJh0-AzzUXgFEzOQ_uzWsCKR8tKhsJBdw__wmknaEHhWc5IeWnd-0l6bjB6FBY6ZAzlQ/exec';
+const STAFF_OAUTH_CLIENT_ID = '777948523832-8qfmjk689e35f02crqjp35kg47j4kcgn.apps.googleusercontent.com';
+
+let staffAccessToken = null;
+let staffTokenClient = null;
+let tokenWaiters = [];
+let CUR = null; // 目前查到的訂單
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => (n == null || n === '') ? '' : 'NT$ ' + Number(n).toLocaleString('en-US');
+
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 2200);
+}
+async function copyText(text, label) {
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) {
+    const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } finally { ta.remove(); }
+  }
+  toast((label || '內容') + ' 已複製');
+}
+
+// =============================================
+// 員工憑證（與維修工單相同：GAS 會拿這組 token 向 Google 驗證是不是 @oringoshoes.com）
+// =============================================
+function isAlreadyLoggedIn() {
+  try { const d = JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null'); return !!(d && d.exp > Date.now()); }
+  catch (e) { return false; }
+}
+function waitForGSI(cb) {
+  if (window.google && google.accounts && google.accounts.oauth2) { cb(); return; }
+  if (!document.getElementById('gsi-client-script')) {
+    const s = document.createElement('script'); s.id = 'gsi-client-script'; s.src = 'https://accounts.google.com/gsi/client'; s.async = true;
+    document.head.appendChild(s);
+  }
+  setTimeout(() => waitForGSI(cb), 300);
+}
+function initStaffTokenClient() {
+  staffTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: STAFF_OAUTH_CLIENT_ID,
+    scope: 'openid email profile',
+    callback: resp => {
+      if (resp.error) { showAuthBar(); flushWaiters(false); return; }
+      staffAccessToken = resp.access_token; hideAuthBar(); flushWaiters(true);
+      if ($('pane-list').classList.contains('on')) loadList();
+    },
+    error_callback: () => { showAuthBar(); flushWaiters(false); },
+  });
+  staffTokenClient.requestAccessToken({ prompt: '' });
+}
+function flushWaiters(ok) { const w = tokenWaiters; tokenWaiters = []; w.forEach(f => f(ok)); }
+function refreshToken() {
+  return new Promise(res => { tokenWaiters.push(res); if (staffTokenClient) staffTokenClient.requestAccessToken({ prompt: '' }); else res(false); });
+}
+function showAuthBar() {
+  if ($('authbar')) return;
+  const el = document.createElement('div'); el.id = 'authbar'; el.className = 'authbar';
+  el.textContent = '需要授權才能存取退貨資料，點此授權';
+  el.onclick = () => staffTokenClient.requestAccessToken({ prompt: 'consent' });
+  document.body.prepend(el);
+}
+function hideAuthBar() { const el = $('authbar'); if (el) el.remove(); }
+
+// =============================================
+// API（憑證過期會自動換新再重試一次）
+// =============================================
+async function api(method, action, params) {
+  const doCall = async () => {
+    if (method === 'GET') {
+      const qs = new URLSearchParams(Object.assign({ action: action }, params || {}, { staffToken: staffAccessToken || '' }));
+      return (await fetch(GAS_URL + '?' + qs, { cache: 'no-store' })).json();
+    }
+    return (await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(Object.assign({ action: action }, params || {}, { staffToken: staffAccessToken || '' })) })).json();
+  };
+  let r = await doCall();
+  if (!r.success && /憑證|過期/.test(r.error || '')) {
+    if (await refreshToken()) r = await doCall();
+  }
+  if (r.mode) setMode(r.mode.live);
+  return r;
+}
+function setMode(live) {
+  const m = $('mode'); m.className = 'mode' + (live ? ' live' : '');
+  m.textContent = live ? '正式模式' : '測試模式（不會真的建單）';
+}
+const staffName = () => ($('staffName').value || '').trim();
+
+// =============================================
+// 建立退貨
+// =============================================
+async function doLookup() {
+  const on = $('orderNo').value.trim();
+  $('resultArea').innerHTML = ''; $('orderArea').innerHTML = ''; $('lookupMsg').innerHTML = '';
+  if (!on) { $('lookupMsg').innerHTML = '<div class="msg err">請先貼上訂單編號</div>'; return; }
+  $('btnLookup').disabled = true; $('btnLookup').textContent = '查詢中…';
+  try {
+    const r = await api('GET', 'lookup', { orderNumber: on });
+    if (!r.success) { $('lookupMsg').innerHTML = '<div class="msg err">' + esc(r.error) + '</div>'; CUR = null; return; }
+    CUR = r.order; renderOrder();
+  } catch (e) {
+    $('lookupMsg').innerHTML = '<div class="msg err">連線失敗：' + esc(e.message || e) + '</div>';
+  } finally { $('btnLookup').disabled = false; $('btnLookup').textContent = '查詢訂單'; }
+}
+
+function renderOrder() {
+  const o = CUR, d = o.delivery, p = o.payment;
+  const hasDay = d.elapsedDays != null;
+  const dayHtml = hasDay
+    ? `<div class="day ${d.withinDays ? '' : 'over'}"><div class="big">${esc(d.elapsedDays)}<small> / ${o.returnDays} 天</small></div>
+        <div class="cap">${d.withinDays ? '期限 ' + esc(d.deadline) : '已逾期 ' + esc(d.overDays) + ' 天（期限 ' + esc(d.deadline) + '）'}<br>自${esc(d.baseLabel)} ${esc(d.baseDate)} 起算</div></div>`
+    : `<div class="day over"><div class="big">?<small> / ${o.returnDays} 天</small></div><div class="cap">無法計算期限</div></div>`;
+
+  let h = `<div class="card">
+    <div class="sum"><div>
+      <div class="sub">訂單編號</div>
+      <div class="onum">${esc(o.number)} <button class="btn link" data-copy="${esc(o.number)}" data-label="訂單編號">複製</button></div>
+      <dl class="facts">
+        <div><dt>訂購人</dt><dd>${esc(o.customerName)}</dd></div>
+        <div><dt>電話</dt><dd class="mono">${esc(o.phone)}</dd></div>
+        <div><dt>付款方式</dt><dd>${esc(p.label)}</dd></div>
+        <div><dt>訂單金額</dt><dd class="mono">${esc(money(o.total))}</dd></div>
+        <div><dt>下單日</dt><dd class="mono">${esc(o.createdAt)}</dd></div>
+        ${o.parentOrderNumber ? `<div><dt>母訂單</dt><dd class="mono">${esc(o.parentOrderNumber)}</dd></div>` : ''}
+      </dl></div>${dayHtml}</div>`;
+  if (o.blocked) h += `<div class="msg err">${esc(o.blocked)}，無法在這裡建立退貨單。</div>`;
+  o.warnings.forEach(w => { h += `<div class="msg">${esc(w)}</div>`; });
+  h += `</div>`;
+
+  if (o.existingReturns.length) {
+    h += `<div class="card"><h2>這張訂單已有退貨單</h2>`;
+    o.existingReturns.forEach(x => {
+      h += `<div class="rc-b"><span class="mono">${esc(x.number)}</span>　${esc(x.createdAt)}　${esc(money(x.total))}　<span class="chip ${x.status === 'cancelled' ? 's-void' : ''}">${esc(x.status)}</span></div>`;
+    });
+    if (o.hasActiveReturn) h += `<label class="chk"><input type="checkbox" id="dup"><span>我確認過了，仍要再建一張（例如分批退不同商品）</span></label>`;
+    h += `</div>`;
+  }
+
+  if (!o.blocked) {
+    h += `<div class="card"><h2>要退哪些商品</h2><div id="items">`;
+    o.items.forEach((it, i) => {
+      const opts = Array.from({ length: it.quantity }, (_, k) => `<option value="${k + 1}" ${k + 1 === it.quantity ? 'selected' : ''}>${k + 1}</option>`).join('');
+      h += `<div class="item"><input type="checkbox" data-i="${i}" ${o.items.length === 1 ? 'checked' : ''} aria-label="退這項">
+        <div><div class="t">${esc(it.title)}</div><div class="s">${esc(it.spec)}${it.spec && it.sku ? '・' : ''}<span class="mono">${esc(it.sku)}</span></div></div>
+        <select data-q="${i}" aria-label="數量">${opts}</select><div class="price">${esc(money(it.total))}</div></div>`;
+    });
+    h += `</div><hr class="hr"><div class="grid2">
+      <div><label class="f" for="reason">退貨原因</label><select id="reason">${Object.entries(o.reasons).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('')}</select></div>
+      <div><label class="f" for="remark">備註（會寫進 Shopline 退貨單，選填）</label><input id="remark" maxlength="200" placeholder="例如：想到門市看實際商品"></div>
+    </div></div>`;
+
+    h += `<div class="card"><h2>退款方式</h2>`;
+    if (p.needBank) {
+      h += `<div class="sub" style="margin-bottom:var(--space-3)">${esc(p.label)}的訂單要匯款退款，請向顧客取得匯款資料（戶名、銀行、分行、帳號）。</div>
+        <div class="grid2">
+          <div><label class="f" for="bHolder">戶名</label><input id="bHolder" autocomplete="off"></div>
+          <div><label class="f" for="bName">銀行</label><input id="bName" autocomplete="off" placeholder="例如：合作金庫"></div>
+          <div><label class="f" for="bBranch">分行</label><input id="bBranch" autocomplete="off"></div>
+          <div><label class="f" for="bCode">分行代碼（7 碼，選填）</label><input id="bCode" class="mono" inputmode="numeric" autocomplete="off"></div>
+          <div><label class="f" for="bAcct">帳號</label><input id="bAcct" class="mono" inputmode="numeric" autocomplete="off"></div>
+        </div>`;
+    } else {
+      h += `<div class="sub">${esc(p.how)}。收到貨驗貨後再退，這裡不需要顧客提供帳號。</div>`;
+    }
+    h += `</div>`;
+
+    if (!d.withinDays) {
+      h += `<div class="card"><h2>超過 ${o.returnDays} 天，例外放行</h2>
+        <label class="chk"><input type="checkbox" id="ov"><span>這張要例外放行</span></label>
+        <label class="f" for="ovWhy">放行原因（必填，會留在紀錄）</label><input id="ovWhy" maxlength="200" placeholder="例如：主管同意、商品瑕疵"></div>`;
+    }
+    h += `<div style="margin-top:var(--space-5)"><button class="btn" id="btnCreate">建立 7-11 退貨便退貨單</button></div>`;
+  }
+  $('orderArea').innerHTML = h;
+  $('orderArea').querySelectorAll('[data-copy]').forEach(b => b.onclick = () => copyText(b.dataset.copy, b.dataset.label));
+  if ($('btnCreate')) $('btnCreate').onclick = doCreate;
+}
+
+async function doCreate() {
+  const o = CUR;
+  if (!staffName()) { toast('請先在右上角填你的名字'); $('staffName').focus(); return; }
+  const items = [];
+  document.querySelectorAll('#items input[type=checkbox]').forEach(cb => {
+    if (cb.checked) { const i = +cb.dataset.i; items.push({ id: o.items[i].id, quantity: +document.querySelector(`[data-q="${i}"]`).value }); }
+  });
+  if (!items.length) { toast('請至少勾一項要退的商品'); return; }
+  const body = { orderNumber: o.number, items: items, reasonKey: $('reason').value, remark: $('remark').value, staffName: staffName() };
+  if (o.hasActiveReturn) {
+    if (!$('dup').checked) { toast('這張訂單已有退貨單，請先勾選確認'); return; }
+    body.confirmDuplicate = true;
+  }
+  if (!o.delivery.withinDays) {
+    if (!$('ov').checked || !$('ovWhy').value.trim()) { toast('超過期限：請勾例外放行並填原因'); return; }
+    body.overrideReason = $('ovWhy').value.trim();
+  }
+  if (o.payment.needBank) {
+    body.bank = { holder: $('bHolder').value, name: $('bName').value, branch: $('bBranch').value, code: $('bCode').value, account: $('bAcct').value };
+    if (!body.bank.holder.trim() || !body.bank.name.trim() || !body.bank.account.trim()) { toast('請填戶名、銀行、帳號'); return; }
+  }
+  const btn = $('btnCreate'); btn.disabled = true; btn.textContent = '建立中…';
+  try {
+    const r = await api('POST', 'createReturn', body);
+    if (!r.success) { $('resultArea').innerHTML = '<div class="msg err">' + esc(r.error) + '</div>'; return; }
+    if (r.dryRun) {
+      $('resultArea').innerHTML = `<div class="card"><h2>測試模式：沒有真的建單</h2><div class="msg">${esc(r.note)}</div>
+        <pre class="payload">${esc(JSON.stringify(r.payload, null, 2))}</pre></div>`;
+      return;
+    }
+    renderCreated(r, o);
+  } catch (e) {
+    $('resultArea').innerHTML = '<div class="msg err">連線失敗：' + esc(e.message || e) + '（請先到「退貨進度」確認有沒有建成功，避免重複建單）</div>';
+  } finally { btn.disabled = false; btn.textContent = '建立 7-11 退貨便退貨單'; }
+}
+
+function customerNotice(r, o) {
+  return `${o.customerName} 您好，這裡是林果良品。\n已經幫您完成退貨申請（退貨單號 ${r.returnOrderNumber}，訂單 ${o.number}）。\n` +
+    `系統會寄一封含「退貨便代碼」的信到您的信箱${r.trackingNumber ? '（代碼：' + r.trackingNumber + '）' : ''}，` +
+    `請持代碼到 7-11 門市辦理寄回，退貨便不需要付款。\n我們收到商品、驗貨後會再通知您退款。有任何問題歡迎直接回覆。`;
+}
+function renderCreated(r, o) {
+  $('orderArea').innerHTML = '';
+  $('resultArea').innerHTML = `<div class="card"><h2>已建立退貨單</h2>
+    <div class="facts" style="margin-top:0">
+      <div><dt>退貨單號</dt><dd class="mono">${esc(r.returnOrderNumber)}</dd></div>
+      <div><dt>退貨便代碼</dt><dd class="mono">${esc(r.trackingNumber || '（見顧客信箱）')}</dd></div>
+      <div><dt>退款金額</dt><dd class="mono">${esc(money(r.returnTotal))}</dd></div>
+    </div>
+    <div class="msg ok">Shopline 會寄信給顧客；沒收到信的話，把下面這段傳給顧客就可以了。</div>
+    <label class="f" for="notice" style="margin-top:var(--space-4)">通知顧客的文字（可直接改）</label>
+    <textarea id="notice" class="copybox">${esc(customerNotice(r, o))}</textarea>
+    <div class="rc-a"><button class="btn" id="btnCopyNotice">複製通知文字</button><button class="btn ghost" id="btnNext">處理下一張</button></div></div>`;
+  $('btnCopyNotice').onclick = () => copyText($('notice').value, '通知文字');
+  $('btnNext').onclick = () => { $('resultArea').innerHTML = ''; $('orderNo').value = ''; $('orderNo').focus(); };
+  CUR = null;
+}
+
+// =============================================
+// 退貨進度
+// =============================================
+let LIST = [];
+const DELIV = { pending: '尚未寄回', shipping: '運送中', shipped: '已寄出', arrived: '已到店／到貨', collected: '已取貨', returned: '已退回', returning: '退貨中' };
+const GUIDE = {
+  new_sinopac: (r) => `<ol><li>登入永豐退款系統${r.paymentLabel.indexOf('訂閱') > -1 ? '（訂閱制訂單要登入「訂閱制」那個）' : ''}；帳密在「退款相關資料」試算表</li>
+    <li>選「請款退貨作業」→「退貨作業」</li><li>日期依訂單日期，選前後約一個月</li>
+    <li>貼上訂單編號${r.parentOrderNumber ? '（有母訂單，要貼母訂單：<span class="mono">' + esc(r.parentOrderNumber) + '</span>）' : '（如有母訂單，貼母訂單）'}，填退貨金額 <b class="mono">${esc(money(r.returnTotal))}</b>，按確認退貨</li>
+    <li>防呆畫面再核對一次金額，沒問題按確定</li></ol>`,
+  linepay: (r) => `<ol><li>登入 LINE Pay 後台；帳密在「退款相關資料」試算表</li><li>搜尋訂單，往下拉看基本交易資訊，點交易號碼</li>
+    <li>一律選「部分取消」（不要用「全部取消」），金額 <b class="mono">${esc(money(r.returnTotal))}</b></li><li>防呆畫面再核對一次金額，沒問題按確定</li></ol>`,
+  bank: (r) => `<ol><li>下方按「顯示匯款資料」，核對戶名與帳號</li><li>通知衣倢匯款 <b class="mono">${esc(money(r.returnTotal))}</b></li></ol>`,
+};
+const guideKey = r => r.paymentType === 'new_sinopac' ? 'new_sinopac' : r.paymentType === 'linepay' ? 'linepay' : 'bank';
+
+async function loadList() {
+  $('listArea').innerHTML = '<div class="empty">載入中…</div>';
+  try {
+    const r = await api('GET', 'list');
+    if (!r.success) { $('listArea').innerHTML = '<div class="msg err">' + esc(r.error) + '</div>'; return; }
+    LIST = r.returns; renderList();
+  } catch (e) { $('listArea').innerHTML = '<div class="msg err">連線失敗：' + esc(e.message || e) + '</div>'; }
+}
+function chipFor(st) { return `<span class="chip ${st === '已退款' ? 's-done' : st === '已作廢' ? 's-void' : st === '已收貨' ? 's-mid' : ''}">${esc(st)}</span>`; }
+
+function renderList() {
+  const all = $('showAll').checked;
+  const openN = LIST.filter(r => r.status === '已建單' || r.status === '已收貨').length;
+  $('openCount').textContent = openN ? openN : '';
+  const rows = LIST.filter(r => all || (r.status === '已建單' || r.status === '已收貨'));
+  if (!rows.length) { $('listArea').innerHTML = '<div class="empty">' + (all ? '還沒有退貨單' : '目前沒有進行中的退貨單') + '</div>'; return; }
+  $('listArea').innerHTML = rows.map(r => {
+    const lv = r.live;
+    const live = lv ? `Shopline：物流 ${esc(DELIV[lv.deliveryStatus] || lv.deliveryStatus || '—')}・驗貨 ${lv.inspectStatus === 'inspected' ? '已驗貨' : '未驗貨'}` : '';
+    let acts = '';
+    if (r.status === '已建單') acts += `<button class="btn" data-act="recv" data-id="${esc(r.returnOrderId)}">確認收貨・驗貨通過</button>`;
+    if (r.status === '已收貨') {
+      if (guideKey(r) === 'bank') acts += `<button class="btn ghost" data-act="bank" data-id="${esc(r.returnOrderId)}">顯示匯款資料</button>`;
+      acts += `<button class="btn" data-act="refunded" data-id="${esc(r.returnOrderId)}">標記已退款</button>`;
+    }
+    if (r.status === '已收貨' || r.status === '已退款') acts += `<button class="btn ghost" data-act="row" data-id="${esc(r.returnOrderId)}">複製記錄表一列</button>`;
+    if (r.status === '已建單' || r.status === '已收貨') acts += `<button class="btn link" data-act="void" data-id="${esc(r.returnOrderId)}">作廢</button>`;
+    const guide = r.status === '已收貨' ? `<div class="guide"><b>怎麼退款（${esc(r.paymentLabel)}）</b>${GUIDE[guideKey(r)](r)}<div data-bank="${esc(r.returnOrderId)}"></div></div>` : '';
+    return `<div class="rc"><div class="rc-h"><span class="rn">${esc(r.returnOrderNumber)}</span>${chipFor(r.status)}</div>
+      <div class="rc-b"><span class="k">訂單</span><span class="mono">${esc(r.orderNumber)}</span> <button class="btn link" data-copy="${esc(r.orderNumber)}" data-label="訂單編號">複製</button>　<span class="k">訂購人</span>${esc(r.customerName)}</div>
+      <div class="rc-b"><span class="k">商品</span>${esc(r.itemsText)}　<span class="k">退款</span><span class="mono">${esc(money(r.returnTotal))}</span>　<span class="k">付款</span>${esc(r.paymentLabel)}</div>
+      <div class="rc-b"><span class="k">建單</span>${esc(r.createdAt)}・${esc(r.staffName || r.createdBy)}${r.inspectedAt ? '　<span class="k">收貨</span>' + esc(r.inspectedAt) : ''}${r.refundedAt ? '　<span class="k">退款</span>' + esc(r.refundedAt) : ''}${r.overrideReason ? '　<span class="k">例外放行</span>' + esc(r.overrideReason) : ''}</div>
+      ${r.refundNote ? `<div class="rc-b"><span class="k">備註</span>${esc(r.refundNote)}</div>` : ''}
+      ${live ? `<div class="rc-live">${live}</div>` : ''}${guide}<div class="rc-a">${acts}</div></div>`;
+  }).join('');
+  $('listArea').querySelectorAll('[data-copy]').forEach(b => b.onclick = () => copyText(b.dataset.copy, b.dataset.label));
+  $('listArea').querySelectorAll('[data-act]').forEach(b => b.onclick = () => rowAction(b.dataset.act, b.dataset.id, b));
+}
+
+async function mark(id, to, note) {
+  const r = await api('POST', 'markStatus', { returnOrderId: id, to: to, note: note || '', staffName: staffName() });
+  if (!r.success) { toast(r.error || '失敗'); return false; }
+  toast('已更新為「' + to + '」'); await loadList(); return true;
+}
+
+async function showBank(id) {
+  const box = document.querySelector(`[data-bank="${CSS.escape(id)}"]`);
+  const r = await api('POST', 'getRefundInfo', { returnOrderId: id });
+  if (!r.success) { toast(r.error); return null; }
+  const b = r.bank, rows = [['戶名', b.holder], ['銀行', b.name], ['分行', b.branch], ['分行代碼', b.code], ['帳號', b.account]].filter(x => x[1]);
+  if (box) {
+    box.innerHTML = '<div class="bankbox">' + rows.map(x => `<span class="k">${x[0]}</span><span class="v">${esc(x[1])}</span><button class="btn link" data-c="${esc(x[1])}">複製</button>`).join('') + '</div>';
+    box.querySelectorAll('[data-c]').forEach(bt => bt.onclick = () => copyText(bt.dataset.c, '內容'));
+  }
+  return r;
+}
+
+function recordRow(r, info) {
+  const b = (info && info.bank) || {};
+  const payName = { new_sinopac: '刷卡', linepay: 'LINE Pay', tw_711_b2c_pay: '超商取付' }[r.paymentType] || r.paymentLabel;
+  const d = new Date(), md = (d.getMonth() + 1) + '/' + d.getDate();
+  const code = b.code || '';
+  const cols = ['官網', r.orderDate, (r.createdAt || '').slice(0, 10), r.orderNumber, r.customerName, r.orderTotal, r.returnTotal, '',
+    r.invoiceNumber || '無開發票', payName, r.itemsText, [r.reasonText, r.remark].filter(Boolean).join('：'), r.refundMethod,
+    b.name || '', code.slice(0, 3), b.branch || '', code, b.holder || '', b.account || '', (r.staffName || '') + md];
+  return cols.map(c => String(c == null ? '' : c).replace(/[\t\r\n]+/g, ' ')).join('\t');
+}
+
+async function rowAction(act, id, btn) {
+  const r = LIST.find(x => x.returnOrderId === id); if (!r) return;
+  if (act !== 'bank' && act !== 'row' && !staffName()) { toast('請先在右上角填你的名字'); $('staffName').focus(); return; }
+  btn.disabled = true;
+  try {
+    if (act === 'recv') { if (confirm('確認已收到商品、驗貨通過？')) await mark(id, '已收貨'); }
+    else if (act === 'refunded') {
+      const note = prompt('退款備註（選填，例如：永豐刷退 #95036 或 匯款 10/9）', '');
+      if (note !== null) await mark(id, '已退款', note);
+    } else if (act === 'void') {
+      const why = prompt('作廢原因（必填）。注意：這裡只標記本系統，Shopline 後台的退貨單要另外取消。', '');
+      if (why && why.trim()) await mark(id, '已作廢', why.trim());
+    } else if (act === 'bank') await showBank(id);
+    else if (act === 'row') {
+      const info = r.hasBank ? await api('POST', 'getRefundInfo', { returnOrderId: id }) : null;
+      await copyText(recordRow(r, info), '記錄表一列（到「官網退貨/退款申請記錄表」貼上）');
+    }
+  } finally { btn.disabled = false; }
+}
+
+// =============================================
+// INIT
+// =============================================
+window.addEventListener('DOMContentLoaded', () => {
+  try { $('staffName').value = localStorage.getItem('oringo_return_staff') || ''; } catch (e) {}
+  $('staffName').addEventListener('change', () => { try { localStorage.setItem('oringo_return_staff', staffName()); } catch (e) {} });
+  document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+    document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === 'pane-' + t.dataset.tab));
+    if (t.dataset.tab === 'list') loadList();
+  });
+  $('btnLookup').onclick = doLookup;
+  $('orderNo').addEventListener('keydown', e => { if (e.key === 'Enter') doLookup(); });
+  $('btnReload').onclick = loadList;
+  $('showAll').onchange = renderList;
+
+  fetch(GAS_URL + '?action=ping', { cache: 'no-store' }).then(r => r.json()).then(r => { if (r && r.success) setMode(r.live); }).catch(() => { $('mode').textContent = '無法連線'; });
+
+  if (isAlreadyLoggedIn()) waitForGSI(initStaffTokenClient);
+  else document.addEventListener('oriAuthComplete', () => waitForGSI(initStaffTokenClient), { once: true });
+});
+</script>
+</body>
+</html>
