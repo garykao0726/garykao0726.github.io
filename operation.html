@@ -469,11 +469,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   <div id="nx-overview" style="margin:1rem 0 .25rem"></div>
 
   <!-- Month Tabs -->
-  <div class="nx-month-tabs" id="nx-month-tabs">
-    <button class="nx-mtab" data-month="202609" onclick="switchNxMonth('202609',this)">2026 / 09</button>
-    <button class="nx-mtab active" data-month="202610" onclick="switchNxMonth('202610',this)">2026 / 10 <span style="opacity:.7">（月中）</span></button>
-    <!-- NX_MONTH_TAB_ANCHOR -->
-  </div>
+  <div class="nx-month-tabs" id="nx-month-tabs"></div>
 
   <!-- ── 2026 / 09 ── -->
   <div class="nx-month-panel" id="nx-month-202609">
@@ -545,88 +541,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
   </div>
 
-  <!-- Product Attributes -->
-  <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-hdr"><span class="card-lbl">商品屬性結構</span><span class="card-badge">Shopline POS · 折後金額 · 南西全月＋跨店 9/16–9/30</span></div>
-
-    <div class="nx-kpi4" style="margin-bottom:1rem">
-      <div class="nx-kc a"><div class="nx-kc-l">鞋款占營業額</div><div class="nx-kc-v">86.0%</div><div class="nx-kc-s">144 雙 · $786,158</div></div>
-      <div class="nx-kc"><div class="nx-kc-l">鞋款均價（折後）</div><div class="nx-kc-v">$5,459</div><div class="nx-kc-s">室內拖鞋等低價款已含</div></div>
-      <div class="nx-kc w"><div class="nx-kc-l">女款占鞋款營收</div><div class="nx-kc-v">22.5%</div><div class="nx-kc-s">含瑪莉珍；其餘為男款/中性</div></div>
-      <div class="nx-kc g"><div class="nx-kc-l">買鞋訂單的配件連帶率</div><div class="nx-kc-v">82.5%</div><div class="nx-kc-s">104/126 單帶襪子/保養/皮件</div></div>
-    </div>
-
-    <div class="nx-2col" style="margin-bottom:1rem">
-      <div class="nx-cmp-box">
-        <div class="nx-cmp-title">品類結構（占營業額 · 全月）</div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">鞋款</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">144 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:100%"></div></div><span class="nx-pct-lbl">86.0%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">襪子</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">229 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:5%"></div></div><span class="nx-pct-lbl">4.7%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">保養/鞋用品</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">46 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:3%"></div></div><span class="nx-pct-lbl">3.0%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">皮件/配件</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">13 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:3%"></div></div><span class="nx-pct-lbl">2.8%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">包款</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">3 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:3%"></div></div><span class="nx-pct-lbl">2.7%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">禮盒/贈禮</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">24 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:0%"></div></div><span class="nx-pct-lbl">0.4%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">維修服務</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">4 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:0%"></div></div><span class="nx-pct-lbl">0.3%</span></div></span></div>
-        <div class="nx-cmp-row" style="margin-top:.3rem"><span style="font-size:9px;color:var(--text-muted)">另有收納盒 47 件為 $0 贈品，未計入占比與連帶率</span></div>
-        <div class="nx-cmp-title" style="margin-top:.8rem">價格帶（原價 · 占鞋款營收）</div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">5,000–6,999</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">71 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:100%"></div></div><span class="nx-pct-lbl">52.1%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">7,000–8,999</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">28 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:52%"></div></div><span class="nx-pct-lbl">27.0%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key"><5,000</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">45 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:40%"></div></div><span class="nx-pct-lbl">20.9%</span></div></span></div>
-      </div>
-      <div class="nx-cmp-box">
-        <div class="nx-cmp-title">鞋款結構（占鞋款營收 · 全月）</div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">樂福鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">34 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:100%"></div></div><span class="nx-pct-lbl">28.0%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">牛津鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">23 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:62%"></div></div><span class="nx-pct-lbl">17.5%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">XV1 小白鞋/休閒鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">24 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:56%"></div></div><span class="nx-pct-lbl">15.6%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">德比鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">20 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:51%"></div></div><span class="nx-pct-lbl">14.3%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">瑪莉珍</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">10 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:29%"></div></div><span class="nx-pct-lbl">8.0%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">靴款</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">8 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:25%"></div></div><span class="nx-pct-lbl">7.1%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">室內拖鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">17 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:15%"></div></div><span class="nx-pct-lbl">4.2%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">休閒鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">4 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:10%"></div></div><span class="nx-pct-lbl">2.7%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">孟克鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">4 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:9%"></div></div><span class="nx-pct-lbl">2.6%</span></div></span></div>
-        <div class="nx-cmp-title" style="margin-top:.8rem">顏色</div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">黑</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">70 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:100%"></div></div><span class="nx-pct-lbl">52.3%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">咖啡/棕</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">32 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:43%"></div></div><span class="nx-pct-lbl">22.3%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">白/米</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">22 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:28%"></div></div><span class="nx-pct-lbl">14.8%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">酒紅</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">7 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:10%"></div></div><span class="nx-pct-lbl">5.3%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">灰</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">8 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:4%"></div></div><span class="nx-pct-lbl">2.0%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">綠</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">1 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:2%"></div></div><span class="nx-pct-lbl">0.8%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">藍</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">1 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:0%"></div></div><span class="nx-pct-lbl">0.2%</span></div></span></div>
-      </div>
-    </div>
-
-    <div style="font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.04em;margin-bottom:.5rem">跨店商品結構（同窗口 9/16–9/30，只含鞋款；其餘四店 Shopline POS 9/16 起才有資料）</div>
-    <div style="overflow-x:auto;margin-bottom:1rem">
-      <table class="nx-tbl">
-        <thead><tr><th>門市</th><th class="nr">POS 營收</th><th class="nr">鞋款占比</th><th class="nr">鞋均價</th><th class="nr">女款</th><th class="nr">樂福</th><th class="nr">牛津</th><th class="nr">XV1</th><th class="nr">瑪莉珍</th><th class="nr">≥7,000價格帶</th><th class="nr">配件連帶</th><th class="nr">款式重疊</th></tr></thead>
-        <tbody>
-          <tr style="background:rgba(40,66,52,.06);font-weight:700"><td>誠品南西</td><td class="nr">560,250</td><td class="nr">86%</td><td class="nr">$5,567</td><td class="nr">24%</td><td class="nr">33%</td><td class="nr">22%</td><td class="nr">15%</td><td class="nr">10%</td><td class="nr">24%</td><td class="nr" style="font-weight:700">90%</td><td class="nr">—</td></tr>
-          <tr><td>松菸</td><td class="nr">811,209</td><td class="nr">66%</td><td class="nr">$5,734</td><td class="nr">12%</td><td class="nr">16%</td><td class="nr">17%</td><td class="nr">20%</td><td class="nr">2%</td><td class="nr">48%</td><td class="nr" style="font-weight:700">29%</td><td class="nr">70%</td></tr>
-          <tr><td>中山</td><td class="nr">510,323</td><td class="nr">82%</td><td class="nr">$5,802</td><td class="nr">0%</td><td class="nr">20%</td><td class="nr">20%</td><td class="nr">14%</td><td class="nr">0%</td><td class="nr">39%</td><td class="nr" style="font-weight:700">30%</td><td class="nr">73%</td></tr>
-          <tr><td>東門</td><td class="nr">581,222</td><td class="nr">76%</td><td class="nr">$5,535</td><td class="nr">23%</td><td class="nr">25%</td><td class="nr">12%</td><td class="nr">20%</td><td class="nr">0%</td><td class="nr">30%</td><td class="nr" style="font-weight:700">35%</td><td class="nr">71%</td></tr>
-          <tr><td>台中</td><td class="nr">566,890</td><td class="nr">81%</td><td class="nr">$4,942</td><td class="nr">16%</td><td class="nr">30%</td><td class="nr">10%</td><td class="nr">7%</td><td class="nr">2%</td><td class="nr">45%</td><td class="nr" style="font-weight:700">57%</td><td class="nr">68%</td></tr>
-        </tbody>
-      </table>
-      <div style="font-size:9px;color:var(--text-muted);margin-top:.4rem;font-family:'Space Mono',monospace">款式／價格帶／女款為占鞋款營收%；款式重疊＝與南西鞋款營收結構的重疊度（越高款式組合越像，不等於客人被搶）；松菸同期禮盒/贈禮 228 件、$186,466（占其 POS 營收 23%）不在鞋款比較內</div>
-    </div>
-
-    <div class="nx-theme-grid">
-      <div class="nx-theme-row">
-        <div class="nx-theme-num" style="color:var(--positive)">01</div>
-        <div><div class="nx-theme-title">9 月配件連帶最高（開幕月現象，10 月已回落到一般水準）</div>
-        <div class="nx-theme-text">同窗口南西買鞋訂單有 90% 同時買襪子/保養/皮件，台中 57%、東門 35%、中山 30%、松菸 29%。南西全月襪子 229 件、保養/鞋用品 46 件，但襪子只占營業額 4.7%，是拉件數、不是拉營收。</div></div>
-      </div>
-      <div class="nx-theme-row">
-        <div class="nx-theme-num" style="color:var(--rust)">02</div>
-        <div><div class="nx-theme-title">9 月瑪莉珍與女款偏高（10 月已回到近似他店）</div>
-        <div class="nx-theme-text">同窗口南西瑪莉珍占鞋款營收 10.4%、女款 24.3%；其他店瑪莉珍最高 2.5%、中山完全沒有女款。樂福＋牛津合計 55%，高於其他店的 33–40%，款式集中在商務樂福與牛津。</div></div>
-      </div>
-      <div class="nx-theme-row">
-        <div class="nx-theme-num" style="color:#c49a00">03</div>
-        <div><div class="nx-theme-title">價格帶偏低，沒有 9,000 元以上</div>
-        <div class="nx-theme-text">≥7,000 元價格帶只占南西鞋款 23.8%，松菸 47.5%、台中 44.7%、中山 39.4%、東門 30.1%。與上方「客單偏低」的觀察一致：南西是入門款、基本款為主的店。</div></div>
-      </div>
-    </div>
-  </div>
+  <div class="nx-prod" data-nx-month="202609"></div>
 
   <!-- Cannibalization Analysis -->
   <div class="card" style="margin-bottom:1.25rem">
@@ -874,122 +789,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
 
   </div><!-- /nx-month-202609 -->
-
-  <!-- ── 2026 / 10（月中快照）── -->
-  <div class="nx-month-panel active" id="nx-month-202610">
-
-  <div class="nx-top" data-nx-month="202610"></div>
-
-  <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-hdr"><span class="card-lbl">Top 銷售品項（鞋款）</span><span class="card-badge">誠品南西 10/1–10/11 · POS</span></div>
-    <table class="nx-tbl">
-      <thead><tr><th>品項</th><th class="nr">件數</th><th class="nr">淨額</th><th>占營業額</th></tr></thead>
-      <tbody>
-          <tr><td>Bookbinder 便士樂福鞋-經典黑</td><td class="nr">11</td><td class="nr">60,355</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:100%"></div></div><span class="nx-pct-lbl">8.9%</span></div></td></tr>
-          <tr><td>LibreSole升級大底-XV1經典皮革小白鞋</td><td class="nr">9</td><td class="nr">47,056</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:82%"></div></div><span class="nx-pct-lbl">6.9%</span></div></td></tr>
-          <tr><td>LibreSole升級大底-XV1經典皮革休閒鞋 焦糖奶茶</td><td class="nr">7</td><td class="nr">36,540</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:64%"></div></div><span class="nx-pct-lbl">5.4%</span></div></td></tr>
-          <tr><td>LibreSole升級大底-XV1皮革小白鞋女鞋</td><td class="nr">5</td><td class="nr">26,033</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:45%"></div></div><span class="nx-pct-lbl">3.8%</span></div></td></tr>
-          <tr><td>側鬆緊商務橫飾牛津鞋-經典黑</td><td class="nr">4</td><td class="nr">19,458</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:36%"></div></div><span class="nx-pct-lbl">2.9%</span></div></td></tr>
-          <tr><td>Basic 基本德比鞋-經典黑</td><td class="nr">4</td><td class="nr">18,669</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:36%"></div></div><span class="nx-pct-lbl">2.8%</span></div></td></tr>
-          <tr><td>Combo手作皮革小白鞋</td><td class="nr">3</td><td class="nr">17,170</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:27%"></div></div><span class="nx-pct-lbl">2.5%</span></div></td></tr>
-          <tr><td>皮革大底鞍部牛津鞋-酒紅色</td><td class="nr">2</td><td class="nr">16,388</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:18%"></div></div><span class="nx-pct-lbl">2.4%</span></div></td></tr>
-      </tbody>
-    </table>
-    <div style="font-size:9px;color:var(--text-muted);margin-top:.5rem;font-family:'Space Mono',monospace">累計至 10/11 · 142 張訂單 · $678,662（含稅）· 依件數排序，淨額為折後金額</div>
-  </div>
-
-  <!-- Product Attributes -->
-  <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-hdr"><span class="card-lbl">商品屬性結構</span><span class="card-badge">Shopline POS · 折後金額 · 10/1–10/11 五店同窗口</span></div>
-
-    <div class="nx-kpi4" style="margin-bottom:1rem">
-      <div class="nx-kc a"><div class="nx-kc-l">鞋款占營業額</div><div class="nx-kc-v">89.6%</div><div class="nx-kc-s">109 雙 · $607,822</div></div>
-      <div class="nx-kc"><div class="nx-kc-l">鞋款均價（折後）</div><div class="nx-kc-v">$5,576</div><div class="nx-kc-s">9 月 $5,459</div></div>
-      <div class="nx-kc w"><div class="nx-kc-l">女款占鞋款營收</div><div class="nx-kc-v">15.8%</div><div class="nx-kc-s">9 月 22.5%</div></div>
-      <div class="nx-kc g"><div class="nx-kc-l">買鞋訂單的配件連帶率</div><div class="nx-kc-v">37.5%</div><div class="nx-kc-s">39/104 單 · 9 月 82.5%</div></div>
-    </div>
-
-    <div class="nx-2col" style="margin-bottom:1rem">
-      <div class="nx-cmp-box">
-        <div class="nx-cmp-title">品類結構（占營業額 · 10/1–10/11）</div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">鞋款</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">109 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:100%"></div></div><span class="nx-pct-lbl">89.6%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">保養/鞋用品</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">32 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:4%"></div></div><span class="nx-pct-lbl">3.7%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">襪子</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">92 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:4%"></div></div><span class="nx-pct-lbl">3.5%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">皮件/配件</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">10 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:3%"></div></div><span class="nx-pct-lbl">3.0%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">其他</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">1 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:0%"></div></div><span class="nx-pct-lbl">0.2%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">禮盒/贈禮</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">16 件</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:0%"></div></div><span class="nx-pct-lbl">0.0%</span></div></span></div>
-        <div class="nx-cmp-row" style="margin-top:.3rem"><span style="font-size:9px;color:var(--text-muted)">收納盒、禮盒等 $0 贈品不計入占比與連帶率</span></div>
-        <div class="nx-cmp-title" style="margin-top:.8rem">價格帶（原價 · 占鞋款營收）</div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">5,000–6,999</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">64 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:100%"></div></div><span class="nx-pct-lbl">60.2%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">7,000–8,999</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">19 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:40%"></div></div><span class="nx-pct-lbl">24.1%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key"><5,000</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">26 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:26%"></div></div><span class="nx-pct-lbl">15.7%</span></div></span></div>
-      </div>
-      <div class="nx-cmp-box">
-        <div class="nx-cmp-title">鞋款結構（占鞋款營收）</div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">樂福鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">32 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:100%"></div></div><span class="nx-pct-lbl">32.3%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">XV1 小白鞋/休閒鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">26 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:70%"></div></div><span class="nx-pct-lbl">22.6%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">德比鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">14 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:45%"></div></div><span class="nx-pct-lbl">14.4%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">牛津鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">14 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:43%"></div></div><span class="nx-pct-lbl">13.8%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">靴款</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">5 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:19%"></div></div><span class="nx-pct-lbl">6.1%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">室內拖鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">10 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:10%"></div></div><span class="nx-pct-lbl">3.2%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">休閒鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">3 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:9%"></div></div><span class="nx-pct-lbl">2.8%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">其他鞋款</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">2 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:7%"></div></div><span class="nx-pct-lbl">2.1%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">孟克鞋</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">2 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:5%"></div></div><span class="nx-pct-lbl">1.6%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">瑪莉珍</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">1 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:3%"></div></div><span class="nx-pct-lbl">1.1%</span></div></span></div>
-        <div class="nx-cmp-title" style="margin-top:.8rem">顏色</div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">黑</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">48 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:100%"></div></div><span class="nx-pct-lbl">47.0%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">咖啡/棕</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">26 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:49%"></div></div><span class="nx-pct-lbl">23.0%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">白/米</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">18 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:34%"></div></div><span class="nx-pct-lbl">16.0%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">酒紅</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">9 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:20%"></div></div><span class="nx-pct-lbl">9.4%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">灰</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">4 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:5%"></div></div><span class="nx-pct-lbl">2.5%</span></div></span></div>
-        <div class="nx-cmp-row"><span class="nx-cmp-key">藍</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">3 雙</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:2%"></div></div><span class="nx-pct-lbl">1.0%</span></div></span></div>
-      </div>
-    </div>
-
-    <div style="font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.04em;margin-bottom:.5rem">跨店商品結構（同窗口 10/1–10/11，只含鞋款）</div>
-    <div style="overflow-x:auto;margin-bottom:1rem">
-      <table class="nx-tbl">
-        <thead><tr><th>門市</th><th class="nr">POS 營收</th><th class="nr">鞋款占比</th><th class="nr">鞋均價</th><th class="nr">女款</th><th class="nr">樂福</th><th class="nr">牛津</th><th class="nr">XV1</th><th class="nr">瑪莉珍</th><th class="nr">≥7,000價格帶</th><th class="nr">配件連帶</th><th class="nr">款式重疊</th></tr></thead>
-        <tbody>
-          <tr style="background:rgba(40,66,52,.06);font-weight:700"><td>誠品南西</td><td class="nr">678,662</td><td class="nr">90%</td><td class="nr">$5,576</td><td class="nr">16%</td><td class="nr">32%</td><td class="nr">14%</td><td class="nr">23%</td><td class="nr">1%</td><td class="nr">24%</td><td class="nr" style="font-weight:700">38%</td><td class="nr">—</td></tr>
-          <tr><td>松菸</td><td class="nr">539,120</td><td class="nr">84%</td><td class="nr">$5,426</td><td class="nr">18%</td><td class="nr">21%</td><td class="nr">17%</td><td class="nr">19%</td><td class="nr">3%</td><td class="nr">50%</td><td class="nr" style="font-weight:700">28%</td><td class="nr">83%</td></tr>
-          <tr><td>中山</td><td class="nr">504,357</td><td class="nr">88%</td><td class="nr">$6,030</td><td class="nr">0%</td><td class="nr">23%</td><td class="nr">23%</td><td class="nr">7%</td><td class="nr">0%</td><td class="nr">44%</td><td class="nr" style="font-weight:700">31%</td><td class="nr">68%</td></tr>
-          <tr><td>東門</td><td class="nr">435,189</td><td class="nr">80%</td><td class="nr">$5,767</td><td class="nr">23%</td><td class="nr">27%</td><td class="nr">5%</td><td class="nr">24%</td><td class="nr">2%</td><td class="nr">40%</td><td class="nr" style="font-weight:700">27%</td><td class="nr">83%</td></tr>
-          <tr><td>台中</td><td class="nr">502,512</td><td class="nr">89%</td><td class="nr">$5,255</td><td class="nr">14%</td><td class="nr">17%</td><td class="nr">13%</td><td class="nr">24%</td><td class="nr">3%</td><td class="nr">33%</td><td class="nr" style="font-weight:700">38%</td><td class="nr">81%</td></tr>
-        </tbody>
-      </table>
-      <div style="font-size:9px;color:var(--text-muted);margin-top:.4rem;font-family:'Space Mono',monospace">款式／價格帶／女款為占鞋款營收%；款式重疊＝與南西鞋款營收結構的重疊度（越高款式組合越像，不等於客人被搶）；月中樣本（11 天），數字會隨月底更新</div>
-    </div>
-
-    <div class="nx-theme-grid">
-      <div class="nx-theme-row">
-        <div class="nx-theme-num" style="color:var(--positive)">01</div>
-        <div><div class="nx-theme-title">配件連帶從開幕月的高點回到一般水準</div>
-        <div class="nx-theme-text">10 月買鞋訂單有 37.5% 同時買襪子/保養/皮件，9 月是 82.5%（襪子 229 件，10 月至 10/11 為 92 件）。同期他店：台中 38.2%、中山 30.9%、松菸 28.0%、東門 27.1%，南西已與台中相近，不再是最高。</div></div>
-      </div>
-      <div class="nx-theme-row">
-        <div class="nx-theme-num" style="color:var(--rust)">02</div>
-        <div><div class="nx-theme-title">瑪莉珍與女款比重退回他店水準</div>
-        <div class="nx-theme-text">瑪莉珍占鞋款營收 9 月 8.0% → 10 月 1.1%，女款 22.5% → 15.8%；他店女款 0–23%、瑪莉珍最高 2.8%。款式以樂福 32%＋XV1 小白鞋 23% 為主。</div></div>
-      </div>
-      <div class="nx-theme-row">
-        <div class="nx-theme-num" style="color:#c49a00">03</div>
-        <div><div class="nx-theme-title">高價位鞋款占比仍是五店最低</div>
-        <div class="nx-theme-text">≥7,000 元價格帶只占南西鞋款 24.1%（9 月 27.0%），他店 32.7–49.5%。鞋款占營業額 89.6% 是五店最高，營收高度依賴鞋款本身、配件貢獻有限。</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-hdr"><span class="card-lbl">跨店客源分析（蠶食）</span><span class="card-badge">月底結算後補入</span></div>
-    <div style="padding:.25rem 0 .5rem;color:var(--text-muted);font-size:12px;line-height:1.8">
-      客人層級的蠶食（嚴格蠶食／確定移轉／純增量）與各店 YoY，需要月底財務結算與 ERP 會員資料，10 月月中尚無法計算；上方「跨店商品結構」是目前可用的同窗口比較。<br>
-      9 月結果見「2026 / 09」分頁：嚴格蠶食 26 人（占南西買家 30%）、確定移轉 4 人（4.7%），YoY 顯示中山 −16%、松菸 +2%。
-    </div>
-  </div>
-
-  </div><!-- /nx-month-202610 -->
-
   <!-- NX_MONTH_PANEL_ANCHOR -->
 
 </div><!-- /panel-nanxi -->
@@ -2714,104 +2513,64 @@ loadGbpData=async function(){
 
 <script>
 // ── 南西誠品分析（各月份「凍結」資料）──
-// 每月結束後，把該月最終數字寫進 NX_MONTHS，之後不再變動，也不讀即時 Sheet。
-// （舊版直接讀 Sheet 日報；Sheet 一滾到下個月，「9 月」面板就被蓋成 10 月數字。）
-// days 欄位：[日期, 星期, 日目標, 營業額, 來客, 成交, 成交率%]　pos：Shopline POS 全月訂單核對值（排除取消單）
+// 【資料怎麼來】每月 2 日 Cloud Routine「南西誠品月報自動生成」執行 nx_update.py：
+//   Shopline POS（GAS 端點 nxMonth）＋中央 Sheet「月目標」＋日報 Sheet 手記 → 寫成下面 NX_MONTHS「一個月一行 JSON」。
+//   頁面依這份資料自動長出該月頁籤、面板、總覽列與商品屬性，不需改 HTML；歷月永久保留，也不讀即時 Sheet。
+// 【月中快照】partial:true（asOf、monthDays）；月底定稿直接覆蓋同一行。
+// days：[日期, 星期, 日目標|null, 營業額, 來客|null, 成交|null, 成交率%|null]（null 顯示「—」）
+// prod：{winLabel, nx:{南西全月統計}, stores:{店名:{同窗口統計}}, top:[[品項,件數,淨額]]}
+// 選填手寫欄位：wkNote/wdNote（週末平日客群特徵）、insights（[[顏色,編號,標題,內文],…] 覆蓋自動觀察）、extraHtml（附加在面板最後）
 const NX_MONTHS = {
-  '202609': {
-    label:'2026 年 9 月', short:'2026 / 09', tag:'開幕月', first:'9/1', target:800000,
-    pos:{orders:194, rev:913865},
-    wkNote:'路過客為主，不知林果比例高', wdNote:'知品牌目的性客為主',
-    note:'營業額：日報 Sheet 月底定稿，整月合計與 Shopline POS 全月訂單核對一致（194 張，排除取消單，$913,865）；逐日只有 9/1–9/3（最多 $5,188）、9/14、9/18（各 $279）與 POS 入帳日不同。來客／成交／成交率為門市手記，9/16 成交率 125%（來客 3 &lt; 成交 12）為手記異常值。客單價＝營業額 ÷ POS 訂單數。',
-    attr:{"shoeShare": 86.0, "shoeAvg": 5459, "female": 22.5, "loafer": 28.0, "xv1": 15.6, "mj": 8.0, "band7": 27.0, "attach": 82.5, "sockQ": 229},
-    days:[
-      ['9/1','二',20000,5188,5,1,20],
-      ['9/2','三',20000,8208,7,1,17],
-      ['9/3','四',20000,4770,9,1,17],
-      ['9/4','五',45000,10748,2,2,22],
-      ['9/5','六',45000,78013,16,11,39],
-      ['9/6','日',20000,9058,11,4,13],
-      ['9/7','一',20000,23051,3,3,27],
-      ['9/8','二',20000,10226,1,2,25],
-      ['9/9','三',20000,980,5,1,7],
-      ['9/10','四',20000,31838,3,1,33],
-      ['9/11','五',45000,38482,3,3,24],
-      ['9/12','六',45000,71343,5,7,47],
-      ['9/13','日',20000,33878,8,6,38],
-      ['9/14','一',20000,13435,9,2,11],
-      ['9/15','二',20000,14676,3,2,25],
-      ['9/16','三',20000,73915,3,12,125],
-      ['9/17','四',20000,0,1,0,0],
-      ['9/18','五',45000,32916,9,3,28],
-      ['9/19','六',45000,34063,4,6,50],
-      ['9/20','日',20000,28718,2,4,31],
-      ['9/21','一',20000,0,2,0,0],
-      ['9/22','二',20000,8738,5,6,50],
-      ['9/23','三',20000,7168,3,2,25],
-      ['9/24','四',20000,100316,18,11,56],
-      ['9/25','五',45000,35434,8,5,38],
-      ['9/26','六',45000,70499,7,11,57],
-      ['9/27','日',20000,42513,10,5,47],
-      ['9/28','一',20000,56193,15,4,27],
-      ['9/29','二',20000,56023,4,6,56],
-      ['9/30','三',20000,13475,2,2,22]
-    ]
-  },
-  '202610': {
-    label:'2026 年 10 月', short:'2026 / 10', tag:'月中快照', first:'10/1', target:900000, monthDays:31, partial:true, asOf:'10/11',
-    pos:{orders:142, rev:678662},
-    wkNote:'', wdNote:'',
-    note:'月中快照（非即時）：資料累計至 10/11，月底結算後以定稿數字更新。營業額：日報 Sheet 逐日與 Shopline POS 訂單完全一致（142 張，排除取消單，$678,662）。來客／成交／成交率為門市手記（例如 10/6 來客 1、成交 5 不合理，僅供參考）。客單價＝營業額 ÷ POS 訂單數。',
-    attr:{"shoeShare": 89.6, "shoeAvg": 5576, "female": 15.8, "loafer": 32.3, "xv1": 22.6, "mj": 1.1, "band7": 24.1, "attach": 37.5, "sockQ": 92},
-    days:[
-      ['10/1','四',20000,349,2,0,9],
-      ['10/2','五',20000,74510,15,11,52],
-      ['10/3','六',45000,111911,30,15,37],
-      ['10/4','日',45000,31838,10,4,35],
-      ['10/5','一',20000,30060,5,5,67],
-      ['10/6','二',20000,52075,1,5,64],
-      ['10/7','三',20000,92844,5,10,75],
-      ['10/8','四',20000,30159,5,5,54],
-      ['10/9','五',45000,77400,8,11,68],
-      ['10/10','六',45000,88176,13,15,74],
-      ['10/11','日',45000,89340,4,13,81]
-    ]
-  }
+/*NX_ENTRIES_BEGIN*/
+  "202609": {"label":"2026 年 9 月","short":"2026 / 09","tag":"開幕月","first":"9/1","target":800000,"pos":{"orders":194,"rev":913865},"wkNote":"路過客為主，不知林果比例高","wdNote":"知品牌目的性客為主","note":"營業額：日報 Sheet 月底定稿，整月合計與 Shopline POS 全月訂單核對一致（194 張，排除取消單，$913,865）；逐日只有 9/1–9/3（最多 $5,188）、9/14、9/18（各 $279）與 POS 入帳日不同。來客／成交／成交率為門市手記，9/16 成交率 125%（來客 3 &lt; 成交 12）為手記異常值。客單價＝營業額 ÷ POS 訂單數。","insights":[["var(--positive)","01","9 月配件連帶最高（開幕月現象，10 月已回落到一般水準）","同窗口南西買鞋訂單有 90% 同時買襪子/保養/皮件，台中 57%、東門 35%、中山 30%、松菸 29%。南西全月襪子 229 件、保養/鞋用品 46 件，但襪子只占營業額 4.7%，是拉件數、不是拉營收。"],["var(--rust)","02","9 月瑪莉珍與女款偏高（10 月已回到近似他店）","同窗口南西瑪莉珍占鞋款營收 10.4%、女款 24.3%；其他店瑪莉珍最高 2.5%、中山完全沒有女款。樂福＋牛津合計 55%，高於其他店的 33–40%，款式集中在商務樂福與牛津。"],["#c49a00","03","價格帶偏低，沒有 9,000 元以上","≥7,000 元價格帶只占南西鞋款 23.8%，松菸 47.5%、台中 44.7%、中山 39.4%、東門 30.1%。與上方「客單偏低」的觀察一致：南西是入門款、基本款為主的店。"]],"prod":{"winLabel":"9/16–9/30","nx":{"orders":194,"rev":913865,"shoeQ":144,"shoeRev":786158,"shoeAvg":5459,"shoeShare":86,"shoeOrders":126,"attachOrders":104,"attach":82.5,"cats":[["鞋款",144,786158,86],["襪子",229,43298,4.7],["保養/鞋用品",46,27668,3],["皮件/配件",13,25804,2.8],["包款",3,24745,2.7],["禮盒/贈禮",24,3425,0.4],["維修服務",4,2767,0.3],["收納盒(贈品)",47,0,0]],"style":[["樂福鞋",34,219838,28],["牛津鞋",23,137412,17.5],["XV1 小白鞋/休閒鞋",24,122572,15.6],["德比鞋",20,112504,14.3],["瑪莉珍",10,63094,8],["靴款",8,55794,7.1],["室內拖鞋",17,33058,4.2],["休閒鞋",4,21400,2.7],["孟克鞋",4,20486,2.6]],"gender":[["男款/中性",114,609140,77.5],["女款",30,177018,22.5]],"band":[["5,000–6,999",71,409332,52.1],["7,000–8,999",28,212537,27],["<5,000",45,164289,20.9]],"color":[["黑",70,411186,52.3],["咖啡/棕",32,175000,22.3],["白/米",22,116428,14.8],["酒紅",7,41340,5.3],["其他",3,18171,2.3],["灰",8,15577,2],["綠",1,6516,0.8],["藍",1,1940,0.2]]},"stores":{"誠品南西":{"orders":114,"rev":560250,"shoeQ":86,"shoeRev":478780,"shoeAvg":5567,"shoeShare":85.5,"shoeOrders":72,"attachOrders":65,"attach":90.3,"cats":[["鞋款",86,478780,85.5],["襪子",161,25252,4.5],["保養/鞋用品",35,21333,3.8],["皮件/配件",8,17118,3.1],["包款",2,15393,2.7],["禮盒/贈禮",20,1711,0.3],["維修服務",1,663,0.1],["收納盒(贈品)",47,0,0]],"style":[["樂福鞋",24,157926,33],["牛津鞋",18,103718,21.7],["XV1 小白鞋/休閒鞋",14,72534,15.1],["瑪莉珍",8,49963,10.4],["德比鞋",9,47987,10],["靴款",3,21657,4.5],["室內拖鞋",8,15558,3.2],["孟克鞋",2,9437,2]],"gender":[["男款/中性",67,362305,75.7],["女款",19,116475,24.3]],"band":[["5,000–6,999",43,254634,53.2],["7,000–8,999",15,113739,23.8],["<5,000",28,110407,23.1]],"color":[["黑",39,234268,48.9],["咖啡/棕",17,102257,21.4],["白/米",15,81269,17],["酒紅",6,35889,7.5],["灰",7,13637,2.8],["綠",1,6516,1.4],["其他",1,4944,1]]},"松菸":{"orders":133,"rev":811209,"shoeQ":93,"shoeRev":533303,"shoeAvg":5734,"shoeShare":65.7,"shoeOrders":73,"attachOrders":21,"attach":28.8,"cats":[["鞋款",93,533303,65.7],["禮盒/贈禮",228,186466,23],["其他",11,20536,2.5],["皮件/配件",8,17428,2.1],["包款",2,17100,2.1],["保養/鞋用品",23,15100,1.9],["襪子",46,12827,1.6],["維修服務",17,8449,1],["收納盒(贈品)",8,0,0]],"style":[["XV1 小白鞋/休閒鞋",20,104022,19.5],["德比鞋",15,101606,19.1],["牛津鞋",13,90997,17.1],["樂福鞋",13,85647,16.1],["靴款",7,60650,11.4],["孟克鞋",5,33349,6.3],["其他鞋款",7,22196,4.2],["室內拖鞋",11,21760,4.1],["瑪莉珍",2,13076,2.5]],"gender":[["男款/中性",82,469197,88],["女款",11,64106,12]],"band":[["7,000–8,999",29,231594,43.4],["5,000–6,999",35,198662,37.3],["<5,000",27,81087,15.2],["9,000+",2,21960,4.1]],"color":[["黑",31,216963,40.7],["咖啡/棕",27,166566,31.2],["白/米",14,74879,14],["灰",10,29291,5.5],["酒紅",4,25323,4.7],["其他",7,20281,3.8]]},"中山":{"orders":109,"rev":510323,"shoeQ":72,"shoeRev":417772,"shoeAvg":5802,"shoeShare":81.9,"shoeOrders":67,"attachOrders":20,"attach":29.9,"cats":[["鞋款",72,417772,81.9],["保養/鞋用品",37,22106,4.3],["包款",2,21651,4.2],["維修服務",26,20171,4],["襪子",41,10831,2.1],["其他",8,8920,1.7],["皮件/配件",4,8872,1.7],["禮盒/贈禮",20,0,0]],"style":[["牛津鞋",15,84901,20.3],["德比鞋",13,84652,20.3],["樂福鞋",13,81977,19.6],["XV1 小白鞋/休閒鞋",11,56948,13.6],["靴款",7,56127,13.4],["其他鞋款",4,22038,5.3],["孟克鞋",2,14276,3.4],["室內拖鞋",6,12096,2.9],["休閒鞋",1,4757,1.1]],"gender":[["男款/中性",72,417772,100]],"band":[["5,000–6,999",28,157272,37.6],["7,000–8,999",17,134994,32.3],["<5,000",24,95850,22.9],["9,000+",3,29656,7.1]],"color":[["黑",38,239381,57.3],["咖啡/棕",20,108025,25.9],["白/米",4,20599,4.9],["灰",4,18336,4.4],["酒紅",2,14676,3.5],["綠",2,9927,2.4],["其他",1,4888,1.2],["藍",1,1940,0.5]]},"東門":{"orders":119,"rev":581222,"shoeQ":80,"shoeRev":442794,"shoeAvg":5535,"shoeShare":76.2,"shoeOrders":68,"attachOrders":24,"attach":35.3,"cats":[["鞋款",80,442794,76.2],["包款",4,33160,5.7],["其他",14,29380,5.1],["保養/鞋用品",33,25405,4.4],["皮件/配件",11,21565,3.7],["襪子",63,15284,2.6],["維修服務",21,13634,2.3],["禮盒/贈禮",19,0,0]],"style":[["樂福鞋",17,109902,24.8],["XV1 小白鞋/休閒鞋",18,90724,20.5],["德比鞋",12,77469,17.5],["靴款",7,50960,11.5],["牛津鞋",8,50867,11.5],["孟克鞋",3,23286,5.3],["室內拖鞋",11,19885,4.5],["其他鞋款",3,13913,3.1],["休閒鞋",1,5788,1.3]],"gender":[["男款/中性",62,340053,76.8],["女款",18,102741,23.2]],"band":[["5,000–6,999",44,255456,57.7],["7,000–8,999",15,114070,25.8],["<5,000",19,54228,12.2],["9,000+",2,19040,4.3]],"color":[["黑",36,233990,52.8],["白/米",17,91888,20.8],["咖啡/棕",18,85175,19.2],["酒紅",3,18305,4.1],["其他",3,11747,2.7],["灰",2,3616,0.8],["藍",1,-1927,-0.4]]},"台中":{"orders":103,"rev":566890,"shoeQ":93,"shoeRev":459569,"shoeAvg":4942,"shoeShare":81.1,"shoeOrders":68,"attachOrders":39,"attach":57.4,"cats":[["鞋款",93,459569,81.1],["保養/鞋用品",45,29589,5.2],["襪子",120,29108,5.1],["皮件/配件",13,28163,5],["其他",8,8923,1.6],["包款",1,4945,0.9],["維修服務",4,4300,0.8],["禮盒/贈禮",37,2293,0.4]],"style":[["樂福鞋",22,140238,30.5],["德比鞋",14,95284,20.7],["靴款",5,44599,9.7],["牛津鞋",7,43599,9.5],["其他鞋款",16,41194,9],["室內拖鞋",18,33936,7.4],["XV1 小白鞋/休閒鞋",6,31175,6.8],["孟克鞋",3,17290,3.8],["瑪莉珍",1,6740,1.5],["休閒鞋",1,5514,1.2]],"gender":[["男款/中性",81,386673,84.1],["女款",12,72896,15.9]],"band":[["7,000–8,999",24,184483,40.1],["5,000–6,999",27,158874,34.6],["<5,000",40,94989,20.7],["9,000+",2,21223,4.6]],"color":[["黑",35,232111,50.5],["咖啡/棕",22,100809,21.9],["其他",16,44320,9.6],["白/米",6,35313,7.7],["灰",6,17519,3.8],["藍",5,11552,2.5],["酒紅",2,11428,2.5],["綠",1,6517,1.4]]}}},"days":[["9/1","二",20000,5188,5,1,20],["9/2","三",20000,8208,7,1,17],["9/3","四",20000,4770,9,1,17],["9/4","五",45000,10748,2,2,22],["9/5","六",45000,78013,16,11,39],["9/6","日",20000,9058,11,4,13],["9/7","一",20000,23051,3,3,27],["9/8","二",20000,10226,1,2,25],["9/9","三",20000,980,5,1,7],["9/10","四",20000,31838,3,1,33],["9/11","五",45000,38482,3,3,24],["9/12","六",45000,71343,5,7,47],["9/13","日",20000,33878,8,6,38],["9/14","一",20000,13435,9,2,11],["9/15","二",20000,14676,3,2,25],["9/16","三",20000,73915,3,12,125],["9/17","四",20000,0,1,0,0],["9/18","五",45000,32916,9,3,28],["9/19","六",45000,34063,4,6,50],["9/20","日",20000,28718,2,4,31],["9/21","一",20000,0,2,0,0],["9/22","二",20000,8738,5,6,50],["9/23","三",20000,7168,3,2,25],["9/24","四",20000,100316,18,11,56],["9/25","五",45000,35434,8,5,38],["9/26","六",45000,70499,7,11,57],["9/27","日",20000,42513,10,5,47],["9/28","一",20000,56193,15,4,27],["9/29","二",20000,56023,4,6,56],["9/30","三",20000,13475,2,2,22]]},
+  "202610": {"label":"2026 年 10 月","short":"2026 / 10","first":"10/1","target":900000,"pos":{"orders":142,"rev":678662},"prod":{"winLabel":"10/1–10/11","nx":{"orders":142,"rev":678662,"shoeQ":109,"shoeRev":607822,"shoeAvg":5576,"shoeShare":89.6,"shoeOrders":104,"attachOrders":39,"attach":37.5,"cats":[["鞋款",109,607822,89.6],["保養/鞋用品",32,25146,3.7],["襪子",92,23827,3.5],["皮件/配件",10,20287,3],["其他",1,1580,0.2],["收納盒(贈品)",54,0,0],["禮盒/贈禮",16,0,0]],"style":[["樂福鞋",32,196423,32.3],["XV1 小白鞋/休閒鞋",26,137288,22.6],["德比鞋",14,87714,14.4],["牛津鞋",14,83794,13.8],["靴款",5,37249,6.1],["室內拖鞋",10,19546,3.2],["休閒鞋",3,17164,2.8],["其他鞋款",2,12527,2.1],["孟克鞋",2,9429,1.6],["瑪莉珍",1,6688,1.1]],"gender":[["男款/中性",93,511912,84.2],["女款",16,95910,15.8]],"band":[["5,000–6,999",64,365761,60.2],["7,000–8,999",19,146631,24.1],["<5,000",26,95430,15.7]],"color":[["黑",48,285468,47],["咖啡/棕",26,139614,23],["白/米",18,97447,16],["酒紅",9,57312,9.4],["灰",4,15462,2.5],["其他",1,6699,1.1],["藍",3,5820,1]]},"stores":{"誠品南西":{"orders":142,"rev":678662,"shoeQ":109,"shoeRev":607822,"shoeAvg":5576,"shoeShare":89.6,"shoeOrders":104,"attachOrders":39,"attach":37.5,"cats":[["鞋款",109,607822,89.6],["保養/鞋用品",32,25146,3.7],["襪子",92,23827,3.5],["皮件/配件",10,20287,3],["其他",1,1580,0.2],["收納盒(贈品)",54,0,0],["禮盒/贈禮",16,0,0]],"style":[["樂福鞋",32,196423,32.3],["XV1 小白鞋/休閒鞋",26,137288,22.6],["德比鞋",14,87714,14.4],["牛津鞋",14,83794,13.8],["靴款",5,37249,6.1],["室內拖鞋",10,19546,3.2],["休閒鞋",3,17164,2.8],["其他鞋款",2,12527,2.1],["孟克鞋",2,9429,1.6],["瑪莉珍",1,6688,1.1]],"gender":[["男款/中性",93,511912,84.2],["女款",16,95910,15.8]],"band":[["5,000–6,999",64,365761,60.2],["7,000–8,999",19,146631,24.1],["<5,000",26,95430,15.7]],"color":[["黑",48,285468,47],["咖啡/棕",26,139614,23],["白/米",18,97447,16],["酒紅",9,57312,9.4],["灰",4,15462,2.5],["其他",1,6699,1.1],["藍",3,5820,1]]},"松菸":{"orders":119,"rev":539120,"shoeQ":84,"shoeRev":455744,"shoeAvg":5426,"shoeShare":84.5,"shoeOrders":75,"attachOrders":21,"attach":28,"cats":[["鞋款",84,455744,84.5],["其他",20,28726,5.3],["皮件/配件",9,20374,3.8],["保養/鞋用品",32,17679,3.3],["襪子",36,10147,1.9],["維修服務",10,6450,1.2],["禮盒/贈禮",17,0,0]],"style":[["樂福鞋",15,95396,20.9],["德比鞋",13,88084,19.3],["XV1 小白鞋/休閒鞋",17,87609,19.2],["牛津鞋",11,79019,17.3],["靴款",6,48228,10.6],["其他鞋款",12,19495,4.3],["瑪莉珍",2,12576,2.8],["室內拖鞋",6,11820,2.6],["孟克鞋",1,7729,1.7],["休閒鞋",1,5788,1.3]],"gender":[["男款/中性",68,371842,81.6],["女款",16,83902,18.4]],"band":[["7,000–8,999",28,225534,49.5],["5,000–6,999",32,168125,36.9],["<5,000",24,62085,13.6]],"color":[["黑",30,205195,45],["咖啡/棕",22,119871,26.3],["白/米",10,53146,11.7],["酒紅",4,29073,6.4],["灰",6,28772,6.3],["其他",10,13899,3],["藍",1,5788,1.3],["綠",1,0,0]]},"中山":{"orders":113,"rev":504357,"shoeQ":74,"shoeRev":446206,"shoeAvg":6030,"shoeShare":88.5,"shoeOrders":68,"attachOrders":21,"attach":30.9,"cats":[["鞋款",74,446206,88.5],["保養/鞋用品",41,25491,5.1],["維修服務",20,13424,2.7],["襪子",57,12819,2.5],["其他",14,4237,0.8],["皮件/配件",1,2180,0.4],["禮盒/贈禮",13,0,0]],"style":[["德比鞋",17,109801,24.6],["牛津鞋",19,103549,23.2],["樂福鞋",15,100780,22.6],["靴款",11,79085,17.7],["XV1 小白鞋/休閒鞋",6,31443,7],["孟克鞋",1,7988,1.8],["其他鞋款",2,7600,1.7],["室內拖鞋",3,5960,1.3]],"gender":[["男款/中性",74,446206,100]],"band":[["7,000–8,999",22,176421,39.5],["<5,000",29,126352,28.3],["5,000–6,999",21,123168,27.6],["9,000+",2,20265,4.5]],"color":[["黑",37,242500,54.3],["咖啡/棕",22,133083,29.8],["白/米",5,26253,5.9],["灰",5,25873,5.8],["其他",3,11529,2.6],["綠",1,4888,1.1],["藍",1,2080,0.5]]},"東門":{"orders":85,"rev":435189,"shoeQ":60,"shoeRev":346035,"shoeAvg":5767,"shoeShare":79.5,"shoeOrders":48,"attachOrders":13,"attach":27.1,"cats":[["鞋款",60,346035,79.5],["保養/鞋用品",34,22971,5.3],["皮件/配件",11,22964,5.3],["其他",10,13644,3.1],["包款",1,11442,2.6],["維修服務",16,9962,2.3],["襪子",33,8171,1.9],["禮盒/贈禮",20,0,0]],"style":[["樂福鞋",15,92961,26.9],["德比鞋",12,86079,24.9],["XV1 小白鞋/休閒鞋",16,83110,24],["孟克鞋",1,16980,4.9],["牛津鞋",2,16884,4.9],["靴款",2,13776,4],["室內拖鞋",7,13539,3.9],["休閒鞋",2,11511,3.3],["瑪莉珍",1,6188,1.8],["其他鞋款",2,5007,1.4]],"gender":[["男款/中性",46,264911,76.6],["女款",14,81124,23.4]],"band":[["5,000–6,999",31,167158,48.3],["7,000–8,999",15,120169,34.7],["<5,000",13,41728,12.1],["9,000+",1,16980,4.9]],"color":[["黑",22,140957,40.7],["白/米",13,69962,20.2],["咖啡/棕",14,65873,19],["其他",3,31966,9.2],["綠",2,13126,3.8],["灰",2,10184,2.9],["酒紅",1,7896,2.3],["藍",3,6071,1.8]]},"台中":{"orders":91,"rev":502512,"shoeQ":85,"shoeRev":446681,"shoeAvg":5255,"shoeShare":88.9,"shoeOrders":68,"attachOrders":26,"attach":38.2,"cats":[["鞋款",85,446681,88.9],["保養/鞋用品",45,31809,6.3],["襪子",40,9259,1.8],["其他",7,8902,1.8],["皮件/配件",2,3861,0.8],["維修服務",3,2000,0.4],["禮盒/贈禮",28,0,0]],"style":[["XV1 小白鞋/休閒鞋",21,109612,24.5],["樂福鞋",13,75773,17],["靴款",8,65117,14.6],["牛津鞋",10,59868,13.4],["德比鞋",8,58421,13.1],["其他鞋款",8,29613,6.6],["室內拖鞋",13,25126,5.6],["瑪莉珍",2,12714,2.8],["休閒鞋",1,5688,1.3],["孟克鞋",1,4749,1.1]],"gender":[["男款/中性",74,382198,85.6],["女款",11,64483,14.4]],"band":[["5,000–6,999",39,222542,49.8],["7,000–8,999",17,135587,30.4],["<5,000",28,78121,17.5],["9,000+",1,10431,2.3]],"color":[["黑",30,196370,44],["咖啡/棕",23,117912,26.4],["白/米",15,79691,17.8],["灰",8,27691,6.2],["酒紅",3,18764,4.2],["藍",2,3997,0.9],["其他",4,2256,0.5]]}},"top":[["Bookbinder 便士樂福鞋-經典黑",11,60355],["LibreSole升級大底-XV1經典皮革小白鞋",9,47056],["LibreSole升級大底-XV1經典皮革休閒鞋 焦糖奶茶",7,36540],["LibreSole升級大底-XV1皮革小白鞋女鞋",5,26033],["側鬆緊商務橫飾牛津鞋-經典黑",4,19458],["Basic 基本德比鞋-經典黑",4,18669],["Combo手作皮革小白鞋",3,17170],["皮革大底鞍部牛津鞋-酒紅色",2,16388]]},"days":[["10/1","四",20000,349,2,0,9],["10/2","五",20000,74510,15,11,52],["10/3","六",45000,111911,30,15,37],["10/4","日",45000,31838,10,4,35],["10/5","一",20000,30060,5,5,67],["10/6","二",20000,52075,1,5,64],["10/7","三",20000,92844,5,10,75],["10/8","四",20000,30159,5,5,54],["10/9","五",45000,77400,8,11,68],["10/10","六",45000,88176,13,15,74],["10/11","日",45000,89340,4,13,81]],"partial":true,"asOf":"10/11","monthDays":31,"tag":"月中快照","note":"月中快照（非即時）：資料累計至 10/11，月底結算後以定稿數字更新。營業額以 Shopline POS 為準（142 張訂單，排除取消單，$678,662，含稅）。日報 Sheet 逐日與 POS 完全一致。來客／成交／成交率為門市手記（缺的日期顯示 —，數字僅供參考）。客單價＝營業額 ÷ POS 訂單數。","noteAuto":true},
+/*NX_ENTRIES_END*/
 };
 const nxBuilt = {};
+const nxEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const nxN = v => v == null ? '—' : v.toLocaleString();
+const nxPct = (list, name) => { const r = (list || []).find(x => x[0] === name); return r ? r[3] : 0; };
+function nxAttr(s) {
+  const sock = (s.cats || []).find(x => x[0] === '襪子');
+  return {shoeShare:s.shoeShare, shoeAvg:s.shoeAvg, female:nxPct(s.gender,'女款'), loafer:nxPct(s.style,'樂福鞋'), oxford:nxPct(s.style,'牛津鞋'),
+    xv1:nxPct(s.style,'XV1 小白鞋/休閒鞋'), mj:nxPct(s.style,'瑪莉珍'),
+    band7:Math.round((nxPct(s.band,'7,000–8,999')+nxPct(s.band,'9,000+'))*10)/10, attach:s.attach, sockQ:sock?sock[1]:0};
+}
 function nxStats(m) {
   const days = m.days.map(a => ({date:a[0], weekday:a[1], target:a[2], revenue:a[3], visitors:a[4], txn:a[5], convRate:a[6],
-    achPct:a[2]>0?Math.round(a[3]/a[2]*100):0, ticket:a[5]>0?Math.round(a[3]/a[5]):0}));
-  const sum = (arr,k) => arr.reduce((t,d)=>t+d[k],0);
+    achPct:a[2]>0?Math.round(a[3]/a[2]*100):null, ticket:a[5]>0?Math.round(a[3]/a[5]):null}));
+  const sum = (arr,k) => arr.reduce((t,d)=>t+(d[k]||0),0);
   const wkE = days.filter(d=>d.weekday==='六'||d.weekday==='日'), wkD = days.filter(d=>d.weekday!=='六'&&d.weekday!=='日');
-  const agg = arr => ({n:arr.length, rev:sum(arr,'revenue'), vis:sum(arr,'visitors'), txn:sum(arr,'txn')});
+  const agg = arr => ({n:arr.length, rev:sum(arr,'revenue'), vis:sum(arr,'visitors'), txn:sum(arr,'txn'), known:arr.some(d=>d.visitors!=null)});
   const rev = sum(days,'revenue');
-  return {days, rev, vis:sum(days,'visitors'), txn:sum(days,'txn'), ach:Math.round(rev/m.target*1000)/10, gap:m.target-rev, wk:agg(wkE), wd:agg(wkD)};
+  return {days, rev, vis:sum(days,'visitors'), txn:sum(days,'txn'), visKnown:days.some(d=>d.visitors!=null), visDays:days.filter(d=>d.visitors!=null).length,
+    tgtKnown:days.some(d=>d.target!=null), ach:Math.round(rev/m.target*1000)/10, gap:m.target-rev, wk:agg(wkE), wd:agg(wkD)};
 }
 function nxTicket(m, s) { return m.pos ? Math.round(m.pos.rev/m.pos.orders) : (s.txn>0?Math.round(s.rev/s.txn):0); }
 function nxTopHtml(ym) {
   const m = NX_MONTHS[ym], s = nxStats(m), f = n => n.toLocaleString();
-  const last = s.days[s.days.length-1].date, over = s.gap <= 0, partial = !!m.partial, nMonth = m.monthDays || s.days.length, tgtToDate = s.days.reduce((t,d)=>t+d.target,0);
-  const achBadge = p => p>=100?'nx-bh':p>=50?'nx-bo':'nx-bl';
-  const convBadge = p => p>=40?'nx-bh':p>=26?'nx-bg':p>=20?'nx-bo':'nx-bl';
-  const conv = a => a.vis>0?Math.round(a.txn/a.vis*100):0;
+  const last = s.days[s.days.length-1].date, over = s.gap <= 0, partial = !!m.partial, nMonth = m.monthDays || s.days.length;
+  const tgtToDate = s.days.reduce((t,d)=>t+(d.target||0),0), mm = ym.slice(4);
+  const achBadge = p => p==null?'':p>=100?'nx-bh':p>=50?'nx-bo':'nx-bl';
+  const convBadge = p => p==null?'':p>=40?'nx-bh':p>=26?'nx-bg':p>=20?'nx-bo':'nx-bl';
+  const conv = a => (a.known && a.vis>0) ? Math.round(a.txn/a.vis*100)+'%' : '—';
   const gapTxt = (over?'超標 ':'尚差 ')+'NT$'+f(Math.abs(s.gap));
   const rows = s.days.map(d => {
     const ws = d.weekday==='六'?'style="color:var(--rust);font-weight:700"':d.weekday==='日'?'style="color:var(--rust)"':'';
     const rs = d.revenue===0?'style="color:var(--negative);font-weight:700"':d.revenue>60000?'style="font-weight:700"':'';
-    return '<tr><td><b>'+d.date+'</b></td><td '+ws+'>'+d.weekday+'</td><td class="nr">'+f(d.target)+'</td><td class="nr"><span class="nx-badge '+achBadge(d.achPct)+'">'+d.achPct+'%</span></td><td class="nr" '+rs+'>'+f(d.revenue)+'</td><td class="nr">'+d.visitors+'</td><td class="nr">'+d.txn+'</td><td class="nr"><span class="nx-badge '+convBadge(d.convRate)+'">'+d.convRate+'%</span></td><td class="nr">'+(d.ticket?f(d.ticket):'—')+'</td><td></td></tr>';
+    return '<tr><td><b>'+d.date+'</b></td><td '+ws+'>'+d.weekday+'</td><td class="nr">'+nxN(d.target)+'</td><td class="nr">'+(d.achPct==null?'—':'<span class="nx-badge '+achBadge(d.achPct)+'">'+d.achPct+'%</span>')+'</td><td class="nr" '+rs+'>'+f(d.revenue)+'</td><td class="nr">'+nxN(d.visitors)+'</td><td class="nr">'+nxN(d.txn)+'</td><td class="nr">'+(d.convRate==null?'—':'<span class="nx-badge '+convBadge(d.convRate)+'">'+d.convRate+'%</span>')+'</td><td class="nr">'+(d.ticket?f(d.ticket):'—')+'</td><td></td></tr>';
   }).join('');
   const box = (title, a, cls, note) => '<div class="nx-cmp-box"><div class="nx-cmp-title">'+title+' × '+a.n+' 天</div>'
     +'<div class="nx-cmp-row"><span class="nx-cmp-key">累計營業額</span><span class="'+cls+'">$'+f(a.rev)+'</span></div>'
     +'<div class="nx-cmp-row"><span class="nx-cmp-key">佔期間總額</span><span class="'+cls+'">'+(s.rev>0?(a.rev/s.rev*100).toFixed(1):0)+'%</span></div>'
-    +'<div class="nx-cmp-row"><span class="nx-cmp-key">總來客 / 成交</span><span class="'+cls+'">'+a.vis+' 人 / '+a.txn+' 筆</span></div>'
+    +'<div class="nx-cmp-row"><span class="nx-cmp-key">總來客 / 成交</span><span class="'+cls+'">'+(a.known?a.vis+' 人 / '+a.txn+' 筆':'—')+'</span></div>'
     +'<div class="nx-cmp-row"><span class="nx-cmp-key">日均營業額</span><span class="'+cls+'">$'+f(a.n>0?Math.round(a.rev/a.n):0)+'</span></div>'
-    +'<div class="nx-cmp-row"><span class="nx-cmp-key">成交率</span><span class="'+cls+'">'+conv(a)+'%</span></div>'
+    +'<div class="nx-cmp-row"><span class="nx-cmp-key">成交率</span><span class="'+cls+'">'+conv(a)+'</span></div>'
     +(note?'<div class="nx-cmp-row"><span class="nx-cmp-key">客群特徵</span><span style="font-size:10px;color:var(--text-muted)">'+note+'</span></div>':'')+'</div>';
   return ''
   +'<div class="nx-banner"><div class="nx-eyebrow">Oringo 林果良品 · 誠品生活南西'+(m.tag?' · '+m.tag:'')+'</div>'
   +'<div class="nx-title">'+m.label+'營業分析'+(partial?'（累計至 '+m.asOf+'）':'')+'</div>'
-  +'<div class="nx-sub">2026/'+ym.slice(4)+'/01 – '+ym.slice(4)+'/'+last.split('/')[1]+' &nbsp;·&nbsp; '+(partial?'已過 '+s.days.length+' / '+nMonth+' 天 &nbsp;·&nbsp; 月中快照（非即時）':s.days.length+' 天 &nbsp;·&nbsp; 月底定稿')+(m.pos?' · POS 核對':'')+'</div>'
+  +'<div class="nx-sub">2026/'+mm+'/01 – '+mm+'/'+last.split('/')[1]+' &nbsp;·&nbsp; '+(partial?'已過 '+s.days.length+' / '+nMonth+' 天 &nbsp;·&nbsp; 月中快照（非即時）':s.days.length+' 天 &nbsp;·&nbsp; 月底定稿')+(m.pos?' · POS 核對':'')+'</div>'
   +'<div class="nx-meta"><div class="nx-mi"><span class="nx-ml">月目標</span><span class="nx-mv">NT$ '+f(m.target)+'</span></div>'
   +'<div class="nx-mi"><span class="nx-ml">'+(partial?'月累計':'本月營業額')+'</span><span class="nx-mv">NT$ '+f(s.rev)+'</span></div>'
   +'<div class="nx-mi"><span class="nx-ml">達成率</span><span class="nx-mv">'+s.ach+'%</span></div>'
@@ -2819,16 +2578,81 @@ function nxTopHtml(ym) {
   +'<div class="nx-kpi4">'
   +'<div class="nx-kc a"><div class="nx-kc-l">月營業額</div><div class="nx-kc-v">$'+f(s.rev)+'</div><div class="nx-kc-s">月目標 '+s.ach+'%</div></div>'
   +'<div class="nx-kc w"><div class="nx-kc-l">'+(over?'超出月目標':'距月目標')+'</div><div class="nx-kc-v">'+(over?'+':'−')+'$'+f(Math.abs(s.gap))+'</div><div class="nx-kc-s">'+(partial?'剩 '+(nMonth-s.days.length)+' 天 · ':'')+'日均 $'+f(Math.round(s.rev/s.days.length))+'</div></div>'
-  +'<div class="nx-kc g"><div class="nx-kc-l">總來客數（手記）</div><div class="nx-kc-v">'+s.vis+' 人</div><div class="nx-kc-s">日均 '+(s.vis/s.days.length).toFixed(1)+' 人</div></div>'
+  +'<div class="nx-kc g"><div class="nx-kc-l">總來客數（手記）</div><div class="nx-kc-v">'+(s.visKnown?s.vis+' 人':'—')+'</div><div class="nx-kc-s">'+(s.visKnown?'日均 '+(s.vis/s.visDays).toFixed(1)+' 人':'無手記資料')+'</div></div>'
   +'<div class="nx-kc"><div class="nx-kc-l">平均客單價</div><div class="nx-kc-v">$'+f(nxTicket(m,s))+'</div><div class="nx-kc-s">'+(m.pos?m.pos.orders+' 張 POS 訂單':s.txn+' 筆成交')+'</div></div></div>'
   +'<div class="nx-prog-wrap"><div class="nx-prog-hdr"><span class="nx-prog-title">月目標進度</span><span class="nx-prog-nums">NT$'+f(s.rev)+' / NT$'+f(m.target)+'</span></div>'
   +'<div class="nx-prog-track"><div class="nx-prog-fill" style="width:'+Math.min(s.ach,100)+'%"></div></div>'
-  +'<div class="nx-prog-foot"><span class="nx-prog-pct">'+s.ach+'% 達成</span><span class="nx-prog-gap">'+gapTxt+'</span></div>'+(partial?'<div style="font-size:9px;color:var(--text-muted);margin-top:.4rem;font-family:\'Space Mono\',monospace">已過 '+s.days.length+' 天的目標累計 $'+f(tgtToDate)+'，實際為 '+Math.round(s.rev/tgtToDate*100)+'%</div>':'')+'</div>'
+  +'<div class="nx-prog-foot"><span class="nx-prog-pct">'+s.ach+'% 達成</span><span class="nx-prog-gap">'+gapTxt+'</span></div>'+(partial&&tgtToDate>0?'<div style="font-size:9px;color:var(--text-muted);margin-top:.4rem;font-family:\'Space Mono\',monospace">已過 '+s.days.length+' 天的目標累計 $'+f(tgtToDate)+'，實際為 '+Math.round(s.rev/tgtToDate*100)+'%</div>':'')+'</div>'
   +'<div class="g2" style="margin-bottom:1.25rem"><div class="card"><div class="card-hdr"><span class="card-lbl">每日營業額（NT$）</span><span class="card-badge">'+m.first+'–'+last+'</span></div><div class="ch240"><canvas id="nx-chart-rev-'+ym+'"></canvas></div></div>'
   +'<div class="card"><div class="card-hdr"><span class="card-lbl">每日來客數 &amp; 成交率</span><span class="card-badge">門市手記 · 雙軸</span></div><div class="ch240"><canvas id="nx-chart-vis-'+ym+'"></canvas></div></div></div>'
   +'<div class="card" style="margin-bottom:1.25rem"><div class="card-hdr"><span class="card-lbl">每日完整數據</span><span class="card-badge">'+(partial?'日報 · 累計至 '+m.asOf:'日報定稿')+'</span></div><div style="overflow-x:auto"><table class="nx-tbl"><thead><tr><th>日期</th><th>星期</th><th class="nr">目標</th><th class="nr">達成率</th><th class="nr">營業額</th><th class="nr">來客</th><th class="nr">成交</th><th class="nr">成交率</th><th class="nr">客單價</th><th>備注</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
   +(m.note?'<div style="font-size:9px;color:var(--text-muted);margin-top:.5rem;line-height:1.6">'+m.note+'</div>':'')+'</div>'
   +'<div class="nx-2col">'+box('週末（六、日）', s.wk, 'nx-cmp-wk', m.wkNote)+box('平日（一～五）', s.wd, 'nx-cmp-wd', m.wdNote)+'</div>';
+}
+function nxBars(list, unit) {
+  const mx = Math.max.apply(null, list.map(x=>x[3]).concat([1]));
+  return list.map(x => '<div class="nx-cmp-row"><span class="nx-cmp-key">'+nxEsc(x[0])+'</span><span style="display:flex;align-items:center;gap:.6rem"><span class="nx-cmp-wd" style="font-size:10px">'+x[1]+unit+'</span><div class="nx-pct-bar" style="width:130px"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:'+Math.round(x[3]/mx*100)+'%"></div></div><span class="nx-pct-lbl">'+x[3].toFixed(1)+'%</span></div></span></div>').join('');
+}
+function nxOverlap(a, b) {
+  const names = {}; (a.style||[]).forEach(x=>names[x[0]]=1); (b.style||[]).forEach(x=>names[x[0]]=1);
+  return Object.keys(names).reduce((t,k)=>t+Math.min(nxPct(a.style,k),nxPct(b.style,k)),0);
+}
+const nxRank = (v, others) => 1 + others.filter(o => o > v).length;
+const nxRankTxt = (r, n) => r===1 ? '最高' : r===n ? '最低' : '第 '+r+' 高';
+function nxPrevMonth(ym) { const ks = Object.keys(NX_MONTHS).filter(k => NX_MONTHS[k].prod).sort(); const i = ks.indexOf(ym); return i > 0 ? NX_MONTHS[ks[i-1]] : null; }
+// 規則式觀察：只陳述事實（數字、排名、與上月差異），不做詮釋；詮釋請寫在該月的 insights 欄位。
+function nxAutoInsights(ym) {
+  const m = NX_MONTHS[ym], P = m.prod, nxs = P.stores['誠品南西']; if (!nxs) return [];
+  const pm = nxPrevMonth(ym), pa = pm ? nxAttr(pm.prod.nx) : null, W = nxAttr(nxs);
+  const O = Object.keys(P.stores).filter(k => k !== '誠品南西').map(k => ({k:k, a:nxAttr(P.stores[k])}));
+  const t1 = v => Number(v).toFixed(1), n = O.length + 1, rng = fn => { const v = O.map(o => fn(o.a)); return Math.min.apply(null,v).toFixed(1)+'–'+Math.max.apply(null,v).toFixed(1); };
+  const prev = (fn, suffix) => pa ? '（上月 '+t1(fn(pa))+suffix+'）' : '';
+  const r1 = nxRank(W.attach, O.map(o=>o.a.attach)), r3 = nxRank(W.band7, O.map(o=>o.a.band7)), r4 = nxRank(W.shoeShare, O.map(o=>o.a.shoeShare));
+  const top2 = (nxs.style || []).slice(0,2).map(x => x[0]+' '+x[3].toFixed(1)+'%').join('、');
+  return [
+    ['var(--positive)', '01', '買鞋訂單的配件連帶率：'+n+' 店'+nxRankTxt(r1,n), t1(W.attach)+'% 的買鞋訂單同時買襪子／保養／皮件'+prev(a=>a.attach,'%')+'；同期他店：'+O.map(o=>o.k+' '+t1(o.a.attach)+'%').join('、')+'。'],
+    ['var(--rust)', '02', '款式與性別組成', '女款占鞋款營收 '+t1(W.female)+'%、瑪莉珍 '+t1(W.mj)+'%'+(pa?'（上月 '+t1(pa.female)+'%／'+t1(pa.mj)+'%）':'')+'；他店女款 '+rng(a=>a.female)+'%、瑪莉珍最高 '+Math.max.apply(null,O.map(o=>o.a.mj)).toFixed(1)+'%。南西主力款式：'+top2+'。'],
+    ['#c49a00', '03', '高價位鞋款（≥7,000 元）占比：'+n+' 店'+nxRankTxt(r3,n), '≥7,000 元價格帶占南西鞋款 '+t1(W.band7)+'%'+prev(a=>a.band7,'%')+'；他店 '+rng(a=>a.band7)+'%。鞋款占營業額 '+W.shoeShare+'%（'+n+' 店'+nxRankTxt(r4,n)+'）。']
+  ];
+}
+function nxProdHtml(ym) {
+  const m = NX_MONTHS[ym], P = m.prod; if (!P) return '';
+  const f = n => n.toLocaleString(), N = P.nx, A = nxAttr(N), pm = nxPrevMonth(ym), pa = pm ? nxAttr(pm.prod.nx) : null;
+  const span = m.partial ? '累計至 '+m.asOf : '全月', lastLbl = m.days[m.days.length-1][0], out = [];
+  if ((P.top||[]).length) {
+    const mx = P.top[0][1];
+    out.push('<div class="card" style="margin-bottom:1.25rem"><div class="card-hdr"><span class="card-lbl">Top 銷售品項（鞋款）</span><span class="card-badge">誠品南西 '+m.first+'–'+lastLbl+' · POS</span></div>'
+      +'<table class="nx-tbl"><thead><tr><th>品項</th><th class="nr">件數</th><th class="nr">淨額</th><th>占營業額</th></tr></thead><tbody>'
+      +P.top.map(t=>'<tr><td>'+nxEsc(t[0])+'</td><td class="nr">'+t[1]+'</td><td class="nr">'+f(t[2])+'</td><td><div class="nx-pct-bar"><div class="nx-pct-track"><div class="nx-pct-fill" style="width:'+Math.round(t[1]/mx*100)+'%"></div></div><span class="nx-pct-lbl">'+(t[2]/m.pos.rev*100).toFixed(1)+'%</span></div></td></tr>').join('')
+      +'</tbody></table><div style="font-size:9px;color:var(--text-muted);margin-top:.5rem;font-family:\'Space Mono\',monospace">'+span+' · '+m.pos.orders+' 張訂單 · $'+f(m.pos.rev)+'（含稅）· 依件數排序，淨額為折後金額</div></div>');
+  }
+  const cats = (N.cats||[]).filter(x=>x[2]>0), free = (N.cats||[]).filter(x=>x[2]<=0).reduce((t,x)=>t+x[1],0);
+  const kpi = (cls,l,v,s) => '<div class="nx-kc '+cls+'"><div class="nx-kc-l">'+l+'</div><div class="nx-kc-v">'+v+'</div><div class="nx-kc-s">'+s+'</div></div>';
+  const stores = Object.keys(P.stores), order = ['誠品南西'].concat(stores.filter(k=>k!=='誠品南西'));
+  const trs = order.map(k => { const s = P.stores[k], a = nxAttr(s), me = k==='誠品南西';
+    return '<tr'+(me?' style="background:rgba(40,66,52,.06);font-weight:700"':'')+'><td>'+k+'</td><td class="nr">'+f(s.rev)+'</td><td class="nr">'+Math.round(s.shoeShare)+'%</td><td class="nr">$'+f(s.shoeAvg)+'</td><td class="nr">'+Math.round(a.female)+'%</td><td class="nr">'+Math.round(a.loafer)+'%</td><td class="nr">'+Math.round(a.oxford)+'%</td><td class="nr">'+Math.round(a.xv1)+'%</td><td class="nr">'+Math.round(a.mj)+'%</td><td class="nr">'+Math.round(a.band7)+'%</td><td class="nr" style="font-weight:700">'+Math.round(a.attach)+'%</td><td class="nr">'+(me?'—':Math.round(nxOverlap(P.stores['誠品南西'],s))+'%')+'</td></tr>'; }).join('');
+  const gifts = order.filter(k=>k!=='誠品南西').map(k => { const g = (P.stores[k].cats||[]).find(x=>x[0]==='禮盒/贈禮'); return (g && g[3]>=10) ? k+'同期禮盒/贈禮 '+g[1]+' 件、$'+f(g[2])+'（占其 POS 營收 '+Math.round(g[3])+'%）' : null; }).filter(Boolean);
+  const ins = m.insights || nxAutoInsights(ym);
+  out.push('<div class="card" style="margin-bottom:1.25rem"><div class="card-hdr"><span class="card-lbl">商品屬性結構</span><span class="card-badge">Shopline POS · 折後金額 · 跨店同窗口 '+P.winLabel+'</span></div>'
+    +'<div class="nx-kpi4" style="margin-bottom:1rem">'
+    +kpi('a','鞋款占營業額',N.shoeShare.toFixed(1)+'%',N.shoeQ+' 雙 · $'+f(N.shoeRev))
+    +kpi('','鞋款均價（折後）','$'+f(N.shoeAvg),pa?'上月 $'+f(pa.shoeAvg):'折後單價')
+    +kpi('w','女款占鞋款營收',A.female.toFixed(1)+'%',pa?'上月 '+pa.female.toFixed(1)+'%':'含瑪莉珍；其餘為男款/中性')
+    +kpi('g','買鞋訂單的配件連帶率',N.attach.toFixed(1)+'%',N.attachOrders+'/'+N.shoeOrders+' 單'+(pa?' · 上月 '+pa.attach.toFixed(1)+'%':''))
+    +'</div><div class="nx-2col" style="margin-bottom:1rem"><div class="nx-cmp-box"><div class="nx-cmp-title">品類結構（占營業額 · '+span+'）</div>'+nxBars(cats,' 件')
+    +(free>0?'<div class="nx-cmp-row" style="margin-top:.3rem"><span style="font-size:9px;color:var(--text-muted)">另有 $0 贈品 '+free+' 件（收納盒、禮盒等）不計入占比與連帶率</span></div>':'')
+    +'<div class="nx-cmp-title" style="margin-top:.8rem">價格帶（原價 · 占鞋款營收）</div>'+nxBars(N.band||[],' 雙')+'</div>'
+    +'<div class="nx-cmp-box"><div class="nx-cmp-title">鞋款結構（占鞋款營收）</div>'+nxBars(N.style||[],' 雙')
+    +'<div class="nx-cmp-title" style="margin-top:.8rem">顏色</div>'+nxBars((N.color||[]).filter(x=>x[0]!=='其他'),' 雙')+'</div></div>'
+    +'<div style="font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.04em;margin-bottom:.5rem">跨店商品結構（同窗口 '+P.winLabel+'，只含鞋款）</div>'
+    +'<div style="overflow-x:auto;margin-bottom:1rem"><table class="nx-tbl"><thead><tr><th>門市</th><th class="nr">POS 營收</th><th class="nr">鞋款占比</th><th class="nr">鞋均價</th><th class="nr">女款</th><th class="nr">樂福</th><th class="nr">牛津</th><th class="nr">XV1</th><th class="nr">瑪莉珍</th><th class="nr">≥7,000價格帶</th><th class="nr">配件連帶</th><th class="nr">款式重疊</th></tr></thead><tbody>'+trs+'</tbody></table>'
+    +'<div style="font-size:9px;color:var(--text-muted);margin-top:.4rem;font-family:\'Space Mono\',monospace">款式／價格帶／女款為占鞋款營收%；款式重疊＝與南西鞋款營收結構的重疊度（越高款式組合越像，不等於客人被搶）'+(m.partial?'；月中樣本，月底更新':'')+(gifts.length?'；'+gifts.join('；')+'，不在鞋款比較內':'')+'</div></div>'
+    +'<div class="nx-theme-grid">'+ins.map(r=>'<div class="nx-theme-row"><div class="nx-theme-num" style="color:'+r[0]+'">'+r[1]+'</div><div><div class="nx-theme-title">'+r[2]+'</div><div class="nx-theme-text">'+r[3]+'</div></div></div>').join('')+'</div></div>');
+  return out.join('');
+}
+function nxCannHtml(m) {
+  return '<div class="card" style="margin-bottom:1.25rem"><div class="card-hdr"><span class="card-lbl">跨店客源分析（蠶食）</span><span class="card-badge">月底結算後補入</span></div>'
+    +'<div style="padding:.25rem 0 .5rem;color:var(--text-muted);font-size:12px;line-height:1.8">客人層級的蠶食（嚴格蠶食／確定移轉／純增量）與各店 YoY，需要月底財務結算與 ERP 會員資料，無法自動計算；上方「跨店商品結構」是目前可用的同窗口比較。</div></div>';
 }
 function nxRenderOverview() {
   const el = document.getElementById('nx-overview'); if (!el) return;
@@ -2840,14 +2664,14 @@ function nxRenderOverview() {
     const tag = m.partial ? '月中 · 累計至 '+m.asOf : (m.tag||'');
     return '<tr style="cursor:pointer" onclick="nxGoMonth(\''+k+'\')"><td><b>'+m.label+'</b>'+(tag?' <span class="nx-chip">'+tag+'</span>':'')+'</td><td class="nr" style="font-weight:700">$'+f(s.rev)+'</td><td class="nr">$'+f(m.target)+'</td><td class="nr" style="color:'+col+';font-weight:700">'+s.ach+'%'+(m.partial?'*':'')+'</td><td class="nr">$'+f(Math.round(s.rev/s.days.length))+'</td><td class="nr">'+s.days.length+(m.monthDays?' / '+m.monthDays:'')+'</td><td class="nr">'+(m.pos?f(m.pos.orders):'—')+'</td><td class="nr">$'+f(nxTicket(m,s))+'</td></tr>';
   }).join('');
-  const arows = keys.filter(k => NX_MONTHS[k].attr).map(k => {
-    const m = NX_MONTHS[k], a = m.attr, p = v => v.toFixed(1)+'%';
+  const arows = keys.filter(k => NX_MONTHS[k].prod).map(k => {
+    const m = NX_MONTHS[k], a = nxAttr(m.prod.nx), p = v => v.toFixed(1)+'%';
     return '<tr style="cursor:pointer" onclick="nxGoMonth(\''+k+'\')"><td><b>'+m.label+'</b>'+(m.partial?' <span class="nx-chip">累計至 '+m.asOf+'</span>':'')+'</td><td class="nr">'+p(a.shoeShare)+'</td><td class="nr">$'+f(a.shoeAvg)+'</td><td class="nr">'+p(a.female)+'</td><td class="nr">'+p(a.loafer)+'</td><td class="nr">'+p(a.xv1)+'</td><td class="nr">'+p(a.mj)+'</td><td class="nr">'+p(a.band7)+'</td><td class="nr" style="font-weight:700">'+p(a.attach)+'</td></tr>';
   }).join('');
   el.innerHTML = '<div class="card" style="margin-bottom:1rem"><div class="card-hdr"><span class="card-lbl">南西各月營業額</span><span class="card-badge">歷月保留 · 點列切換月份</span></div><div style="overflow-x:auto"><table class="nx-tbl"><thead><tr><th>月份</th><th class="nr">營業額（含稅）</th><th class="nr">月目標</th><th class="nr">達成率</th><th class="nr">日均</th><th class="nr">已計天數</th><th class="nr">POS 訂單</th><th class="nr">客單價</th></tr></thead><tbody>'+rows
     +(keys.length>1?'<tr style="border-top:2px solid var(--border);font-weight:700"><td>累計營業額</td><td class="nr">$'+f(totRev)+'</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>':'')
     +'</tbody></table></div><div style="font-size:9px;color:var(--text-muted);margin-top:.5rem;font-family:\'Space Mono\',monospace">* 月中快照：達成率＝累計 ÷ 整月目標，月底結算後更新</div></div>'
-    +'<div class="card"><div class="card-hdr"><span class="card-lbl">南西各月商品屬性對照</span><span class="card-badge">POS 折後金額 · 占鞋款營收%</span></div><div style="overflow-x:auto"><table class="nx-tbl"><thead><tr><th>月份</th><th class="nr">鞋款占營業額</th><th class="nr">鞋均價</th><th class="nr">女款</th><th class="nr">樂福</th><th class="nr">XV1</th><th class="nr">瑪莉珍</th><th class="nr">≥7,000價格帶</th><th class="nr">買鞋單配件連帶</th></tr></thead><tbody>'+arows+'</tbody></table></div><div style="font-size:9px;color:var(--text-muted);margin-top:.5rem;font-family:\'Space Mono\',monospace">9 月為全月（開幕月）、10 月為累計至 10/11；配件連帶＝買鞋訂單中同時買襪子/保養/皮件的比例</div></div>';
+    +'<div class="card"><div class="card-hdr"><span class="card-lbl">南西各月商品屬性對照</span><span class="card-badge">POS 折後金額 · 占鞋款營收%</span></div><div style="overflow-x:auto"><table class="nx-tbl"><thead><tr><th>月份</th><th class="nr">鞋款占營業額</th><th class="nr">鞋均價</th><th class="nr">女款</th><th class="nr">樂福</th><th class="nr">XV1</th><th class="nr">瑪莉珍</th><th class="nr">≥7,000價格帶</th><th class="nr">買鞋單配件連帶</th></tr></thead><tbody>'+arows+'</tbody></table></div><div style="font-size:9px;color:var(--text-muted);margin-top:.5rem;font-family:\'Space Mono\',monospace">配件連帶＝買鞋訂單中同時買襪子/保養/皮件的比例；月中快照月份為累計值</div></div>';
 }
 function nxGoMonth(ym) {
   const btn = document.querySelector('.nx-mtab[data-month="'+ym+'"]');
@@ -2858,18 +2682,32 @@ function nxBuildCharts(ym) {
   const cr = document.getElementById('nx-chart-rev-'+ym), cv = document.getElementById('nx-chart-vis-'+ym);
   if (!cr || !cv || typeof Chart === 'undefined') return;
   nxBuilt[ym] = true;
-  const src = nxStats(NX_MONTHS[ym]).days;
+  const src = nxStats(NX_MONTHS[ym]).days, tgtKnown = src.some(d=>d.target!=null);
   const labels = src.map(d=>d.date), revenue = src.map(d=>d.revenue), visitors = src.map(d=>d.visitors), convRate = src.map(d=>d.convRate), targets = src.map(d=>d.target);
   const textC = '#b09a88', gridC = 'rgba(40,66,52,.06)';
-  new Chart(cr.getContext('2d'),{type:'bar',data:{labels,datasets:[{label:'目標',data:targets,type:'line',backgroundColor:'transparent',borderColor:'rgba(40,66,52,.3)',borderWidth:1.5,pointRadius:0,borderDash:[4,3],tension:0,order:0},{label:'營業額',data:revenue,backgroundColor:revenue.map((_,i)=>src[i].revenue===0?'#c07050':src[i].revenue>60000?'#284234':'#8a6a4a'),borderRadius:3,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' NT$ '+c.parsed.y.toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{color:textC,font:{family:'Space Mono',size:9}}},y:{grid:{color:gridC},ticks:{color:textC,font:{family:'Space Mono',size:9},callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'k':v}}}}});
+  const revSets = [{label:'營業額',data:revenue,backgroundColor:revenue.map((_,i)=>src[i].revenue===0?'#c07050':src[i].revenue>60000?'#284234':'#8a6a4a'),borderRadius:3,order:1}];
+  if (tgtKnown) revSets.unshift({label:'目標',data:targets,type:'line',backgroundColor:'transparent',borderColor:'rgba(40,66,52,.3)',borderWidth:1.5,pointRadius:0,borderDash:[4,3],tension:0,order:0});
+  new Chart(cr.getContext('2d'),{type:'bar',data:{labels,datasets:revSets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' NT$ '+c.parsed.y.toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{color:textC,font:{family:'Space Mono',size:9}}},y:{grid:{color:gridC},ticks:{color:textC,font:{family:'Space Mono',size:9},callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'k':v}}}}});
   new Chart(cv.getContext('2d'),{data:{labels,datasets:[{type:'bar',label:'來客數',data:visitors,backgroundColor:'rgba(40,66,52,.18)',borderRadius:3,yAxisID:'yV',order:1},{type:'line',label:'成交率',data:convRate,borderColor:'#A54A1A',backgroundColor:'transparent',pointBackgroundColor:'#A54A1A',pointRadius:3,tension:.3,borderWidth:2,yAxisID:'yC',order:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:textC,font:{size:9},boxWidth:10}},tooltip:{callbacks:{label:c=>c.dataset.label==='成交率'?' '+c.parsed.y+'%':' '+c.parsed.y+' 人'}}},scales:{x:{grid:{display:false},ticks:{color:textC,font:{family:'Space Mono',size:9}}},yV:{position:'left',grid:{color:gridC},ticks:{color:textC,font:{family:'Space Mono',size:9}},title:{display:true,text:'人數',color:textC,font:{size:9}}},yC:{position:'right',grid:{display:false},ticks:{color:'#A54A1A',font:{family:'Space Mono',size:9},callback:v=>v+'%'},title:{display:true,text:'成交率',color:'#A54A1A',font:{size:9}}}}}});
 }
 let nxRendered = false;
 function renderNanxi() {
   if (!nxRendered) {
     nxRendered = true;
+    const keys = Object.keys(NX_MONTHS).sort(), host = document.getElementById('panel-nanxi');
+    keys.forEach(ym => {
+      if (document.getElementById('nx-month-'+ym)) return;
+      const m = NX_MONTHS[ym], div = document.createElement('div');
+      div.className = 'nx-month-panel'; div.id = 'nx-month-'+ym;
+      div.innerHTML = '<div class="nx-top" data-nx-month="'+ym+'"></div><div class="nx-prod" data-nx-month="'+ym+'"></div>'+nxCannHtml(m)+(m.extraHtml||'');
+      host.appendChild(div);
+    });
+    const tabs = document.getElementById('nx-month-tabs');
+    if (tabs) tabs.innerHTML = keys.map(ym => '<button class="nx-mtab" data-month="'+ym+'" onclick="switchNxMonth(\''+ym+'\',this)">'+NX_MONTHS[ym].short+(NX_MONTHS[ym].partial?' <span style="opacity:.7">（月中）</span>':'')+'</button>').join('');
     document.querySelectorAll('.nx-top[data-nx-month]').forEach(el => { const ym = el.getAttribute('data-nx-month'); if (NX_MONTHS[ym]) el.innerHTML = nxTopHtml(ym); });
+    document.querySelectorAll('.nx-prod[data-nx-month]').forEach(el => { const ym = el.getAttribute('data-nx-month'); if (NX_MONTHS[ym]) el.innerHTML = nxProdHtml(ym); });
     nxRenderOverview();
+    nxGoMonth(keys[keys.length-1]);
   }
   const act = document.querySelector('.nx-month-panel.active');
   if (act) nxBuildCharts(act.id.replace('nx-month-',''));
