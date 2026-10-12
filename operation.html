@@ -1993,7 +1993,7 @@ function renderMgmt(){
                 m.visitors?statPill('neu','來客',m.visitors+'人',null,fmtDeltaChg(visMom)):'',
                 m.conv?statPill(convStatus(m.conv,k),'成交率',(m.conv*100).toFixed(0)+'%',sb?(sb.conv*100).toFixed(0)+'%':null,fmtDeltaPP(convMomPP)):'',
                 m.ticket?statPill(ticketStatus(m.ticket,k),'客單','$'+fw(m.ticket),sb?'$'+fw(sb.ticket):null,fmtDeltaChg(ticketMom)):'',
-                m.vRep?statPill('neu','維修',m.vRep+'人'):'',
+                m.vRep?statPill('neu',st==='南西'?'不知林果':'維修',m.vRep+'人'):'',
                 tot?statPill('good','新客',nr+'%'):'',
                 tot?statPill('neu','回購',(100-nr)+'%'):'',
               ].filter(Boolean).join('');
