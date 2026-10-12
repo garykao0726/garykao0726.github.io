@@ -1762,9 +1762,11 @@ function renderMgmt(){
     const H25R=FIN_DATA.HIST_2025_RAW||{};
     const plN=PL26['中山'].rev.length;
     const plSum=a=>a.reduce((s,v)=>s+(v||0),0);
-    const plTot=(src,key)=>Array.from({length:plN},(_,mi)=>stores.reduce((s,st)=>s+(((src[st]||{})[key]||[])[mi]||0),0));
+    // 全年趨勢只用 STORE_PL_2026 實際有的店（南西 9 月才開、無全年資料，排除避免 undefined.rev）
+    const plStores=stores.filter(st=>PL26[st]);
+    const plTot=(src,key)=>Array.from({length:plN},(_,mi)=>plStores.reduce((s,st)=>s+(((src[st]||{})[key]||[])[mi]||0),0));
     plChartDefs=[
-      ...stores.map((st,i)=>({id:'pl-ch-'+i,name:st,col:sc[st],
+      ...plStores.map((st,i)=>({id:'pl-ch-'+i,name:st,col:sc[st],
         rev:PL26[st].rev,ni:PL26[st].ni,
         rev25:(H25R[st]?H25R[st].rev.slice(0,plN):[]),ni25:(H25R[st]?H25R[st].ni.slice(0,plN):[])})),
       {id:'pl-ch-tot',name:'五店合計',col:'#284234',
