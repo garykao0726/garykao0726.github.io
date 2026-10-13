@@ -1274,7 +1274,11 @@ function renderMgmt(){
   /* 各店含稅營業額：以「週報/月度數據 D26（含稅 POS）」為準（店長看的就是這個）；損益表只供損益分析 */
   const D26KEY={'中山':'中山店','松菸':'松菸店','台中':'台中店','東門':'東門店','電商':'官網','南西':'誠品南西店'};
   const _moIdx=parseInt(d.ym.slice(5,7),10)-1;
-  const posRev = st => { const k=D26KEY[st], v=(typeof D26!=='undefined'&&D26[k]&&D26[k][_moIdx])?D26[k][_moIdx]*10000:0; return v>0?v:incT(d.storeData[st]?.rev||0); };
+  const posRev = st => { const k=D26KEY[st];
+    const mo=(typeof MOPS!=='undefined'&&MOPS[k]&&MOPS[k][_moIdx]&&MOPS[k][_moIdx].rev>0)?MOPS[k][_moIdx].rev:0; // 合計列真值(含稅,門市Dashboard基準,精確到元)
+    if(mo>0) return mo;
+    const v=(typeof D26!=='undefined'&&D26[k]&&D26[k][_moIdx])?D26[k][_moIdx]*10000:0; // D26四捨五入到萬且偶偏舊，僅合計列缺時才用
+    return v>0?v:incT(d.storeData[st]?.rev||0); };
   const posRevTot = stores.reduce((a,st)=>a+posRev(st),0);
   /* 年度累計(YTD)達成率：1月~選定月，含稅；歷史月用 D26(月度數據)、選定月用 posRev(含 fallback)；目標用 TARGETS(各月目標,含稅) */
   const ytdActual = st => { const k=D26KEY[st]; let v=0; for(let i=0;i<_moIdx;i++) v+=((typeof D26!=='undefined'&&D26[k]&&D26[k][i])||0)*10000; return v+posRev(st); };
@@ -1380,10 +1384,10 @@ function renderMgmt(){
   const 營業成本 = d.rev*cogsN/100;
   const niCalc = d.rev - 營業成本 - (d.mktShoot||0) - (d.mktMedia||0) - (d.opEx||0) - (d.mgmtEx||0);
   const T1 = [
-    {k:'全通路業績', now:d.rev, pm:d.prevMoRev, py:d.prevYrRev, side:`達標 ${(posRevTot/d.revTarget*100).toFixed(0)}%`, lower:false, note:`損益基礎未稅；業績含稅(週報) ${fW(posRevTot)}。${(d.notes&&d.notes.rev)||''}`},
+    {k:'全通路業績', now:d.rev, pm:d.prevMoRev, py:d.prevYrRev, side:`達標 ${(posRevTot/d.revTarget*100).toFixed(0)}%`, lower:false, note:`損益基礎未稅；業績含稅(各店合計列) ${fW(posRevTot)}。${(d.notes&&d.notes.rev)||''}`},
     {k:'成本占比', now:cogsN, pm:normCogs(d.cogsPctPrevMo,d.prevMoRev,prevMoYm), py:normCogs(d.cogsPctPrevYr,d.prevYrRev,prevYrYm), pp:true, side:(cogsN<=d.cogsPctTarget?'<span class="tp">✓達標</span>':'<span class="tn">✗超標</span>'), note:(d.notes&&d.notes.cogs)||''},
-    {k:'總公司行銷費', now:d.mktShoot, pm:(d.mktShootPrevMo??null), py:(d.mktShootPrevYr??null), side:`占 ${(d.mktShoot/d.rev*100).toFixed(1)}%`, lower:true, note:'分攤：5通路各20%'},
-    {k:'媒體採買', now:d.mktMedia, pm:(d.mktMediaPrevMo??null), py:(d.mktMediaPrevYr??null), side:`占 ${(d.mktMedia/d.rev*100).toFixed(1)}%`, lower:true, note:'電商60%／各店各10%'},
+    {k:'總公司行銷費', now:d.mktShoot, pm:(d.mktShootPrevMo??null), py:(d.mktShootPrevYr??null), side:`占 ${(d.mktShoot/d.rev*100).toFixed(1)}%`, lower:true, note:`分攤：${stores.length}通路各${(100/stores.length).toFixed(0)}%`},
+    {k:'媒體採買', now:d.mktMedia, pm:(d.mktMediaPrevMo??null), py:(d.mktMediaPrevYr??null), side:`占 ${(d.mktMedia/d.rev*100).toFixed(1)}%`, lower:true, note:`電商60%／各店各${(40/Math.max(1,stores.length-1)).toFixed(0)}%`},
     {k:'門市營運費用', now:d.opEx, pm:(d.opExPrevMo??null), py:(d.opExPrevYr??null), side:`占 ${(d.opEx/d.rev*100).toFixed(1)}%`, lower:true, note:(d.notes&&d.notes.opEx)||''},
     {k:'總公司管理費用', now:d.mgmtEx, pm:(d.mgmtExPrevMo??null), py:(d.mgmtExPrevYr??null), side:`占 ${(d.mgmtEx/d.rev*100).toFixed(1)}%`, lower:true, note:(d.notes&&d.notes.mgmt)||''},
     {k:'淨利（試算）', now:niN, pm:normNi(d.prevMoNI,prevMoYm), py:normNi(d.prevYrNI,prevYrYm), side:`達標 ${(niN/d.niTarget*100).toFixed(0)}%`, lower:false, niCalc:true, strong:true, note:(d.notes&&d.notes.ni)||''},
@@ -1455,7 +1459,7 @@ function renderMgmt(){
 
   /* ── 各店保本：單一條「營業額＝各項成本＋淨利」(未稅·損益結構) ──
      一條 = 營業成本(COGS)＋人事＋租金＋行銷＋管理＋其他(刷卡/包裝/水電)＋淨利(綠)
-     行銷=總公司行銷費/5+媒體分攤(電商60%/其他10%)；管理=總公司管理費/5
+     行銷=總公司行銷費/通路數(_nSt,9月起含南西=6)+媒體分攤(電商60%/其他40%÷實體店數_nPhys)；管理=總公司管理費/5(南西用自身專櫃管理費mgmtSelf,不佔分母)
      黑線＝營業額；成本超過營業額(線左)就是虧損；損益平衡點=淨利為0所需營業額(未稅) */
   const _nSt=stores.length, _nPhys=Math.max(1,_nSt-1);
   const beMktAlloc = st => (d.mktShoot||0)/_nSt + (st==='電商' ? (d.mktMedia||0)*0.6 : (d.mktMedia||0)*0.4/_nPhys);
@@ -1892,7 +1896,8 @@ function renderMgmt(){
           /* 營收 MoM/YoY 改用跟達成率同一套 POS含稅基準(posRev/D26)，別再混用損益表未稅(s.rev)——
              兩者口徑不同會兜不起來（曾核對月會簡報發現對不上，查出來就是這裡混用），2025同期用HIST_2025_OPS(僅1-6月，含稅)。
              D26/HIST_2025_OPS 缺資料時 fallback 回 ERP(s.rev)，至少有個數字可看。*/
-          const posRevPrevMo = (_moIdx>0 && typeof D26!=='undefined'&&D26[k]&&D26[k][_moIdx-1]) ? D26[k][_moIdx-1]*10000 : null;
+          const posRevPrevMo = (_moIdx>0 && typeof MOPS!=='undefined'&&MOPS[k]&&MOPS[k][_moIdx-1]&&MOPS[k][_moIdx-1].rev>0) ? MOPS[k][_moIdx-1].rev
+                              : ((_moIdx>0 && typeof D26!=='undefined'&&D26[k]&&D26[k][_moIdx-1]) ? D26[k][_moIdx-1]*10000 : null);
           const mom = posRevPrevMo ? pctChg(posRev(st),posRevPrevMo) : pctChg(s.rev,s.prevMoRev);
           const yoy = (h25&&h25.rev) ? pctChg(posRev(st),h25.rev) : (s.prevYrRev!=null ? pctChg(s.rev,s.prevYrRev) : null);
           const h25Conv=(h25&&h25.vis)?h25.txn/h25.vis:null;
