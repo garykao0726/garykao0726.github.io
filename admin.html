@@ -103,6 +103,8 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
 .btn-save{padding:9px 20px;border:none;border-radius:8px;background:var(--green);color:#fff;font-size:.85rem;font-family:'Noto Sans TC',sans-serif;cursor:pointer;font-weight:500}
 .btn-save:hover{opacity:.87}
 
+@media (max-width:768px){.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.table-wrap table{min-width:560px}}
+
 /* Admin-only guard */
 .guard-msg{text-align:center;padding:80px 20px}
 .guard-msg h2{font-size:1.1rem;margin-bottom:8px}
@@ -130,7 +132,7 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
   <div class="page-hd">
     <div>
       <div class="page-title">使用者權限管理</div>
-      <div class="page-sub">名單內的人都能看所有儀表板頁面；只有「主管」身分才能進財務報表。變更後立即生效。</div>
+      <div class="page-sub">名單內的人都能看所有儀表板頁面；只有「主管」身分才能進財務報表；「官網優惠設定」欄勾選的人，才能修改官網的公告列與首頁彈窗。變更後立即生效。</div>
     </div>
     <div style="display:flex;gap:10px">
       <button class="btn-add" id="migrate-btn" style="display:none;background:var(--rust)" onclick="migrateExistingUsers()">
@@ -158,6 +160,7 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
         <tr>
           <th>姓名 / Email</th>
           <th>身分</th>
+          <th title="勾選的人可以到 promo.html 修改官網的公告列與首頁彈窗">官網優惠設定</th>
           <th>狀態</th>
           <th>操作</th>
         </tr>
@@ -240,6 +243,93 @@ let USERS = [
 ];
 
 /* ══════════════════════════════════════════
+   官網優惠設定：誰可以編輯（2026-10-14）
+   名單存在「官網優惠系統」自己的後端（Google 登入驗證身分才能改），不掛在上面這份使用者名單，
+   因為這份名單的讀取不需登入、寫入也只靠前端帶的 adminEmail，不適合拿來決定「誰能改對外官網」。
+   這一段出任何狀況都不影響上面原本的權限管理功能。
+══════════════════════════════════════════ */
+const PROMO_GAS_PROD = 'https://script.google.com/macros/s/AKfycbzat5pnRBRCqFp3txu4tHEVEeP8PymkuCdkvXP4NyveozlwnXw9mskGQ3uabV9_qu8Hvg/exec';
+const PROMO_GAS_URL = (/^(127\.0\.0\.1|localhost)$/.test(location.hostname) && new URLSearchParams(location.search).get('promogas')) || PROMO_GAS_PROD;
+const GOOGLE_CLIENT_ID = '777948523832-8qfmjk689e35f02crqjp35kg47j4kcgn.apps.googleusercontent.com';
+let PROMO = { state: 'loading', editors: new Set(), msg: '' };   // state: loading | ok | error
+
+const escHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+function promoCell(u) {
+  try {
+    const em = (u.email || '').toLowerCase();
+    if (em === ADMIN_EMAIL) return '<span class="perm-tag on" style="white-space:nowrap" title="Gary 固定有權限">可編輯（固定）</span>';
+    if (PROMO.state === 'loading') return '<span class="status-label">讀取中…</span>';
+    if (PROMO.state === 'error') return `<span class="status-label" style="white-space:nowrap" title="${escHtml(PROMO.msg)}">— 無法讀取</span>`;
+    const on = PROMO.editors.has(em);
+    return `<span class="perm-tag ${on ? 'on' : 'off'}" style="cursor:pointer;white-space:nowrap" data-email="${escHtml(em)}"
+              onclick="togglePromo(this.dataset.email)" title="點一下切換：可以／不可以修改官網的公告列與彈窗">${on ? '可編輯' : '不可'}</span>`;
+  } catch (e) { return ''; }
+}
+
+function promoDecodeJwt(t) { try { const b = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'); return JSON.parse(decodeURIComponent(atob(b).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); } catch (e) { return {}; } }
+function promoLoadGsi() { return new Promise((res, rej) => { if (window.google && window.google.accounts && window.google.accounts.id) return res(); const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+let promoReauthP = null;
+function promoReauth() {
+  if (promoReauthP) return promoReauthP;
+  promoReauthP = new Promise((resolve, reject) => {
+    const box = document.createElement('div');
+    box.className = 'modal-backdrop';
+    box.innerHTML = '<div class="modal"><h3>請再確認一次登入</h3><p style="font-size:.85rem;margin-bottom:14px">為了安全，修改官網優惠的權限前要再確認身分（登入約 1 小時過期）。請按下面的按鈕用 Google 登入同一個帳號。</p><div id="promo-gbtn" style="min-height:44px"></div><div class="modal-actions"><button class="btn-cancel" id="promo-reauth-x">取消</button></div></div>';
+    document.body.appendChild(box);
+    const done = fn => v => { box.remove(); promoReauthP = null; fn(v); };
+    const ok = done(resolve), no = done(reject);
+    box.querySelector('#promo-reauth-x').onclick = () => no(new Error('已取消登入'));
+    promoLoadGsi().then(() => {
+      google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: resp => {
+        const p = promoDecodeJwt(resp.credential);
+        if ((p.email || '').toLowerCase() !== ADMIN_EMAIL) { no(new Error('請用 ' + ADMIN_EMAIL + ' 登入')); return; }
+        try { const s = JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null'); if (s) { s.idToken = resp.credential; localStorage.setItem('oringo_auth_v1', JSON.stringify(s)); } } catch (e) {}
+        ok(resp.credential);
+      } });
+      google.accounts.id.renderButton(box.querySelector('#promo-gbtn'), { type: 'standard', size: 'large', theme: 'outline', locale: 'zh-TW' });
+    }).catch(() => no(new Error('無法載入 Google 登入，請檢查網路')));
+  });
+  return promoReauthP;
+}
+async function promoToken(force) {
+  let s = null; try { s = JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null'); } catch (e) {}
+  if (!force && s && s.idToken) { const p = promoDecodeJwt(s.idToken); if (p.exp && p.exp * 1000 - Date.now() > 90e3) return s.idToken; }
+  return promoReauth();
+}
+async function promoApi(action, payload, retried) {
+  const idToken = await promoToken(!!retried);
+  let text;
+  try {
+    const res = await fetch(PROMO_GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action, idToken }, payload || {})), redirect: 'follow' });
+    text = await res.text();
+  } catch (e) { throw new Error('連不上官網優惠系統的後端'); }
+  let d; try { d = JSON.parse(text); } catch (e) { throw new Error('官網優惠系統的後端沒有回應（可能尚未授權）'); }
+  if (!d.ok) { if (d.code === 'auth' && !retried) return promoApi(action, payload, true); throw new Error(d.error || '發生錯誤'); }
+  return d;
+}
+async function loadPromoEditors() {
+  PROMO = { state: 'loading', editors: new Set(), msg: '' }; renderTable();
+  try {
+    const d = await promoApi('adminEditorsGet');
+    PROMO = { state: 'ok', editors: new Set((d.editors || []).map(e => String(e).toLowerCase())), msg: '' };
+  } catch (e) { PROMO = { state: 'error', editors: new Set(), msg: e.message }; }
+  renderTable();
+}
+async function togglePromo(email) {
+  email = (email || '').toLowerCase();
+  if (!email || PROMO.state !== 'ok') return;
+  const allow = !PROMO.editors.has(email);
+  const who = (USERS.find(u => (u.email || '').toLowerCase() === email) || {}).name || email;
+  try {
+    const d = await promoApi('adminEditorsSet', { email, allow });
+    PROMO.editors = new Set((d.editors || []).map(e => String(e).toLowerCase()));
+    renderTable();
+    showToast(allow ? `✅ ${who} 現在可以修改官網優惠設定` : `✅ 已取消 ${who} 的官網優惠設定權限`);
+  } catch (e) { showToast('❌ ' + e.message); }
+}
+
+/* ══════════════════════════════════════════
    Admin 保護層（只有 ADMIN_EMAIL 可進）
 ══════════════════════════════════════════ */
 let currentAdminEmail = null;
@@ -260,6 +350,7 @@ function grantOrDenyAdmin() {
     renderStats();
     renderTable();
     loadFromGAS(); // 嘗試從 GAS 讀最新資料
+    loadPromoEditors(); // 官網優惠設定：誰可以編輯（來自官網優惠系統自己的後端）
   } else if (currentAdminEmail) {
     // 有登入但不是 admin
     document.getElementById('guard-msg').style.display = 'block';
@@ -367,6 +458,7 @@ function renderTable() {
           ${isManagerUser(u) ? '💰 主管' : '一般成員'}
         </span>
       </td>
+      <td>${promoCell(u)}</td>
       <td>
         <div class="status-toggle" onclick="toggleActive(${u.id},this)">
           <div class="toggle-switch ${u.active ? 'on' : ''}"></div>
