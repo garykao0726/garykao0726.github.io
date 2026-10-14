@@ -155,15 +155,12 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
     <button class="filter-btn" data-fin="general" onclick="setFinFilter(this,'general')">一般成員</button>
   </div>
 
-  <div id="promo-banner"></div>
-
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
           <th>姓名 / Email</th>
           <th>身分</th>
-          <th title="可以到 promo.html 修改官網的公告列與首頁彈窗（行銷部與主管）">官網優惠設定</th>
           <th>狀態</th>
           <th>操作</th>
         </tr>
@@ -278,42 +275,25 @@ function identityCell(u) {
         <option value="manager" ${idn === 'manager' ? 'selected' : ''}>💰 主管</option></select>`;
   } catch (e) { return ''; }
 }
-function promoCell(u) {
-  try {
-    const em = (u.email || '').toLowerCase(), idn = identityOf(u);
-    const nw = 'white-space:nowrap';
-    if (em === ADMIN_EMAIL) return `<span class="perm-tag on" style="${nw}" title="Gary 固定有權限">可編輯（固定）</span>`;
-    if (PROMO.state === 'loading') return '<span class="status-label">讀取中…</span>';
-    if (PROMO.state === 'error') return `<span class="status-label" style="${nw}" title="${escHtml(PROMO.msg)}">— 無法讀取</span>`;
-    if (idn === 'manager') {
-      return PROMO.editors.has(em)
-        ? `<span class="perm-tag on" style="${nw}">可編輯（主管）</span>`
-        : `<span class="perm-tag off" style="${nw};cursor:pointer;color:var(--rust)" data-email="${escHtml(em)}" onclick="syncPromo([this.dataset.email], true)" title="主管應有所有權限，但還沒開通官網優惠。點一下開通">待開通</span>`;
-    }
-    if (idn === 'marketing') return `<span class="perm-tag on" style="${nw}">可編輯（行銷部）</span>`;
-    return `<span class="perm-tag off" style="${nw}">不可</span>`;
-  } catch (e) { return ''; }
+// 官網優惠權限規則：身分是「主管」或「行銷部」＝可以開啟（Gary 固定可以）。不需要另外的按鈕或欄位。
+// 打開這一頁時自動把名單對齊後台使用者名單：啟用中的主管自動開通；已刪除或停用的人自動撤銷。
+let promoReconciled = false;
+function maybeReconcilePromo() {
+  if (promoReconciled || PROMO.state !== 'ok' || !USERS_LIVE) return;   // 要等「使用者名單」與「官網優惠名單」都載入成功
+  promoReconciled = true;
+  reconcilePromo();
 }
-// 主管應有所有權限：還沒進官網優惠名單的主管，在這裡提示並一鍵開通（由 Gary 明確按下才寫入）
-function pendingManagers() {
-  return USERS.filter(u => u.active && isManagerUser(u) && (u.email || '').toLowerCase() !== ADMIN_EMAIL && !PROMO.editors.has((u.email || '').toLowerCase()));
-}
-// 官網優惠名單裡、但已不在後台使用者名單的帳號（可能已離職被刪除）：以後台使用者名單為準，提示一鍵清掉
-function orphanEditors() {
-  if (PROMO.state !== 'ok' || !USERS_LIVE) return [];
-  const known = new Set(USERS.map(u => (u.email || '').toLowerCase()));
-  return [...PROMO.editors].filter(e => !known.has(e));
-}
-function renderPromoBanner() {
-  const el = document.getElementById('promo-banner'); if (!el) return;
-  const box = (color, html) => `<div style="background:#fff;border:1px solid var(--border);border-left:3px solid ${color};border-radius:8px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">${html}</div>`;
-  const p = PROMO.state === 'ok' ? pendingManagers() : [];
-  const o = orphanEditors();
-  el.innerHTML =
-    (p.length ? box('var(--rust)', `<span style="font-size:.85rem">有 <b>${p.length}</b> 位主管還沒開通「官網優惠設定」（主管應擁有所有權限）：${p.map(u => escHtml(u.name)).join('、')}</span>
-         <button class="btn-save" onclick="syncPromo(pendingManagers().map(u => u.email), true)">一鍵開通</button>`) : '') +
-    (o.length ? box('var(--brown)', `<span style="font-size:.85rem">官網優惠名單裡有 <b>${o.length}</b> 個帳號已不在使用者名單中（可能已離職，或是外部帳號）：${o.map(escHtml).join('、')}</span>
-         <button class="btn-save" onclick="syncPromo(orphanEditors(), false)">一鍵移除</button>`) : '');
+async function reconcilePromo() {
+  const lower = u => (u.email || '').toLowerCase();
+  const byEmail = new Map(USERS.map(u => [lower(u), u]));
+  const add = USERS.filter(u => u.active && isManagerUser(u) && lower(u) !== ADMIN_EMAIL && !PROMO.editors.has(lower(u))).map(lower);
+  const remove = [...PROMO.editors].filter(em => { const u = byEmail.get(em); return !u || !u.active; });
+  let ok = true;
+  if (add.length) ok = (await syncPromo(add, true)) && ok;
+  if (remove.length) ok = (await syncPromo(remove, false)) && ok;
+  if (ok && (add.length || remove.length)) {
+    showToast('✅ 已自動對齊官網優惠權限' + (add.length ? `：開通 ${add.length} 位主管` : '') + (remove.length ? `${add.length ? '、' : '：'}撤銷 ${remove.length} 位已離職／停用` : ''));
+  }
 }
 async function syncPromo(emails, allow) {
   if (PROMO.state !== 'ok') return false;
@@ -322,7 +302,7 @@ async function syncPromo(emails, allow) {
   try {
     const d = await promoApi('adminEditorsSet', { emails, allow: !!allow });
     PROMO.editors = new Set((d.editors || []).map(e => String(e).toLowerCase()));
-    renderStats(); renderTable(); renderPromoBanner();
+    renderStats(); renderTable();
     return true;
   } catch (e) { showToast('❌ 官網優惠權限同步失敗：' + e.message); loadPromoEditors(); return false; }
 }
@@ -337,7 +317,7 @@ async function setIdentity(id, val) {
   renderTable(); renderStats();
   await saveToGAS({ action: 'updateUser', id: u.id, name: u.name, email: u.email, role: u.role, perms: u.perms });
   if (PROMO.state === 'ok') await syncPromo([em], val !== 'general');   // 行銷部與主管：開通；一般成員：撤銷
-  renderStats(); renderTable(); renderPromoBanner();
+  renderStats(); renderTable();
 }
 async function loadPromoEditors() {
   PROMO = { state: 'loading', editors: new Set(), msg: '' }; renderTable(); renderStats();
@@ -345,7 +325,8 @@ async function loadPromoEditors() {
     const d = await promoApi('adminEditorsGet');
     PROMO = { state: 'ok', editors: new Set((d.editors || []).map(e => String(e).toLowerCase())), msg: '' };
   } catch (e) { PROMO = { state: 'error', editors: new Set(), msg: e.message }; }
-  renderStats(); renderTable(); renderPromoBanner();
+  renderStats(); renderTable();
+  maybeReconcilePromo();
 }
 
 function promoDecodeJwt(t) { try { const b = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'); return JSON.parse(decodeURIComponent(atob(b).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); } catch (e) { return {}; } }
@@ -439,7 +420,7 @@ async function loadFromGAS() {
       renderStats();
       renderTable();
       maybeShowMigrateBtn();
-      renderPromoBanner();   // 使用者名單更新後，待開通的主管要重算（兩個載入同時進行，誰先完成不一定）
+      maybeReconcilePromo();   // 使用者名單載入成功後，若官網優惠名單也好了，就自動對齊（兩個載入同時進行，誰後完成誰觸發）
     }
   } catch(e) {
     console.warn('GAS 連線失敗，使用本機資料', e);
@@ -517,7 +498,6 @@ function renderTable() {
         </div>
       </td>
       <td>${identityCell(u)}</td>
-      <td>${promoCell(u)}</td>
       <td>
         <div class="status-toggle" onclick="toggleActive(${u.id},this)">
           <div class="toggle-switch ${u.active ? 'on' : ''}"></div>
@@ -555,7 +535,7 @@ async function toggleActive(id, toggleEl) {
   renderStats();
   await saveToGAS({ action: 'updateActive', id, value: user.active });
   if (!user.active) await syncPromo([user.email], false);   // 停用的人不能再改官網
-  renderStats(); renderTable(); renderPromoBanner();
+  renderStats(); renderTable();
 }
 
 /* ══════════════════════════════════════════
@@ -647,7 +627,6 @@ async function saveUser() {
   closeModal();
   renderStats();
   renderTable();
-  renderPromoBanner();
 }
 
 async function deleteUser(id) {
@@ -659,7 +638,6 @@ async function deleteUser(id) {
   await syncPromo([user.email], false);   // 移除的人不能再改官網
   renderStats();
   renderTable();
-  renderPromoBanner();
 }
 
 /* ══════════════════════════════════════════
