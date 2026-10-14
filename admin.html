@@ -132,7 +132,7 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
   <div class="page-hd">
     <div>
       <div class="page-title">使用者權限管理</div>
-      <div class="page-sub">名單內的人都能看所有儀表板頁面；只有「主管」身分才能進財務報表；「官網優惠設定」欄勾選的人，才能修改官網的公告列與首頁彈窗。變更後立即生效。</div>
+      <div class="page-sub">名單內的人都能看所有儀表板頁面。身分三種：「一般成員」；「行銷部」＝一般成員＋可修改官網的公告列與首頁彈窗；「主管」＝所有權限（含財務報表與官網優惠）。變更後立即生效。</div>
     </div>
     <div style="display:flex;gap:10px">
       <button class="btn-add" id="migrate-btn" style="display:none;background:var(--rust)" onclick="migrateExistingUsers()">
@@ -151,8 +151,11 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
     <input class="filter-input" type="text" id="search-input" placeholder="搜尋姓名或 Email…" oninput="renderTable()">
     <button class="filter-btn active" data-fin="all" onclick="setFinFilter(this,'all')">全部</button>
     <button class="filter-btn" data-fin="finance" onclick="setFinFilter(this,'finance')">主管</button>
+    <button class="filter-btn" data-fin="marketing" onclick="setFinFilter(this,'marketing')">行銷部</button>
     <button class="filter-btn" data-fin="general" onclick="setFinFilter(this,'general')">一般成員</button>
   </div>
+
+  <div id="promo-banner"></div>
 
   <div class="table-wrap">
     <table>
@@ -160,7 +163,7 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
         <tr>
           <th>姓名 / Email</th>
           <th>身分</th>
-          <th title="勾選的人可以到 promo.html 修改官網的公告列與首頁彈窗">官網優惠設定</th>
+          <th title="可以到 promo.html 修改官網的公告列與首頁彈窗（行銷部與主管）">官網優惠設定</th>
           <th>狀態</th>
           <th>操作</th>
         </tr>
@@ -193,7 +196,8 @@ body{background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--text
       <label class="form-label">身分</label>
       <select class="form-select" id="f-role">
         <option value="general">一般成員 — 可看除財務外的所有頁面</option>
-        <option value="manager">主管 — 額外可看財務報表</option>
+        <option value="marketing">行銷部 — 一般成員，外加可修改官網公告列與彈窗</option>
+        <option value="manager">主管 — 所有權限（含財務報表、官網優惠）</option>
       </select>
     </div>
     <div class="modal-actions">
@@ -255,16 +259,84 @@ let PROMO = { state: 'loading', editors: new Set(), msg: '' };   // state: loadi
 
 const escHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 
+// 身分（顯示用）：主管＝perms.finance；行銷部＝在官網優惠名單裡的非主管；其餘為一般成員
+function identityOf(u) {
+  if (isManagerUser(u)) return 'manager';
+  const em = (u.email || '').toLowerCase();
+  if (PROMO.state === 'ok' && em !== ADMIN_EMAIL && PROMO.editors.has(em)) return 'marketing';
+  return 'general';
+}
+function identityCell(u) {
+  try {
+    const idn = identityOf(u), okMk = PROMO.state === 'ok';
+    const fixed = (u.email || '').toLowerCase() === ADMIN_EMAIL;
+    return `<select class="form-select" style="width:auto;min-width:118px;padding:6px 10px;font-size:.78rem" aria-label="身分"
+              ${fixed ? 'disabled title="管理員固定"' : ''} onchange="setIdentity(${u.id}, this.value)">
+        <option value="general" ${idn === 'general' ? 'selected' : ''}>一般成員</option>
+        <option value="marketing" ${idn === 'marketing' ? 'selected' : ''} ${okMk ? '' : 'disabled'}>行銷部</option>
+        <option value="manager" ${idn === 'manager' ? 'selected' : ''}>💰 主管</option></select>`;
+  } catch (e) { return ''; }
+}
 function promoCell(u) {
   try {
-    const em = (u.email || '').toLowerCase();
-    if (em === ADMIN_EMAIL) return '<span class="perm-tag on" style="white-space:nowrap" title="Gary 固定有權限">可編輯（固定）</span>';
+    const em = (u.email || '').toLowerCase(), idn = identityOf(u);
+    const nw = 'white-space:nowrap';
+    if (em === ADMIN_EMAIL) return `<span class="perm-tag on" style="${nw}" title="Gary 固定有權限">可編輯（固定）</span>`;
     if (PROMO.state === 'loading') return '<span class="status-label">讀取中…</span>';
-    if (PROMO.state === 'error') return `<span class="status-label" style="white-space:nowrap" title="${escHtml(PROMO.msg)}">— 無法讀取</span>`;
-    const on = PROMO.editors.has(em);
-    return `<span class="perm-tag ${on ? 'on' : 'off'}" style="cursor:pointer;white-space:nowrap" data-email="${escHtml(em)}"
-              onclick="togglePromo(this.dataset.email)" title="點一下切換：可以／不可以修改官網的公告列與彈窗">${on ? '可編輯' : '不可'}</span>`;
+    if (PROMO.state === 'error') return `<span class="status-label" style="${nw}" title="${escHtml(PROMO.msg)}">— 無法讀取</span>`;
+    if (idn === 'manager') {
+      return PROMO.editors.has(em)
+        ? `<span class="perm-tag on" style="${nw}">可編輯（主管）</span>`
+        : `<span class="perm-tag off" style="${nw};cursor:pointer;color:var(--rust)" data-email="${escHtml(em)}" onclick="syncPromo([this.dataset.email], true)" title="主管應有所有權限，但還沒開通官網優惠。點一下開通">待開通</span>`;
+    }
+    if (idn === 'marketing') return `<span class="perm-tag on" style="${nw}">可編輯（行銷部）</span>`;
+    return `<span class="perm-tag off" style="${nw}">不可</span>`;
   } catch (e) { return ''; }
+}
+// 主管應有所有權限：還沒進官網優惠名單的主管，在這裡提示並一鍵開通（由 Gary 明確按下才寫入）
+function pendingManagers() {
+  return USERS.filter(u => u.active && isManagerUser(u) && (u.email || '').toLowerCase() !== ADMIN_EMAIL && !PROMO.editors.has((u.email || '').toLowerCase()));
+}
+function renderPromoBanner() {
+  const el = document.getElementById('promo-banner'); if (!el) return;
+  const p = PROMO.state === 'ok' ? pendingManagers() : [];
+  el.innerHTML = p.length
+    ? `<div style="background:#fff;border:1px solid var(--border);border-left:3px solid var(--rust);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+         <span style="font-size:.85rem">有 <b>${p.length}</b> 位主管還沒開通「官網優惠設定」（主管應擁有所有權限）：${p.map(u => escHtml(u.name)).join('、')}</span>
+         <button class="btn-save" onclick="syncPromo(pendingManagers().map(u => u.email), true)">一鍵開通</button></div>`
+    : '';
+}
+async function syncPromo(emails, allow) {
+  if (PROMO.state !== 'ok') return false;
+  emails = (emails || []).map(e => String(e || '').toLowerCase()).filter(e => e && e !== ADMIN_EMAIL);
+  if (!emails.length) return true;
+  try {
+    const d = await promoApi('adminEditorsSet', { emails, allow: !!allow });
+    PROMO.editors = new Set((d.editors || []).map(e => String(e).toLowerCase()));
+    renderStats(); renderTable(); renderPromoBanner();
+    return true;
+  } catch (e) { showToast('❌ 官網優惠權限同步失敗：' + e.message); loadPromoEditors(); return false; }
+}
+async function setIdentity(id, val) {
+  const u = USERS.find(x => x.id === id); if (!u) return;
+  const em = (u.email || '').toLowerCase();
+  if (em === ADMIN_EMAIL) { renderTable(); return; }
+  if (val === 'marketing' && PROMO.state !== 'ok') { showToast('❌ 官網優惠系統目前連不上，暫時無法設定「行銷部」'); renderTable(); return; }
+  const mgr = val === 'manager';
+  u.perms = permsFor(mgr);
+  u.role = mgr ? 'manager' : 'general';
+  renderTable(); renderStats();
+  await saveToGAS({ action: 'updateUser', id: u.id, name: u.name, email: u.email, role: u.role, perms: u.perms });
+  if (PROMO.state === 'ok') await syncPromo([em], val !== 'general');   // 行銷部與主管：開通；一般成員：撤銷
+  renderStats(); renderTable(); renderPromoBanner();
+}
+async function loadPromoEditors() {
+  PROMO = { state: 'loading', editors: new Set(), msg: '' }; renderTable(); renderStats();
+  try {
+    const d = await promoApi('adminEditorsGet');
+    PROMO = { state: 'ok', editors: new Set((d.editors || []).map(e => String(e).toLowerCase())), msg: '' };
+  } catch (e) { PROMO = { state: 'error', editors: new Set(), msg: e.message }; }
+  renderStats(); renderTable(); renderPromoBanner();
 }
 
 function promoDecodeJwt(t) { try { const b = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'); return JSON.parse(decodeURIComponent(atob(b).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); } catch (e) { return {}; } }
@@ -307,26 +379,6 @@ async function promoApi(action, payload, retried) {
   let d; try { d = JSON.parse(text); } catch (e) { throw new Error('官網優惠系統的後端沒有回應（可能尚未授權）'); }
   if (!d.ok) { if (d.code === 'auth' && !retried) return promoApi(action, payload, true); throw new Error(d.error || '發生錯誤'); }
   return d;
-}
-async function loadPromoEditors() {
-  PROMO = { state: 'loading', editors: new Set(), msg: '' }; renderTable();
-  try {
-    const d = await promoApi('adminEditorsGet');
-    PROMO = { state: 'ok', editors: new Set((d.editors || []).map(e => String(e).toLowerCase())), msg: '' };
-  } catch (e) { PROMO = { state: 'error', editors: new Set(), msg: e.message }; }
-  renderTable();
-}
-async function togglePromo(email) {
-  email = (email || '').toLowerCase();
-  if (!email || PROMO.state !== 'ok') return;
-  const allow = !PROMO.editors.has(email);
-  const who = (USERS.find(u => (u.email || '').toLowerCase() === email) || {}).name || email;
-  try {
-    const d = await promoApi('adminEditorsSet', { email, allow });
-    PROMO.editors = new Set((d.editors || []).map(e => String(e).toLowerCase()));
-    renderTable();
-    showToast(allow ? `✅ ${who} 現在可以修改官網優惠設定` : `✅ 已取消 ${who} 的官網優惠設定權限`);
-  } catch (e) { showToast('❌ ' + e.message); }
 }
 
 /* ══════════════════════════════════════════
@@ -377,6 +429,7 @@ async function loadFromGAS() {
       renderStats();
       renderTable();
       maybeShowMigrateBtn();
+      renderPromoBanner();   // 使用者名單更新後，待開通的主管要重算（兩個載入同時進行，誰先完成不一定）
     }
   } catch(e) {
     console.warn('GAS 連線失敗，使用本機資料', e);
@@ -415,6 +468,7 @@ function renderStats() {
     { num: USERS.length,                              label: '總使用者' },
     { num: active.length,                             label: '已啟用' },
     { num: USERS.filter(isManagerUser).length,        label: '主管' },
+    { num: PROMO.state === 'ok' ? USERS.filter(u => identityOf(u) === 'marketing').length : '—', label: '行銷部' },
   ];
   document.getElementById('stats-row').innerHTML = stats.map(s => `
     <div class="stat-card">
@@ -438,8 +492,8 @@ function setFinFilter(btn, f) {
 function renderTable() {
   const q = document.getElementById('search-input').value.toLowerCase();
   const filtered = USERS.filter(u => {
-    const mgr = isManagerUser(u);
-    const matchFin = finFilter === 'all' || (finFilter === 'finance' ? mgr : !mgr);
+    const idn = identityOf(u);
+    const matchFin = finFilter === 'all' || (finFilter === 'finance' ? idn === 'manager' : finFilter === 'marketing' ? idn === 'marketing' : idn === 'general');
     const matchQ = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
     return matchFin && matchQ;
   });
@@ -452,12 +506,7 @@ function renderTable() {
           <span class="user-email">${u.email}</span>
         </div>
       </td>
-      <td>
-        <span class="perm-tag finance ${isManagerUser(u) ? 'on' : 'off'}" style="cursor:pointer"
-              onclick="toggleManager(${u.id})" title="點一下切換主管／一般成員">
-          ${isManagerUser(u) ? '💰 主管' : '一般成員'}
-        </span>
-      </td>
+      <td>${identityCell(u)}</td>
       <td>${promoCell(u)}</td>
       <td>
         <div class="status-toggle" onclick="toggleActive(${u.id},this)">
@@ -495,6 +544,8 @@ async function toggleActive(id, toggleEl) {
   lbl.textContent = user.active ? '已啟用' : '已停用';
   renderStats();
   await saveToGAS({ action: 'updateActive', id, value: user.active });
+  if (!user.active) await syncPromo([user.email], false);   // 停用的人不能再改官網
+  renderStats(); renderTable(); renderPromoBanner();
 }
 
 /* ══════════════════════════════════════════
@@ -529,9 +580,11 @@ async function migrateExistingUsers() {
    Modal
 ══════════════════════════════════════════ */
 let editingId = null;
+let editingOldEmail = null;
 
 function openAddModal() {
   editingId = null;
+  editingOldEmail = null;
   document.getElementById('modal-title').textContent = '新增使用者';
   document.getElementById('f-name').value = '';
   document.getElementById('f-email').value = '';
@@ -543,10 +596,11 @@ function openEditModal(id) {
   const user = USERS.find(u => u.id === id);
   if (!user) return;
   editingId = id;
+  editingOldEmail = (user.email || '').toLowerCase();
   document.getElementById('modal-title').textContent = '編輯使用者';
   document.getElementById('f-name').value = user.name;
   document.getElementById('f-email').value = user.email;
-  document.getElementById('f-role').value = isManagerUser(user) ? 'manager' : 'general';
+  document.getElementById('f-role').value = identityOf(user);
   document.getElementById('modal').style.display = 'flex';
 }
 
@@ -557,11 +611,13 @@ function closeModal() {
 async function saveUser() {
   const name  = document.getElementById('f-name').value.trim();
   const email = document.getElementById('f-email').value.trim().toLowerCase();
-  const role  = document.getElementById('f-role').value; // 'manager' | 'general'
-  const perms = permsFor(role === 'manager');
+  const roleSel = document.getElementById('f-role').value; // 'manager' | 'marketing' | 'general'
+  const role  = roleSel === 'manager' ? 'manager' : 'general';   // 後端只認 主管／一般；「行銷部」記在官網優惠系統的名單
+  const perms = permsFor(roleSel === 'manager');
 
   if (!name || !email) { alert('請填寫姓名與 Email'); return; }
   if (!email.includes('@')) { alert('Email 格式不正確'); return; }
+  if (roleSel === 'marketing' && PROMO.state !== 'ok') { alert('官網優惠系統目前連不上，暫時無法設定「行銷部」。請稍後再試。'); return; }
 
   if (editingId) {
     const user = USERS.find(u => u.id === editingId);
@@ -573,9 +629,15 @@ async function saveUser() {
     await saveToGAS({ action: 'addUser', name, email, role, perms });
   }
 
+  if (PROMO.state === 'ok') {
+    if (editingOldEmail && editingOldEmail !== email) await syncPromo([editingOldEmail], false);
+    await syncPromo([email], roleSel !== 'general');   // 行銷部與主管都可以改官網優惠
+  }
+
   closeModal();
   renderStats();
   renderTable();
+  renderPromoBanner();
 }
 
 async function deleteUser(id) {
@@ -584,8 +646,10 @@ async function deleteUser(id) {
   if (!confirm(`確定要移除「${user.name}」的存取權限嗎？`)) return;
   USERS = USERS.filter(u => u.id !== id);
   await saveToGAS({ action: 'deleteUser', id });
+  await syncPromo([user.email], false);   // 移除的人不能再改官網
   renderStats();
   renderTable();
+  renderPromoBanner();
 }
 
 /* ══════════════════════════════════════════
