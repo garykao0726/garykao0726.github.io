@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜官網優惠設定</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{
+  --green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;
+  --rust:#A54A1A;--brown:#8D5531;
+  --bg:#F5EDE3;--surface:#fff;--surface2:#FAF5EF;
+  --border:rgba(40,66,52,.12);--border2:rgba(40,66,52,.24);
+  --text:#212121;--text-sub:#757575;--title:#284234;
+  --pos:#1F6B3A;--pos-bg:#E6F1EA;--neg:#D32F2F;
+  --shadow-float:0 2px 12px rgba(0,39,33,.08);
+  --radius:4px;--radius-lg:8px;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--s8:64px;--s9:96px;
+  --mono:'Space Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* ── Header ── */
+.hdr{position:sticky;top:0;z-index:100;background:var(--sand-light);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 var(--s5);border-bottom:2px solid var(--green)}
+.brand{display:flex;align-items:center;gap:var(--s3)}
+.brand-name{font-family:var(--mono);font-size:13px;letter-spacing:.1em;color:var(--green)}
+.brand-sep{width:1px;height:16px;background:var(--border2)}
+.brand-sub{font-size:12px;color:var(--text-sub);letter-spacing:.04em}
+.hdr-r{display:flex;align-items:center;gap:var(--s3)}
+.hdr-user{font-family:var(--mono);font-size:11px;color:var(--text-sub);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hdr-back{display:inline-flex;align-items:center;min-height:44px;font-size:13px;color:var(--green);text-decoration:none;padding:0 var(--s2)}
+.hdr-back:hover{text-decoration:underline;text-underline-offset:4px}
+
+/* ── Layout ── */
+.wrap{max-width:1280px;margin:0 auto;padding:var(--s6) var(--s5) var(--s8)}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s5);flex-wrap:wrap;margin-bottom:var(--s5)}
+.pagehead h1{font-size:30px;font-weight:600;color:var(--title);line-height:1.2;letter-spacing:-.01em}
+.pagehead .sub{font-size:13px;color:var(--text-sub);margin-top:var(--s2);letter-spacing:.02em}
+
+.switch{display:flex;align-items:center;gap:var(--s4);background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--green);border-radius:var(--radius-lg);padding:var(--s3) var(--s4)}
+.switch-txt{display:flex;flex-direction:column;gap:2px}
+.switch-label{font-size:12px;color:var(--text-sub);letter-spacing:.04em}
+.switch-state{font-size:15px;font-weight:600;color:var(--title)}
+.switch-state.off{color:var(--brown)}
+
+.banner{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--brown);border-radius:var(--radius-lg);padding:var(--s3) var(--s4);font-size:14px;color:var(--text);margin-bottom:var(--s5)}
+.banner.ok{border-left-color:var(--green)}
+.banner b{font-weight:600}
+
+.layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:var(--s6);align-items:start}
+.side{position:sticky;top:70px;max-height:calc(100vh - 86px);overflow:auto;padding-right:2px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);text-decoration:none;min-height:44px;padding:0 var(--s4);border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--title);font-size:14px;font-weight:500;white-space:nowrap;transition:background .15s,border-color .15s}
+.btn:hover{border-color:var(--green);background:var(--surface2)}
+.btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+.btn.primary:hover{background:var(--dark);border-color:var(--dark)}
+.btn.danger{color:var(--neg);border-color:rgba(211,47,47,.35)}
+.btn.danger:hover{background:var(--neg);color:#fff;border-color:var(--neg)}
+.btn.text{border-color:transparent;background:none;padding:0 var(--s3)}
+.btn.text:hover{background:rgba(40,66,52,.06)}
+.btn:disabled{opacity:.45;cursor:default;pointer-events:none}
+.btn svg,.ico svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.iconbtn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text-sub)}
+.iconbtn:hover{border-color:var(--green);color:var(--green)}
+.iconbtn:disabled{opacity:.35;pointer-events:none}
+.iconbtn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── Side ── */
+.tabs{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface);overflow:hidden;margin-bottom:var(--s4)}
+.tab{min-height:44px;border:0;background:none;font-size:14px;font-weight:500;color:var(--text-sub);border-bottom:3px solid transparent}
+.tab+.tab{border-left:1px solid var(--border)}
+.tab[aria-selected="true"]{color:var(--title);border-bottom-color:var(--green);background:var(--surface2)}
+.add{width:100%;margin-bottom:var(--s4)}
+.list{display:flex;flex-direction:column;gap:var(--s2)}
+.item{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s3);width:100%;text-align:left;background:var(--surface);border:1px solid var(--border);border-left:3px solid transparent;border-radius:var(--radius-lg);padding:var(--s3) var(--s4);min-height:44px}
+.item:hover{border-color:var(--border2);border-left-color:var(--sand)}
+.item.active{border-color:var(--border2);border-left-color:var(--green);background:var(--surface2)}
+.item-main{display:flex;flex-direction:column;min-width:0}
+.item-title{font-size:14px;font-weight:500;color:var(--title);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-all}
+.item-sub{font-size:12px;color:var(--text-sub);margin-top:2px}
+.item-side{display:flex;flex-direction:column;align-items:flex-end;gap:var(--s1);flex:none}
+.badge{display:inline-block;font-size:12px;font-weight:500;padding:0 var(--s2);border-radius:var(--radius);line-height:22px;white-space:nowrap}
+.b-live{background:var(--pos-bg);color:var(--pos)}
+.b-scheduled{background:var(--sand);color:var(--brown)}
+.b-draft{background:var(--surface);color:var(--text-sub);border:1px dashed var(--border2);line-height:20px}
+.b-ended,.b-off{background:#EEE;color:#777}
+.winner{font-size:11px;color:var(--green);letter-spacing:.04em;font-weight:500}
+.empty{padding:var(--s6) var(--s4);text-align:left;color:var(--text-sub);font-size:14px;border:1px dashed var(--border2);border-radius:var(--radius-lg)}
+
+/* ── Editor ── */
+.editor{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--green);border-radius:var(--radius-lg);min-width:0}
+.ed-head{display:flex;align-items:center;justify-content:space-between;gap:var(--s4);padding:var(--s4) var(--s5);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.ed-head h2{font-size:20px;font-weight:500;color:var(--title);line-height:1.3}
+.ed-head .meta{font-size:12px;color:var(--text-sub)}
+.ed-body{padding:var(--s5)}
+.sec{padding-bottom:var(--s6);margin-bottom:var(--s6);border-bottom:1px solid var(--border)}
+.sec:last-of-type{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.sec-title{font-size:13px;font-weight:600;color:var(--brown);letter-spacing:.08em;margin-bottom:var(--s4)}
+.field{margin-bottom:var(--s4)}
+.field:last-child{margin-bottom:0}
+.lbl{display:block;font-size:13px;font-weight:500;color:var(--title);margin-bottom:var(--s1)}
+.hint{font-size:12px;color:var(--text-sub);margin-top:var(--s1);line-height:1.6}
+.inp,.sel,.txa{width:100%;min-height:44px;padding:var(--s2) var(--s3);border:1px solid var(--border2);border-radius:var(--radius);background:#fff;color:var(--text);font-size:15px}
+.txa{min-height:88px;resize:vertical;line-height:1.6}
+.inp:focus,.sel:focus,.txa:focus{border-color:var(--green);outline:none;box-shadow:0 0 0 2px rgba(40,66,52,.15)}
+.inp.bad{border-color:var(--neg)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4)}
+.mono{font-family:var(--mono);font-size:13px}
+
+.seg-ctl{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden}
+.seg-ctl button{min-height:44px;border:0;background:#fff;font-size:14px;color:var(--text-sub)}
+.seg-ctl button+button{border-left:1px solid var(--border)}
+.seg-ctl button[aria-pressed="true"]{background:var(--green);color:#fff}
+
+.check{display:flex;align-items:flex-start;gap:var(--s3);min-height:44px;padding:var(--s2) 0;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--green);flex:none}
+.check span{font-size:14px;line-height:1.5}
+.check small{display:block;font-size:12px;color:var(--text-sub);margin-top:2px}
+
+/* 公告段落 */
+.segrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) auto;gap:var(--s2);align-items:start;margin-bottom:var(--s3)}
+.segrow .tools{display:flex;gap:var(--s1)}
+.seg-note{font-size:12px;color:var(--text-sub);margin-top:var(--s2)}
+
+/* 色彩 */
+.swatches{display:flex;flex-wrap:wrap;gap:var(--s2);margin-bottom:var(--s3)}
+.sw{display:inline-flex;align-items:center;gap:var(--s2);min-height:44px;padding:0 var(--s3);border:1px solid var(--border2);border-radius:var(--radius);background:#fff;font-size:13px}
+.sw i{display:block;width:28px;height:20px;border-radius:2px;border:1px solid rgba(0,0,0,.15)}
+.sw:hover,.sw[aria-pressed="true"]{border-color:var(--green);box-shadow:inset 0 0 0 1px var(--green)}
+.colors{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4)}
+.colorpick{display:flex;gap:var(--s2)}
+.colorpick input[type=color]{width:52px;height:44px;padding:2px;border:1px solid var(--border2);border-radius:var(--radius);background:#fff;flex:none}
+.contrast{font-size:12px;color:var(--text-sub);margin-top:var(--s2)}
+.contrast.low{color:var(--brown)}
+
+/* 圖片上傳 */
+.img-drop{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:var(--s2);min-height:160px;border:1.5px dashed var(--border2);border-radius:var(--radius-lg);background:var(--surface2);padding:var(--s4);text-align:center;cursor:pointer;color:var(--text-sub);font-size:14px;transition:border-color .15s,background .15s}
+.img-drop:hover,.img-drop.over{border-color:var(--green);background:#fff}
+.img-drop.has{padding:var(--s2);min-height:0;cursor:default;background:#fff}
+.img-drop img{display:block;max-width:100%;max-height:260px;border-radius:2px}
+.img-drop .ico svg{width:24px;height:24px}
+.img-meta{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s2);font-size:12px;color:var(--text-sub)}
+.img-meta .grow{flex:1}
+.prog{font-size:13px;color:var(--brown)}
+details.adv{margin-top:var(--s3)}
+details.adv summary{min-height:44px;display:flex;align-items:center;font-size:13px;color:var(--green);cursor:pointer}
+
+/* 預覽 */
+.pv{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--s4);margin-bottom:var(--s6)}
+.pv-grid{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:var(--s4);align-items:start}
+.pv-cap{font-size:12px;color:var(--text-sub);margin-bottom:var(--s2);letter-spacing:.04em}
+.pv-frame{border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;background:#fff;position:relative}
+.pv-nav{height:44px;background:var(--green);display:flex;align-items:center;padding:0 var(--s4);color:#E2CEB9;font-family:var(--mono);font-size:11px;letter-spacing:.14em}
+.pv-body{height:52px;background:repeating-linear-gradient(135deg,#f3ece3 0 8px,#f8f2ea 8px 16px)}
+.pv-bar{position:relative;display:flex;align-items:center;justify-content:center;min-height:36px;padding:6px 44px;background:var(--pb-bg,#B07040);color:var(--pb-fg,#E4DDD7);font:600 16px/1.45 'Noto Sans TC',sans-serif;letter-spacing:.02em;text-align:center}
+.pv-bar .ob-seg{display:inline-block;max-width:100%}
+.pv-bar a{color:inherit;text-decoration:none}
+.pv-bar .x{position:absolute;right:0;top:50%;transform:translateY(-50%);width:36px;height:36px;display:flex;align-items:center;justify-content:center;opacity:.75}
+.pv-bar .x svg{width:12px;height:12px;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;fill:none}
+.pv-phone .pv-frame{width:260px;max-width:100%}
+.pv-phone .pv-in{width:375px;zoom:.6933}                 /* 以 375px 手機實際版面排版，再縮小顯示，換行位置才跟真機一致 */
+.pv-phone .pv-bar{font-size:13px;line-height:1.4;padding:6px 40px;letter-spacing:0}
+.pv-phone .pv-nav{height:60px}
+.pv-pop{position:relative;aspect-ratio:16/10;background:#7a7168;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pv-pop::before{content:"";position:absolute;inset:0;background:rgba(20,14,10,.62)}
+.pv-pop .box{position:relative;width:46%;line-height:0}
+.pv-pop img{display:block;width:100%;height:auto;border-radius:2px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.pv-pop .none{position:relative;color:#E2CEB9;font-size:12px;line-height:1.5;text-align:center;padding:var(--s4)}
+.pv-pop .xx{position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;background:#fff;color:var(--green);display:flex;align-items:center;justify-content:center}
+.pv-pop .xx svg{width:8px;height:8px;stroke:currentColor;stroke-width:2;stroke-linecap:round;fill:none}
+.pv-phone .pv-pop{aspect-ratio:375/640}
+.pv-phone .pv-pop .box{width:92%}
+.pv-phone .pv-pop .xx{top:-12px;right:-6px;width:40px;height:40px}
+.pv-phone .pv-pop .xx svg{width:14px;height:14px}
+
+/* 動作列 */
+.actions{position:sticky;bottom:0;z-index:20;display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;padding:var(--s3) var(--s5);background:rgba(255,255,255,.96);border-top:1px solid var(--border);border-radius:0 0 var(--radius-lg) var(--radius-lg)}
+.actions .grow{flex:1}
+.dirty{font-size:12px;color:var(--brown)}
+.errbox{display:none;margin:var(--s4) var(--s5) 0;padding:var(--s3) var(--s4);border:1px solid rgba(211,47,47,.35);border-left:3px solid var(--neg);border-radius:var(--radius);background:#fff;color:var(--neg);font-size:14px}
+.errbox.show{display:block}
+
+/* 空狀態／載入 */
+.ed-empty{padding:var(--s8) var(--s5);color:var(--text-sub);font-size:14px;max-width:420px}
+.ed-empty b{display:block;font-size:20px;font-weight:500;color:var(--title);margin-bottom:var(--s2)}
+.loading{padding:var(--s9) var(--s5);color:var(--text-sub);font-size:14px;text-align:center}
+.fatal{max-width:560px;margin:var(--s8) auto;background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--green);border-radius:var(--radius-lg);padding:var(--s6)}
+.fatal h2{font-size:20px;font-weight:500;color:var(--title);margin-bottom:var(--s3)}
+.fatal p{font-size:14px;color:var(--text);margin-bottom:var(--s4)}
+
+/* Modal / toast */
+.mback{position:fixed;inset:0;z-index:1000;background:rgba(0,39,33,.45);display:flex;align-items:center;justify-content:center;padding:var(--s4)}
+.modal{background:#fff;border-radius:var(--radius-lg);padding:var(--s5);width:100%;max-width:440px;box-shadow:var(--shadow-float);border-top:3px solid var(--green)}
+.modal h3{font-size:18px;font-weight:500;color:var(--title);margin-bottom:var(--s3)}
+.modal p{font-size:14px;color:var(--text);margin-bottom:var(--s4);line-height:1.7}
+.modal .macts{display:flex;gap:var(--s2);justify-content:flex-end;flex-wrap:wrap}
+#toast{position:fixed;left:50%;bottom:var(--s5);transform:translateX(-50%);z-index:1100;display:flex;flex-direction:column;gap:var(--s2);align-items:center;pointer-events:none;width:calc(100% - 32px);max-width:480px}
+.toast{background:var(--green);color:#fff;padding:var(--s3) var(--s4);border-radius:var(--radius);font-size:14px;box-shadow:var(--shadow-float);animation:tin .2s ease}
+.toast.err{background:var(--neg)}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* 窄螢幕：清單與編輯分頁式切換 */
+.only-narrow{display:none}
+@media (max-width:1023px){
+  .layout{grid-template-columns:1fr;gap:var(--s4)}
+  .layout[data-view="list"] .editor{display:none}
+  .layout[data-view="edit"] .side{display:none}
+  .only-narrow{display:inline-flex}
+  .side{position:static;max-height:none;overflow:visible}
+  .pv-grid{grid-template-columns:1fr}
+  .pv-phone{max-width:260px}
+  body[data-view="edit"] .pagehead,body[data-view="edit"] #banner{display:none}
+  body[data-view="edit"] .wrap{padding-top:var(--s4)}
+}
+@media (max-width:767px){
+  .hdr{padding:0 var(--s4)}
+  .hdr-user{display:none}
+  .wrap{padding:var(--s5) var(--s4) var(--s7)}
+  .pagehead h1{font-size:26px}
+  .switch{width:100%;justify-content:space-between}
+  .ed-head{padding:var(--s4)}
+  .ed-body{padding:var(--s4)}
+  .actions{padding:var(--s3) var(--s4)}
+  .row2,.colors{grid-template-columns:1fr}
+  .segrow{grid-template-columns:1fr auto}
+  .segrow .seg-link{grid-column:1 / 2;grid-row:2}
+  .segrow .tools{grid-column:2;grid-row:1 / 3;flex-direction:column}
+  .pv-desktop{display:none}
+  .pv-phone{max-width:none}
+  .actions .btn.primary{flex:1 1 auto}
+  .actions .btn:not(.primary){width:44px;padding:0;flex:none}
+  .actions .btn .t,.actions .grow{display:none}
+  .actions .dirty{order:-1;width:100%}
+  .actions .dirty:empty{display:none}
+  .errbox{margin:var(--s3) var(--s4) 0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="brand">
+    <div class="brand-name">ORINGO</div>
+    <div class="brand-sep"></div>
+    <div class="brand-sub">官網優惠設定</div>
+  </div>
+  <div class="hdr-r">
+    <span class="hdr-user" id="who"></span>
+    <a href="/" class="hdr-back">← 中控中心</a>
+  </div>
+</div>
+
+<main class="wrap">
+  <div id="app"><div class="loading">載入中…</div></div>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="modalRoot"></div>
+
+<script>
+/* ============================================================
+   官網優惠設定（網頁後台）
+   讀寫走 Apps Script 網頁應用（promo-system/gas/Code.gs），每次請求帶 Google 登入的 ID token，後端會驗證並比對「誰可以用後台」名單。
+   ============================================================ */
+(function () {
+  'use strict';
+  const PROD_GAS = 'https://script.google.com/macros/s/AKfycbzat5pnRBRCqFp3txu4tHEVEeP8PymkuCdkvXP4NyveozlwnXw9mskGQ3uabV9_qu8Hvg/exec';
+  const IS_LOCAL = /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+  const GAS_URL = (IS_LOCAL && new URLSearchParams(location.search).get('gas')) || PROD_GAS;   // 只有本機開發才允許改後端網址
+  const CLIENT_ID = '777948523832-8qfmjk689e35f02crqjp35kg47j4kcgn.apps.googleusercontent.com';
+  const SESSION_KEY = 'oringo_auth_v1';
+
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  const ICON = {
+    plus: '<path d="M8 3v10M3 8h10"/>', x: '<path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/>',
+    up: '<path d="M8 13V3M4 7l4-4 4 4"/>', down: '<path d="M8 3v10M4 9l4 4 4-4"/>',
+    upload: '<path d="M8 11V2M4.5 5.5L8 2l3.5 3.5M2.5 10v3.5h11V10"/>', copy: '<rect x="5.5" y="5.5" width="8" height="8" rx="1"/><path d="M10.5 5.5v-3h-8v8h3"/>',
+    trash: '<path d="M2.5 4.5h11M6 4.5V2.5h4v2M4 4.5l.7 9h6.6l.7-9"/>', ext: '<path d="M9 2.5h4.5V7M13.5 2.5L7 9M6 4H3v9h9v-3"/>',
+    top: '<path d="M3 2.5h10M8 14V5.5M4.5 9L8 5.5 11.5 9"/>', back: '<path d="M10 3L5 8l5 5"/>', sheet: '<rect x="2.5" y="2.5" width="11" height="11" rx="1"/><path d="M2.5 6.5h11M2.5 10h11M7 6.5v7"/>'
+  };
+  const ico = n => `<span class="ico"><svg viewBox="0 0 16 16" aria-hidden="true">${ICON[n]}</svg></span>`;
+
+  const FREQ = [
+    ['每次造訪', '每次造訪', '訪客這次逛完（關掉分頁／重開瀏覽器）之後再來，就會再出現。'],
+    ['每天一次', '每天一次', '訪客看過（或關掉）後，24 小時內不會再出現。'],
+    ['每週一次', '每週一次', '訪客看過（或關掉）後，7 天內不會再出現。'],
+    ['只顯示一次', '只顯示一次', '同一位訪客只會看到一次，之後永遠不再出現（內容改過又算新的）。']
+  ];
+  const PRESETS = [
+    { n: '林果赭（目前）', bg: '#B07040', fg: '#E4DDD7' }, { n: '深綠', bg: '#284234', fg: '#F5EDE3' },
+    { n: '深棕', bg: '#371810', fg: '#E4DDD7' }, { n: '磚紅', bg: '#A54A1A', fg: '#FFFFFF' }, { n: '米白', bg: '#F5EDE3', fg: '#284234' }
+  ];
+  const STATE_TXT = { live: '上線中', scheduled: '排程中', ended: '已結束', draft: '草稿', off: '停用' };
+
+  const S = { tab: 'bar', data: { bar: [], popup: [] }, live: false, token: '', sheetUrl: '', siteUrl: 'https://www.oringoshoes.com', email: '',
+    sel: null, draft: null, dirty: false, saving: false, busy: 0, view: 'list' };
+
+  /* ---------- 登入／token ---------- */
+  function readSession() { try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; } }
+  function decodeJwt(t) { try { const b = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'); return JSON.parse(decodeURIComponent(atob(b).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); } catch (e) { return {}; } }
+  function sessionValid() { const s = readSession(); return !!(s && s.exp > Date.now() && s.email); }
+  function loadScript(src) { return new Promise((res, rej) => { if ($('script[src="' + src + '"]')) { res(); return; } const s = document.createElement('script'); s.src = src; s.async = true; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+
+  let reauthPromise = null;
+  function reauth() {
+    if (reauthPromise) return reauthPromise;
+    reauthPromise = new Promise((resolve, reject) => {
+      const root = $('#modalRoot');
+      root.innerHTML = `<div class="mback"><div class="modal" role="dialog" aria-modal="true" aria-label="重新登入"><h3>請再確認一次登入</h3><p>為了安全，每次要修改官網內容時都會確認身分，登入的有效時間約 1 小時。請按下面的按鈕用 Google 登入同一個帳號。</p><div id="gbtn" style="min-height:44px"></div><div class="macts" style="margin-top:16px"><button class="btn" id="reauthCancel">取消</button></div></div></div>`;
+      const done = (fn) => (v) => { root.innerHTML = ''; reauthPromise = null; fn(v); };
+      const ok = done(resolve), no = done(reject);
+      $('#reauthCancel').onclick = () => no(new Error('已取消登入'));
+      loadScript('https://accounts.google.com/gsi/client').then(() => {
+        window.google.accounts.id.initialize({ client_id: CLIENT_ID, callback: (resp) => {
+          const p = decodeJwt(resp.credential), s = readSession();
+          if (s && p.email && s.email && p.email.toLowerCase() !== s.email.toLowerCase()) { no(new Error('請用目前登入的同一個帳號（' + s.email + '）')); return; }
+          if (s) { s.idToken = resp.credential; try { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); } catch (e) {} }
+          ok(resp.credential);
+        } });
+        window.google.accounts.id.renderButton($('#gbtn'), { type: 'standard', size: 'large', theme: 'outline', text: 'sign_in_with', locale: 'zh-TW' });
+      }).catch(() => no(new Error('無法載入 Google 登入，請檢查網路後再試')));
+    });
+    return reauthPromise;
+  }
+  async function getIdToken(force) {
+    const s = readSession();
+    if (!force && s && s.idToken) { const p = decodeJwt(s.idToken); if (p.exp && p.exp * 1000 - Date.now() > 90e3) return s.idToken; }
+    return reauth();
+  }
+
+  /* ---------- API ---------- */
+  async function api(action, payload, retried) {
+    const idToken = await getIdToken(!!retried);
+    let res, text;
+    try {
+      res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action, idToken }, payload || {})) });
+      text = await res.text();
+    } catch (e) { throw mkErr('network', '連不上後台伺服器，請檢查網路後再試'); }
+    let data; try { data = JSON.parse(text); } catch (e) { throw mkErr('backend', '後台伺服器還沒準備好（可能尚未完成授權）。請洽 Gary 或 Claude。'); }
+    if (!data.ok) {
+      if (data.code === 'auth' && !retried) return api(action, payload, true);
+      throw mkErr(data.code || 'server', data.error || '發生錯誤');
+    }
+    return data;
+  }
+  function mkErr(code, msg) { const e = new Error(msg); e.code = code; return e; }
+
+  /* ---------- 小工具 ---------- */
+  function toast(msg, isErr) { const t = document.createElement('div'); t.className = 'toast' + (isErr ? ' err' : ''); t.textContent = msg; $('#toast').appendChild(t); setTimeout(() => t.remove(), isErr ? 6000 : 3800); }
+  function confirmBox(title, body, okLabel, danger) {
+    return new Promise(res => {
+      const root = $('#modalRoot');
+      root.innerHTML = `<div class="mback"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><h3>${esc(title)}</h3><p>${body}</p><div class="macts"><button class="btn" id="mNo">取消</button><button class="btn ${danger ? 'danger' : 'primary'}" id="mOk">${esc(okLabel)}</button></div></div></div>`;
+      const close = v => { root.innerHTML = ''; res(v); };
+      $('#mNo').onclick = () => close(false); $('#mOk').onclick = () => close(true); $('#mOk').focus();
+      $('.mback', root).addEventListener('click', e => { if (e.target.classList.contains('mback')) close(false); });
+    });
+  }
+  const todayStr = () => { const d = new Date(), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+  function fmtDT(s) { if (!s) return ''; const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(s); return m ? `${Number(m[2])}/${Number(m[3])} ${m[4]}:${m[5]}` : s; }
+  function fmtDate(s) { if (!s) return ''; const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(s); if (!m) return s; return (m[4] === '00' && m[5] === '00') ? `${Number(m[2])}/${Number(m[3])}` : `${Number(m[2])}/${Number(m[3])} ${m[4]}:${m[5]}`; }
+  function schedSummary(c) { if (!c.start && !c.end) return '不限期'; return (c.start ? fmtDate(c.start) : '現在') + ' – ' + (c.end ? fmtDate(c.end) : '不結束'); }
+  function lum(hex) { hex = hex.replace('#', ''); if (hex.length === 3) hex = hex.split('').map(c => c + c).join(''); const v = [0, 2, 4].map(i => { const x = parseInt(hex.substr(i, 2), 16) / 255; return x <= .03928 ? x / 12.92 : Math.pow((x + .055) / 1.055, 2.4); }); return .2126 * v[0] + .7152 * v[1] + .0722 * v[2]; }
+  function contrast(a, b) { if (!/^#[0-9a-f]{6}$/i.test(a) || !/^#[0-9a-f]{6}$/i.test(b)) return 0; const l1 = lum(a), l2 = lum(b); return (Math.max(l1, l2) + .05) / (Math.min(l1, l2) + .05); }
+  const safeUrl = u => /^(https?:\/\/|\/(?!\/))/i.test(String(u || '').trim());
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const blank = type => type === 'bar'
+    ? { rid: '', status: '草稿', start: '', end: '', segments: [{ text: '', link: '' }], bg: '#B07040', fg: '#E4DDD7', closable: true, newTab: true, freq: '每次造訪', only: '', exclude: '/en/', note: '', state: 'draft' }
+    : { rid: '', status: '草稿', start: '', end: '', img: '', imgM: '', link: '', newTab: false, alt: '', delay: 1, freq: '每次造訪', only: '/', exclude: '/en/', note: '', state: 'draft' };
+  const titleOf = (type, c) => type === 'bar' ? (c.segments.map(s => s.text).filter(Boolean).join('｜') || '（還沒有文字）') : (c.alt || (c.img ? '彈窗圖片' : '（還沒有圖片）'));
+
+  /* ---------- 載入 ---------- */
+  async function load() {
+    S.email = (readSession() || {}).email || '';
+    $('#who').textContent = S.email;
+    $('#app').innerHTML = '<div class="loading">載入中…</div>';
+    try {
+      const d = await api('adminGet');
+      S.data = d.campaigns; S.live = d.live; S.token = d.previewToken; S.sheetUrl = d.sheetUrl; S.siteUrl = d.siteUrl || S.siteUrl; S.email = d.user.email;
+      $('#who').textContent = S.email;
+      buildShell();
+      pickDefault();
+      renderAll();
+    } catch (e) { fatal(e); }
+  }
+  function fatal(e) {
+    const forb = e.code === 'forbidden';
+    $('#app').innerHTML = `<div class="fatal"><h2>${forb ? '你還沒有使用這個後台的權限' : '載入失敗'}</h2><p>${esc(e.message)}</p>${forb ? '' : '<button class="btn primary" id="retry">再試一次</button>'}</div>`;
+    const r = $('#retry'); if (r) r.onclick = load;
+  }
+
+  /* ---------- 外殼 ---------- */
+  function buildShell() {
+    $('#app').innerHTML = `
+      <section class="pagehead">
+        <div><h1>官網優惠設定</h1><p class="sub">頂部公告列與首頁彈窗。儲存後約 1～6 分鐘內官網更新；想馬上看，用「在官網預覽」。</p></div>
+        <div class="switch" id="switchBox"></div>
+      </section>
+      <div id="banner"></div>
+      <div class="layout" id="layout" data-view="list">
+        <aside class="side">
+          <div class="tabs" role="tablist" aria-label="活動類型">
+            <button class="tab" role="tab" data-tab="bar">頂部公告列</button>
+            <button class="tab" role="tab" data-tab="popup">首頁彈窗</button>
+          </div>
+          <button class="btn primary add" id="addBtn">${ico('plus')}<span id="addLbl">新增公告列</span></button>
+          <div class="list" id="list"></div>
+        </aside>
+        <section class="editor" id="editor" aria-live="off"></section>
+      </div>`;
+    $$('.tab').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+    $('#addBtn').addEventListener('click', () => startNew());
+  }
+
+  function renderAll() { renderSwitch(); renderBanner(); renderTabs(); renderList(); renderEditor(); setView(); }
+  function setView() { $('#layout').dataset.view = S.view; document.body.dataset.view = S.view; }
+
+  function renderSwitch() {
+    $('#switchBox').innerHTML = `<div class="switch-txt"><span class="switch-label">新系統接管官網</span><span class="switch-state ${S.live ? '' : 'off'}">${S.live ? '已開啟' : '關閉中'}</span></div>
+      <button class="btn ${S.live ? '' : 'primary'}" id="swBtn">${S.live ? '關閉' : '開啟'}</button>`;
+    $('#swBtn').onclick = toggleSwitch;
+  }
+  function renderBanner() {
+    $('#banner').innerHTML = S.live
+      ? `<div class="banner ok"><b>新系統已接管官網。</b>下面標示「目前顯示」的活動，就是訪客現在看到的。</div>`
+      : `<div class="banner"><b>總開關關閉中：</b>官網訪客還看不到這裡的內容（Zotabox 照舊運作）。用「在官網預覽」確認沒問題後，再按「開啟」正式接管。</div>`;
+  }
+  function renderTabs() {
+    $$('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === S.tab)));
+    $('#addLbl').textContent = S.tab === 'bar' ? '新增公告列' : '新增彈窗';
+  }
+  function renderList() {
+    const items = S.data[S.tab];
+    const el = $('#list');
+    if (!items.length) { el.innerHTML = `<div class="empty">還沒有${S.tab === 'bar' ? '公告列' : '彈窗'}活動。按上面的「新增」開始。</div>`; return; }
+    el.innerHTML = items.map(c => `
+      <button class="item ${S.sel === c.rid ? 'active' : ''}" data-rid="${esc(c.rid)}">
+        <span class="item-main"><span class="item-title">${esc(titleOf(S.tab, c))}</span><span class="item-sub">${esc(schedSummary(c))} · ${esc(c.freq)}</span></span>
+        <span class="item-side"><span class="badge b-${c.state}">${STATE_TXT[c.state] || ''}</span>${c.winner ? `<span class="winner">${S.live ? '目前顯示' : '開啟後顯示'}</span>` : ''}</span>
+      </button>`).join('');
+    $$('.item', el).forEach(b => b.addEventListener('click', () => select(b.dataset.rid)));
+  }
+
+  /* ---------- 選取／新增 ---------- */
+  function pickDefault() {
+    const items = S.data[S.tab];
+    const first = items.find(c => c.winner) || items[0];
+    S.sel = first ? first.rid : null; S.draft = first ? clone(first) : null; S.dirty = false;
+    S.view = 'list';
+  }
+  async function guardDirty() { if (!S.dirty) return true; return confirmBox('有尚未儲存的變更', '離開這裡會放棄剛剛的修改，確定嗎？', '放棄修改', true); }
+  async function select(rid) {
+    if (rid !== S.sel && !(await guardDirty())) return;
+    const c = S.data[S.tab].find(x => x.rid === rid); if (!c) return;
+    S.sel = rid; S.draft = clone(c); S.dirty = false; S.view = 'edit'; renderList(); renderEditor(); setView(); window.scrollTo({ top: 0 });
+  }
+  async function startNew(from) {
+    if (!(await guardDirty())) return;
+    S.sel = '__new'; S.draft = from ? Object.assign(clone(from), { rid: '', status: '草稿', state: 'draft', winner: false }) : blank(S.tab); S.dirty = !!from; S.view = 'edit';
+    renderList(); renderEditor(); setView(); window.scrollTo({ top: 0 });
+  }
+  async function switchTab(t) {
+    if (t === S.tab) return;
+    if (!(await guardDirty())) return;
+    S.tab = t; pickDefault(); S.view = 'list'; renderAll();
+  }
+
+  /* ---------- 編輯區 ---------- */
+  function markDirty() { if (!S.dirty) { S.dirty = true; const d = $('#dirtyFlag'); if (d) d.textContent = '有尚未儲存的變更'; } }
+  function renderEditor() {
+    const ed = $('#editor'), c = S.draft;
+    if (!c) { ed.innerHTML = `<div class="ed-empty"><b>從左邊選一個活動，或新增一個</b>每個活動可以設定內容、排程和顯示規則。</div>`; return; }
+    const isNew = S.sel === '__new', bar = S.tab === 'bar';
+    ed.innerHTML = `
+      <div class="ed-head">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0">
+          <button class="btn text only-narrow" id="backBtn">${ico('back')}清單</button>
+          <div><h2>${isNew ? '新增' : '編輯'}${bar ? '公告列' : '彈窗'}</h2><div class="meta">${isNew ? '儲存後才會出現在清單' : '編號 ' + esc(c.rid)}</div></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" id="pvBtn">${ico('ext')}在官網預覽</button>
+          <a class="btn" href="${esc(S.sheetUrl)}" target="_blank" rel="noopener">${ico('sheet')}試算表</a>
+        </div>
+      </div>
+      <div class="errbox" id="errbox" role="alert"></div>
+      <div class="ed-body">
+        <div class="pv" id="pv"></div>
+        ${bar ? barFields(c) : popupFields(c)}
+        <div class="sec">
+          <div class="sec-title">上線與排程</div>
+          <div class="field"><span class="lbl">狀態</span>
+            <div class="seg-ctl" id="statusCtl">${['上線', '草稿', '停用'].map(s => `<button type="button" data-v="${s}" aria-pressed="${c.status === s}">${s}</button>`).join('')}</div>
+            <div class="hint" id="statusHint"></div></div>
+          <div class="row2">
+            <div class="field"><label class="lbl" for="fStart">開始時間</label><input class="inp mono" type="datetime-local" id="fStart" value="${esc(c.start)}"><div class="hint"><button type="button" class="btn text" id="startNow" style="min-height:44px;padding:0">設成現在</button> ・ <button type="button" class="btn text" id="startClr" style="min-height:44px;padding:0">清除（馬上）</button></div></div>
+            <div class="field"><label class="lbl" for="fEnd">結束時間</label><input class="inp mono" type="datetime-local" id="fEnd" value="${esc(c.end)}"><div class="hint"><button type="button" class="btn text" id="endClr" style="min-height:44px;padding:0">清除（不結束）</button> ・ 只選日期（00:00）會算到當天結束</div></div>
+          </div>
+          <div class="field"><label class="lbl" for="fFreq">${bar ? '訪客按 X 關閉後，多久再出現' : '訪客看過之後，多久再出現'}</label>
+            <select class="sel" id="fFreq">${FREQ.map(f => `<option value="${f[0]}" ${c.freq === f[0] ? 'selected' : ''}>${f[1]}</option>`).join('')}</select>
+            <div class="hint" id="freqHint"></div></div>
+        </div>
+        <div class="sec">
+          <div class="sec-title">顯示在哪些頁面</div>
+          <div class="field"><label class="lbl" for="fScope">顯示範圍</label>
+            <select class="sel" id="fScope">
+              <option value="all" ${scopeOf(c) === 'all' ? 'selected' : ''}>全站</option>
+              <option value="home" ${scopeOf(c) === 'home' ? 'selected' : ''}>只有首頁</option>
+              <option value="custom" ${scopeOf(c) === 'custom' ? 'selected' : ''}>自訂頁面…</option></select></div>
+          <div class="field" id="onlyWrap" ${scopeOf(c) === 'custom' ? '' : 'hidden'}><label class="lbl" for="fOnly">只顯示在這些頁面（一行一個）</label>
+            <textarea class="txa mono" id="fOnly" rows="3" placeholder="/categories/*&#10;/pages/notice">${esc(c.only)}</textarea>
+            <div class="hint">/ 是首頁；寫 /pages/ 之類是「網址包含」；結尾加 * 是「開頭是」。</div></div>
+          <div class="field"><label class="lbl" for="fExclude">不顯示在這些頁面（一行一個）</label>
+            <textarea class="txa mono" id="fExclude" rows="2" placeholder="/en/">${esc(c.exclude)}</textarea>
+            <div class="hint">預設 /en/：英文版頁面不顯示（跟 Zotabox 一樣）。</div></div>
+          <div class="field"><label class="lbl" for="fNote">備註（只給自己看）</label><input class="inp" id="fNote" maxlength="200" value="${esc(c.note)}" placeholder="例：雙11檔期"></div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="saveBtn">儲存</button>
+        <span class="dirty" id="dirtyFlag">${S.dirty ? '有尚未儲存的變更' : ''}</span>
+        <span class="grow"></span>
+        ${isNew ? '' : `<button class="btn" id="dupBtn" aria-label="複製這個活動" title="複製">${ico('copy')}<span class="t">複製</span></button>
+        <button class="btn" id="topBtn" aria-label="設為最優先" title="設為最優先（同時有多則上線時，這則優先顯示）">${ico('top')}<span class="t">設為最優先</span></button>
+        <button class="btn danger" id="delBtn" aria-label="刪除這個活動" title="刪除">${ico('trash')}<span class="t">刪除</span></button>`}
+      </div>`;
+    bindEditor();
+    renderPreview(); renderHints(); renderContrast();
+  }
+  const scopeOf = c => { const o = String(c.only || '').trim(); return !o ? 'all' : (o === '/' ? 'home' : 'custom'); };
+
+  function barFields(c) {
+    return `
+      <div class="sec">
+        <div class="sec-title">公告內容</div>
+        <div id="segs">${segHtml(c)}</div>
+        <button type="button" class="btn" id="addSeg">${ico('plus')}新增一段</button>
+        <div class="seg-note">每一段之間會自動加上「｜」。手機螢幕窄的時候，只會在段落之間換行，不會把一句話切開。連結留空就只顯示文字。</div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">外觀與行為</div>
+        <div class="swatches" id="swatches">${PRESETS.map((p, i) => `<button type="button" class="sw" data-i="${i}" aria-pressed="${c.bg.toLowerCase() === p.bg.toLowerCase() && c.fg.toLowerCase() === p.fg.toLowerCase()}"><i style="background:${p.bg}"></i>${esc(p.n)}</button>`).join('')}</div>
+        <div class="colors">
+          <div class="field"><label class="lbl" for="fBg">底色</label><div class="colorpick"><input type="color" id="fBgC" value="${esc(c.bg)}" aria-label="底色選色"><input class="inp mono" id="fBg" value="${esc(c.bg)}" maxlength="7"></div></div>
+          <div class="field"><label class="lbl" for="fFg">文字色</label><div class="colorpick"><input type="color" id="fFgC" value="${esc(c.fg)}" aria-label="文字色選色"><input class="inp mono" id="fFg" value="${esc(c.fg)}" maxlength="7"></div></div>
+        </div>
+        <div class="contrast" id="contrast"></div>
+        <label class="check"><input type="checkbox" id="fClosable" ${c.closable ? 'checked' : ''}><span>訪客可以按 X 關閉<small>只會對按的那位訪客隱藏，不影響這裡的設定。</small></span></label>
+        <label class="check"><input type="checkbox" id="fNewTab" ${c.newTab ? 'checked' : ''}><span>連結用新分頁開啟<small>目前 Zotabox 公告列的連結都是新分頁。</small></span></label>
+      </div>`;
+  }
+  function segHtml(c) {
+    return c.segments.map((s, i) => `
+      <div class="segrow" data-i="${i}">
+        <div><label class="lbl" for="st${i}">${i === 0 ? '文字' : '文字 ' + (i + 1)}</label><input class="inp" id="st${i}" data-f="text" maxlength="60" value="${esc(s.text)}" placeholder="例：台灣2500免運"></div>
+        <div class="seg-link"><label class="lbl" for="sl${i}">連結（選填）</label><input class="inp mono" id="sl${i}" data-f="link" value="${esc(s.link)}" placeholder="https://www.oringoshoes.com/pages/…"></div>
+        <div class="tools" style="padding-top:22px">
+          <button type="button" class="iconbtn" data-act="up" aria-label="上移" ${i === 0 ? 'disabled' : ''}><svg viewBox="0 0 16 16">${ICON.up}</svg></button>
+          <button type="button" class="iconbtn" data-act="down" aria-label="下移" ${i === c.segments.length - 1 ? 'disabled' : ''}><svg viewBox="0 0 16 16">${ICON.down}</svg></button>
+          <button type="button" class="iconbtn" data-act="del" aria-label="刪除這一段" ${c.segments.length === 1 ? 'disabled' : ''}><svg viewBox="0 0 16 16">${ICON.x}</svg></button>
+        </div>
+      </div>`).join('');
+  }
+  function imgField(kind, c) {
+    const url = kind === 'desktop' ? c.img : c.imgM, pre = (S.local && S.local[kind]) || url;
+    const label = kind === 'desktop' ? '電腦版圖片' : '手機版圖片（選填）';
+    const hint = kind === 'desktop' ? '建議 3:2（例 1320×880）。會自動壓成適合網頁的大小。' : '建議 4:5（例 1000×1250）。沒放的話，手機也用電腦版圖片。';
+    return `<div class="field" data-kind="${kind}"><span class="lbl">${label}</span>
+      <div class="img-drop ${pre ? 'has' : ''}" data-drop tabindex="0" role="button" aria-label="上傳${label}">${pre ? `<img src="${esc(pre)}" alt="${label}預覽">` : `<span class="ico">${'<svg viewBox="0 0 16 16">' + ICON.upload + '</svg>'}</span><span>拖曳圖片到這裡，或點一下選擇檔案</span><span class="hint">JPG／PNG／WebP</span>`}</div>
+      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden data-file>
+      <div class="img-meta"><span class="prog" data-prog></span><span data-info>${esc((S.imgInfo && S.imgInfo[kind]) || '')}</span><span class="grow"></span>
+        ${pre ? `<button type="button" class="btn" data-rep>更換</button><button type="button" class="btn" data-rm>移除</button>` : ''}</div>
+      <div class="hint">${hint}</div>
+      <details class="adv"><summary>改貼圖片網址</summary><input class="inp mono" data-url value="${esc(url)}" placeholder="https://…"></details></div>`;
+  }
+  function popupFields(c) {
+    return `
+      <div class="sec">
+        <div class="sec-title">彈窗內容</div>
+        <div class="row2">${imgField('desktop', c)}${imgField('mobile', c)}</div>
+        <div class="field" style="margin-top:16px"><label class="lbl" for="fLink">點圖片後跳到哪（選填）</label><input class="inp mono" id="fLink" value="${esc(c.link)}" placeholder="https://www.oringoshoes.com/pages/…"><div class="hint">空白＝圖片不能點。</div></div>
+        <label class="check"><input type="checkbox" id="fNewTab" ${c.newTab ? 'checked' : ''}><span>連結用新分頁開啟<small>目前 Zotabox 彈窗是同一個分頁開啟。</small></span></label>
+        <div class="row2">
+          <div class="field"><label class="lbl" for="fAlt">圖片說明</label><input class="inp" id="fAlt" maxlength="80" value="${esc(c.alt)}" placeholder="例：ORINGO 2026 SF"><div class="hint">給視障者的讀圖軟體念，也會當作清單上的名稱。</div></div>
+          <div class="field"><label class="lbl" for="fDelay">頁面開啟後延遲幾秒再出現</label><input class="inp mono" type="number" id="fDelay" min="0" max="30" step="0.5" value="${esc(c.delay)}"><div class="hint">0～30 秒。</div></div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- 綁定 ---------- */
+  function bindEditor() {
+    const c = S.draft, bar = S.tab === 'bar';
+    $('#backBtn') && ($('#backBtn').onclick = async () => { if (!(await guardDirty())) return; S.dirty = false; S.view = 'list'; setView(); window.scrollTo({ top: 0 }); });
+    $('#pvBtn').onclick = openPreview;
+    $('#saveBtn').onclick = save;
+    $('#dupBtn') && ($('#dupBtn').onclick = () => startNew(S.draft));
+    $('#topBtn') && ($('#topBtn').onclick = moveTop);
+    $('#delBtn') && ($('#delBtn').onclick = del);
+
+    $$('#statusCtl button').forEach(b => b.onclick = () => { c.status = b.dataset.v; $$('#statusCtl button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); renderHints(); markDirty(); });
+    $('#fStart').oninput = e => { c.start = e.target.value; markDirty(); renderHints(); };
+    $('#fEnd').oninput = e => { c.end = e.target.value; markDirty(); renderHints(); };
+    $('#startNow').onclick = () => { c.start = todayStr(); $('#fStart').value = c.start; markDirty(); renderHints(); };
+    $('#startClr').onclick = () => { c.start = ''; $('#fStart').value = ''; markDirty(); renderHints(); };
+    $('#endClr').onclick = () => { c.end = ''; $('#fEnd').value = ''; markDirty(); renderHints(); };
+    $('#fFreq').onchange = e => { c.freq = e.target.value; markDirty(); renderHints(); };
+    $('#fScope').onchange = e => { const v = e.target.value; $('#onlyWrap').hidden = v !== 'custom'; c.only = v === 'all' ? '' : v === 'home' ? '/' : ($('#fOnly').value.trim() || ''); markDirty(); };
+    $('#fOnly').oninput = e => { c.only = e.target.value; markDirty(); };
+    $('#fExclude').oninput = e => { c.exclude = e.target.value; markDirty(); };
+    $('#fNote').oninput = e => { c.note = e.target.value; markDirty(); };
+
+    if (bar) {
+      $('#addSeg').onclick = () => { c.segments.push({ text: '', link: '' }); $('#segs').innerHTML = segHtml(c); bindSegs(); markDirty(); renderPreview(); const last = $$('#segs [data-f="text"]').pop(); last && last.focus(); };
+      bindSegs();
+      $$('#swatches .sw').forEach(b => b.onclick = () => { const p = PRESETS[+b.dataset.i]; c.bg = p.bg; c.fg = p.fg; syncColors(); markDirty(); });
+      const hexBind = (txt, pick, key) => {
+        $(txt).oninput = e => { let v = e.target.value.trim(); if (v && v[0] !== '#') v = '#' + v; e.target.classList.toggle('bad', !/^#[0-9a-fA-F]{6}$/.test(v)); if (/^#[0-9a-fA-F]{6}$/.test(v)) { c[key] = v; $(pick).value = v; syncColors(true); markDirty(); } };
+        $(pick).oninput = e => { c[key] = e.target.value; $(txt).value = e.target.value; $(txt).classList.remove('bad'); syncColors(true); markDirty(); };
+      };
+      hexBind('#fBg', '#fBgC', 'bg'); hexBind('#fFg', '#fFgC', 'fg');
+      $('#fClosable').onchange = e => { c.closable = e.target.checked; markDirty(); renderPreview(); };
+      $('#fNewTab').onchange = e => { c.newTab = e.target.checked; markDirty(); };
+    } else {
+      $('#fLink').oninput = e => { c.link = e.target.value; markDirty(); };
+      $('#fNewTab').onchange = e => { c.newTab = e.target.checked; markDirty(); };
+      $('#fAlt').oninput = e => { c.alt = e.target.value; markDirty(); renderPreview(); };
+      $('#fDelay').oninput = e => { c.delay = e.target.value === '' ? '' : Number(e.target.value); markDirty(); };
+      $$('.field[data-kind]').forEach(bindImgField);
+    }
+  }
+  function bindSegs() {
+    const c = S.draft;
+    $$('#segs .segrow').forEach(row => {
+      const i = +row.dataset.i;
+      $$('input', row).forEach(inp => inp.oninput = e => { c.segments[i][inp.dataset.f] = e.target.value; markDirty(); renderPreview(); });
+      $$('[data-act]', row).forEach(b => b.onclick = () => {
+        const a = b.dataset.act, L = c.segments;
+        if (a === 'del' && L.length > 1) L.splice(i, 1);
+        else if (a === 'up' && i > 0) [L[i - 1], L[i]] = [L[i], L[i - 1]];
+        else if (a === 'down' && i < L.length - 1) [L[i + 1], L[i]] = [L[i], L[i + 1]];
+        $('#segs').innerHTML = segHtml(c); bindSegs(); markDirty(); renderPreview();
+      });
+    });
+  }
+  function syncColors(skipText) {
+    const c = S.draft;
+    if (!skipText) { $('#fBg').value = c.bg; $('#fBgC').value = c.bg; $('#fFg').value = c.fg; $('#fFgC').value = c.fg; $('#fBg').classList.remove('bad'); $('#fFg').classList.remove('bad'); }
+    $$('#swatches .sw').forEach(b => { const p = PRESETS[+b.dataset.i]; b.setAttribute('aria-pressed', String(p.bg.toLowerCase() === c.bg.toLowerCase() && p.fg.toLowerCase() === c.fg.toLowerCase())); });
+    renderPreview(); renderContrast();
+  }
+  function renderContrast() {
+    const el = $('#contrast'); if (!el) return;
+    const r = contrast(S.draft.bg, S.draft.fg);
+    el.className = 'contrast' + (r && r < 4.5 ? ' low' : '');
+    el.textContent = r ? `文字與底色對比 ${r.toFixed(1)}:1 ${r >= 4.5 ? '（清楚）' : '（偏低，在戶外或舊手機上可能不好讀；建議 4.5 以上）'}` : '';
+  }
+  function renderHints() {
+    const c = S.draft;
+    const sh = $('#statusHint'); if (!sh) return;
+    const parts = { '上線': '會依下面的排程顯示給訪客（總開關開啟時）。', '草稿': '訪客看不到；只有用「在官網預覽」才看得到。', '停用': '不顯示，也不參與排序。' };
+    let extra = '';
+    if (c.start && c.end && c.start >= c.end) extra = ' 結束時間要晚於開始時間。';
+    else if (c.start && c.status === '上線') extra = ` 將在 ${fmtDT(c.start)} 開始顯示。`;
+    sh.textContent = parts[c.status] + extra;
+    const f = FREQ.find(x => x[0] === c.freq); $('#freqHint').textContent = f ? f[2] : '';
+  }
+
+  /* ---------- 預覽 ---------- */
+  function barHtml(c) {
+    const segs = c.segments.filter(s => s.text.trim());
+    if (!segs.length) return '<span class="ob-seg" style="opacity:.6">（先填一段文字）</span>';
+    return segs.map((s, i) => `<span class="ob-seg">${s.link && safeUrl(s.link) ? `<a href="#" tabindex="-1">${esc(s.text)}</a>` : esc(s.text)}${i < segs.length - 1 ? '｜' : ''}</span>`).join('');
+  }
+  function renderPreview() {
+    const pv = $('#pv'), c = S.draft; if (!pv || !c) return;
+    if (S.tab === 'bar') {
+      const bar = `<div class="pv-bar" style="--pb-bg:${/^#[0-9a-f]{6}$/i.test(c.bg) ? c.bg : '#B07040'};--pb-fg:${/^#[0-9a-f]{6}$/i.test(c.fg) ? c.fg : '#E4DDD7'}"><span>${barHtml(c)}</span>${c.closable ? `<span class="x"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></span>` : ''}</div>`;
+      pv.innerHTML = `<div class="pv-grid"><div class="pv-desktop"><div class="pv-cap">電腦版（預覽框較窄，實際畫面更寬）</div><div class="pv-frame">${bar}<div class="pv-nav">ORINGO</div><div class="pv-body"></div></div></div>
+        <div class="pv-phone"><div class="pv-cap">手機版（375px 寬）</div><div class="pv-frame"><div class="pv-in">${bar}<div class="pv-nav">ORINGO</div><div class="pv-body"></div></div></div></div></div>`;
+    } else {
+      const d = (S.local && S.local.desktop) || c.img, m = (S.local && S.local.mobile) || c.imgM || d;
+      const pop = (src, hint) => src ? `<div class="pv-pop"><div class="box"><img src="${esc(src)}" alt=""><span class="xx"><svg viewBox="0 0 14 14"><path d="M1.5 1.5l11 11M12.5 1.5l-11 11"/></svg></span></div></div>` : `<div class="pv-pop"><div class="none">${hint}</div></div>`;
+      pv.innerHTML = `<div class="pv-grid"><div class="pv-desktop"><div class="pv-cap">電腦版</div><div class="pv-frame">${pop(d, '上傳電腦版圖片後，這裡會顯示彈窗長相')}</div></div>
+        <div class="pv-phone"><div class="pv-cap">手機版${c.imgM ? '' : '（沿用電腦版）'}</div><div class="pv-frame"><div class="pv-in">${pop(m, '尚無圖片')}</div></div></div></div>`;
+    }
+  }
+  function openPreview() {
+    if (S.dirty || S.sel === '__new') { toast('先按「儲存」（存成草稿也可以），再到官網預覽就會是最新內容。', true); return; }
+    window.open(`${S.siteUrl}/?promo_test=1&promo_preview=${encodeURIComponent(S.token)}`, '_blank', 'noopener');
+  }
+
+  /* ---------- 圖片上傳 ---------- */
+  S.local = {}; S.imgInfo = {};
+  function bindImgField(box) {
+    const kind = box.dataset.kind, drop = $('[data-drop]', box), file = $('[data-file]', box), c = S.draft;
+    const pick = () => file.click();
+    drop.addEventListener('click', e => { if (!drop.classList.contains('has')) pick(); });
+    drop.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && !drop.classList.contains('has')) { e.preventDefault(); pick(); } });
+    ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+    drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) handleFile(kind, f, box); });
+    file.onchange = () => { if (file.files[0]) handleFile(kind, file.files[0], box); file.value = ''; };
+    const rep = $('[data-rep]', box); rep && (rep.onclick = pick);
+    const rm = $('[data-rm]', box); rm && (rm.onclick = () => { if (kind === 'desktop') c.img = ''; else c.imgM = ''; delete S.local[kind]; delete S.imgInfo[kind]; markDirty(); rerenderImgs(); });
+    $('[data-url]', box).oninput = e => { const v = e.target.value.trim(); if (kind === 'desktop') c.img = v; else c.imgM = v; delete S.local[kind]; markDirty(); renderPreview(); };
+  }
+  function rerenderImgs() { const c = S.draft; $$('.field[data-kind]').forEach(b => { const k = b.dataset.kind; const n = document.createElement('div'); n.innerHTML = imgField(k, c); b.replaceWith(n.firstElementChild); }); $$('.field[data-kind]').forEach(bindImgField); renderPreview(); }
+
+  async function prepareImage(file, maxW) {
+    if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) throw new Error('只能上傳 JPG／PNG／WebP／GIF 圖片');
+    const bmp = await createImageBitmap(file);
+    const LIMIT = 2.6 * 1024 * 1024;
+    if (file.type === 'image/gif') { if (file.size > LIMIT) throw new Error('GIF 檔案太大了（請壓到 2.5MB 以內）'); return { blob: file, w: bmp.width, h: bmp.height }; }
+    const toBlob = (cv, type, q) => new Promise(r => cv.toBlob(r, type, q));
+    let w = Math.min(bmp.width, maxW), best = null;
+    for (let round = 0; round < 4; round++) {
+      const h = Math.round(bmp.height * w / bmp.width), cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      const g = cv.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(bmp, 0, 0, w, h);
+      for (const q of [.86, .78, .68, .56]) {
+        let b = await toBlob(cv, 'image/webp', q);
+        if (!b || b.type !== 'image/webp') {                       // 不支援 WebP 編碼（舊 Safari）→ 改 JPEG（透明處補白）
+          const c2 = document.createElement('canvas'); c2.width = w; c2.height = h; const g2 = c2.getContext('2d'); g2.fillStyle = '#fff'; g2.fillRect(0, 0, w, h); g2.drawImage(cv, 0, 0);
+          b = await toBlob(c2, 'image/jpeg', q + .02);
+        }
+        best = { blob: b, w, h }; if (b.size <= 700 * 1024) return best;
+      }
+      if (best.blob.size <= LIMIT) return best;
+      w = Math.round(w * .82);
+    }
+    if (best && best.blob.size <= LIMIT) return best;
+    throw new Error('這張圖壓不到 3MB 以內，請換一張或先縮小再上傳');
+  }
+  const b64 = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(blob); });
+  const kb = n => n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB';
+
+  async function handleFile(kind, file, box) {
+    const prog = $('[data-prog]', box), c = S.draft;
+    try {
+      prog.textContent = '壓縮中…';
+      const out = await prepareImage(file, kind === 'desktop' ? 1320 : 1000);
+      const localUrl = URL.createObjectURL(out.blob); S.local[kind] = localUrl;
+      prog.textContent = '上傳中…';
+      const r = await api('adminUpload', { kind, mime: out.blob.type, name: file.name, data: await b64(out.blob) });
+      if (kind === 'desktop') c.img = r.url; else c.imgM = r.url;
+      S.imgInfo[kind] = `${out.w}×${out.h}　${kb(file.size)} → ${kb(out.blob.size)}`;
+      markDirty(); rerenderImgs(); toast('圖片已上傳，記得按「儲存」。');
+    } catch (e) { prog.textContent = ''; delete S.local[kind]; toast(e.message, true); }
+  }
+
+  /* ---------- 儲存／動作 ---------- */
+  function showErr(msg) { const b = $('#errbox'); if (!b) return; b.textContent = msg || ''; b.classList.toggle('show', !!msg); if (msg) b.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  function problems(c) {
+    if (S.tab === 'bar') {
+      if (!c.segments.some(s => s.text.trim())) return '請至少填一段公告文字。';
+      const bad = c.segments.find(s => s.link.trim() && !safeUrl(s.link)); if (bad) return `「${bad.text || '未命名'}」的連結要用 https:// 或 / 開頭。`;
+    } else {
+      if (c.status !== '停用' && !safeUrl(c.img)) return '請先上傳電腦版圖片（或在「改貼圖片網址」貼上 https 網址）。';
+      if (c.imgM && !safeUrl(c.imgM)) return '手機版圖片網址要用 https:// 開頭。';
+      if (c.link && !safeUrl(c.link)) return '點擊連結要用 https:// 或 / 開頭。';
+    }
+    if (c.start && c.end && c.start >= c.end) return '結束時間必須晚於開始時間。';
+    return '';
+  }
+  async function save() {
+    if (S.saving) return;
+    const c = S.draft, p = problems(c); if (p) { showErr(p); return; }
+    showErr(''); S.saving = true; const btn = $('#saveBtn'); btn.disabled = true; btn.textContent = '儲存中…';
+    try {
+      const body = Object.assign({}, c); delete body.state; delete body.winner;
+      if (S.sel === '__new') body.rid = '';
+      const r = await api('adminSave', { type: S.tab, campaign: body });
+      const fresh = await api('adminGet'); S.data = fresh.campaigns; S.live = fresh.live;
+      S.sel = r.rid; const hit = S.data[S.tab].find(x => x.rid === r.rid); S.draft = hit ? clone(hit) : r.campaign; S.dirty = false; S.local = {}; S.imgInfo = {};
+      renderSwitch(); renderBanner(); renderList(); renderEditor();
+      toast(c.status === '上線' ? '已儲存。官網約 1～6 分鐘內更新。' : '已儲存（' + c.status + '）。');
+    } catch (e) { showErr(e.message); toast(e.message, true); S.saving = false; const b2 = $('#saveBtn'); if (b2) { b2.disabled = false; b2.textContent = '儲存'; } return; }
+    S.saving = false;
+  }
+  async function refresh(keepSel) {
+    const fresh = await api('adminGet'); S.data = fresh.campaigns; S.live = fresh.live;
+    if (!keepSel) pickDefault(); renderAll();
+  }
+  async function moveTop() {
+    if (S.dirty && !(await guardDirty())) return;
+    try { await api('adminMoveTop', { type: S.tab, rid: S.sel }); await refresh(true); const hit = S.data[S.tab].find(x => x.rid === S.sel); S.draft = hit ? clone(hit) : S.draft; S.dirty = false; renderList(); renderEditor(); toast('已移到最上面（最優先）。'); }
+    catch (e) { toast(e.message, true); }
+  }
+  async function del() {
+    const ok = await confirmBox('刪除這個活動？', `「${esc(titleOf(S.tab, S.draft))}」會從清單與試算表移除，無法復原。<br>只是暫時不想顯示的話，把狀態改成「停用」就好。`, '刪除', true);
+    if (!ok) return;
+    try { await api('adminDelete', { type: S.tab, rid: S.sel }); S.dirty = false; await refresh(false); S.view = 'list'; setView(); toast('已刪除。'); }
+    catch (e) { toast(e.message, true); }
+  }
+  async function toggleSwitch() {
+    const to = !S.live;
+    const ok = await confirmBox(to ? '要讓新系統接管官網嗎？' : '要關閉新系統嗎？',
+      to ? '開啟後，所有訪客都會看到這裡設定好的公告列與彈窗，並且會把 Zotabox 的同類內容藏起來。<br><br>請先確認：Zotabox 後台的 Header Bar 與促銷彈窗已經關掉。'
+         : '關閉後，訪客就看不到這裡的內容了（如果 Zotabox 還開著，會回到 Zotabox 的畫面）。約 1～6 分鐘內生效。',
+      to ? '開啟' : '關閉', !to);
+    if (!ok) return;
+    try { const r = await api('adminSwitch', { live: to }); S.live = r.live; renderSwitch(); renderBanner(); renderList(); toast(to ? '已開啟接管。' : '已關閉。'); }
+    catch (e) { toast(e.message, true); }
+  }
+
+  window.addEventListener('beforeunload', e => { if (S.dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+  /* ---------- 啟動 ---------- */
+  document.addEventListener('oriAuthComplete', load);
+  if (sessionValid()) load();
+})();
+</script>
+</body>
+</html>
