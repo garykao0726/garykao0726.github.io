@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜行銷顧問</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script>
+// 只有本機開發＋明確加 ?mock=1 才跳過登入、改用假資料（正式網址不會觸發）
+window.MOCK = ['localhost', '127.0.0.1'].indexOf(location.hostname) >= 0 && /[?&]mock=1/.test(location.search);
+if (window.MOCK) window.ORINGO_SKIP_AUTH = true;
+</script>
+<script src="auth.js"></script>
+<style>
+:root{
+  --green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;
+  --rust:#A54A1A;--gray-pink:#CFA294;--brown:#8D5531;
+  --bg:#F5EDE3;--surface:#fff;--surface2:#FAF5EF;
+  --border:rgba(40,66,52,.10);--border2:rgba(40,66,52,.22);
+  --text:#284234;--muted:#7d6f62;
+  --pos:#2f6b47;--neg:#b3321f;--warn:#9a6a12;
+  --hdr-h:54px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;line-height:1.7;display:flex;flex-direction:column;overflow:hidden}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--brown);outline-offset:2px}
+
+/* Header */
+.hdr{flex:0 0 var(--hdr-h);background:var(--green);display:flex;align-items:center;justify-content:space-between;padding:0 max(1rem,env(safe-area-inset-right)) 0 max(1rem,env(safe-area-inset-left));gap:12px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-name{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--sand);white-space:nowrap}
+.brand-sep{width:1px;height:16px;background:rgba(226,206,185,.3)}
+.brand-sub{font-size:12px;color:var(--gray-pink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.hdr-btn{font-size:11px;color:var(--gray-pink);text-decoration:none;font-family:'Space Mono',monospace;background:none;border:1px solid rgba(226,206,185,.25);padding:5px 12px;border-radius:14px}
+.hdr-btn:hover{background:rgba(226,206,185,.1);color:var(--sand)}
+.menu-btn{display:none}
+
+/* Layout */
+.app{flex:1;min-height:0;display:grid;grid-template-columns:300px 1fr}
+.side{background:var(--surface2);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+.main{display:flex;flex-direction:column;min-height:0;min-width:0}
+
+/* Sidebar */
+.side-top{padding:14px 14px 10px}
+.new-btn{width:100%;background:var(--green);color:var(--sand);border:none;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:500}
+.new-btn:hover{background:var(--dark)}
+.tabs{display:flex;gap:2px;padding:0 10px;border-bottom:1px solid var(--border)}
+.tab{flex:1;background:none;border:none;border-bottom:2px solid transparent;padding:9px 4px;font-size:13px;color:var(--muted)}
+.tab[aria-selected="true"]{color:var(--green);border-bottom-color:var(--green);font-weight:700}
+.side-body{flex:1;overflow-y:auto;padding:10px 12px 20px}
+.empty{color:var(--muted);font-size:13px;padding:18px 6px;text-align:center}
+.th-item{display:block;width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:8px;padding:8px 10px;margin-bottom:2px}
+.th-item:hover{background:var(--surface)}
+.th-item[aria-current="true"]{background:var(--surface);border-color:var(--border2)}
+.th-title{font-size:14px;color:var(--text);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.th-meta{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace}
+
+.note-item,.cro-item,.seo-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px}
+.note-item.done .note-text{text-decoration:line-through;color:var(--muted)}
+.note-row{display:flex;gap:8px;align-items:flex-start}
+.note-row input[type=checkbox]{margin-top:5px;accent-color:var(--green)}
+.note-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.badge{display:inline-block;font-size:11px;padding:0 8px;border-radius:99px;background:var(--sand-light);color:var(--brown);margin-right:6px;white-space:nowrap}
+.badge.decision{background:#dfe9e2;color:var(--green)}
+.form-box{background:var(--surface);border:1px dashed var(--border2);border-radius:10px;padding:10px;margin-bottom:10px;display:grid;gap:6px}
+.form-box input,.form-box select,.form-box textarea{font-family:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--border2);border-radius:6px;background:#fff;color:var(--text);width:100%}
+.form-box .row{display:flex;gap:6px}
+.small-btn{background:var(--green);color:var(--sand);border:none;border-radius:8px;padding:6px 12px;font-size:12px}
+.cro-when{font-size:11px;font-family:'Space Mono',monospace;color:var(--brown);letter-spacing:.04em}
+.cro-action{margin:2px 0 4px}
+.cro-metric{font-size:12px;color:var(--muted)}
+.cro-item select{margin-top:6px;font-family:inherit;font-size:12px;padding:3px 6px;border:1px solid var(--border2);border-radius:6px;background:#fff;color:var(--text)}
+.st-完成{border-left:3px solid var(--pos)} .st-進行中{border-left:3px solid var(--warn)} .st-擱置{border-left:3px solid #aaa}
+.seo-date{font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)}
+.seo-item a{color:var(--green);word-break:break-all}
+
+/* Chat */
+.chat{flex:1;overflow-y:auto;padding:22px max(18px,env(safe-area-inset-right)) 12px max(18px,env(safe-area-inset-left))}
+.chat-inner{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;flex-direction:column;max-width:100%}
+.msg.user{align-items:flex-end}
+.who{font-size:11px;color:var(--muted);margin:0 4px 2px;font-family:'Space Mono',monospace}
+.bubble{padding:11px 15px;border-radius:14px;font-size:15px;max-width:min(100%,680px);overflow-wrap:anywhere}
+.user .bubble{background:var(--sand);color:var(--dark);border-bottom-right-radius:4px;white-space:pre-wrap}
+.assistant .bubble{background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:4px}
+.bubble p{margin:0 0 8px}.bubble p:last-child{margin-bottom:0}
+.bubble ul,.bubble ol{margin:2px 0 8px 1.3em}.bubble li{margin-bottom:3px}
+.bubble h4{font-size:15px;margin:10px 0 4px}
+.bubble code{font-family:'Space Mono',monospace;font-size:12.5px;background:var(--sand-light);padding:0 5px;border-radius:4px}
+.bubble a{color:var(--green)}
+.tw{overflow-x:auto;margin:6px 0 10px;border:1px solid var(--border);border-radius:8px}
+.bubble table{border-collapse:collapse;font-size:13px;min-width:100%}
+.bubble th,.bubble td{padding:6px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;white-space:nowrap}
+.bubble th{background:var(--surface2);font-weight:500;font-size:12px;color:var(--muted)}
+.bubble tr:last-child td{border-bottom:0}
+.tools{font-size:11px;color:var(--muted);margin:3px 4px 0;display:flex;flex-wrap:wrap;gap:4px 8px}
+.tools span{background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:0 8px}
+.tools span.bad{color:var(--neg);border-color:var(--neg)}
+.err-bubble{background:#fbe9e5;border:1px solid #e7b3a8;color:var(--neg);border-radius:12px;padding:10px 14px;font-size:14px}
+.typing{color:var(--muted);font-size:13px;display:flex;gap:8px;align-items:center}
+.dots{display:inline-flex;gap:3px}.dots i{width:5px;height:5px;border-radius:50%;background:var(--brown);animation:b 1s infinite}.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.dots i{animation:none}}
+
+.welcome{max-width:640px;margin:6vh auto 0;text-align:center}
+.welcome h1{font-size:22px;color:var(--green);margin-bottom:6px;letter-spacing:.03em}
+.welcome p{font-size:14px;color:var(--muted);margin-bottom:18px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{background:var(--surface);border:1px solid var(--border2);color:var(--green);border-radius:99px;padding:7px 14px;font-size:13px}
+.chip:hover{background:var(--green);color:var(--sand)}
+
+.composer{flex:0 0 auto;border-top:1px solid var(--border);background:var(--bg);padding:10px max(18px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left))}
+.composer-inner{max-width:780px;margin:0 auto;display:flex;gap:8px;align-items:flex-end}
+.composer textarea{flex:1;resize:none;font-family:inherit;font-size:15px;line-height:1.6;border:1.5px solid var(--border2);border-radius:12px;padding:10px 14px;max-height:160px;background:var(--surface);color:var(--text);outline:none}
+.composer textarea:focus{border-color:var(--green)}
+.send{background:var(--green);color:var(--sand);border:none;border-radius:12px;width:48px;height:44px;font-size:18px}
+.send:disabled{opacity:.45;cursor:not-allowed}
+.foot{max-width:780px;margin:6px auto 0;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--dark);color:var(--sand);padding:8px 16px;border-radius:99px;font-size:13px;z-index:300}
+
+/* Mobile */
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;inset:var(--hdr-h) 0 0 0;z-index:150;display:none}
+  .side.open{display:flex}
+  .menu-btn{display:inline-block}
+  .brand-sub{display:none}
+  .bubble{font-size:15px}
+}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="brand">
+    <span class="brand-name">ORINGO</span><span class="brand-sep"></span><span class="brand-sub">行銷顧問</span>
+  </div>
+  <div class="hdr-r">
+    <button class="hdr-btn menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="side">討論串／待辦</button>
+    <a class="hdr-btn" href="index.html">← 中控中心</a>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="side" id="side" aria-label="討論串與行動清單">
+    <div class="side-top"><button class="new-btn" id="newBtn" type="button">＋ 新討論</button></div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-threads" aria-selected="true" data-tab="threads">討論串</button>
+      <button class="tab" role="tab" id="tab-notes" aria-selected="false" data-tab="notes">決議待辦</button>
+      <button class="tab" role="tab" id="tab-cro" aria-selected="false" data-tab="cro">轉換率</button>
+      <button class="tab" role="tab" id="tab-seo" aria-selected="false" data-tab="seo">SEO</button>
+    </div>
+    <div class="side-body" id="sideBody" role="tabpanel"></div>
+  </aside>
+
+  <main class="main">
+    <div class="chat" id="chat" aria-live="polite"><div class="chat-inner" id="chatInner"></div></div>
+    <div class="composer">
+      <div class="composer-inner">
+        <textarea id="input" rows="1" placeholder="問行銷顧問…（Enter 送出）" aria-label="訊息"></textarea>
+        <button class="send" id="sendBtn" type="button" aria-label="送出">➤</button>
+      </div>
+      <div class="foot"><span id="footL">整個行銷部共用同一個討論串清單，記得標註你是誰在問。</span><span id="footR"></span></div>
+    </div>
+  </main>
+</div>
+<div id="toastRoot"></div>
+<div id="modalRoot"></div>
+
+<script>
+(function () {
+  'use strict';
+  const CLIENT_ID = '777948523832-8qfmjk689e35f02crqjp35kg47j4kcgn.apps.googleusercontent.com';
+  const SESSION_KEY = 'oringo_auth_v1';
+  const PROD_GAS = 'https://script.google.com/macros/s/AKfycbx24u_tDFgzXdHKbaWnUEzzTi9k5TCXBHZ50_poL8c2-g-lmDIkGIcYi6085MCMQJzH/exec';
+  const IS_LOCAL = ['localhost', '127.0.0.1'].indexOf(location.hostname) >= 0;
+  const GAS_URL = (IS_LOCAL && new URLSearchParams(location.search).get('gas')) || PROD_GAS;
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+  const QUICK = [
+    '這個月的轉換率怎麼樣？哪一步流失最多？',
+    '現在哪些商品適合導廣告、哪些不要？',
+    'Meta 廣告預算花在哪，有沒有該調整的？',
+    '轉換率行動清單目前進度，下一步先做哪個？',
+    '這週 SEO 有什麼要跟行銷一起決定的？'
+  ];
+
+  const S = { tab: 'threads', threads: [], thread: null, msgs: [], busy: false, notes: null, cro: null, seo: null, me: null, lastCount: 0 };
+
+  /* ───── 小工具 ───── */
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; $('#toastRoot').appendChild(t); setTimeout(() => t.remove(), 3200); }
+  function inline(s) {
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    return s.replace(/(^|[\s(（])(https?:\/\/[^\s<)）]+)/g, '$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+  }
+  function cells(l) { return l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim()); }
+  function renderMd(src) {
+    const L = String(src || '').replace(/\r/g, '').split('\n'), out = [];
+    const isTbl = l => /^\s*\|.*\|\s*$/.test(l), isUl = l => /^\s*[-*•]\s+/.test(l), isOl = l => /^\s*\d+[.)]\s+/.test(l);
+    let i = 0;
+    while (i < L.length) {
+      const l = L[i];
+      if (/^\s*$/.test(l)) { i++; continue; }
+      if (isTbl(l) && i + 1 < L.length && /^\s*\|[\s:|-]+\|\s*$/.test(L[i + 1])) {
+        const head = cells(l); i += 2; const rows = [];
+        while (i < L.length && isTbl(L[i])) { rows.push(cells(L[i])); i++; }
+        out.push('<div class="tw"><table><thead><tr>' + head.map(c => '<th>' + inline(esc(c)) + '</th>').join('') + '</tr></thead><tbody>' +
+          rows.map(r => '<tr>' + r.map(c => '<td>' + inline(esc(c)) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>');
+        continue;
+      }
+      let m = /^(#{1,4})\s+(.*)$/.exec(l);
+      if (m) { out.push('<h4>' + inline(esc(m[2])) + '</h4>'); i++; continue; }
+      if (isUl(l)) { const it = []; while (i < L.length && isUl(L[i])) { it.push(L[i].replace(/^\s*[-*•]\s+/, '')); i++; } out.push('<ul>' + it.map(t => '<li>' + inline(esc(t)) + '</li>').join('') + '</ul>'); continue; }
+      if (isOl(l)) { const it = []; while (i < L.length && isOl(L[i])) { it.push(L[i].replace(/^\s*\d+[.)]\s+/, '')); i++; } out.push('<ol>' + it.map(t => '<li>' + inline(esc(t)) + '</li>').join('') + '</ol>'); continue; }
+      const para = [l]; i++;
+      while (i < L.length && !/^\s*$/.test(L[i]) && !isTbl(L[i]) && !isUl(L[i]) && !isOl(L[i]) && !/^#{1,4}\s/.test(L[i])) { para.push(L[i]); i++; }
+      out.push('<p>' + para.map(x => inline(esc(x))).join('<br>') + '</p>');
+    }
+    return out.join('');
+  }
+  const TOOL_LABEL = { get_kpi_summary: '儀表板數據', get_funnel: 'GA4 漏斗', get_landing_page_sources: '著陸頁來源', get_meta_campaigns: 'Meta 活動', check_products: '商品庫存', list_promotable_products: '可推廣商品', get_seo_status: 'SEO／AI 搜尋', get_seo_content_backlog: 'SEO 待辦', get_seo_actions: 'SEO 行動紀錄', get_cro_action_list: '轉換率清單', update_cro_item: '更新轉換率清單', list_notes: '決議待辦', save_note: '記錄決議待辦' };
+  function toolChips(tools) {
+    if (!tools || !tools.length) return '';
+    return '<div class="tools" aria-label="這則回覆查了哪些資料">' + tools.map(t => '<span class="' + (t.ok === false ? 'bad' : '') + '" title="' + esc(JSON.stringify(t.args || {})) + '">' + esc(TOOL_LABEL[t.name] || t.name) + (t.ok === false ? '（失敗）' : '') + '</span>').join('') + '</div>';
+  }
+  function fmtTime(s) { return String(s || '').slice(5, 16).replace('-', '/'); }
+
+  /* ───── 登入／token ───── */
+  function readSession() { try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; } }
+  function decodeJwt(t) { try { const b = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'); return JSON.parse(decodeURIComponent(atob(b).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); } catch (e) { return {}; } }
+  function loadScript(src) { return new Promise((res, rej) => { if ($('script[src="' + src + '"]')) { res(); return; } const s = document.createElement('script'); s.src = src; s.async = true; s.onload = res; s.onerror = () => rej(new Error('load')); document.head.appendChild(s); }); }
+  function saveToken(tok) { const s = readSession(); if (s) { s.idToken = tok; try { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); } catch (e) {} } }
+  let gsiReady = null;
+  function initGsi(cb) { return loadScript('https://accounts.google.com/gsi/client').then(() => { window.google.accounts.id.initialize({ client_id: CLIENT_ID, callback: cb, auto_select: true, cancel_on_tap_outside: false }); }); }
+  function silentToken() {
+    return new Promise(resolve => {
+      let done = false; const fin = v => { if (!done) { done = true; resolve(v); } };
+      initGsi(resp => { const p = decodeJwt(resp.credential), s = readSession(); if (s && p.email && s.email && p.email.toLowerCase() !== s.email.toLowerCase()) return fin(null); saveToken(resp.credential); fin(resp.credential); })
+        .then(() => { try { window.google.accounts.id.prompt(n => { if (n.isNotDisplayed && (n.isNotDisplayed() || n.isSkippedMoment())) fin(null); }); } catch (e) { fin(null); } })
+        .catch(() => fin(null));
+      setTimeout(() => fin(null), 4000);
+    });
+  }
+  let reauthPromise = null;
+  function reauth() {
+    if (reauthPromise) return reauthPromise;
+    reauthPromise = new Promise((resolve, reject) => {
+      const root = $('#modalRoot');
+      root.innerHTML = '<div style="position:fixed;inset:0;background:rgba(0,39,33,.55);z-index:400;display:flex;align-items:center;justify-content:center;padding:16px"><div role="dialog" aria-modal="true" aria-label="重新登入" style="background:#fff;border-radius:14px;padding:22px;max-width:360px;width:100%"><h3 style="margin-bottom:6px">請再確認一次登入</h3><p style="font-size:13px;color:var(--muted);margin-bottom:14px">為了保護營收與廣告資料，一段時間後需要重新確認身分。</p><div id="gbtn"></div><button id="reauthCancel" class="small-btn" style="margin-top:14px;background:#999" type="button">取消</button></div></div>';
+      const end = fn => v => { root.innerHTML = ''; reauthPromise = null; fn(v); };
+      const ok = end(resolve), no = end(reject);
+      $('#reauthCancel').onclick = () => no(new Error('已取消登入'));
+      initGsi(resp => {
+        const p = decodeJwt(resp.credential), s = readSession();
+        if (s && p.email && s.email && p.email.toLowerCase() !== s.email.toLowerCase()) { no(new Error('請用目前登入的同一個帳號（' + s.email + '）')); return; }
+        saveToken(resp.credential); ok(resp.credential);
+      }).then(() => window.google.accounts.id.renderButton($('#gbtn'), { type: 'standard', size: 'large', theme: 'outline', text: 'sign_in_with', locale: 'zh-TW' }))
+        .catch(() => no(new Error('無法載入 Google 登入，請檢查網路後再試')));
+    });
+    return reauthPromise;
+  }
+  async function getIdToken(force) {
+    const s = readSession();
+    if (!force && s && s.idToken) { const p = decodeJwt(s.idToken); if (p.exp && p.exp * 1000 - Date.now() > 90e3) return s.idToken; }
+    const t = await silentToken();
+    return t || reauth();
+  }
+
+  /* ───── API ───── */
+  function mkErr(code, msg) { const e = new Error(msg); e.code = code; return e; }
+  async function rawPost(body) {
+    const res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+    const text = await res.text();
+    try { return JSON.parse(text); } catch (e) { throw mkErr('backend', '後台暫時沒有回應（可能是 Google 偶發逾時），請稍後再試'); }
+  }
+  async function api(action, payload, retried) {
+    if (window.MOCK) return mockApi(action, payload);
+    const idToken = await getIdToken(!!retried);
+    let data;
+    try { data = await rawPost(Object.assign({ action, idToken }, payload || {})); }
+    catch (e) { if (e.code) throw e; throw mkErr('network', '連不上後台伺服器，請檢查網路後再試'); }
+    if (data.ok === false || (data.error && !data.ok)) {
+      if (data.code === 'auth' && !retried) return api(action, payload, true);
+      throw mkErr(data.code || 'server', data.error || '發生錯誤');
+    }
+    return data;
+  }
+  // 對話可能跑 20–60 秒，Google 的轉址偶爾會在長請求上掉線；掉線時用同一個 reqId 輪詢結果，不重跑模型
+  async function chatApi(message, threadId) {
+    const reqId = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    if (window.MOCK) return mockApi('chat', { message, threadId, reqId });
+    try { return await api('chat', { message, threadId, reqId }); }
+    catch (e) {
+      if (e.code !== 'backend' && e.code !== 'network') throw e;
+      for (let i = 0; i < 40; i++) {
+        await new Promise(r => setTimeout(r, 3500));
+        let r; try { r = await api('result', { reqId }); } catch (x) { continue; }
+        if (r && r.ok && r.reply) return r;
+        if (r && r.missing && i > 6) break;
+      }
+      throw mkErr('timeout', '等不到回覆，可能還在查資料。請稍後重新整理，在討論串裡看結果。');
+    }
+  }
+
+  /* ───── 畫面 ───── */
+  function scrollBottom() { const c = $('#chat'); c.scrollTop = c.scrollHeight; }
+  function renderWelcome() {
+    $('#chatInner').innerHTML = '<div class="welcome"><h1>跟行銷顧問討論</h1><p>它會即時查 GA4、Meta、官網庫存與 SEO 進度，回答時附上資料期間與口徑。它不能改網站或廣告，只能查資料、給建議、記下決議。</p><div class="chips">' +
+      QUICK.map(q => '<button class="chip" type="button">' + esc(q) + '</button>').join('') + '</div></div>';
+    $$('.chip', $('#chatInner')).forEach(b => b.onclick = () => { $('#input').value = b.textContent; send(); });
+  }
+  function msgHtml(m) {
+    if (m.role === 'user') return '<div class="msg user"><div class="who">' + esc(m.by) + ' · ' + esc(fmtTime(m.at)) + '</div><div class="bubble">' + esc(m.text) + '</div></div>';
+    const who = (m.by && m.by !== '行銷顧問') ? esc(m.by) : '行銷顧問';
+    return '<div class="msg assistant"><div class="who">' + who + ' · ' + esc(fmtTime(m.at)) + '</div><div class="bubble">' + renderMd(m.text) + '</div>' + toolChips(m.tools) + '</div>';
+  }
+  function renderMsgs() {
+    if (!S.msgs.length && !S.busy) { renderWelcome(); return; }
+    $('#chatInner').innerHTML = S.msgs.map(m => m.role === 'error' ? '<div class="err-bubble" role="alert">' + esc(m.text) + '</div>' : msgHtml(m)).join('') + (S.busy ? typingHtml() : '');
+    scrollBottom();
+  }
+  function typingHtml() { return '<div class="msg assistant" id="typing"><div class="bubble"><div class="typing"><span class="dots"><i></i><i></i><i></i></span><span id="typingTxt">查資料、整理中…</span></div></div></div>'; }
+  let typingTimer = null;
+  function startTyping() { const t0 = Date.now(); clearInterval(typingTimer); typingTimer = setInterval(() => { const el = $('#typingTxt'); if (el) { const s = Math.round((Date.now() - t0) / 1000); el.textContent = '查資料、整理中… ' + s + ' 秒' + (s > 25 ? '（資料比較多，再等一下）' : ''); } }, 1000); }
+  function stopTyping() { clearInterval(typingTimer); }
+
+  async function send() {
+    const input = $('#input'), text = input.value.trim();
+    if (!text || S.busy) return;
+    input.value = ''; autoGrow();
+    const me = (S.me && S.me.name) || '我';
+    S.msgs.push({ role: 'user', by: me, at: new Date().toISOString().replace('T', ' '), text });
+    S.busy = true; setSendState(); renderMsgs(); startTyping();
+    try {
+      const r = await chatApi(text, S.thread);
+      S.thread = r.threadId;
+      S.msgs.push({ role: 'assistant', by: '行銷顧問', at: r.reply.ts, text: r.reply.text, tools: r.reply.tools });
+      S.lastCount = S.msgs.length;
+      loadThreads(true);
+      loadMe();
+    } catch (e) {
+      S.msgs.push({ role: 'error', text: e.message });
+    } finally { S.busy = false; stopTyping(); setSendState(); renderMsgsWithErrors(); }
+  }
+  function renderMsgsWithErrors() { renderMsgs(); }
+  function setSendState() { $('#sendBtn').disabled = S.busy; $('#input').disabled = false; }
+  function autoGrow() { const t = $('#input'); t.style.height = 'auto'; t.style.height = Math.min(160, t.scrollHeight) + 'px'; }
+
+  async function openThread(id) {
+    S.thread = id; closeMenu();
+    try {
+      const r = await api('thread', { threadId: id });
+      S.msgs = r.messages; S.lastCount = S.msgs.length;
+      renderMsgsWithErrors(); renderSide();
+    } catch (e) { toast(e.message); }
+  }
+  function newThread() { S.thread = null; S.msgs = []; S.lastCount = 0; renderWelcome(); renderSide(); closeMenu(); $('#input').focus(); }
+
+  /* ───── 側欄 ───── */
+  function renderSide() {
+    const b = $('#sideBody');
+    $$('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === S.tab)));
+    if (S.tab === 'threads') {
+      b.innerHTML = S.threads.length ? S.threads.map(t => '<button class="th-item" type="button" data-id="' + esc(t.id) + '"' + (t.id === S.thread ? ' aria-current="true"' : '') + '><span class="th-title">' + esc(t.title) + '</span><span class="th-meta">' + esc(t.lastBy) + ' · ' + esc(fmtTime(t.lastAt)) + '</span></button>').join('') : '<div class="empty">還沒有討論。<br>在右邊問第一個問題。</div>';
+      $$('.th-item', b).forEach(x => x.onclick = () => openThread(x.dataset.id));
+    } else if (S.tab === 'notes') renderNotes(b);
+    else if (S.tab === 'cro') renderCro(b);
+    else renderSeo(b);
+  }
+  function renderNotes(b) {
+    const list = S.notes;
+    let h = '<div class="form-box"><div class="row"><select id="nType" aria-label="類型"><option value="decision">決議</option><option value="todo">待辦</option></select><input id="nOwner" placeholder="負責人（選填）" aria-label="負責人"></div><textarea id="nText" rows="2" placeholder="記下一句話" aria-label="內容"></textarea><div class="row"><input id="nDue" type="date" aria-label="期限"><button class="small-btn" id="nAdd" type="button">記下來</button></div></div>';
+    if (list === null) h += '<div class="empty">載入中…</div>';
+    else if (!list.length) h += '<div class="empty">還沒有決議或待辦。<br>討論出結論時，請行銷顧問幫你記。</div>';
+    else h += list.slice().reverse().map(n => '<div class="note-item ' + esc(n.status) + '"><div class="note-row"><input type="checkbox" data-id="' + esc(n.id) + '" ' + (n.status === 'done' ? 'checked' : '') + ' aria-label="完成"><div><div class="note-text"><span class="badge ' + esc(n.type) + '">' + (n.type === 'todo' ? '待辦' : '決議') + '</span>' + esc(n.text) + '</div><div class="note-meta">' + esc(n.owner ? n.owner + ' · ' : '') + (n.due ? '期限 ' + esc(n.due) + ' · ' : '') + esc(n.by) + ' · ' + esc(fmtTime(n.at)) + '</div></div></div></div>').join('');
+    b.innerHTML = h;
+    const add = $('#nAdd', b); if (add) add.onclick = async () => {
+      const text = $('#nText').value.trim(); if (!text) return;
+      try { await api('noteAdd', { type: $('#nType').value, text, owner: $('#nOwner').value.trim(), due: $('#nDue').value }); toast('已記下'); S.notes = null; loadNotes(); } catch (e) { toast(e.message); }
+    };
+    $$('input[type=checkbox]', b).forEach(c => c.onchange = async () => { try { await api('noteStatus', { id: c.dataset.id, status: c.checked ? 'done' : 'open' }); loadNotes(); } catch (e) { toast(e.message); c.checked = !c.checked; } });
+  }
+  function renderCro(b) {
+    if (S.cro === null) { b.innerHTML = '<div class="empty">載入中…</div>'; return; }
+    const opts = ['未開始', '進行中', '完成', '擱置'];
+    const done = S.cro.filter(x => x.status === '完成').length;
+    b.innerHTML = '<div class="note-meta" style="margin:0 2px 8px">2026-10-21 官網轉換率健檢行動清單 · 完成 ' + done + '／' + S.cro.length + '</div>' +
+      S.cro.map(x => '<div class="cro-item st-' + esc(x.status) + '"><div class="cro-when">' + esc(x.id) + ' · ' + esc(x.when) + ' · ' + esc(x.owner) + '</div><div class="cro-action">' + esc(x.action) + '</div><div class="cro-metric">看：' + esc(x.metric) + '</div>' + (x.note ? '<div class="cro-metric">備註：' + esc(x.note) + '</div>' : '') +
+        '<select data-id="' + esc(x.id) + '" aria-label="' + esc(x.id) + ' 狀態">' + opts.map(o => '<option' + (o === x.status ? ' selected' : '') + '>' + o + '</option>').join('') + '</select></div>').join('');
+    $$('select', b).forEach(s => s.onchange = async () => { try { await api('croUpdate', { id: s.dataset.id, status: s.value }); toast(s.dataset.id + ' → ' + s.value); loadCro(); } catch (e) { toast(e.message); loadCro(); } });
+  }
+  function renderSeo(b) {
+    if (S.seo === null) { b.innerHTML = '<div class="empty">載入中…</div>'; return; }
+    b.innerHTML = '<div class="note-meta" style="margin:0 2px 8px">SEO 週會做過的行動（每週一 10:30 更新）。要追排名變化，請問行銷顧問或帶到 SEO 週會。</div>' +
+      (S.seo.length ? S.seo.slice().reverse().map(a => '<div class="seo-item"><div class="seo-date">' + esc(String(a.date).slice(0, 10)) + (a.keyword ? ' · ' + esc(a.keyword) : '') + (a.rank !== '' && a.rank != null ? ' · 當時第 ' + esc(a.rank) + ' 名' : '') + '</div><div>' + esc(a.action) + '</div>' + (a.url ? '<a href="' + esc(a.url) + '" target="_blank" rel="noopener">' + esc(a.url.replace('https://www.oringoshoes.com', '')) + '</a>' : '') + '</div>').join('') : '<div class="empty">還沒有紀錄。</div>');
+  }
+
+  async function loadThreads(quiet) { try { S.threads = (await api('threads')).threads; if (S.tab === 'threads') renderSide(); } catch (e) { if (!quiet) toast(e.message); } }
+  async function loadNotes() { try { S.notes = (await api('notes')).notes; if (S.tab === 'notes') renderSide(); } catch (e) { toast(e.message); } }
+  async function loadCro() { try { S.cro = (await api('cro')).items; if (S.tab === 'cro') renderSide(); } catch (e) { toast(e.message); } }
+  async function loadSeo() { try { S.seo = (await api('seoActions')).actions; if (S.tab === 'seo') renderSide(); } catch (e) { toast(e.message); } }
+  function applyMe(r) { S.me = r.user; $('#footR').textContent = '本月 AI 呼叫 ' + r.usage.month + '／' + r.usage.cap + ' · ' + (r.provider === 'claude' ? 'Claude' : 'Gemini'); }
+  async function loadMe() { try { applyMe(await api('me')); } catch (e) { showFatal(e); } }
+  async function boot() {   // 一次拿齊：使用者、討論串、決議待辦、轉換率清單、SEO 紀錄
+    try {
+      const r = await api('boot');
+      applyMe(r); S.threads = r.threads; S.notes = r.notes; S.cro = r.cro; S.seo = r.seo; renderSide();
+    } catch (e) { showFatal(e); }
+  }
+  function showFatal(e) {
+    $('#chatInner').innerHTML = '<div class="err-bubble" role="alert" style="max-width:560px;margin:8vh auto 0">' + esc(e.message) + '</div>';
+    $('#input').disabled = true; $('#sendBtn').disabled = true;
+  }
+  function switchTab(t) { S.tab = t; renderSide(); if (t === 'notes' && S.notes === null) loadNotes(); if (t === 'cro' && S.cro === null) loadCro(); if (t === 'seo' && S.seo === null) loadSeo(); }
+  function closeMenu() { $('#side').classList.remove('open'); $('#menuBtn').setAttribute('aria-expanded', 'false'); }
+
+  // 別人在同一個討論串發言時，自動帶進來（每 45 秒看一次，只在沒有人送出中時）
+  setInterval(async () => {
+    if (document.hidden || S.busy || !S.thread || window.MOCK) return;
+    try {
+      const r = await api('thread', { threadId: S.thread });
+      if (r.messages.length > S.lastCount) { S.msgs = r.messages; S.lastCount = r.messages.length; renderMsgsWithErrors(); }
+    } catch (e) {}
+  }, 45000);
+  setInterval(() => { if (!document.hidden && !window.MOCK) loadThreads(true); }, 90000);
+
+  /* ───── 假資料（本機 ?mock=1 才用，檢查版面用） ───── */
+  function mockApi(action, p) {
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    const D = {
+      me: () => ({ ok: true, user: { name: '楊茜雯', email: 'demo@example.com' }, provider: 'gemini', usage: { month: 12, cap: 800 } }),
+      threads: () => ({ ok: true, threads: [{ id: 't1', title: '這個月的轉換率怎麼樣？', by: '楊茜雯', at: '2026-10-21 10:02:00', lastAt: '2026-10-21 10:05:00', lastBy: '行銷顧問' }, { id: 't2', title: '10/26 SEO 週會', by: 'SEO 週會', at: '2026-10-20 10:40:00', lastAt: '2026-10-20 10:40:00', lastBy: 'SEO 週會' }] }),
+      thread: () => ({ ok: true, messages: [{ role: 'user', by: '楊茜雯', at: '2026-10-21 10:02:00', text: '這個月的轉換率怎麼樣？', tools: [] }, { role: 'assistant', by: '行銷顧問', at: '2026-10-21 10:05:00', text: '**近 30 天整站轉換率 0.22%**（GA4 購買 ÷ 工作階段），低於警告線 0.28%。\n\n| 步驟 | 人數 | 佔上一步 |\n|---|---|---|\n| 看商品 | 50,977 | 52.2% |\n| 加入購物車 | 1,534 | 3.0% |\n\n- 流失最大：看商品→加購\n- 建議先處理 C1、C2', tools: [{ name: 'get_funnel', args: {}, ok: true }, { name: 'get_cro_action_list', args: {}, ok: true }] }] }),
+      notes: () => ({ ok: true, notes: [{ id: 'N001', at: '2026-10-21 10:10:00', type: 'decision', text: '先停掉 2201br 的 Meta 素材', owner: '', due: '', status: 'open', by: '楊茜雯' }, { id: 'N002', at: '2026-10-21 10:12:00', type: 'todo', text: '找出 8/5 那則 FB 貼文', owner: '亮丞', due: '2026-10-25', status: 'done', by: '楊茜雯' }] }),
+      cro: () => ({ ok: true, items: [{ id: 'C1', when: '本週', action: '找出 8/5 FB 貼文改連結；停掉或改導 mshoes2201br、wshoes1803rd 的 Meta 素材', owner: '行銷', metric: '這兩頁造訪量', status: '進行中', note: '貼文已找到' }, { id: 'C2', when: '本週', action: '預購說明搬到標題旁', owner: '官網、商品', metric: '7702wh 加購率', status: '未開始', note: '' }] }),
+      seoActions: () => ({ ok: true, actions: [{ date: '2026-10-16', action: '瑪莉珍鞋分類頁補 SEO title/meta', url: 'https://www.oringoshoes.com/categories/mary-janes', keyword: '瑪莉珍鞋', volume: 12100, rank: '', note: '' }] }),
+      chat: async () => { await wait(1500); return { ok: true, threadId: 't9', reply: { ts: '2026-10-21 11:00:00', text: '（這是假資料）近 30 天轉換率 **0.22%**。', tools: [{ name: 'get_funnel', args: {}, ok: true }] } }; },
+      boot: () => Object.assign({}, D.me(), { threads: D.threads().threads, notes: D.notes().notes, cro: D.cro().items, seo: D.seoActions().actions }),
+      noteAdd: () => ({ ok: true }), noteStatus: () => ({ ok: true }), croUpdate: () => ({ ok: true }), result: () => ({ ok: true })
+    };
+    return Promise.resolve(D[action] ? D[action](p) : { ok: true });
+  }
+
+  /* ───── 啟動 ───── */
+  $('#sendBtn').onclick = send;
+  const input = $('#input');
+  input.addEventListener('input', autoGrow);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); send(); } });
+  $('#newBtn').onclick = newThread;
+  $$('.tab').forEach(t => t.onclick = () => switchTab(t.dataset.tab));
+  $('#menuBtn').onclick = () => { const o = $('#side').classList.toggle('open'); $('#menuBtn').setAttribute('aria-expanded', String(o)); };
+  renderWelcome(); renderSide();
+  // auth.js 完成登入後才會有 session；沒登入時它會蓋住整頁，這裡等到有 session 再打 API
+  (function boot(n) {
+    if (window.MOCK || (readSession() && readSession().email)) { boot(); return; }
+    if (n < 600) setTimeout(() => boot(n + 1), 500);
+  })(0);
+})();
+</script>
+</body>
+</html>
