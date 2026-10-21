@@ -124,6 +124,12 @@ button{font-family:inherit;cursor:pointer}
 
 .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--dark);color:var(--sand);padding:8px 16px;border-radius:99px;font-size:13px;z-index:300}
 
+.report-view{flex:1;min-height:0;display:flex;flex-direction:column}
+.report-view[hidden]{display:none}
+.report-bar{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:8px max(14px,env(safe-area-inset-right)) 8px max(14px,env(safe-area-inset-left));border-bottom:1px solid var(--border);background:var(--surface2);font-size:13px}
+.report-bar span{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#reportFrame{flex:1;min-height:0;width:100%;border:0;background:#fff}
+
 /* Mobile */
 @media (max-width:860px){
   .app{grid-template-columns:1fr}
@@ -150,8 +156,9 @@ button{font-family:inherit;cursor:pointer}
   <aside class="side" id="side" aria-label="討論串與行動清單">
     <div class="side-top"><button class="new-btn" id="newBtn" type="button">＋ 新討論</button></div>
     <div class="tabs" role="tablist">
-      <button class="tab" role="tab" id="tab-threads" aria-selected="true" data-tab="threads">討論串</button>
-      <button class="tab" role="tab" id="tab-notes" aria-selected="false" data-tab="notes">決議待辦</button>
+      <button class="tab" role="tab" id="tab-threads" aria-selected="true" data-tab="threads">討論</button>
+      <button class="tab" role="tab" id="tab-reports" aria-selected="false" data-tab="reports">報告</button>
+      <button class="tab" role="tab" id="tab-notes" aria-selected="false" data-tab="notes">待辦</button>
       <button class="tab" role="tab" id="tab-cro" aria-selected="false" data-tab="cro">轉換率</button>
       <button class="tab" role="tab" id="tab-seo" aria-selected="false" data-tab="seo">SEO</button>
     </div>
@@ -160,6 +167,10 @@ button{font-family:inherit;cursor:pointer}
 
   <main class="main">
     <div class="chat" id="chat" aria-live="polite"><div class="chat-inner" id="chatInner"></div></div>
+    <div class="report-view" id="reportView" hidden>
+      <div class="report-bar"><button class="small-btn" id="reportBack" type="button">← 回討論</button><span id="reportTitle"></span></div>
+      <iframe id="reportFrame" title="報告內容" sandbox="allow-popups allow-popups-to-escape-sandbox"></iframe>
+    </div>
     <div class="composer">
       <div class="composer-inner">
         <textarea id="input" rows="1" placeholder="問行銷顧問…（Enter 送出）" aria-label="訊息"></textarea>
@@ -191,7 +202,7 @@ button{font-family:inherit;cursor:pointer}
     '這週 SEO 有什麼要跟行銷一起決定的？'
   ];
 
-  const S = { tab: 'threads', threads: [], thread: null, msgs: [], busy: false, notes: null, cro: null, seo: null, me: null, lastCount: 0 };
+  const S = { tab: 'threads', reports: null, threads: [], thread: null, msgs: [], busy: false, notes: null, cro: null, seo: null, me: null, lastCount: 0 };
 
   /* ───── 小工具 ───── */
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
@@ -354,14 +365,14 @@ button{font-family:inherit;cursor:pointer}
   function autoGrow() { const t = $('#input'); t.style.height = 'auto'; t.style.height = Math.min(160, t.scrollHeight) + 'px'; }
 
   async function openThread(id) {
-    S.thread = id; closeMenu();
+    S.thread = id; closeMenu(); showReport(false);
     try {
       const r = await api('thread', { threadId: id });
       S.msgs = r.messages; S.lastCount = S.msgs.length;
       renderMsgsWithErrors(); renderSide();
     } catch (e) { toast(e.message); }
   }
-  function newThread() { S.thread = null; S.msgs = []; S.lastCount = 0; renderWelcome(); renderSide(); closeMenu(); $('#input').focus(); }
+  function newThread() { showReport(false); S.thread = null; S.msgs = []; S.lastCount = 0; renderWelcome(); renderSide(); closeMenu(); $('#input').focus(); }
 
   /* ───── 側欄 ───── */
   function renderSide() {
@@ -370,9 +381,25 @@ button{font-family:inherit;cursor:pointer}
     if (S.tab === 'threads') {
       b.innerHTML = S.threads.length ? S.threads.map(t => '<button class="th-item" type="button" data-id="' + esc(t.id) + '"' + (t.id === S.thread ? ' aria-current="true"' : '') + '><span class="th-title">' + esc(t.title) + '</span><span class="th-meta">' + esc(t.lastBy) + ' · ' + esc(fmtTime(t.lastAt)) + '</span></button>').join('') : '<div class="empty">還沒有討論。<br>在右邊問第一個問題。</div>';
       $$('.th-item', b).forEach(x => x.onclick = () => openThread(x.dataset.id));
-    } else if (S.tab === 'notes') renderNotes(b);
+    } else if (S.tab === 'reports') renderReports(b);
+    else if (S.tab === 'notes') renderNotes(b);
     else if (S.tab === 'cro') renderCro(b);
     else renderSeo(b);
+  }
+  function renderReports(b) {
+    if (S.reports === null) { b.innerHTML = '<div class="empty">載入中…</div>'; return; }
+    b.innerHTML = S.reports.length ? S.reports.map(r => '<button class="th-item" type="button" data-id="' + esc(r.id) + '"><span class="th-title">' + esc(r.title) + '</span><span class="th-meta">' + esc(String(r.date).slice(0, 10)) + '</span></button>').join('') : '<div class="empty">還沒有報告。</div>';
+    $$('.th-item', b).forEach(x => x.onclick = () => openReport(x.dataset.id));
+  }
+  function showReport(on) { $('#reportView').hidden = !on; $('#chat').style.display = on ? 'none' : ''; $('.composer').style.display = on ? 'none' : ''; }
+  async function openReport(id) {
+    closeMenu();
+    try {
+      const r = await api('report', { id });
+      $('#reportTitle').textContent = r.title + ' · ' + String(r.date).slice(0, 10);
+      $('#reportFrame').srcdoc = '<!doctype html><html lang="zh-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>' + r.html + '</body></html>';
+      showReport(true);
+    } catch (e) { toast(e.message); }
   }
   function renderNotes(b) {
     const list = S.notes;
@@ -411,7 +438,7 @@ button{font-family:inherit;cursor:pointer}
   async function boot() {   // 一次拿齊：使用者、討論串、決議待辦、轉換率清單、SEO 紀錄
     try {
       const r = await api('boot');
-      applyMe(r); S.threads = r.threads; S.notes = r.notes; S.cro = r.cro; S.seo = r.seo; renderSide();
+      applyMe(r); S.threads = r.threads; S.reports = r.reports || []; S.notes = r.notes; S.cro = r.cro; S.seo = r.seo; renderSide();
     } catch (e) { showFatal(e); }
   }
   function showFatal(e) {
@@ -442,7 +469,8 @@ button{font-family:inherit;cursor:pointer}
       cro: () => ({ ok: true, items: [{ id: 'C1', when: '本週', action: '找出 8/5 FB 貼文改連結；停掉或改導 mshoes2201br、wshoes1803rd 的 Meta 素材', owner: '行銷', metric: '這兩頁造訪量', status: '進行中', note: '貼文已找到' }, { id: 'C2', when: '本週', action: '預購說明搬到標題旁', owner: '官網、商品', metric: '7702wh 加購率', status: '未開始', note: '' }] }),
       seoActions: () => ({ ok: true, actions: [{ date: '2026-10-16', action: '瑪莉珍鞋分類頁補 SEO title/meta', url: 'https://www.oringoshoes.com/categories/mary-janes', keyword: '瑪莉珍鞋', volume: 12100, rank: '', note: '' }] }),
       chat: async () => { await wait(1500); return { ok: true, threadId: 't9', reply: { ts: '2026-10-21 11:00:00', text: '（這是假資料）近 30 天轉換率 **0.22%**。', tools: [{ name: 'get_funnel', args: {}, ok: true }] } }; },
-      boot: () => Object.assign({}, D.me(), { threads: D.threads().threads, notes: D.notes().notes, cro: D.cro().items, seo: D.seoActions().actions }),
+      report: () => ({ ok: true, id: 'R1', title: '官網轉換率健檢', date: '2026-10-21', html: '<div style="font-family:sans-serif;padding:20px"><h1>官網轉換率健檢</h1><p>（假資料）整站轉換率 0.22%</p></div>' }),
+      boot: () => Object.assign({}, D.me(), { reports: [{ id: 'R1', title: '官網轉換率健檢', date: '2026-10-21' }], threads: D.threads().threads, notes: D.notes().notes, cro: D.cro().items, seo: D.seoActions().actions }),
       noteAdd: () => ({ ok: true }), noteStatus: () => ({ ok: true }), croUpdate: () => ({ ok: true }), result: () => ({ ok: true })
     };
     return Promise.resolve(D[action] ? D[action](p) : { ok: true });
@@ -454,13 +482,14 @@ button{font-family:inherit;cursor:pointer}
   input.addEventListener('input', autoGrow);
   input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); send(); } });
   $('#newBtn').onclick = newThread;
+  $('#reportBack').onclick = () => showReport(false);
   $$('.tab').forEach(t => t.onclick = () => switchTab(t.dataset.tab));
   $('#menuBtn').onclick = () => { const o = $('#side').classList.toggle('open'); $('#menuBtn').setAttribute('aria-expanded', String(o)); };
   renderWelcome(); renderSide();
   // auth.js 完成登入後才會有 session；沒登入時它會蓋住整頁，這裡等到有 session 再打 API
-  (function boot(n) {
+  (function waitForLogin(n) {
     if (window.MOCK || (readSession() && readSession().email)) { boot(); return; }
-    if (n < 600) setTimeout(() => boot(n + 1), 500);
+    if (n < 600) setTimeout(() => waitForLogin(n + 1), 500);
   })(0);
 })();
 </script>
