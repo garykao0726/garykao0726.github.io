@@ -282,7 +282,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
   </div>
   <div id="adw-wrap" style="display:none">
     <div class="mswitch" id="adw-switch" style="margin-bottom:.9rem"></div>
-    <div class="kpi4" id="adw-kpi"></div>
+    <div class="kpi5" id="adw-kpi"></div>
     <div class="card" id="adw-actions-card" style="display:none;border-left:4px solid var(--rust)">
       <div class="card-hdr"><span class="card-lbl">行銷部本週待處理（依優先序）</span><span class="card-badge" id="adw-actions-badge">規則產生</span></div>
       <div id="adw-actions"></div>
@@ -1197,6 +1197,9 @@ function legacyStaleHTML_(r){
   return `<div style="background:#fffbe6;border:1px solid #d4a72c;border-radius:8px;padding:8px 14px;margin-bottom:.9rem;font-size:11px;font-family:'Space Mono',monospace;color:#b8860b">⚠️ 這張卡的資料停在 ${fmtDatetime_(r.updatedAt)}（${age} 天前）：原本的「行銷週報彙總」寫入來源已停，週報改寫進「廣告週報」，這一塊還沒接上，數字是舊的、僅供參考。</div>`;
 }
 function selectAdw(i){ADW_SEL=i;renderAdw();}
+const ADW_FEE=1.15;   // 含服務費＝不含服務費 ÷1.15；損益兩平 1.61／放行 2.0／獎金線 4.5 都是含服務費口徑
+function adwFee_(v){return v===null||v===undefined||isNaN(Number(v))?null:Math.round(Number(v)/ADW_FEE*100)/100;}
+function adwX_(v){return v===null||v===undefined||isNaN(Number(v))?'—':Number(v).toFixed(2)+'x';}
 function adwPill_(v,good,warn){return v===null||v===undefined?'<span style="color:var(--text-muted)">—</span>':`<span class="ch-pill ${v>=good?'good':v>=warn?'warn':'bad'}">${v}x</span>`;}
 function renderAdw(){
   const hdr=document.getElementById('adw-hdr'), wrap=document.getElementById('adw-wrap');
@@ -1218,15 +1221,17 @@ function renderAdwWeek(d){
   const cv=g?Number(g.cvr_pct):null, cvColor=cv===null?'#b09a88':cv>=0.35?'#1a7a4a':cv>=0.28?'#b8860b':'#c0392b';
   renderKPIs('adw-kpi',{
     'Meta 花費':{v:m?R(m.spend):'讀取失敗',delta:null,vs:m&&m.prev_spend?`上週 ${R(m.prev_spend)}（${chg(m.spend,m.prev_spend)}）`:'三個廣告帳號合計',color:'#1877F2'},
-    '真實 ROAS（付款口徑）':{v:rl&&rl.real_roas!==null&&rl.real_roas!==undefined?rl.real_roas.toFixed(2)+'x':'—',delta:null,
-      vs:rl&&rl.complete?`含服務費 ${feeRoas.toFixed(2)}x · 獎金線 4.5 · 放行 2.0`:(rl?`官網每日營收 ${rl.days_have}/7 天，不計算`:'讀取失敗'),color:roasColor},
+    '真實 ROAS · 不含服務費':{v:rl&&rl.real_roas!==null&&rl.real_roas!==undefined?rl.real_roas.toFixed(2)+'x':'—',delta:null,
+      vs:rl&&rl.complete?`官網付款營收 ÷ Meta 花費`:(rl?`官網每日營收 ${rl.days_have}/7 天，不計算`:'讀取失敗'),color:'#284234'},
+    '真實 ROAS · 含服務費':{v:feeRoas!==null?feeRoas.toFixed(2)+'x':'—',delta:null,
+      vs:rl&&rl.complete?`÷ 花費×1.15 · 獎金線 4.5 · 放行 2.0 · 兩平 1.61`:(rl?`官網每日營收 ${rl.days_have}/7 天，不計算`:'讀取失敗'),color:roasColor},
     '整站轉換率':{v:g?cv+'%':'讀取失敗',delta:null,vs:g?`上週 ${g.prev_cvr_pct}% · 目標 0.35／警告 0.28`:'GA4',color:cvColor},
-    'Meta 自報 ÷ 官網付款營收':{v:rl&&rl.meta_value_over_revenue!==null&&rl.meta_value_over_revenue!==undefined?rl.meta_value_over_revenue.toFixed(2)+'x':'—',delta:null,vs:m?`Meta 自報 ROAS ${m.meta_roas}x，只比組間，不是成績單`:'—',color:'#8D5531'}
+    'Meta 自報 ÷ 官網付款營收':{v:rl&&rl.meta_value_over_revenue!==null&&rl.meta_value_over_revenue!==undefined?rl.meta_value_over_revenue.toFixed(2)+'x':'—',delta:null,vs:m?`Meta 自報 ROAS 不含 ${adwX_(m.meta_roas)}／含服務費 ${adwX_(m.meta_roas_fee!==undefined?m.meta_roas_fee:adwFee_(m.meta_roas))}，只比組間`:'—',color:'#8D5531'}
   });
   // 各層
-  document.getElementById('tbl-adw-layers').innerHTML=m?`<thead><tr><th>層</th><th>花費</th><th>連結 CTR</th><th>CPC</th><th>加購</th><th>購買(Meta)</th><th>自報 ROAS</th></tr></thead><tbody>${
-    m.layers.map(l=>`<tr><td class="td-s">${l.layer}</td><td>${R(l.spend)}</td><td>${l.link_ctr_pct}%</td><td>NT$${l.cpc_link}</td><td>${l.atc}</td><td>${l.purchases}</td><td>${l.meta_roas}x</td></tr>`).join('')
-  }<tr><td class="td-s">合計</td><td>${R(m.spend)}</td><td>${m.link_ctr_pct}%</td><td>NT$${m.cpc_link}</td><td>${m.atc}</td><td>${m.purchases}</td><td>${m.meta_roas}x</td></tr></tbody>`:'<tbody><tr><td style="color:var(--text-muted)">Meta 資料讀取失敗</td></tr></tbody>';
+  document.getElementById('tbl-adw-layers').innerHTML=m?`<thead><tr><th>層</th><th>花費</th><th>連結 CTR</th><th>CPC</th><th>加購</th><th>購買(Meta)</th><th>自報 ROAS<br><span style="font-weight:400;font-size:9px">不含服務費</span></th><th>自報 ROAS<br><span style="font-weight:400;font-size:9px">含服務費</span></th></tr></thead><tbody>${
+    m.layers.map(l=>`<tr><td class="td-s">${l.layer}</td><td>${R(l.spend)}</td><td>${l.link_ctr_pct}%</td><td>NT$${l.cpc_link}</td><td>${l.atc}</td><td>${l.purchases}</td><td>${adwX_(l.meta_roas)}</td><td>${adwX_(l.meta_roas_fee!==undefined?l.meta_roas_fee:adwFee_(l.meta_roas))}</td></tr>`).join('')
+  }<tr><td class="td-s">合計</td><td>${R(m.spend)}</td><td>${m.link_ctr_pct}%</td><td>NT$${m.cpc_link}</td><td>${m.atc}</td><td>${m.purchases}</td><td>${adwX_(m.meta_roas)}</td><td>${adwX_(m.meta_roas_fee!==undefined?m.meta_roas_fee:adwFee_(m.meta_roas))}</td></tr></tbody>`:'<tbody><tr><td style="color:var(--text-muted)">Meta 資料讀取失敗</td></tr></tbody>';
   // 行銷部待處理事項（只有最新一週才有）
   const acCard=document.getElementById('adw-actions-card');
   if(d.point_in_time&&d.actions){
@@ -1253,9 +1258,11 @@ function renderAdwWeek(d){
   if(K&&K.spend>0){
     kc.style.display='';
     document.getElementById('adw-kol-sum').innerHTML=`本週 KOL 廣告花費 <b>${R(K.spend)}</b>（佔 Meta 總花費 ${K.share_pct}%）· 連結點擊 ${K.link_clicks.toLocaleString()} 次`
-      +(K.ga4?`<br>GA4（來源／活動／媒介含 kol）：工作階段 ${K.ga4.sessions}、購買 ${K.ga4.transactions} 筆、營收 ${R(K.ga4.revenue)}${K.link_clicks>=500&&K.ga4.sessions*10<K.link_clicks?' <span style="color:#b8860b">⚠️ 遠低於 Meta 點擊數：KOL 廣告網址的 UTM 沒帶 kol，GA4 看不到</span>':''}`:'');
-    document.getElementById('tbl-adw-kol').innerHTML=`<thead><tr><th>KOL</th><th>本週花費</th><th>廣告</th><th>線上</th><th>線下</th><th>自報全通路</th><th>連結 CTR</th><th>近 180 天</th><th>備註</th></tr></thead><tbody>${K.persons.map(p=>`<tr><td class="td-s">${p.name}</td><td>${R(p.spend)}</td><td>${p.ads}</td><td>${R(p.online_value)}</td><td>${R(p.offline_value)}</td><td>${p.roas===null?'—':p.roas+'x'}</td><td>${p.link_ctr_pct===null?'—':p.link_ctr_pct+'%'}</td><td>${p.cum180?p.cum180.roas+'x<span style="font-size:9px;color:var(--text-muted)"> / '+R(p.cum180.spend)+'</span>':'—'}</td><td style="font-family:'Noto Sans TC',sans-serif;font-size:10px;color:#b8860b">${[p.upper_pct>=60?'上層為主，不看ROAS':'',p.low_sample?'樣本小':''].filter(Boolean).join('、')}</td></tr>`).join('')}</tbody>`;
-    document.getElementById('adw-kol-note').innerHTML=(d.kol_roll_note?`<span style="color:#b8860b">⚠️ ${d.kol_roll_note}。</span><br>`:'')+`Meta 自報偏高、GA4 最後點擊偏低，兩邊都不是真實貢獻，只拿來比 KOL 之間的相對高低；單週樣本小，要搭配「近 180 天」（自報全通路 ROAS ／ 累計花費）。上層（陌生人）KOL 廣告本週本來就帶不出購買，看連結 CTR。完整的個人排行榜在 <a href="kol.html" style="color:var(--rust)">KOL 成效儀表板</a>。`
+      +(K.ga4?(K.ga4.id_match
+        ?`<br>GA4 對得上：工作階段 <b>${K.ga4.sessions.toLocaleString()}</b>（Meta 連結點擊的 ${K.ga4.coverage_pct}%；用廣告 ID 對，其中來源／活動寫 kol 的只有 ${K.ga4.tag_sessions.toLocaleString()}）、工作階段內購買 ${K.ga4.transactions} 筆、營收 ${R(K.ga4.revenue)}${K.ga4.coverage_pct!==null&&K.ga4.coverage_pct<33?' <span style="color:#b8860b">⚠️ 對不上，見上方待處理事項</span>':' <span style="color:#1a7a4a">→ 流量有進 GA4，只是沒標成 kol，不用補 UTM</span>'}`
+        :`<br>GA4（只認來源／活動／媒介含 kol）：工作階段 ${K.ga4.sessions}、購買 ${K.ga4.transactions} 筆 <span style="color:#b8860b">＊這次沒讀到廣告 ID 對照，數字會嚴重偏低，別拿來判斷</span>`):'');
+    document.getElementById('tbl-adw-kol').innerHTML=`<thead><tr><th>KOL</th><th>本週花費</th><th>廣告</th><th>線上</th><th>線下</th><th>自報全通路<br><span style="font-weight:400;font-size:9px">不含服務費</span></th><th>自報全通路<br><span style="font-weight:400;font-size:9px">含服務費</span></th><th>GA4 造訪<br><span style="font-weight:400;font-size:9px">／購買</span></th><th>連結 CTR</th><th>近 180 天<br><span style="font-weight:400;font-size:9px">不含／含服務費／花費</span></th><th>備註</th></tr></thead><tbody>${K.persons.map(p=>`<tr><td class="td-s">${p.name}</td><td>${R(p.spend)}</td><td>${p.ads}</td><td>${R(p.online_value)}</td><td>${R(p.offline_value)}</td><td>${adwX_(p.roas)}</td><td>${p.roas===null?'—':adwX_(p.roas_fee!==undefined?p.roas_fee:adwFee_(p.roas))}</td><td>${p.ga4_sessions===null||p.ga4_sessions===undefined?'—':p.ga4_sessions.toLocaleString()+' / '+p.ga4_purchases}</td><td>${p.link_ctr_pct===null?'—':p.link_ctr_pct+'%'}</td><td>${p.cum180?p.cum180.roas+'x / '+adwX_(p.cum180.roas_fee!==undefined?p.cum180.roas_fee:adwFee_(p.cum180.roas))+'<span style="font-size:9px;color:var(--text-muted)"> / '+R(p.cum180.spend)+'</span>':'—'}</td><td style="font-family:'Noto Sans TC',sans-serif;font-size:10px;color:#b8860b">${[p.upper_pct>=60?'上層為主，不看ROAS':'',p.low_sample?'樣本小':''].filter(Boolean).join('、')}</td></tr>`).join('')}</tbody>`;
+    document.getElementById('adw-kol-note').innerHTML=(d.kol_roll_note?`<span style="color:#b8860b">⚠️ ${d.kol_roll_note}。</span><br>`:'')+`Meta 自報偏高、GA4 最後點擊偏低，兩邊都不是真實貢獻，只拿來比 KOL 之間的相對高低；GA4 造訪是用廣告 ID 對回 KOL（含少數非廣告的 KOL 連結），購買只算同一次造訪內成交的，日後回訪才買的不在內；單週樣本小，要搭配「近 180 天」（自報全通路 ROAS ／ 累計花費）。上層（陌生人）KOL 廣告本週本來就帶不出購買，看連結 CTR。完整的個人排行榜在 <a href="kol.html" style="color:var(--rust)">KOL 成效儀表板</a>。`
       +(K.untagged_ads>0?`<br>有 ${K.untagged_ads} 支廣告命名沒帶 KOL 前綴，是靠已知名單比對認出來的；名單以外的人會漏算，之後命名請統一用 KOL_檔期_名字。`:'');
   }else kc.style.display='none';
   // 需要看的廣告（只有最新一週才有意義）
@@ -1272,7 +1279,7 @@ function renderAdwWeek(d){
   // 本週重點
   document.getElementById('adw-bullets').innerHTML=(d.bullets||[]).map(b=>`• ${b}`).join('<br>')||'—';
   document.getElementById('adw-note').innerHTML=
-    `口徑：真實 ROAS＝官網付款營收（官網結帳、已付款、未取消，取自每日 ec_revenue，七天齊全才算）÷ Meta 花費；Meta 自報只拿來比同一層的組與廣告。營收區塊是營運口徑（已出貨／完成，預購與未出貨的單出貨後才算進來），兩者差在出貨時間，不要直接相減。`
+    `口徑：真實 ROAS＝官網付款營收（官網結帳、已付款、未取消，取自每日 ec_revenue，七天齊全才算）÷ Meta 花費，所有 ROAS 都分成兩個：不含服務費＝÷ Meta 平台花費、含服務費＝÷（花費×1.15）；損益兩平 1.61、放行門檻 2.0、電商獎金線 4.5 都是含服務費口徑。Meta 自報只拿來比同一層的組與廣告。營收區塊是營運口徑（已出貨／完成，預購與未出貨的單出貨後才算進來），兩者差在出貨時間，不要直接相減。`
     +`這一頁跟每週一 Chat 週報是同一份數字（「廣告週報」分頁）。${d.point_in_time?'':'<br>歷史週沒有單支廣告旗標與學習期（那是「當下」才有意義的資訊）。'}`
     +(d.flags&&d.flags.length?`<br><span style="color:#b8860b">本週資料健康度提醒 ${d.flags.length} 項，見頁面最上方「資料健康度檢查」。</span>`:'');
 }
@@ -1286,8 +1293,8 @@ function renderAdwHist(){
   const line=(label,data,color,dash)=>({type:'line',label,data,borderColor:color,backgroundColor:color,tension:.25,pointRadius:dash?0:3,borderWidth:dash?1.2:2,borderDash:dash?[5,4]:[],yAxisID:'y1',spanGaps:false});
   el._chartInst=new Chart(el,{data:{labels,datasets:[
     {type:'bar',label:'Meta 花費（千）',data:spend,backgroundColor:'rgba(24,119,242,.35)',yAxisID:'y',order:3},
-    line('真實 ROAS（付款口徑）',roas,'#284234'),
-    line('含服務費 ×1.15（獎金口徑）',fee,'#A54A1A'),
+    line('真實 ROAS 不含服務費',roas,'#284234'),
+    line('真實 ROAS 含服務費（÷花費×1.15）',fee,'#A54A1A'),
     line('獎金線 4.5',ws.map(()=>4.5),'#1a7a4a',true),
     line('放行門檻 2.0',ws.map(()=>2),'#b8860b',true)
   ]},options:{responsive:true,maintainAspectRatio:false,
@@ -1296,8 +1303,8 @@ function renderAdwHist(){
       y1:{position:'right',min:0,ticks:{font:{family:'Space Mono',size:9},color:'#b09a88',callback:v=>v+'x'},grid:{display:false}},
       x:{ticks:{font:{family:'Space Mono',size:9},color:'#b09a88'},grid:{display:false}}}}});
   const R=v=>v===null||v===undefined?'—':'NT$'+Math.round(v).toLocaleString();
-  document.getElementById('tbl-adw-hist').innerHTML=`<thead><tr><th>週</th><th>Meta 花費</th><th>官網付款營收</th><th>真實 ROAS</th><th>含服務費</th><th>整站轉換率</th><th>Meta 自報 ROAS</th><th>提醒</th></tr></thead><tbody>${
-    ws.slice().reverse().map(w=>{const d=w.d,m=d.meta,rl=d.real,g=d.ga4;return `<tr><td class="td-s">${adwLbl_(w.start,w.end)}</td><td>${R(m&&m.spend)}</td><td>${R(rl&&rl.paid_revenue)}${rl&&!rl.complete?'<span class="lowsample" style="font-size:8px;color:#b8860b;margin-left:4px">缺天</span>':''}</td><td>${rl&&rl.real_roas!==null&&rl.real_roas!==undefined?rl.real_roas.toFixed(2)+'x':'—'}</td><td>${adwPill_(rl?rl.real_roas_fee:null,4.5,2)}</td><td>${g?g.cvr_pct+'%':'—'}</td><td>${m?m.meta_roas+'x':'—'}</td><td>${(d.flags||[]).length||''}</td></tr>`;}).join('')
+  document.getElementById('tbl-adw-hist').innerHTML=`<thead><tr><th>週</th><th>Meta 花費</th><th>官網付款營收</th><th>真實 ROAS<br><span style="font-weight:400;font-size:9px">不含服務費</span></th><th>真實 ROAS<br><span style="font-weight:400;font-size:9px">含服務費</span></th><th>整站轉換率</th><th>Meta 自報<br><span style="font-weight:400;font-size:9px">不含服務費</span></th><th>Meta 自報<br><span style="font-weight:400;font-size:9px">含服務費</span></th><th>提醒</th></tr></thead><tbody>${
+    ws.slice().reverse().map(w=>{const d=w.d,m=d.meta,rl=d.real,g=d.ga4;return `<tr><td class="td-s">${adwLbl_(w.start,w.end)}</td><td>${R(m&&m.spend)}</td><td>${R(rl&&rl.paid_revenue)}${rl&&!rl.complete?'<span class="lowsample" style="font-size:8px;color:#b8860b;margin-left:4px">缺天</span>':''}</td><td>${rl&&rl.real_roas!==null&&rl.real_roas!==undefined?rl.real_roas.toFixed(2)+'x':'—'}</td><td>${adwPill_(rl?rl.real_roas_fee:null,4.5,2)}</td><td>${g?g.cvr_pct+'%':'—'}</td><td>${m?adwX_(m.meta_roas):'—'}</td><td>${m?adwX_(m.meta_roas_fee!==undefined?m.meta_roas_fee:adwFee_(m.meta_roas)):'—'}</td><td>${(d.flags||[]).length||''}</td></tr>`;}).join('')
   }</tbody>`;
 }
 
@@ -1398,8 +1405,8 @@ function renderRoasCheck(){
   wkEl.textContent=r.weekLabel+'（週一自動更新）';
   const gapColor = r.gapMultiple===null ? '#8D5531' : (r.gapMultiple>=3?'#c0392b':r.gapMultiple>=1.5?'#b8860b':'#1a7a4a');
   renderKPIs('roascheck-kpi',{
-    'Meta 自報 ROAS':{v:r.metaRoas.toFixed(2)+'x',delta:null,vs:'花費 NT$'+r.metaSpend.toLocaleString(),color:'#1877F2'},
-    'GA4 觀測 ROAS':{v:r.ga4Roas.toFixed(2)+'x',delta:null,vs:'GA4 社群營收 NT$'+r.ga4Revenue.toLocaleString(),color:'#284234'},
+    'Meta 自報 ROAS':{v:r.metaRoas.toFixed(2)+'x',delta:null,vs:'含服務費 '+adwX_(adwFee_(r.metaRoas))+' · 花費 NT$'+r.metaSpend.toLocaleString(),color:'#1877F2'},
+    'GA4 觀測 ROAS':{v:r.ga4Roas.toFixed(2)+'x',delta:null,vs:'含服務費 '+adwX_(adwFee_(r.ga4Roas))+' · GA4 社群營收 NT$'+r.ga4Revenue.toLocaleString(),color:'#284234'},
     '落差倍數':{v:r.gapMultiple===null?'—':r.gapMultiple.toFixed(1)+'x',delta:null,vs:'Meta ÷ GA4',color:gapColor}
   });
   if(r.gapMultiple===null){
@@ -1427,9 +1434,9 @@ function renderMetaSplit(){
     return;
   }
   renderKPIs('metasplit-kpi',{
-    '線上 ROAS':{v:r.metaRoas.toFixed(2)+'x',delta:null,vs:'NT$'+r.metaPurchaseValue.toLocaleString(),color:'#1877F2'},
-    '線下 ROAS':{v:r.metaOfflineRoas.toFixed(2)+'x',delta:null,vs:'NT$'+Math.round(r.metaOfflineValue).toLocaleString()+'（'+r.metaOfflinePurchases+'筆）',color:'#A54A1A'},
-    '全通路 ROAS':{v:r.metaBlendedRoas.toFixed(2)+'x',delta:null,vs:'NT$'+Math.round(r.metaBlendedValue).toLocaleString(),color:'#8D5531'}
+    '線上 ROAS':{v:r.metaRoas.toFixed(2)+'x',delta:null,vs:'含服務費 '+adwX_(adwFee_(r.metaRoas))+' · NT$'+r.metaPurchaseValue.toLocaleString(),color:'#1877F2'},
+    '線下 ROAS':{v:r.metaOfflineRoas.toFixed(2)+'x',delta:null,vs:'含服務費 '+adwX_(adwFee_(r.metaOfflineRoas))+' · NT$'+Math.round(r.metaOfflineValue).toLocaleString()+'（'+r.metaOfflinePurchases+'筆）',color:'#A54A1A'},
+    '全通路 ROAS':{v:r.metaBlendedRoas.toFixed(2)+'x',delta:null,vs:'含服務費 '+adwX_(adwFee_(r.metaBlendedRoas))+' · NT$'+Math.round(r.metaBlendedValue).toLocaleString(),color:'#8D5531'}
   });
   cardEl.style.display='';
   const offlinePct=r.metaBlendedValue>0?Math.round(r.metaOfflineValue/r.metaBlendedValue*1000)/10:0;
