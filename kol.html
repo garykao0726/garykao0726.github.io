@@ -84,13 +84,14 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 <div class="insight" style="border-left-color:var(--green)">
   <div class="insight-hd"><span class="insight-tag">說明</span><span class="insight-title">這頁在看什麼</span></div>
   <div class="insight-body">
-    KOL（網紅／部落客）廣告在 Meta 的廣告名稱多半帶「KOL」，所以花費與 Meta 轉換可以拆出來看；但<b>廣告網址多半沒帶 kol</b>，
-    GA4 只認得出「來源／活動／媒介寫了 kol」的那一小部分，<b>月度總覽的 GA4 流量與轉換因此嚴重偏低</b>
-    （2026-10-19～25 實測：Meta 連結點擊 5,084 次，用廣告 ID 對得上 GA4 工作階段 5,376 次，但標籤寫 kol 的只有 163 次）。
-    要看用廣告 ID 對出來的 KOL 造訪，請看<a href="marketing.html" style="color:var(--rust)">廣告成效頁</a>的 KOL 區塊（每週更新）。
-    這頁分兩層：<b>月度總覽</b>（下方，用 GA4 真實營收，跟儀表板其他頁面口徑一致）看「KOL 整體有沒有在成長」；
-    <b>個人排行榜</b>（再下方）看「哪一位 KOL 表現比較好」——這層因為 GA4 沒有「個人」維度，只能用 Meta 自己認列的轉換金額，
-    兩層的「轉換金額」定義不一樣，请分開看，下面各自都有加註。
+    KOL 付費廣告現在是把「KOL」寫在 Meta 的<b>廣告名稱（標題）</b>，多數廣告的網址參數（活動／媒介）不帶 kol
+    （2026-01～10 的 KOL 廣告花費裡約三分之二是這樣；2025-10～2026-04 有部分廣告把 kol 放在 <code>utm_campaign</code>）。
+    KOL 自己貼文的連結才會在網址帶 <code>utm_source=kol／ig_kol／youtube_kol</code>、<code>utm_medium=人名</code>（依「林果新UTM-2026」試算表慣例）。
+    所以 GA4 的 KOL 流量＝<b>用 Meta 廣告名稱認出 KOL 廣告 → 取廣告 ID → 對 GA4 的 utm_content（實測是 Meta 廣告 ID）</b>，再加上來源／活動含 kol 的連結，兩者取聯集、同一列只算一次；
+    花費與連結點擊是同一批 KOL 廣告。「廣告 ID 對得上」＝GA4 用廣告 ID 對得上的工作階段 ÷ Meta 連結點擊：工作階段不是一對一對應點擊，100% 上下都正常，明顯偏低（低於 60%）才代表流量有漏。
+    這頁分兩層：<b>月度總覽</b>（下方，GA4 口徑）看「KOL 整體有沒有在成長」；
+    <b>個人排行榜</b>（再下方）看「哪一位 KOL 表現比較好」——個人層級的 GA4 只有造訪與工作階段內購買（本頁沒有逐人顯示，週報有），轉換金額仍用 Meta 自己認列的數字。
+    兩層的「轉換金額」定義不一樣，請分開看，下面各自都有加註。
   </div>
 </div>
 
@@ -102,13 +103,23 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 <div class="card" id="kol-trend-card">
   <div class="card-hdr">
     <div class="card-lbl">流量 / 廣告金額 / 轉換金額 走勢</div>
-    <div class="card-badge">GA4 只認 sessionSource/CampaignName/Medium 含 "kol"（偏低）</div>
+    <div class="card-badge">KOL 廣告 ID ＋ 來源含 kol</div>
   </div>
   <div class="ch220"><canvas id="ch-kol-monthly"></canvas></div>
 </div>
 <div class="card" id="kol-monthly-tbl-card">
   <div class="card-hdr"><div class="card-lbl">月度明細</div></div>
   <div style="overflow-x:auto"><table class="ctbl" id="tbl-kol-monthly"></table></div>
+</div>
+<div class="insight" style="border-left-color:var(--rust)">
+  <div class="insight-hd"><span class="insight-tag">怎麼讀成交</span><span class="insight-title">為什麼流量有了、轉換還是很少</span></div>
+  <div class="insight-body">
+    轉換筆數／金額是 GA4 記到「同一次造訪內」成交的購買；「首次接觸購買」是第一次接觸來自 KOL 的人在該月的購買（含日後回訪，但換裝置或清 cookie 就斷）。
+    KOL 廣告有上層（把陌生人拉進來）也有購買導向的，各月比例差很多（上層花費占比約 5%～68%，2026-08 幾乎全是購買導向、2026-09、10 上層過半），
+    所以低成交不能一律用「上層本來就不會成交」解釋，要看當月的廣告組成。另外 <b>GA4 對所有付費廣告的購買歸因都偏低</b>——例如 2026-10-19～25 這週，Meta 自報線上購買 83 筆，
+    GA4 的 Paid Social 只記到 2 筆。所以這裡的 ROAS 是<b>下限</b>，不能單看它說 KOL 好或不好；
+    KOL 的門市購買（Meta 歸因的線下轉換）更不在 GA4 裡，要看下方個人排行榜。
+  </div>
 </div>
 
 <div class="sec-hdr">
@@ -122,7 +133,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     轉換金額只能用 <b>Meta 自己認列的 action_values</b>，不是 GA4 真實營收——這個數字用的是 Meta 寬鬆的歸因窗口（7天點擊/1天瀏覽），
     結構上會比真實貢獻高估，<b>不能當成真的賺了這麼多錢</b>。但因為所有 KOL 都是用同一把（有偏差的）尺在量，
     <b>相對排名還是有參考價值</b>——誰在前面誰在後面，比 ROAS 絕對數字本身更可信。
-    「線下轉換」欄是這次新拆出來的——门市 POS 訂單透過 Meta CAPI 比對回廣告，證實部分 KOL（例如 ALLEN、芋圓）帶來的購買主要發生在實體門市，不是線上。
+    「線下轉換」欄是這次新拆出來的——門市 POS 訂單透過 Meta CAPI 比對回廣告，證實部分 KOL（例如芋圓、Freda）帶來的購買主要發生在實體門市，不是線上（ALLEN 約一半一半）。
     廣告數 &lt; 3 的標了「低樣本」，代表只測過一兩檔，數字可能不穩定，建議多觀察幾檔再下判斷。<br>人名是從廣告名稱解析出來的（KOL_檔期_名字，例如 KOL_20th_Allen）；名稱沒帶 KOL 前綴、打錯字、或同一人用了不同拼法，就會被拆成兩列或漏掉。目前已經確認並合併的：<b>羅得快／羅得筷＝羅德筷</b>（打錯字）、<b>圈入準＝阿準</b>、商品代碼前綴的 wshoes1621bk_freda＝Freda。「(未標人名)」是廣告名稱只寫 KOL、沒寫人名的。
   </div>
 </div>
@@ -169,14 +180,19 @@ let KOL_MONTHLY_ROWS=[], KOL_PERSON_ROWS=[];
 async function loadData(){
   try{
     const [monthly, person] = await Promise.all([
-      loadGviz('KOL月度成效'),
+      loadGviz('KOL月度成效v2').then(r=>r&&r.length&&typeof r[0][0]==='string'&&/^\d{4}\/\d{2}/.test(r[0][0])?r:loadGviz('KOL月度成效')).catch(()=>loadGviz('KOL月度成效')),   // gviz 對不存在的分頁會回第一個分頁，所以要驗第一欄像不像「2026/09」   // v2＝marketing-gas 用廣告 ID 對 GA4（舊版只認網址帶 kol，嚴重偏低）
       loadGviz('KOL個人成效v2').then(r=>r&&r.length?r:loadGviz('KOL個人成效')).catch(()=>loadGviz('KOL個人成效'))   // v2＝marketing-gas 每週一用新命名規則（KOL_20th_名字）重算；舊分頁卡在舊版本，會把同一人拆成兩列
     ]);
     KOL_MONTHLY_ROWS = (monthly||[]).map(r=>{
-      const d=parseDate_(r[0]); if(!d) return null;
-      return { ym: d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0'),
+      const m=typeof r[0]==='string'&&r[0].match(/^(\d{4})\/(\d{2})/);
+      const d=m?null:parseDate_(r[0]); if(!m&&(!d||isNaN(d))) return null;
+      return { ym: m?m[1]+'/'+m[2]:d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0'),
         sessions:Number(r[1])||0, transactions:Number(r[2])||0, cvr:Number(r[3])||0,
-        revenue:Number(r[4])||0, spend:Number(r[5])||0, roas:Number(r[6])||0 };
+        revenue:Number(r[4])||0, spend:Number(r[5])||0, roas:Number(r[6])||0,
+        clicks:r[8]===null||r[8]===undefined||r[8]===''?null:Number(r[8]), idSessions:r[9]===null||r[9]===undefined||r[9]===''?null:Number(r[9]),
+        coverage:r[11]===null||r[11]===undefined||r[11]===''?null:Number(r[11]),
+        ftPurchases:r[12]===null||r[12]===undefined||r[12]===''?null:Number(r[12]), ftRevenue:r[13]===null||r[13]===undefined||r[13]===''?null:Number(r[13]),
+        through:typeof r[14]==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(r[14])?r[14]:null };
     }).filter(Boolean).sort((a,b)=>a.ym<b.ym?-1:1);
     KOL_PERSON_ROWS = (person||[]).map(r=>({
       name:r[0], spend:Number(r[1])||0, onlineValue:Number(r[2])||0, offlineValue:Number(r[3])||0,
@@ -201,15 +217,17 @@ function renderMonthly(){
   // 排除進行中的當月（資料還沒跑完會誤導）；2025 年月份的 kol_transactions/cvr 沒有補齊歷史資料
   // （只回填了 2026 年），2025 那幾個月轉換筆數看起來是 0 其實是「沒資料」不是「真的 0」，容易誤導，故只顯示 2026 年起
   const now=new Date(), curYm=now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0');
-  const rows=KOL_MONTHLY_ROWS.filter(r=>r.ym.startsWith('2026/')&&r.ym!==curYm);
+  // 完整月份＝資料算到月底的月份（v2 有 data_through）；舊分頁沒有這欄，退回「不是本月」。月底到下個週一排程之間，上個月那列還沒補齊就先不顯示
+  const lastDay=ym=>{const [y,m]=ym.split('/').map(Number);return y+'-'+String(m).padStart(2,'0')+'-'+String(new Date(y,m,0).getDate()).padStart(2,'0');};
+  const rows=KOL_MONTHLY_ROWS.filter(r=>r.ym>='2026/01'&&(r.through?r.through>=lastDay(r.ym):r.ym!==curYm));
   if(!rows.length){ kpiEl.innerHTML='<div class="cmp-pending" style="grid-column:1/-1">尚無完整月份資料。</div>'; return; }
   const last=rows[rows.length-1];
-  document.getElementById('kol-month-range').textContent=rows[0].ym+' – '+last.ym+'（共 '+rows.length+' 個月）';
+  document.getElementById('kol-month-range').textContent=rows[0].ym+' – '+last.ym+'（共 '+rows.length+' 個月）'+(last.through?' · 資料算到 '+last.through:'');
   renderKPIs('kol-kpi',{
-    '流量':{v:last.sessions.toLocaleString(),vs:last.ym+' sessions',color:'#284234'},
+    '流量':{v:last.sessions.toLocaleString(),vs:last.ym+' sessions'+(last.clicks?' · Meta 點擊 '+last.clicks.toLocaleString()+'（廣告 ID 對得上 '+last.coverage+'%）':''),color:'#284234'},
     '轉換率':{v:last.cvr.toFixed(2)+'%',vs:last.transactions+' 筆訂單',color:'#5a8a6e'},
     '廣告金額':{v:fmtRev(last.spend),vs:'Meta 廣告層級花費',color:'#A54A1A'},
-    '轉換金額':{v:fmtRev(last.revenue),vs:'GA4 真實營收・ROAS 不含服務費 '+last.roas.toFixed(2)+'x／含 '+feeX(last.roas),color:'#8D5531'}
+    '轉換金額':{v:fmtRev(last.revenue),vs:'GA4 真實營收・ROAS 不含服務費 '+(last.spend>0?(last.revenue/last.spend).toFixed(2)+'x／含 '+(last.revenue/last.spend/KOL_FEE).toFixed(2)+'x':'—'),color:'#8D5531'}
   });
 
   const el=document.getElementById('ch-kol-monthly');
@@ -228,11 +246,12 @@ function renderMonthly(){
         x:{ticks:{font:{family:'Space Mono',size:9},color:'#b09a88'},grid:{display:false}}
       }}});
 
-  document.getElementById('tbl-kol-monthly').innerHTML=`<thead><tr><th>月份</th><th>流量</th><th>轉換率</th><th>轉換筆數</th><th>轉換金額</th><th>廣告金額</th><th>ROAS<br><span style="font-weight:400;font-size:9px">不含服務費</span></th><th>ROAS<br><span style="font-weight:400;font-size:9px">含服務費</span></th></tr></thead><tbody>${
+  document.getElementById('tbl-kol-monthly').innerHTML=`<thead><tr><th>月份</th><th>流量</th><th>轉換率</th><th>轉換筆數</th><th>轉換金額</th><th>廣告金額</th><th>ROAS<br><span style="font-weight:400;font-size:9px">不含服務費</span></th><th>ROAS<br><span style="font-weight:400;font-size:9px">含服務費</span></th><th>Meta 連結點擊</th><th>廣告 ID 對得上</th><th>首次接觸購買</th></tr></thead><tbody>${
     rows.slice().reverse().map(r=>{
-      const roasCls = r.roas>=3?'good':r.roas>=1?'warn':'bad';
+      const rawRoas=r.spend>0?r.revenue/r.spend:null, feeRoas=rawRoas===null?null:rawRoas/KOL_FEE;
+      const roasCls = feeRoas===null?'':feeRoas>=4.5?'good':feeRoas>=1.61?'warn':'bad';   // 公司門檻（含服務費口徑）：損益兩平 1.61、電商獎金線 4.5
       const lowSample = r.transactions>0 && r.transactions<10;
-      return `<tr><td class="td-s">${r.ym}</td><td>${r.sessions.toLocaleString()}</td><td>${r.cvr.toFixed(2)}%</td><td>${r.transactions}${lowSample?'<span class="lowsample">低樣本</span>':''}</td><td>${fmtRev(r.revenue)}</td><td>${fmtRev(r.spend)}</td><td><span class="ch-pill ${roasCls}">${r.roas.toFixed(2)}x</span></td><td><span class="ch-pill ${roasCls}">${feeX(r.roas)}</span></td></tr>`;
+      return `<tr><td class="td-s">${r.ym}</td><td>${r.sessions.toLocaleString()}</td><td>${r.cvr.toFixed(2)}%</td><td>${r.transactions}${lowSample?'<span class="lowsample">低樣本</span>':''}</td><td>${fmtRev(r.revenue)}</td><td>${fmtRev(r.spend)}</td><td>${rawRoas===null?'—':'<span class="ch-pill '+roasCls+'">'+rawRoas.toFixed(2)+'x</span>'}</td><td>${feeRoas===null?'—':'<span class="ch-pill '+roasCls+'">'+feeRoas.toFixed(2)+'x</span>'}</td><td>${r.clicks===null?'—':r.clicks.toLocaleString()}</td><td>${r.coverage===null?'—':'<span class="ch-pill '+(r.coverage>=80?'good':r.coverage>=60?'warn':'bad')+'">'+r.coverage+'%</span>'}</td><td>${r.ftPurchases===null?'—':r.ftPurchases+' 筆 / '+fmtRev(r.ftRevenue)}</td></tr>`;
     }).join('')
   }</tbody>`;
 }
@@ -266,8 +285,8 @@ function renderPerson(){
     KOL_PERSON_ROWS.map(r=>{
       const roasCls = r.roas>=6?'good':r.roas>=3?'warn':'bad';
       const lowSample = r.adCount<3;
-      const offlinePct = r.totalValue>0 ? Math.round(r.offlineValue/r.totalValue*100) : 0;
-      return `<tr><td class="td-s">${r.name}</td><td>${fmtRev(r.spend)}</td><td>${fmtRev(r.onlineValue)}</td><td>${fmtRev(r.offlineValue)}${offlinePct>=50?'<span class="lowsample" style="color:var(--positive);background:rgba(26,122,74,.1)">主要線下</span>':''}</td><td>${fmtRev(r.totalValue)}</td><td><span class="ch-pill ${roasCls}">${r.roas.toFixed(2)}x</span></td><td><span class="ch-pill ${roasCls}">${feeX(r.roas)}</span></td><td>${r.adCount}${lowSample?'<span class="lowsample">低樣本</span>':''}</td></tr>`;
+      const offlinePct = r.totalValue>0 ? r.offlineValue/r.totalValue*100 : 0;
+      return `<tr><td class="td-s">${r.name}</td><td>${fmtRev(r.spend)}</td><td>${fmtRev(r.onlineValue)}</td><td>${fmtRev(r.offlineValue)}${offlinePct>=50?'<span class="lowsample" style="color:var(--positive);background:rgba(26,122,74,.1)">主要線下</span>':''}</td><td>${fmtRev(r.totalValue)}</td><td><span class="ch-pill ${roasCls}">${r.roas.toFixed(2)}x</span></td><td><span class="ch-pill ${roasCls}">${r.spend>0?(r.totalValue/r.spend/KOL_FEE).toFixed(2)+'x':'—'}</span></td><td>${r.adCount}${lowSample?'<span class="lowsample">低樣本</span>':''}</td></tr>`;
     }).join('')
   }</tbody>`;
 }
