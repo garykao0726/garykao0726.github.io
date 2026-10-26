@@ -120,7 +120,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     結構上會比真實貢獻高估，<b>不能當成真的賺了這麼多錢</b>。但因為所有 KOL 都是用同一把（有偏差的）尺在量，
     <b>相對排名還是有參考價值</b>——誰在前面誰在後面，比 ROAS 絕對數字本身更可信。
     「線下轉換」欄是這次新拆出來的——门市 POS 訂單透過 Meta CAPI 比對回廣告，證實部分 KOL（例如 ALLEN、芋圓）帶來的購買主要發生在實體門市，不是線上。
-    廣告數 &lt; 3 的標了「低樣本」，代表只測過一兩檔，數字可能不穩定，建議多觀察幾檔再下判斷。
+    廣告數 &lt; 3 的標了「低樣本」，代表只測過一兩檔，數字可能不穩定，建議多觀察幾檔再下判斷。<br>人名是從廣告名稱解析出來的（KOL_檔期_名字，例如 KOL_20th_Allen）；名稱沒帶 KOL 前綴、打錯字、或同一人用了不同拼法，就會被拆成兩列或漏掉。目前有兩處是推測、待確認：<b>羅得快／羅得筷已併入羅德筷</b>（字形相近、各只有一支廣告）；<b>「圈入準」是不是阿準</b>還不確定，先獨立一列並標註。「(未標人名)」是廣告名稱只寫 KOL、沒寫人名的。
   </div>
 </div>
 <div class="card">
@@ -167,7 +167,7 @@ async function loadData(){
   try{
     const [monthly, person] = await Promise.all([
       loadGviz('KOL月度成效'),
-      loadGviz('KOL個人成效')
+      loadGviz('KOL個人成效v2').then(r=>r&&r.length?r:loadGviz('KOL個人成效')).catch(()=>loadGviz('KOL個人成效'))   // v2＝marketing-gas 每週一用新命名規則（KOL_20th_名字）重算；舊分頁卡在舊版本，會把同一人拆成兩列
     ]);
     KOL_MONTHLY_ROWS = (monthly||[]).map(r=>{
       const d=parseDate_(r[0]); if(!d) return null;
