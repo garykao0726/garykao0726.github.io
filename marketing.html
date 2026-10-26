@@ -483,7 +483,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 
   <div class="sec-hdr" style="margin-top:1.75rem">
     <div class="sec-title">KOL 廣告效果</div>
-    <div class="sec-date" id="kol-period">流量/轉換率/轉換金額=GA4（source/campaign/medium含"kol"）· 廣告金額=Meta廣告層級名稱含"kol"</div>
+    <div class="sec-date" id="kol-period">流量/轉換=GA4（用 KOL 廣告名稱認出廣告 ID 對 utm_content，再加來源含 kol 的連結）· 廣告金額=同一批 KOL 廣告（Meta 逐廣告）· <a href="kol.html" style="color:var(--rust)">完整版：KOL 成效儀表板</a></div>
   </div>
   <div class="kpi4" id="kol-kpi" style="margin-bottom:1rem"></div>
   <div class="card" id="kol-card" style="display:none">
@@ -1049,7 +1049,7 @@ async function loadData(){
       loadGviz('行銷費用月表').catch(() => null),
       loadGviz('行銷週報彙總').catch(() => null),
       loadGviz('月度營運').catch(() => null),
-      loadGviz('KOL月度成效').catch(() => null),
+      loadGviz('KOL月度成效v2').then(r=>r&&r.length&&typeof r[0][0]==='string'&&/^\d{4}\/\d{2}/.test(r[0][0])?r:loadGviz('KOL月度成效')).catch(() => loadGviz('KOL月度成效')).catch(() => null),   // v2＝廣告 ID 對 GA4（舊分頁只認網址帶 kol，嚴重偏低）；gviz 對不存在的分頁會回第一個分頁，所以驗第一欄
       loadGviz('廣告週報').catch(() => null)
     ]);
     buildRoasCheck(summaryRows);
@@ -1067,9 +1067,12 @@ async function loadData(){
     // 跟 ERP_AD_MAP、行銷費用月表踩過同一個坑，一樣用 parseDate_() 轉成真正的 Date 再重新格式化。
     KOL_MONTHLY={};
     if(kolRows){kolRows.forEach(r=>{
-      const d=parseDate_(r[0]);if(!d)return;
-      const ym=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0');
-      KOL_MONTHLY[ym]={sessions:Number(r[1])||0,transactions:Number(r[2])||0,cvr:Number(r[3])||0,revenue:Number(r[4])||0,spend:Number(r[5])||0,roas:Number(r[6])||0};
+      const mm=typeof r[0]==='string'&&r[0].match(/^(\d{4})\/(\d{2})/);
+      const d=mm?null:parseDate_(r[0]);if(!mm&&(!d||isNaN(d)))return;
+      const ym=mm?mm[1]+'/'+mm[2]:d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0');
+      const nn=v=>v===null||v===undefined||v===''?null:Number(v);
+      KOL_MONTHLY[ym]={sessions:Number(r[1])||0,transactions:Number(r[2])||0,cvr:Number(r[3])||0,revenue:Number(r[4])||0,spend:Number(r[5])||0,roas:Number(r[6])||0,
+        clicks:nn(r[8]),coverage:nn(r[11]),through:typeof r[14]==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(r[14])?r[14]:null};
     });}
     if(RENDERED.ads){renderHealthCheck();renderAdw();renderRoasCheck();renderMetaSplit();renderChannelSplit();renderMonthlySplit();renderStoreSplit();renderAdNewCust();renderOfflineQuality();renderNewProducts();renderSpendVsRealRevenue();renderKolMonthly();}
     // 解析 ERP 廣告費明細 → ERP_AD_MAP[ym]
@@ -1597,7 +1600,9 @@ function renderKolMonthly(){
   const noteEl=document.getElementById('kol-note');
   if(!kpiEl) return;
   const _now=new Date(),_curYm=_now.getFullYear()+'/'+String(_now.getMonth()+1).padStart(2,'0');
-  const keys=Object.keys(KOL_MONTHLY).filter(k=>k.startsWith('2026/')&&k!==_curYm).sort().slice(-12);
+  // 完整月份＝資料算到月底（v2 有 data_through）；舊分頁沒有這欄就退回「不是本月」
+  const _lastDay=ym=>{const [y,m]=ym.split('/').map(Number);return y+'-'+String(m).padStart(2,'0')+'-'+String(new Date(y,m,0).getDate()).padStart(2,'0');};
+  const keys=Object.keys(KOL_MONTHLY).filter(k=>k>='2026/01'&&(KOL_MONTHLY[k].through?KOL_MONTHLY[k].through>=_lastDay(k):k!==_curYm)).sort().slice(-12);
   if(!keys.length){
     kpiEl.innerHTML='<div class="cmp-pending" style="grid-column:1/-1">尚無 KOL 月度資料。</div>';
     cardEl.style.display='none';
@@ -1607,10 +1612,10 @@ function renderKolMonthly(){
   const lastK=keys[keys.length-1], last=KOL_MONTHLY[lastK];
   const fmtRev=v=>'NT$'+Math.round(v).toLocaleString();
   renderKPIs('kol-kpi',{
-    '流量':{v:last.sessions.toLocaleString(),delta:null,vs:lastK+' sessions',color:'#284234'},
+    '流量':{v:last.sessions.toLocaleString(),delta:null,vs:lastK+' sessions'+(last.clicks?' · Meta 點擊 '+last.clicks.toLocaleString()+'（廣告 ID 對得上 '+last.coverage+'%）':''),color:'#284234'},
     '轉換率':{v:last.cvr.toFixed(2)+'%',delta:null,vs:last.transactions+' 筆訂單',color:'#5a8a6e'},
     '廣告金額':{v:fmtRev(last.spend),delta:null,vs:'Meta 廣告層級花費',color:'#A54A1A'},
-    '轉換金額':{v:fmtRev(last.revenue),delta:null,vs:'ROAS '+last.roas.toFixed(2)+'x',color:'#8D5531'}
+    '轉換金額':{v:fmtRev(last.revenue),delta:null,vs:'ROAS 不含服務費 '+(last.spend>0?(last.revenue/last.spend).toFixed(2)+'x／含 '+(last.revenue/last.spend/1.15).toFixed(2)+'x':'—'),color:'#8D5531'}
   });
   cardEl.style.display='';
   const el=document.getElementById('ch-kol');
@@ -1624,15 +1629,15 @@ function renderKolMonthly(){
     y1:{position:'right',min:0,ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}},
     x:{ticks:{font:{family:'Space Mono',size:10},color:'#b09a88'},grid:{display:false}}
   }}});
-  tblEl.innerHTML=`<thead><tr><th>月份</th><th>流量</th><th>轉換率</th><th>轉換筆數</th><th>廣告金額</th><th>轉換金額</th><th>ROAS</th></tr></thead><tbody>${keys.map(k=>{
+  tblEl.innerHTML=`<thead><tr><th>月份</th><th>流量</th><th>轉換率</th><th>轉換筆數</th><th>廣告金額</th><th>轉換金額</th><th>ROAS<br><span style="font-weight:400;font-size:9px">不含服務費</span></th><th>ROAS<br><span style="font-weight:400;font-size:9px">含服務費</span></th><th>廣告 ID 對得上</th></tr></thead><tbody>${keys.map(k=>{
     const d=KOL_MONTHLY[k];
-    return `<tr><td>${k}</td><td>${d.sessions.toLocaleString()}</td><td>${d.cvr.toFixed(2)}%</td><td>${d.transactions}</td><td>${fmtRev(d.spend)}</td><td>${fmtRev(d.revenue)}</td><td>${d.roas.toFixed(2)}x</td></tr>`;
+    return `<tr><td>${k}</td><td>${d.sessions.toLocaleString()}</td><td>${d.cvr.toFixed(2)}%</td><td>${d.transactions}</td><td>${fmtRev(d.spend)}</td><td>${fmtRev(d.revenue)}</td><td>${d.spend>0?(d.revenue/d.spend).toFixed(2)+'x':'—'}</td><td>${d.spend>0?(d.revenue/d.spend/1.15).toFixed(2)+'x':'—'}</td><td>${d.coverage===null||d.coverage===undefined?'—':d.coverage+'%'}</td></tr>`;
   }).join('')}</tbody>`;
   if(noteEl){
     const lowSample=last.transactions>0&&last.transactions<10;
-    noteEl.textContent=`${lastK} KOL 帶來 ${last.sessions.toLocaleString()} 流量、${last.transactions} 筆訂單（轉換率 ${last.cvr.toFixed(2)}%），廣告花費 ${fmtRev(last.spend)}、轉換金額 ${fmtRev(last.revenue)}（ROAS ${last.roas.toFixed(2)}x）。`
+    noteEl.textContent=`${lastK} KOL 帶來 ${last.sessions.toLocaleString()} 流量、${last.transactions} 筆訂單（轉換率 ${last.cvr.toFixed(2)}%），廣告花費 ${fmtRev(last.spend)}、轉換金額 ${fmtRev(last.revenue)}（ROAS 不含服務費 ${last.spend>0?(last.revenue/last.spend).toFixed(2):'—'}x／含服務費 ${last.spend>0?(last.revenue/last.spend/1.15).toFixed(2):'—'}x）。`
       + (lowSample?` ⚠️ 轉換筆數只有 ${last.transactions} 筆，樣本很小，轉換率/ROAS 波動可能很大，不建議只看單月數字做判斷，建議看多月趨勢。`:'')
-      + ' 判定規則：GA4 sessionSource/sessionCampaignName/sessionMedium 含「kol」算流量與轉換金額；Meta 廣告花費算「廣告/廣告組合/受眾名稱含 kol」（例如 SF_KOL_xxx、KOL_xxx），兩邊命名規則可能沒有完全對齊到同一組人，僅供方向參考。';
+      + ' 判定規則：用 Meta 廣告名稱認出 KOL 廣告（名稱含 KOL 或已知 KOL 名單）→ 取廣告 ID → 對 GA4 的 utm_content（實測是 Meta 廣告 ID），再加上來源／活動／媒介含 kol 的連結，同一列只算一次；轉換是同一次造訪內成交的購買，GA4 對付費廣告的購買歸因本來就偏低，ROAS 是下限，不能單看它判斷 KOL 好壞（完整說明與個人排行見 KOL 成效儀表板）。';
   }
 }
 
