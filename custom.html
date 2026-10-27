@@ -7,6 +7,7 @@
 <link rel="icon" href="/favicon.png" type="image/png">
 <script>if (new URLSearchParams(location.search).get('view') === 'customer') window.ORINGO_SKIP_AUTH = true;</script>
 <script src="auth.js"></script>
+<script src="staff-session.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -689,31 +690,11 @@ textarea.form-input{resize:vertical;min-height:80px;line-height:1.5}
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbywhbtNQWEsQ68I7sCbcs71bVAPD_DrDGBAY_wm8Nl_MXln1daS77h-tXVBXrOYw4kBBg/exec';
 
 // =============================================
-// 員工登入憑證（2026-07-12 安全修正，同 repair.html）
+// 員工後台憑證（2026-10-27 起改用共用模組 staff-session.js）
+// 後台（GAS）要驗證「這是不是 @oringoshoes.com 的人」。登入儀表板時存下的 Google ID token 會自動換成後台發的
+// 8 小時通行證，整天不必再授權；只有 ID token 已過期（登入超過 1 小時才開這頁）才會出現橫幅，點一次就好。
 // =============================================
-const STAFF_OAUTH_CLIENT_ID = '777948523832-8qfmjk689e35f02crqjp35kg47j4kcgn.apps.googleusercontent.com';
 let staffAccessToken = null;
-let staffTokenClient = null;
-
-// 憑證快取：access token 約 1 小時有效。存起來並綁定儀表板登入帳號，同一個登入期間換頁／重整就不必再按一次授權
-const STAFF_TOKEN_CACHE = 'oringo_staff_token_v1';
-function dashboardEmail() {
-  try { return ((JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null') || {}).email) || ''; } catch { return ''; }
-}
-function readCachedStaffToken() {
-  try {
-    const c = JSON.parse(localStorage.getItem(STAFF_TOKEN_CACHE) || 'null');
-    if (c && c.token && c.exp > Date.now() && c.email && c.email === dashboardEmail()) return c.token;
-  } catch {}
-  return null;
-}
-function cacheStaffToken(resp) {
-  try {
-    const ttl = (Number(resp.expires_in) || 3600) * 1000;
-    localStorage.setItem(STAFF_TOKEN_CACHE, JSON.stringify({ token: resp.access_token, exp: Date.now() + ttl - 120000, email: dashboardEmail() }));
-  } catch {}
-}
-function clearCachedStaffToken() { try { localStorage.removeItem(STAFF_TOKEN_CACHE); } catch {} }
 
 function isAlreadyLoggedIn() {
   try {
@@ -721,50 +702,15 @@ function isAlreadyLoggedIn() {
     return !!(d && d.exp > Date.now());
   } catch { return false; }
 }
-function waitForGSI(cb) {
-  if (window.google && google.accounts && google.accounts.oauth2) { cb(); return; }
-  // auth.js 在 session 仍有效時不會載入 GSI（只有重新登入才載入），這裡自己補載一次，否則會一直卡在「載入中」
-  if (!document.getElementById('gsi-client-script')) {
-    const s = document.createElement('script');
-    s.id = 'gsi-client-script';
-    s.src = 'https://accounts.google.com/gsi/client';
-    s.async = true;
-    document.head.appendChild(s);
-  }
-  setTimeout(() => waitForGSI(cb), 300);
-}
-function initStaffTokenClient() {
-  staffTokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: STAFF_OAUTH_CLIENT_ID,
-    scope: 'openid email profile',
-    ...(dashboardEmail() ? { hint: dashboardEmail() } : {}),
-    callback: (resp) => {
-      if (resp.error) { showAuthorizeBanner(); return; }
-      staffAccessToken = resp.access_token;
-      cacheStaffToken(resp);
-      hideAuthorizeBanner();
-      loadOrders();
-    },
-    // 靜默取得需要開彈窗，頁面一載入時瀏覽器會擋（popup_failed_to_open）→ 顯示橫幅，讓使用者點一下（有使用者手勢才開得了）
-    error_callback: () => showAuthorizeBanner(),
+
+function startStaffSession() {
+  OringoStaffSession.start({
+    gasUrl: GAS_URL,
+    bannerText: '⚠ 需要額外授權才能存取工單資料，點此授權',
+    onToken: (tok) => { staffAccessToken = tok; loadOrders(); }, // 通行證／快取／點橫幅拿到都一樣：拿到就（重新）載入
   });
-  const cached = readCachedStaffToken();
-  if (cached) { staffAccessToken = cached; loadOrders(); return; }
-  staffTokenClient.requestAccessToken({ prompt: '' });
 }
-function showAuthorizeBanner() {
-  if (document.getElementById('staff-auth-banner')) return;
-  const el = document.createElement('div');
-  el.id = 'staff-auth-banner';
-  el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99997;background:#A54A1A;color:#fff;padding:10px 16px;text-align:center;font-size:13px;cursor:pointer';
-  el.textContent = '⚠ 需要額外授權才能存取工單資料，點此授權';
-  el.onclick = () => staffTokenClient.requestAccessToken({ prompt: '' }); // 已同意過就不再跳完整同意畫面
-  document.body.prepend(el);
-}
-function hideAuthorizeBanner() {
-  const el = document.getElementById('staff-auth-banner');
-  if (el) el.remove();
-}
+
 function withStaffToken(bodyObj) {
   return Object.assign({}, bodyObj, { staffToken: staffAccessToken || '' });
 }
@@ -791,9 +737,9 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   // 員工路徑：先確保拿到後台憑證才載工單清單，loadProducts 是公開商品目錄不用擋
   if (isAlreadyLoggedIn()) {
-    waitForGSI(initStaffTokenClient);
+    startStaffSession();
   } else {
-    document.addEventListener('oriAuthComplete', () => waitForGSI(initStaffTokenClient), { once: true });
+    document.addEventListener('oriAuthComplete', () => startStaffSession(), { once: true });
   }
   loadProducts();
   document.addEventListener('click', (e) => {
@@ -829,7 +775,7 @@ async function loadOrders() {
       allOrders = [];
       loadError = d.error || '未知錯誤';
       // 憑證被後台拒絕（過期／被撤銷）：丟掉快取，請使用者重新授權一次
-      if (/憑證/.test(loadError)) { clearCachedStaffToken(); staffAccessToken = null; showAuthorizeBanner(); }
+      if (/憑證/.test(loadError)) { staffAccessToken = null; OringoStaffSession.refresh(); }
     }
   } catch (e) {
     console.error(e); allOrders = [];
