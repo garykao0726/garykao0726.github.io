@@ -85,13 +85,19 @@
   const ALLOWLIST_CACHE = 'oringo_allowlist_v1';
   const ADMIN_PERMS = { finance: true };
 
+  let allowlistDown = false; // 這次登入時名單後端是不是連不上／回錯誤（用來換掉誤導的「尚未開通」訊息）
+
   // 回傳使用者物件（含 perms）或 null（不在名單／停用）
   async function resolveUser(email) {
+    allowlistDown = false;
     if (ALWAYS_ALLOW.has(email)) return { email, perms: ADMIN_PERMS };
     try {
       const res = await fetch(PERM_GAS_URL + '?action=getUsers');
       const data = await res.json();
-      const users = ((data && data.users) || []).filter(u => u.active !== false);
+      // 後端會回 HTTP 200 的 {error:…}（例如 GAS 授權過期）：那不是名單，要當成後端故障走下面的快取／網域保底，
+      // 不能當成「名單是空的」，否則全員會被誤報成「尚未開通」（2026-10-27 事故）
+      if (!data || !Array.isArray(data.users)) throw new Error((data && data.error) || '名單格式異常');
+      const users = data.users.filter(u => u.active !== false);
       // 快取（含 perms）供後端斷線時使用
       try {
         localStorage.setItem(ALLOWLIST_CACHE, JSON.stringify(
@@ -101,6 +107,7 @@
       return u ? { email, perms: u.perms || null } : null;
     } catch (e) {
       console.warn('權限名單查詢失敗，改用快取名單', e);
+      allowlistDown = true;
       try {
         const cached = JSON.parse(localStorage.getItem(ALLOWLIST_CACHE) || 'null');
         if (Array.isArray(cached)) {
@@ -129,7 +136,9 @@
     // 純名單制：只要在 admin.html 名單中（active）即可，不限公司網域
     const user = await resolveUser(email);
     if (!user) {
-      showAuthError('⚠️ 帳號 ' + email + ' 尚未獲授權使用儀表板，請洽 Gary 開通。');
+      showAuthError(allowlistDown
+        ? '⚠️ 權限名單暫時讀不到，無法確認 ' + email + ' 是否已開通，請稍後再試，或洽 Gary。'
+        : '⚠️ 帳號 ' + email + ' 尚未獲授權使用儀表板，請洽 Gary 開通。');
       return;
     }
     saveSession(email, user.perms, response.credential);

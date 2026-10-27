@@ -711,6 +711,26 @@ const STAFF_OAUTH_CLIENT_ID = '777948523832-8qfmjk689e35f02crqjp35kg47j4kcgn.app
 let staffAccessToken = null;
 let staffTokenClient = null;
 
+// 憑證快取：access token 約 1 小時有效。存起來並綁定儀表板登入帳號，同一個登入期間換頁／重整就不必再按一次授權
+const STAFF_TOKEN_CACHE = 'oringo_staff_token_v1';
+function dashboardEmail() {
+  try { return ((JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null') || {}).email) || ''; } catch { return ''; }
+}
+function readCachedStaffToken() {
+  try {
+    const c = JSON.parse(localStorage.getItem(STAFF_TOKEN_CACHE) || 'null');
+    if (c && c.token && c.exp > Date.now() && c.email && c.email === dashboardEmail()) return c.token;
+  } catch {}
+  return null;
+}
+function cacheStaffToken(resp) {
+  try {
+    const ttl = (Number(resp.expires_in) || 3600) * 1000;
+    localStorage.setItem(STAFF_TOKEN_CACHE, JSON.stringify({ token: resp.access_token, exp: Date.now() + ttl - 120000, email: dashboardEmail() }));
+  } catch {}
+}
+function clearCachedStaffToken() { try { localStorage.removeItem(STAFF_TOKEN_CACHE); } catch {} }
+
 function isAlreadyLoggedIn() {
   try {
     const d = JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null');
@@ -735,15 +755,19 @@ function initStaffTokenClient() {
   staffTokenClient = google.accounts.oauth2.initTokenClient({
     client_id: STAFF_OAUTH_CLIENT_ID,
     scope: 'openid email profile',
+    ...(dashboardEmail() ? { hint: dashboardEmail() } : {}),
     callback: (resp) => {
       if (resp.error) { showAuthorizeBanner(); return; }
       staffAccessToken = resp.access_token;
+      cacheStaffToken(resp);
       hideAuthorizeBanner();
       loadOrders(); // 不管是靜默還是點了橫幅互動拿到的，拿到就（重新）載入
     },
     // 靜默取得需要開彈窗，頁面一載入時瀏覽器會擋（popup_failed_to_open）→ 顯示橫幅，讓使用者點一下（有使用者手勢才開得了）
     error_callback: () => showAuthorizeBanner(),
   });
+  const cached = readCachedStaffToken();
+  if (cached) { staffAccessToken = cached; loadOrders(); return; }
   staffTokenClient.requestAccessToken({ prompt: '' }); // 先試靜默取得，失敗才顯示橫幅要求手動授權
 }
 
@@ -753,7 +777,7 @@ function showAuthorizeBanner() {
   el.id = 'staff-auth-banner';
   el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99997;background:#A54A1A;color:#fff;padding:10px 16px;text-align:center;font-size:13px;cursor:pointer';
   el.textContent = '⚠ 需要額外授權才能存取工單資料，點此授權';
-  el.onclick = () => staffTokenClient.requestAccessToken({ prompt: 'consent' });
+  el.onclick = () => staffTokenClient.requestAccessToken({ prompt: '' }); // 已同意過就不再跳完整同意畫面
   document.body.prepend(el);
 }
 function hideAuthorizeBanner() {
@@ -923,6 +947,8 @@ async function loadOrders() {
     } else {
       allOrders = [];
       loadError = data.error || '未知錯誤';
+      // 憑證被後台拒絕（過期／被撤銷）：丟掉快取，請使用者重新授權一次
+      if (/憑證/.test(loadError)) { clearCachedStaffToken(); staffAccessToken = null; showAuthorizeBanner(); }
     }
   } catch (e) {
     console.error('載入失敗', e);

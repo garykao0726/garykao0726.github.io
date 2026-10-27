@@ -212,6 +212,25 @@ function isAlreadyLoggedIn() {
   try { const d = JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null'); return !!(d && d.exp > Date.now()); }
   catch (e) { return false; }
 }
+// 憑證快取：access token 約 1 小時有效。存起來並綁定儀表板登入帳號，同一個登入期間換頁／重整就不必再按一次授權
+const STAFF_TOKEN_CACHE = 'oringo_staff_token_v1';
+function dashboardEmail() {
+  try { return ((JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null') || {}).email) || ''; } catch (e) { return ''; }
+}
+function readCachedStaffToken() {
+  try {
+    const c = JSON.parse(localStorage.getItem(STAFF_TOKEN_CACHE) || 'null');
+    if (c && c.token && c.exp > Date.now() && c.email && c.email === dashboardEmail()) return c.token;
+  } catch (e) {}
+  return null;
+}
+function cacheStaffToken(resp) {
+  try {
+    const ttl = (Number(resp.expires_in) || 3600) * 1000;
+    localStorage.setItem(STAFF_TOKEN_CACHE, JSON.stringify({ token: resp.access_token, exp: Date.now() + ttl - 120000, email: dashboardEmail() }));
+  } catch (e) {}
+}
+function clearCachedStaffToken() { try { localStorage.removeItem(STAFF_TOKEN_CACHE); } catch (e) {} }
 function waitForGSI(cb) {
   if (window.google && google.accounts && google.accounts.oauth2) { cb(); return; }
   if (!document.getElementById('gsi-client-script')) {
@@ -224,13 +243,20 @@ function initStaffTokenClient() {
   staffTokenClient = google.accounts.oauth2.initTokenClient({
     client_id: STAFF_OAUTH_CLIENT_ID,
     scope: 'openid email profile',
+    ...(dashboardEmail() ? { hint: dashboardEmail() } : {}),
     callback: resp => {
       if (resp.error) { showAuthBar(); flushWaiters(false); return; }
-      staffAccessToken = resp.access_token; hideAuthBar(); flushWaiters(true);
+      staffAccessToken = resp.access_token; cacheStaffToken(resp); hideAuthBar(); flushWaiters(true);
       if ($('pane-list').classList.contains('on')) loadList();
     },
     error_callback: () => { showAuthBar(); flushWaiters(false); },
   });
+  const cached = readCachedStaffToken();
+  if (cached) {
+    staffAccessToken = cached; hideAuthBar(); flushWaiters(true);
+    if ($('pane-list').classList.contains('on')) loadList();
+    return;
+  }
   staffTokenClient.requestAccessToken({ prompt: '' });
 }
 function flushWaiters(ok) { const w = tokenWaiters; tokenWaiters = []; w.forEach(f => f(ok)); }
@@ -241,7 +267,7 @@ function showAuthBar() {
   if ($('authbar')) return;
   const el = document.createElement('div'); el.id = 'authbar'; el.className = 'authbar';
   el.textContent = '需要授權才能存取退貨資料，點此授權';
-  el.onclick = () => staffTokenClient.requestAccessToken({ prompt: 'consent' });
+  el.onclick = () => staffTokenClient.requestAccessToken({ prompt: '' }); // 已同意過就不再跳完整同意畫面
   document.body.prepend(el);
 }
 function hideAuthBar() { const el = $('authbar'); if (el) el.remove(); }
@@ -259,6 +285,7 @@ async function api(method, action, params) {
   };
   let r = await doCall();
   if (!r.success && /憑證|過期/.test(r.error || '')) {
+    clearCachedStaffToken(); // 後台拒絕這組憑證：別再用快取的
     if (await refreshToken()) r = await doCall();
   }
   if (r.mode) setMode(r.mode.live);
