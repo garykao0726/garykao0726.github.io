@@ -46,13 +46,17 @@
     const hs = document.createElement('style');
     hs.textContent = 'body > *:not(#access-denied){display:none!important}';
     document.head.appendChild(hs);
-    const el = document.createElement('div');
-    el.id = 'access-denied';
-    el.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#002721;color:#E2CEB9;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Noto Sans TC",sans-serif;text-align:center;padding:24px';
-    el.innerHTML = '<div style="font-size:2.6rem;margin-bottom:14px">🔒</div>'
-      + '<div style="font-size:1.15rem;font-weight:700;margin-bottom:8px">此頁面沒有開放給你的角色</div>'
-      + '<div style="font-size:.9rem;color:#CFA294;line-height:1.7">如需存取請洽 Gary 調整角色權限。<br><a href="/" style="color:#E2CEB9">← 回中控中心</a></div>';
-    document.body.appendChild(el);
+    const mount = () => {
+      const el = document.createElement('div');
+      el.id = 'access-denied';
+      el.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#002721;color:#E2CEB9;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Noto Sans TC",sans-serif;text-align:center;padding:24px';
+      el.innerHTML = '<div style="font-size:2.6rem;margin-bottom:14px">🔒</div>'
+        + '<div style="font-size:1.15rem;font-weight:700;margin-bottom:8px">此頁面沒有開放給你的角色</div>'
+        + '<div style="font-size:.9rem;color:#CFA294;line-height:1.7">如需存取請洽 Gary 調整角色權限。<br><a href="/" style="color:#E2CEB9">← 回中控中心</a></div>';
+      document.body.appendChild(el);
+    };
+    // 已登入的人重新整理時，auth.js 在 <head> 執行、body 還沒出現（原本直接 appendChild 會丟錯，財務頁變一片空白）
+    if (document.body) mount(); else document.addEventListener('DOMContentLoaded', mount, { once: true });
   }
   function enforcePagePermission(perms) {
     const pid = currentPageId();
@@ -80,46 +84,54 @@
     } catch { return {}; }
   }
 
-  /* ── 名單制：以 admin.html 使用者管理的名單為準 ── */
+  /* ── 登入規則：@oringoshoes.com 一律放行；admin.html 的名單只用來設「例外與權限」（2026-10-27 Gary 定）── */
   const PERM_GAS_URL = 'https://script.google.com/macros/s/AKfycbyno4dWC9uaZjiCLYRqAJf7HrX8fUsOnqU6R0giYNBq1ECE3lkBOV5GZJmZwGIyC93Jbw/exec';
   const ALLOWLIST_CACHE = 'oringo_allowlist_v1';
   const ADMIN_PERMS = { finance: true };
+  const DEFAULT_PERMS = { finance: false }; // 名單外的公司帳號：可看一般儀表板，財務頁要名單授權（財務頁自己另有後端驗證）
 
-  let allowlistDown = false; // 這次登入時名單後端是不是連不上／回錯誤（用來換掉誤導的「尚未開通」訊息）
+  let denyReason = ''; // 'disabled' 名單明確停用｜'unlisted' 非公司網域又不在名單｜'down' 名單讀不到且無從判斷（用來顯示對的訊息）
 
-  // 回傳使用者物件（含 perms）或 null（不在名單／停用）
+  // 回傳使用者物件（含 perms）或 null。規則：
+  //  ① 名單內且被明確停用 → 擋
+  //  ② 名單內（啟用）→ 放行，權限用名單的
+  //  ③ 名單外：@oringoshoes.com → 放行（預設權限）；其他網域 → 擋（只有名單內的非公司帳號能進，例如私人 Gmail 的同事）
+  // 名單後端連不上／回錯誤時，①②用瀏覽器快取的名單，沒有快取就只看網域——公司同事不會因為名單後端的問題被擋在外面。
   async function resolveUser(email) {
-    allowlistDown = false;
+    denyReason = '';
     if (ALWAYS_ALLOW.has(email)) return { email, perms: ADMIN_PERMS };
+    const inDomain = email.endsWith('@' + ALLOWED_DOMAIN);
+    let listDown = false;
+    const decide = (entry) => {
+      if (entry) {
+        if (entry.active === false) { denyReason = 'disabled'; return null; }
+        return { email, perms: entry.perms || null };
+      }
+      if (inDomain) return { email, perms: DEFAULT_PERMS };
+      denyReason = listDown ? 'down' : 'unlisted';
+      return null;
+    };
     try {
       const res = await fetch(PERM_GAS_URL + '?action=getUsers');
       const data = await res.json();
-      // 後端會回 HTTP 200 的 {error:…}（例如 GAS 授權過期）：那不是名單，要當成後端故障走下面的快取／網域保底，
-      // 不能當成「名單是空的」，否則全員會被誤報成「尚未開通」（2026-10-27 事故）
+      // 後端會回 HTTP 200 的 {error:…}（例如 GAS 授權過期）：那不是名單，要當成後端故障，不能當成「名單是空的」（2026-10-27 事故）
       if (!data || !Array.isArray(data.users)) throw new Error((data && data.error) || '名單格式異常');
-      const users = data.users.filter(u => u.active !== false);
-      // 快取（含 perms）供後端斷線時使用
-      try {
-        localStorage.setItem(ALLOWLIST_CACHE, JSON.stringify(
-          users.map(u => ({ email: (u.email || '').toLowerCase(), perms: u.perms || null }))));
-      } catch {}
-      const u = users.find(u => (u.email || '').toLowerCase() === email);
-      return u ? { email, perms: u.perms || null } : null;
+      const users = data.users.map(u => ({ email: (u.email || '').toLowerCase(), perms: u.perms || null, active: u.active !== false }));
+      // 快取（含 perms 與停用狀態）供後端斷線時使用
+      try { localStorage.setItem(ALLOWLIST_CACHE, JSON.stringify(users)); } catch {}
+      return decide(users.find(u => u.email === email));
     } catch (e) {
       console.warn('權限名單查詢失敗，改用快取名單', e);
-      allowlistDown = true;
+      listDown = true;
+      let entry = null;
       try {
         const cached = JSON.parse(localStorage.getItem(ALLOWLIST_CACHE) || 'null');
         if (Array.isArray(cached)) {
-          const c = cached.find(x => (x && x.email) === email);
-          if (c) return { email, perms: c.perms || null };
-          // 舊版快取可能是純 email 陣列
-          if (cached.includes(email)) return { email, perms: null };
-          return null;
+          entry = cached.find(x => x && x.email === email) || null;
+          if (!entry && cached.includes(email)) entry = { email, perms: null, active: true }; // 舊版快取是純 email 陣列
         }
       } catch {}
-      // 連快取都沒有：只放行公司網域（避免完全鎖死）
-      return email.endsWith('@' + ALLOWED_DOMAIN) ? { email, perms: null } : null;
+      return decide(entry);
     }
   }
 
@@ -133,12 +145,14 @@
     const payload = decodeJWT(response.credential);
     const email = (payload.email || '').toLowerCase();
     if (!email) { showAuthError('⚠️ 無法取得帳號，請重試。'); return; }
-    // 純名單制：只要在 admin.html 名單中（active）即可，不限公司網域
+    // 公司網域（@oringoshoes.com）直接放行；非公司帳號要在 admin.html 名單內；名單內明確停用的人一律擋
     const user = await resolveUser(email);
     if (!user) {
-      showAuthError(allowlistDown
-        ? '⚠️ 權限名單暫時讀不到，無法確認 ' + email + ' 是否已開通，請稍後再試，或洽 Gary。'
-        : '⚠️ 帳號 ' + email + ' 尚未獲授權使用儀表板，請洽 Gary 開通。');
+      showAuthError(denyReason === 'disabled'
+        ? '⚠️ 帳號 ' + email + ' 已被停用，請洽 Gary。'
+        : denyReason === 'down'
+          ? '⚠️ 權限名單暫時讀不到，無法確認 ' + email + ' 是否已開通，請稍後再試，或洽 Gary。'
+          : '⚠️ 帳號 ' + email + ' 不是公司帳號（@oringoshoes.com），也不在開通名單內，請洽 Gary 開通。');
       return;
     }
     saveSession(email, user.perms, response.credential);
