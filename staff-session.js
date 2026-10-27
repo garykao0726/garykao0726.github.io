@@ -22,6 +22,7 @@
   let tokenClient = null;
   let busy = null;
   let lastRefreshAt = 0;
+  let why = ''; // 這次為什麼需要員工手動點橫幅（顯示在橫幅上，也方便除錯）
 
   function readAuth() {
     try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (e) { return null; }
@@ -50,14 +51,15 @@
     } catch (e) { return 0; }
   }
 
-  // 向後台換通行證；任何失敗（舊版後台不認得 staffLogin、退貨後台尚未授權回 403 網頁、憑證無效…）都回 null，由呼叫端走下一條路
+  // 向後台換通行證；成功回 {token, expMs}，任何失敗（舊版後台不認得 staffLogin、退貨後台尚未授權回 403 網頁、憑證無效…）
+  // 回 {error}，由呼叫端走下一條路，並把原因顯示在橫幅上
   async function exchange(body) {
     try {
       const r = await fetch(cfg.gasUrl, { method: 'POST', body: JSON.stringify(Object.assign({ action: 'staffLogin' }, body)) });
       const d = await r.json();
       if (d && d.success && d.session) return { token: d.session, expMs: Number(d.exp) * 1000 };
-    } catch (e) {}
-    return null;
+      return { error: (d && d.error) || '後台沒有回通行證' };
+    } catch (e) { return { error: '連不上後台' }; }
   }
 
   function hideBanner() {
@@ -98,7 +100,7 @@
       callback: async function (resp) {
         if (!resp || resp.error || !resp.access_token) return; // 員工關掉視窗：橫幅留著
         const s = await exchange({ accessToken: resp.access_token });
-        if (s) deliver(s.token, s.expMs, 'session');
+        if (s.token) deliver(s.token, s.expMs, 'session');
         else deliver(resp.access_token, Date.now() + (Number(resp.expires_in) || 3600) * 1000 - 120000, 'access'); // 後台不認得通行證：舊流程
       },
       error_callback: function () {},
@@ -116,7 +118,15 @@
     const el = document.createElement('div');
     el.id = 'staff-auth-banner';
     el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99997;background:#A54A1A;color:#fff;padding:10px 16px;text-align:center;font-size:13px;cursor:pointer';
-    el.textContent = cfg.bannerText || '⚠ 需要額外授權才能存取後台資料，點此授權';
+    const main = document.createElement('div');
+    main.textContent = cfg.bannerText || '⚠ 需要額外授權才能存取後台資料，點此授權';
+    el.appendChild(main);
+    if (why) {
+      const sub = document.createElement('div');
+      sub.style.cssText = 'font-size:11px;opacity:.85;margin-top:3px;font-weight:400';
+      sub.textContent = why + '。點一次，之後 8 小時內不用再點。';
+      el.appendChild(sub);
+    }
     el.onclick = requestFromGoogle;
     document.body.prepend(el);
     loadGsi().then(function (ok) { if (ok) initClient(); });
@@ -124,9 +134,10 @@
 
   async function tryIdToken() {
     const a = readAuth();
-    if (!a || !a.idToken || jwtExpMs(a.idToken) < Date.now() + 60000) return false; // 登入超過 1 小時，ID token 已過期
+    if (!a || !a.idToken) { why = '這個瀏覽器的登入沒有留下身分憑證（請重新登入一次）'; return false; }
+    if (jwtExpMs(a.idToken) < Date.now() + 60000) { why = '登入已超過 1 小時，需要重新確認一次身分'; return false; } // Google 的 ID token 只活 1 小時
     const s = await exchange({ idToken: a.idToken });
-    if (!s) return false;
+    if (!s.token) { why = '自動確認身分沒成功（' + s.error + '）'; try { console.warn('staff-session：ID token 換通行證失敗', s.error); } catch (e) {} return false; }
     deliver(s.token, s.expMs, 'session');
     return true;
   }

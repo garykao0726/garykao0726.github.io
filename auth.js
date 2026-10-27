@@ -90,6 +90,27 @@
   const ADMIN_PERMS = { finance: true };
   const DEFAULT_PERMS = { finance: false }; // 名單外的公司帳號：可看一般儀表板，財務頁要名單授權（財務頁自己另有後端驗證）
 
+  // 員工後台通行證（見 staff-session.js）：登入的這一刻 Google 剛簽的 ID token 最新，就先替維修／訂製後台換好 8 小時通行證，
+  // 存進跟 staff-session.js 同一個快取，之後不管幾點開維修／訂製頁都不必再授權（ID token 只活 1 小時，晚了就換不到）。
+  // 網址要跟 repair.html／custom.html 的 GAS_URL 一致；失敗不影響登入，開頁時 staff-session.js 會再處理。
+  const STAFF_GAS_URLS = [
+    'https://script.google.com/macros/s/AKfycbywhbtNQWEsQ68I7sCbcs71bVAPD_DrDGBAY_wm8Nl_MXln1daS77h-tXVBXrOYw4kBBg/exec', // 維修＋訂製
+  ];
+  function primeStaffSessions(idToken, email) {
+    STAFF_GAS_URLS.forEach(function (url) {
+      fetch(url, { method: 'POST', body: JSON.stringify({ action: 'staffLogin', idToken: idToken }) })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d || !d.success || !d.session) return;
+          try {
+            localStorage.setItem('oringo_staff_session_v1:' + url.replace(/\/exec.*$/, '').slice(-20),
+              JSON.stringify({ token: d.session, exp: Number(d.exp) * 1000, email: email, kind: 'session' }));
+          } catch (e) {}
+        })
+        .catch(function () {});
+    });
+  }
+
   let denyReason = ''; // 'disabled' 名單明確停用｜'unlisted' 非公司網域又不在名單｜'down' 名單讀不到且無從判斷（用來顯示對的訊息）
 
   // 回傳使用者物件（含 perms）或 null。規則：
@@ -156,6 +177,7 @@
       return;
     }
     saveSession(email, user.perms, response.credential);
+    primeStaffSessions(response.credential, email);
     document.getElementById('auth-overlay')?.remove();
     document.getElementById('auth-hide-style')?.remove();
     // 通知其他頁面邏輯（如 finance.html 的二次授權）
