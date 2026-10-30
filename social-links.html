@@ -155,7 +155,9 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
     <div class="row-actions">
       <button class="btn" id="go" type="button">檢查並建立</button>
       <span class="sub" id="goHint"></span>
+      <button class="btn ghost sm" id="testLihi" type="button" style="margin-left:auto">測試 Lihi 連線</button>
     </div>
+    <div id="testOut"></div>
   </section>
 
   <section class="card" id="previewCard" hidden>
@@ -377,6 +379,18 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
     catch (e) { toast(e.message, true); }
     finally { setBusy(false); btn.textContent = old; }
   }
+  async function testLihi() {
+    const b = $('#testLihi'), out = $('#testOut'); b.disabled = true; out.innerHTML = '<div class="banner">測試中…（會在 Lihi 建 1 條測試短網址，不會寫進試算表）</div>';
+    try {
+      const r = await api('test');
+      const warn = [];
+      if (!r.verified) warn.push('短網址建好了，但導向驗證沒通過（HTTP ' + esc(r.redirectCode) + ' → ' + esc(r.location || '無') + '）。');
+      if (!r.domainOk) warn.push('Lihi 給的網域是 <b>' + esc(r.gotDomain) + '</b>，不是 ' + esc(r.domain) + '。請確認 Lihi「網域管理」有綁 ' + esc(r.domain) + '，或這個 API 不支援自訂網域。');
+      out.innerHTML = `<div class="banner ${warn.length ? '' : 'ok'}"><b>${warn.length ? 'Lihi 有回應，但有狀況' : '✓ Lihi 連線正常'}</b>：建立了 <span class="mono">${esc(r.short)}</span>。${warn.join('')}這條是測試用的，可以到 Lihi 後台刪除。</div>`;
+    } catch (e) {
+      out.innerHTML = `<div class="banner err"><b>測試沒通過</b>：${esc(e.message)}</div>`;
+    } finally { b.disabled = false; }
+  }
   function copyAll() {
     const lines = (S.lastResults || []).filter(x => x.short).map(x => `${x.productId}｜${x.platform}｜${x.short}`);
     copy(lines.join('\n'), '已複製 ' + lines.length + ' 條');
@@ -403,6 +417,7 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
   $('#confirm').addEventListener('click', confirmCreate);
   $('#cancelPrev').addEventListener('click', () => { $('#previewCard').hidden = true; });
   $('#copyAll').addEventListener('click', copyAll);
+  $('#testLihi').addEventListener('click', testLihi);
   $('#openSheet').addEventListener('click', () => window.open(SHEET_URL, '_blank', 'noopener'));
 
   document.addEventListener('oriAuthComplete', load);
