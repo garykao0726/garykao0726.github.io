@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林果良品｜社群短網址</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<style>
+:root{
+  --green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;
+  --rust:#A54A1A;--brown:#8D5531;
+  --bg:#F5EDE3;--surface:#fff;--surface2:#FAF5EF;
+  --border:rgba(40,66,52,.12);--border2:rgba(40,66,52,.24);
+  --text:#212121;--text-sub:#757575;--title:#284234;
+  --pos:#1F6B3A;--pos-bg:#E6F1EA;--neg:#D32F2F;--neg-bg:#FBEAEA;--warn-bg:#FBF1E4;
+  --shadow-float:0 2px 12px rgba(0,39,33,.08);
+  --radius:4px;--radius-lg:8px;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;
+  --mono:'Space Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+[hidden]{display:none!important}
+
+.hdr{position:sticky;top:0;z-index:100;background:var(--sand-light);min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:var(--s3);padding:0 var(--s5);border-bottom:2px solid var(--green);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:var(--s3)}
+.brand-name{font-family:var(--mono);font-size:13px;letter-spacing:.1em;color:var(--green)}
+.brand-sep{width:1px;height:18px;background:var(--border2)}
+.brand-sub{font-size:16px;font-weight:600;color:var(--title)}
+.hdr-r{display:flex;align-items:center;gap:var(--s3)}
+.hdr-user{font-family:var(--mono);font-size:11px;color:var(--text-sub);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hdr-back{display:inline-flex;align-items:center;min-height:44px;font-size:13px;color:var(--green);text-decoration:none;padding:0 var(--s2)}
+.hdr-back:hover{text-decoration:underline;text-underline-offset:4px}
+
+.wrap{max-width:960px;margin:0 auto;padding:var(--s5) var(--s5) var(--s7)}
+.card{background:var(--surface);border-top:3px solid var(--green);border-radius:0 0 var(--radius-lg) var(--radius-lg);padding:var(--s5);margin-top:var(--s5);box-shadow:var(--shadow-float)}
+.card h2{font-size:17px;font-weight:600;color:var(--title);margin-bottom:var(--s1)}
+.sub{font-size:13px;color:var(--text-sub)}
+.card .sub{margin-bottom:var(--s4)}
+
+label.f{display:block;font-size:12px;color:var(--text-sub);letter-spacing:.02em;margin-bottom:var(--s1)}
+input[type=text],input[type=date],input[type=url]{width:100%;min-height:44px;padding:var(--s2) var(--s3);background:#fff;border:1px solid var(--border2);border-radius:var(--radius)}
+input:focus{outline:2px solid var(--green);outline-offset:1px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);min-height:44px;padding:var(--s2) var(--s5);border-radius:var(--radius);font-size:15px;font-weight:500;border:1px solid var(--green);background:var(--green);color:#fff;transition:background .15s}
+.btn:hover{background:var(--dark)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--green)}
+.btn.ghost:hover{background:var(--sand-light)}
+.btn.sm{padding:var(--s1) var(--s3);font-size:13px;min-height:36px}
+.btn.icon{min-width:44px;padding:0;background:transparent;color:var(--text-sub);border-color:transparent}
+.btn.icon:hover{color:var(--neg);background:var(--neg-bg)}
+
+.urlrow{display:grid;grid-template-columns:1fr 200px 44px;gap:var(--s3);align-items:end;margin-top:var(--s3)}
+.urlrow:first-of-type{margin-top:0}
+.row-actions{display:flex;gap:var(--s3);flex-wrap:wrap;margin-top:var(--s4);align-items:center}
+
+.plats{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s3)}
+.plat{display:inline-flex;align-items:center;gap:var(--s2);min-height:44px;padding:0 var(--s4);border:1px solid var(--border2);border-radius:var(--radius);background:#fff;cursor:pointer;user-select:none;font-size:14px}
+.plat input{width:18px;height:18px;accent-color:var(--green)}
+.plat.on{border-color:var(--green);background:var(--pos-bg);color:var(--green);font-weight:500}
+.meta{display:grid;grid-template-columns:200px 1fr;gap:var(--s4);margin-top:var(--s5)}
+
+.banner{padding:var(--s3) var(--s4);border-left:3px solid var(--brown);background:var(--warn-bg);font-size:14px;margin-top:var(--s4)}
+.banner.err{border-left-color:var(--neg);background:var(--neg-bg);color:#7a1b1b}
+.banner.ok{border-left-color:var(--pos);background:var(--pos-bg)}
+.banner b{font-weight:600}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:12px;font-weight:500;color:var(--text-sub);text-align:left;padding:var(--s2) var(--s3);border-bottom:1px solid var(--border2);letter-spacing:.02em}
+td{padding:var(--s3);border-bottom:1px solid var(--border);vertical-align:top}
+td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
+.chip{display:inline-block;font-size:12px;padding:1px var(--s3);border-radius:var(--radius);border:1px solid var(--brown);color:var(--brown);white-space:nowrap}
+.chip.ok{border-color:var(--pos);color:var(--pos);background:var(--pos-bg)}
+.chip.err{border-color:var(--neg);color:var(--neg);background:var(--neg-bg)}
+.chip.mid{border-color:var(--border2);color:var(--text-sub)}
+.shortcell{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+.shortcell a{color:var(--green);font-family:var(--mono);font-size:14px;font-weight:700}
+.long{font-size:12px;color:var(--text-sub);margin-top:var(--s1);word-break:break-all}
+.note{font-size:12px;color:var(--brown);margin-top:var(--s1)}
+.tablewrap{overflow-x:auto}
+.empty{color:var(--text-sub);padding:var(--s5) 0;text-align:center;font-size:14px}
+.copybar{display:flex;gap:var(--s3);flex-wrap:wrap;margin-top:var(--s4)}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.toasts{position:fixed;left:50%;bottom:var(--s6);transform:translateX(-50%);display:flex;flex-direction:column;gap:var(--s2);z-index:300;align-items:center}
+.toast{background:var(--green);color:#fff;padding:var(--s3) var(--s4);border-radius:var(--radius);font-size:14px;box-shadow:var(--shadow-float)}
+.toast.err{background:var(--neg)}
+.mback{position:fixed;inset:0;z-index:1000;background:rgba(0,39,33,.45);display:flex;align-items:center;justify-content:center;padding:var(--s4)}
+.modal{background:#fff;border-radius:var(--radius-lg);padding:var(--s5);width:100%;max-width:440px;box-shadow:var(--shadow-float);border-top:3px solid var(--green)}
+.modal h3{font-size:18px;font-weight:500;color:var(--title);margin-bottom:var(--s3)}
+.modal p{font-size:14px;margin-bottom:var(--s4)}
+.modal .macts{display:flex;gap:var(--s2);justify-content:flex-end;flex-wrap:wrap}
+
+@media (max-width:720px){
+  .hdr{padding:var(--s2) var(--s4)}
+  .hdr-user{display:none}
+  .wrap{padding:var(--s4) var(--s4) var(--s7)}
+  .urlrow{grid-template-columns:1fr 44px}
+  .urlrow .pidwrap{grid-column:1 / 2}
+  .urlrow button.icon{grid-row:1;grid-column:2}
+  .meta{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="brand">
+    <div class="brand-name">ORINGO</div>
+    <div class="brand-sep"></div>
+    <div class="brand-sub">社群短網址</div>
+  </div>
+  <div class="hdr-r">
+    <span class="hdr-user" id="who"></span>
+    <a href="/" class="hdr-back">← 中控中心</a>
+  </div>
+</div>
+
+<main class="wrap">
+  <div id="notice"></div>
+
+  <section class="card">
+    <h2>① 貼要追蹤的網址</h2>
+    <p class="sub">貼商品頁或文章的原始網址（不要有 ?utm_… 的）。產品 ID 會自動從網址抓，需要的話可以改。</p>
+    <div id="rows"></div>
+    <div class="row-actions">
+      <button class="btn ghost sm" id="addRow" type="button">＋ 再加一個網址</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>② 要貼在哪些平台</h2>
+    <p class="sub">每個平台會各自產生一條短網址，貼錯平台就分不出成效，所以請各用各的。</p>
+    <div class="plats" id="plats"></div>
+    <div class="meta">
+      <div>
+        <label class="f" for="date">發文日</label>
+        <input type="date" id="date">
+      </div>
+      <div>
+        <label class="f" for="activity">活動名稱（備註，選填）</label>
+        <input type="text" id="activity" maxlength="60" placeholder="例如：名人穿林果、林果週年慶最後倒數">
+      </div>
+    </div>
+    <p class="sub" style="margin-top:var(--s2)">發文日要填<b>實際發文的那天</b>。補發已經貼出去的貼文，請填它當初發的日期，不是今天。</p>
+    <div class="row-actions">
+      <button class="btn" id="go" type="button">檢查並建立</button>
+      <span class="sub" id="goHint"></span>
+    </div>
+  </section>
+
+  <section class="card" id="previewCard" hidden>
+    <h2>③ 確認一下</h2>
+    <p class="sub" id="previewSub"></p>
+    <div class="tablewrap"><table><thead><tr><th>產品</th><th>平台</th><th>狀態</th><th>追蹤網址</th></tr></thead><tbody id="previewBody"></tbody></table></div>
+    <div class="row-actions">
+      <button class="btn" id="confirm" type="button"></button>
+      <button class="btn ghost" id="cancelPrev" type="button">回去修改</button>
+    </div>
+  </section>
+
+  <section class="card" id="resultCard" hidden>
+    <h2>④ 建好了</h2>
+    <p class="sub" id="resultSub"></p>
+    <div id="resultBanners"></div>
+    <div class="tablewrap"><table><thead><tr><th>產品</th><th>平台</th><th>短網址</th><th>狀態</th></tr></thead><tbody id="resultBody"></tbody></table></div>
+    <div class="copybar">
+      <button class="btn" id="copyAll" type="button">複製全部（產品／平台／短網址）</button>
+      <button class="btn ghost" id="openSheet" type="button">開啟 UTM 試算表</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>最近建立的</h2>
+    <p class="sub">從 UTM 試算表的「Short URL」欄讀取，最近 20 條。</p>
+    <div class="tablewrap"><table><thead><tr><th>發文日</th><th>產品</th><th>平台</th><th>短網址</th></tr></thead><tbody id="recentBody"><tr><td colspan="4" class="empty">載入中…</td></tr></tbody></table></div>
+  </section>
+</main>
+<div class="toasts" id="toast" role="status" aria-live="polite"></div>
+<div id="modalRoot"></div>
+
+<script>
+/* ============================================================
+   社群短網址：貼網址 → 各平台 UTM → Lihi 短網址（oringo.tw）→ 驗證導向 → 寫回 UTM 試算表
+   後端：social-link-gas/Code.gs（每次請求帶 Google ID token；@oringoshoes.com 才能用）
+   ============================================================ */
+(function () {
+  'use strict';
+  const PROD_GAS = 'https://script.google.com/macros/s/AKfycbxOpupNDXOPZoAy3wbFAJwHjcpyt_XH7PfXpPPDPEtXrociBijo3bWRd-YN8hm68rAtTA/exec';
+  const IS_LOCAL = /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+  const GAS_URL = (IS_LOCAL && new URLSearchParams(location.search).get('gas')) || PROD_GAS;   // 只有本機開發才允許改後端網址
+  const CLIENT_ID = '777948523832-8qfmjk689e35f02crqjp35kg47j4kcgn.apps.googleusercontent.com';
+  const SESSION_KEY = 'oringo_auth_v1';
+  const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1ZR3QfJkWHL1qamF_NBs_TH1jqDBbPHFblrLUI-PTt0Q/edit?gid=87297645#gid=87297645';
+  const DEFAULT_PLATFORMS = ['fb', 'threads'];
+
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  const S = { email: '', platforms: {}, hasKey: true, rows: [{ url: '', pid: '', pidEdited: false }], picked: {}, busy: false, last: null };
+
+  /* ---------- 登入／token（與官網優惠後台同一套）---------- */
+  function readSession() { try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; } }
+  function decodeJwt(t) { try { const b = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'); return JSON.parse(decodeURIComponent(atob(b).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); } catch (e) { return {}; } }
+  function sessionValid() { const s = readSession(); return !!(s && s.exp > Date.now() && s.email); }
+  function loadScript(src) { return new Promise((res, rej) => { if ($('script[src="' + src + '"]')) { res(); return; } const s = document.createElement('script'); s.src = src; s.async = true; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+  let reauthPromise = null;
+  function reauth() {
+    if (reauthPromise) return reauthPromise;
+    reauthPromise = new Promise((resolve, reject) => {
+      const root = $('#modalRoot');
+      root.innerHTML = '<div class="mback"><div class="modal" role="dialog" aria-modal="true" aria-label="重新登入"><h3>請再確認一次登入</h3><p>為了安全，建立短網址前會確認身分（有效時間約 1 小時）。請按下面的按鈕用 Google 登入同一個帳號。</p><div id="gbtn" style="min-height:44px"></div><div class="macts" style="margin-top:16px"><button class="btn ghost" id="reauthCancel" type="button">取消</button></div></div></div>';
+      const done = fn => v => { root.innerHTML = ''; reauthPromise = null; fn(v); };
+      const ok = done(resolve), no = done(reject);
+      $('#reauthCancel').onclick = () => no(new Error('已取消登入'));
+      loadScript('https://accounts.google.com/gsi/client').then(() => {
+        window.google.accounts.id.initialize({ client_id: CLIENT_ID, callback: resp => {
+          const p = decodeJwt(resp.credential), s = readSession();
+          if (s && p.email && s.email && p.email.toLowerCase() !== s.email.toLowerCase()) { no(new Error('請用目前登入的同一個帳號（' + s.email + '）')); return; }
+          if (s) { s.idToken = resp.credential; try { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); } catch (e) {} }
+          ok(resp.credential);
+        } });
+        window.google.accounts.id.renderButton($('#gbtn'), { type: 'standard', size: 'large', theme: 'outline', text: 'sign_in_with', locale: 'zh-TW' });
+      }).catch(() => no(new Error('無法載入 Google 登入，請檢查網路後再試')));
+    });
+    return reauthPromise;
+  }
+  async function getIdToken(force) {
+    const s = readSession();
+    if (!force && s && s.idToken) { const p = decodeJwt(s.idToken); if (p.exp && p.exp * 1000 - Date.now() > 90e3) return s.idToken; }
+    return reauth();
+  }
+  function mkErr(code, msg) { const e = new Error(msg); e.code = code; return e; }
+  async function api(action, payload, retried) {
+    const idToken = await getIdToken(!!retried);
+    let res, text;
+    try {
+      res = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action, idToken }, payload || {})) });
+      text = await res.text();
+    } catch (e) { throw mkErr('network', '連不上後台伺服器，請檢查網路後再試'); }
+    let data; try { data = JSON.parse(text); } catch (e) { throw mkErr('backend', '後台伺服器還沒準備好（可能還沒完成第一次授權）。請洽 Gary。'); }
+    if (!data.ok) {
+      if (data.code === 'auth' && !retried) return api(action, payload, true);
+      throw mkErr(data.code || 'server', data.error || '發生錯誤');
+    }
+    return data;
+  }
+
+  /* ---------- 小工具 ---------- */
+  function toast(msg, isErr) { const t = document.createElement('div'); t.className = 'toast' + (isErr ? ' err' : ''); t.textContent = msg; $('#toast').appendChild(t); setTimeout(() => t.remove(), isErr ? 6000 : 2600); }
+  async function copy(text, okMsg) {
+    try { await navigator.clipboard.writeText(text); toast(okMsg || '已複製'); }
+    catch (e) { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast(okMsg || '已複製'); } catch (e2) { toast('複製失敗，請手動選取', true); } ta.remove(); }
+  }
+  const pad = n => String(n).padStart(2, '0');
+  function todayIso() { const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); return p; }   // YYYY-MM-DD
+  function slugOf(u) {
+    const m = /^https?:\/\/[^\/?#\s]+([^?#\s]*)/i.exec(String(u || '').trim());
+    if (!m) return '';
+    const segs = m[1].split('/').filter(Boolean);
+    const last = segs.length ? segs[segs.length - 1] : 'home';
+    return last.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'home';
+  }
+  function setBusy(b) { S.busy = b; $$('#go,#confirm,#addRow').forEach(x => x.disabled = b); }
+
+  /* ---------- 畫面 ---------- */
+  function renderRows() {
+    $('#rows').innerHTML = S.rows.map((r, i) => `
+      <div class="urlrow" data-i="${i}">
+        <div><label class="f" for="u${i}">網址 ${S.rows.length > 1 ? (i + 1) : ''}</label>
+          <input type="url" id="u${i}" class="u" value="${esc(r.url)}" placeholder="https://www.oringoshoes.com/products/…" autocomplete="off" inputmode="url"></div>
+        <div class="pidwrap"><label class="f" for="p${i}">產品 ID</label>
+          <input type="text" id="p${i}" class="p" value="${esc(r.pid)}" placeholder="自動" autocomplete="off"></div>
+        <button class="btn icon rm" type="button" aria-label="移除這一列" ${S.rows.length < 2 ? 'hidden' : ''}>✕</button>
+      </div>`).join('');
+    $$('#rows .urlrow').forEach(el => {
+      const i = Number(el.dataset.i);
+      $('.u', el).addEventListener('input', e => {
+        S.rows[i].url = e.target.value;
+        if (!S.rows[i].pidEdited) { S.rows[i].pid = slugOf(e.target.value); $('.p', el).value = S.rows[i].pid; }
+      });
+      $('.u', el).addEventListener('paste', () => setTimeout(() => { const v = $('.u', el).value.trim(); if (v !== $('.u', el).value) { $('.u', el).value = v; S.rows[i].url = v; } }, 0));
+      $('.p', el).addEventListener('input', e => { S.rows[i].pid = e.target.value.trim(); S.rows[i].pidEdited = !!e.target.value.trim(); if (!e.target.value.trim()) { S.rows[i].pidEdited = false; S.rows[i].pid = slugOf(S.rows[i].url); } });
+      $('.rm', el).addEventListener('click', () => { S.rows.splice(i, 1); renderRows(); });
+    });
+  }
+  function renderPlats() {
+    $('#plats').innerHTML = Object.keys(S.platforms).map(k => {
+      const on = !!S.picked[k];
+      return `<label class="plat ${on ? 'on' : ''}"><input type="checkbox" data-k="${esc(k)}" ${on ? 'checked' : ''}>${esc(S.platforms[k].label)}</label>`;
+    }).join('');
+    $$('#plats input').forEach(cb => cb.addEventListener('change', e => { S.picked[e.target.dataset.k] = e.target.checked; e.target.closest('.plat').classList.toggle('on', e.target.checked); }));
+  }
+  function renderNotice() {
+    $('#notice').innerHTML = S.hasKey ? '' : '<div class="banner err"><b>還沒設定 Lihi API key。</b>目前只能預覽，建不了短網址。請 Gary 到後台專案的「指令碼屬性」新增 LIHI_API_KEY。</div>';
+  }
+  function collect() {
+    const rows = S.rows.map(r => ({ url: r.url.trim(), pid: (r.pid || slugOf(r.url)).trim() })).filter(r => r.url);
+    if (!rows.length) throw new Error('請先貼上至少一個網址');
+    const plats = Object.keys(S.picked).filter(k => S.picked[k]);
+    if (!plats.length) throw new Error('請至少選一個平台');
+    const d = $('#date').value;
+    if (!d) throw new Error('請選發文日');
+    const activity = $('#activity').value.trim();
+    return rows.map(r => ({ url: r.url, productId: r.pid, platforms: plats, date: d, activity }));
+  }
+  const STATUS = {
+    new: ['新的', 'ok'], duplicate: ['已建過，會沿用', 'mid'], duplicate_noshort: ['試算表已有這列，只補短網址', 'mid']
+  };
+  function renderPreview(plan, items) {
+    const n = plan.combos.filter(c => c.status !== 'duplicate').length, reuse = plan.combos.length - n;
+    $('#previewSub').textContent = `共 ${plan.combos.length} 條：要新建 ${n} 條${reuse ? `，已建過直接沿用 ${reuse} 條` : ''}。短網址網域：${plan.domain}`;
+    $('#previewBody').innerHTML = plan.combos.map(c => {
+      const st = STATUS[c.status] || [c.status, 'mid'];
+      const rel = (c.related || []).length ? `<div class="note">這個產品＋平台以前建過：${c.related.map(x => esc(x.date) + (x.short ? ' ' + esc(x.short) : '')).join('、')}</div>` : '';
+      const ex = c.existing && c.existing.short ? `<div class="note">沿用 ${esc(c.existing.short)}（第 ${c.existing.row} 列）</div>` : '';
+      return `<tr><td class="mono">${esc(c.productId)}</td><td>${esc(c.platform)}</td><td><span class="chip ${st[1]}">${esc(st[0])}</span>${ex}${rel}</td><td><div class="long">${esc(c.longUrl)}</div></td></tr>`;
+    }).join('');
+    $('#confirm').textContent = n ? `建立 ${n} 條短網址` : '全部沿用，直接看短網址';
+    S.last = { items, plan };
+    $('#previewCard').hidden = false; $('#resultCard').hidden = true;
+    $('#previewCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function renderResults(r) {
+    const ok = r.results.filter(x => x.status === 'created' || x.status === 'reused').length, bad = r.results.length - ok;
+    $('#resultSub').textContent = `${ok} 條完成${bad ? `，${bad} 條失敗` : ''}。已寫回 UTM 試算表的 Short URL 欄。`;
+    const banners = [];
+    if (bad) banners.push('<div class="banner err"><b>有 ' + bad + ' 條沒建成。</b>錯誤原因在下面表格，其他的已經好了。</div>');
+    if (r.orphans && r.orphans.length) banners.push('<div class="banner"><b>Lihi 後台有 ' + r.orphans.length + ' 條壞掉的短網址要刪除</b>（建出來但沒有導到正確網址，我已經另外重建好的）：<br>' + r.orphans.map(o => '<span class="mono">' + esc(o.short) + '</span>').join('、') + '</div>');
+    $('#resultBanners').innerHTML = banners.join('');
+    $('#resultBody').innerHTML = r.results.map(x => {
+      const isOk = x.status === 'created' || x.status === 'reused';
+      const chip = x.status === 'created' ? '<span class="chip ok">新建・已驗證</span>' : x.status === 'reused' ? `<span class="chip mid">沿用既有${x.verified ? '・已驗證' : ''}</span>` : '<span class="chip err">失敗</span>';
+      const warn = (x.warnings || []).map(w => `<div class="note">${esc(w)}</div>`).join('');
+      const err = x.error ? `<div class="note" style="color:var(--neg)">${esc(x.error)}</div>` : '';
+      const cell = isOk ? `<div class="shortcell"><a href="${esc(x.short)}" target="_blank" rel="noopener">${esc(x.short.replace(/^https?:\/\//, ''))}</a><button class="btn ghost sm cp" type="button" data-short="${esc(x.short)}">複製</button></div><div class="long">試算表第 ${x.row} 列</div>` : '—';
+      return `<tr><td class="mono">${esc(x.productId)}</td><td>${esc(x.platform)}</td><td>${cell}</td><td>${chip}${err}${warn}</td></tr>`;
+    }).join('');
+    $$('#resultBody .cp').forEach(b => b.addEventListener('click', () => copy(b.dataset.short, '已複製短網址')));
+    $('#copyAll').disabled = !ok;
+    S.lastResults = r.results;
+    $('#previewCard').hidden = true; $('#resultCard').hidden = false;
+    $('#resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function renderRecent(list) {
+    $('#recentBody').innerHTML = list.length ? list.map(x => `<tr><td class="mono">${esc(x.date)}</td><td class="mono">${esc(x.productId)}</td><td class="mono">${esc(x.source)} / ${esc(x.medium)}</td><td><div class="shortcell"><a href="${esc(x.short)}" target="_blank" rel="noopener">${esc(x.short.replace(/^https?:\/\//, ''))}</a><button class="btn ghost sm cp" type="button" data-short="${esc(x.short)}">複製</button></div></td></tr>`).join('')
+      : '<tr><td colspan="4" class="empty">還沒有紀錄</td></tr>';
+    $$('#recentBody .cp').forEach(b => b.addEventListener('click', () => copy(b.dataset.short, '已複製短網址')));
+  }
+
+  /* ---------- 動作 ---------- */
+  async function loadRecent() {
+    try { renderRecent((await api('recent')).recent); }
+    catch (e) { $('#recentBody').innerHTML = `<tr><td colspan="4" class="empty">${esc(e.message)}</td></tr>`; }
+  }
+  async function go() {
+    let items; try { items = collect(); } catch (e) { toast(e.message, true); return; }
+    setBusy(true); $('#goHint').innerHTML = '<span class="spinner" style="border-color:rgba(40,66,52,.3);border-top-color:#284234"></span> 檢查中…';
+    try { renderPreview(await api('plan', { items }), items); }
+    catch (e) { toast(e.message, true); }
+    finally { setBusy(false); $('#goHint').textContent = ''; }
+  }
+  async function confirmCreate() {
+    if (!S.last) return;
+    setBusy(true); const btn = $('#confirm'), old = btn.textContent; btn.innerHTML = '<span class="spinner"></span> 建立中（每條約 3～5 秒）…';
+    try { const r = await api('create', { items: S.last.items }); renderResults(r); loadRecent(); }
+    catch (e) { toast(e.message, true); }
+    finally { setBusy(false); btn.textContent = old; }
+  }
+  function copyAll() {
+    const lines = (S.lastResults || []).filter(x => x.short).map(x => `${x.productId}｜${x.platform}｜${x.short}`);
+    copy(lines.join('\n'), '已複製 ' + lines.length + ' 條');
+  }
+
+  async function load() {
+    try {
+      const me = await api('me');
+      S.email = me.email; S.platforms = me.platforms; S.hasKey = me.hasKey;
+      $('#who').textContent = S.email;
+      DEFAULT_PLATFORMS.forEach(k => { S.picked[k] = true; });
+      renderPlats(); renderNotice();
+      loadRecent();
+    } catch (e) {
+      $('#notice').innerHTML = `<div class="banner err"><b>${esc(e.message)}</b></div>`;
+      if (e.code === 'backend' || e.code === 'network') $('#go').disabled = true;
+    }
+  }
+
+  $('#date').value = todayIso();
+  renderRows();
+  $('#addRow').addEventListener('click', () => { S.rows.push({ url: '', pid: '', pidEdited: false }); renderRows(); const u = $$('#rows .u'); u[u.length - 1].focus(); });
+  $('#go').addEventListener('click', go);
+  $('#confirm').addEventListener('click', confirmCreate);
+  $('#cancelPrev').addEventListener('click', () => { $('#previewCard').hidden = true; });
+  $('#copyAll').addEventListener('click', copyAll);
+  $('#openSheet').addEventListener('click', () => window.open(SHEET_URL, '_blank', 'noopener'));
+
+  document.addEventListener('oriAuthComplete', load);
+  if (sessionValid()) load();
+})();
+</script>
+</body>
+</html>
