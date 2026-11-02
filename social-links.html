@@ -117,23 +117,12 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
 .check input{width:18px;height:18px;accent-color:var(--green)}
 #anBody{transition:opacity .2s}
 #anBody.dim{opacity:.5}
-.lead{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:var(--s6);align-items:end;padding:var(--s2) 0 var(--s5);border-bottom:1px solid var(--border)}
-.lead-num{font-family:var(--mono);font-size:56px;font-weight:700;line-height:1.1;letter-spacing:-.02em;color:var(--title)}
-.lead-cap{font-size:13px;color:var(--text-sub);margin-top:var(--s2);line-height:1.6}
-.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s4) var(--s5)}
-.stat .l{font-size:12px;color:var(--text-sub);letter-spacing:.02em}
-.stat .v{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1.3;white-space:nowrap}
-.stat .d{font-size:12px;color:var(--text-sub);line-height:1.5}
-.insights{list-style:none;margin:var(--s5) 0 0}
-.insights li{display:grid;grid-template-columns:56px minmax(0,1fr);gap:var(--s3);align-items:start;padding:var(--s3) var(--s2);border-bottom:1px solid var(--border);font-size:14px;line-height:1.7}
-.insights li.warn{border-left:3px solid var(--brown);background:var(--warn-bg)}
-.insights .chip{text-align:center}
-.h3{font-size:15px;font-weight:600;color:var(--title);margin:var(--s6) 0 var(--s3)}
 .seg{display:flex;flex-wrap:wrap;gap:var(--s1)}
 .seg button{min-height:44px;padding:0 var(--s4);background:#fff;border:1px solid var(--border2);border-radius:var(--radius);font-size:14px}
 .seg button:hover{background:var(--sand-light)}
 .seg button[aria-pressed=true]{background:var(--green);border-color:var(--green);color:#fff}
-.chart-ctl{display:flex;flex-wrap:wrap;gap:var(--s3) var(--s5);align-items:center;justify-content:space-between;margin:var(--s6) 0 var(--s3)}
+.chart-ctl{display:flex;flex-wrap:wrap;gap:var(--s3) var(--s5);align-items:center;justify-content:space-between;margin:0 0 var(--s3)}
+#anBody .banner + .chart-ctl{margin-top:var(--s4)}
 .chart-title{font-size:15px;font-weight:600;color:var(--title);margin:var(--s5) 0 var(--s2)}
 .bars{display:flex;flex-direction:column}
 .brow{display:grid;grid-template-columns:minmax(96px,176px) minmax(0,1fr);align-items:center;gap:var(--s4);min-height:44px;padding:var(--s1) var(--s2);border-radius:var(--radius)}
@@ -142,17 +131,12 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
 .bname small{display:block;font-size:12px;color:var(--text-sub)}
 .btrack{display:flex;align-items:center;gap:var(--s2);min-height:24px;min-width:0;border-left:1px solid var(--border2)}
 .bfill{flex:0 1 auto;height:16px;width:calc(var(--w) * .78%);max-width:calc(100% - 112px);background:var(--bar);border-radius:0 4px 4px 0}
-.bfill.top{background:var(--green)}   /* 不能叫 lead：.lead 是頁首大數字的版面樣式 */
+.bfill.top{background:var(--green)}
 .bfill.low{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.65) 0 2px,transparent 2px 6px)}
 .bval{font-family:var(--mono);font-size:13px;white-space:nowrap}
 .bsep{font-size:12px;color:var(--text-sub);padding:var(--s3) var(--s2) var(--s1)}
 .dt td.n,.dt th.n{text-align:right;white-space:nowrap}
-.dt .nw{white-space:nowrap}
 .dt td.name{min-width:96px}
-.dt td.content{min-width:168px}
-.dt .long{word-break:normal;white-space:nowrap}
-.dt .btn{white-space:nowrap}
-.dt .btn.sm{min-height:44px}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .dt td.n{font-family:var(--mono);font-size:13px}
 .dt tr.low td{color:var(--text-sub)}
@@ -163,19 +147,10 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
 .tip dl{display:grid;grid-template-columns:auto 1fr;gap:0 var(--s4);margin-top:var(--s2)}
 .tip dt{color:var(--text-sub)}
 .tip dd{font-family:var(--mono);text-align:right}
-details.fold{margin-top:var(--s5);border-top:1px solid var(--border)}
-details.fold summary{display:flex;align-items:center;gap:var(--s2);min-height:44px;font-size:14px;font-weight:500;color:var(--title);cursor:pointer}
-details.fold .fold-in{padding:var(--s2) 0 var(--s3)}
-details.fold ul{padding-left:var(--s5);font-size:13px;color:var(--text);line-height:1.8}
 .an-wait{display:flex;align-items:center;justify-content:center;gap:var(--s3);padding:var(--s7) 0;color:var(--text-sub);font-size:14px}
 .an-wait .spinner{border-color:rgba(40,66,52,.25);border-top-color:var(--green)}
 @media (max-width:720px){
-  .lead{grid-template-columns:minmax(0,1fr);gap:var(--s4)}
-  .lead-num{font-size:40px}
-  .stat .v{font-size:18px}
   .brow{grid-template-columns:96px minmax(0,1fr);gap:var(--s2)}
-  .insights li{grid-template-columns:minmax(0,1fr);gap:var(--s1)}
-  .insights .chip{justify-self:start;padding:0 var(--s2)}
   .an-filters select{min-width:0;width:100%}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -253,7 +228,7 @@ details.fold ul{padding-left:var(--s5);font-size:13px;color:var(--text);line-hei
 
   <section class="card" id="anCard">
     <h2>發文成效</h2>
-    <p class="sub">哪個平台、哪一類貼文帶來更多造訪與購買。流量來自 GA4，只算「點了貼文那條追蹤連結」的那一次造訪。</p>
+    <p class="sub">哪個平台、哪一類貼文帶來更多造訪與購買。流量來自 GA4，只算「點了貼文那條追蹤連結」的那一次造訪；營收是 GA4 回報的金額，不等於營業額。</p>
     <div class="an-filters">
       <div>
         <label class="f" for="anDays">發文期間</label>
@@ -451,9 +426,8 @@ details.fold ul{padding-left:var(--s5);font-size:13px;color:var(--text);line-hei
 
   /* ---------- 發文成效（GA4）---------- */
   const SS = window.SocialStats;
-  const AN = { started: false, days: 90, mature: true, tab: 'channel', metric: 'avgVisits', rank: 'sessions', showAll: false, data: null, err: '', loading: false, req: 0, view: [] };
+  const AN = { started: false, days: 90, mature: true, tab: 'channel', metric: 'avgVisits', data: null, err: '', loading: false, req: 0, view: [] };
   const DAY_OPTS = [[30, '近 30 天發的貼文'], [90, '近 90 天發的貼文'], [180, '近 180 天發的貼文'], [365, '近 1 年發的貼文']];
-  const RANK_LIMIT = 15;
 
   async function loadStats(fresh) {
     if (!SS) { $('#anBody').innerHTML = '<div class="banner err">成效分析的程式（social-stats.js）沒載入，請重新整理頁面。</div>'; return; }
@@ -467,26 +441,6 @@ details.fold ul{padding-left:var(--s5);font-size:13px;color:var(--text);line-hei
     }
     if (my === AN.req) { AN.loading = false; renderAnalysis(); }
   }
-  const siteRate = (a, b) => (b > 0 ? a / b * 100 : null);
-  function statHtml(label, v, d) { return `<div class="stat"><div class="l">${esc(label)}</div><div class="v">${esc(v)}</div><div class="d">${esc(d || '')}</div></div>`; }
-
-  function anLead(tot, d, excluded) {
-    const st = d.site || {}, siteEng = siteRate(st.engaged, st.sessions), siteCvr = siteRate(st.purchases, st.sessions), siteAtc = siteRate(st.atc, st.sessions);
-    const share = st.sessions > 0 ? SS.fmtPct(tot.visits / st.sessions * 100, 1) : '—';
-    return `<div class="lead">
-      <div><div class="lead-num">${SS.fmtInt(tot.visits)}</div>
-        <div class="lead-cap">次造訪來自這 ${tot.n} 則貼文，占全站同期（${esc(st.start || d.from)} ～ ${esc(st.end || '')}）的 ${share}${excluded > 0 ? '（全站是完整期間，貼文已排除未滿 7 天的，所以略偏低）' : ''}。</div></div>
-      <div class="stats">
-        ${statHtml('互動率', SS.fmtPct(tot.engRate, 1), '全站 ' + SS.fmtPct(siteEng, 1))}
-        ${statHtml('加入購物車', SS.fmtInt(tot.atc) + ' 次', '每百次造訪 ' + SS.fmtPct(tot.atcRate, 1).replace('%', '') + ' 次；全站 ' + SS.fmtPct(siteAtc, 1).replace('%', ''))}
-        ${statHtml('購買', SS.fmtInt(tot.buys) + ' 筆', '轉換率 ' + SS.fmtPct(tot.cvr, 2) + '；全站 ' + SS.fmtPct(siteCvr, 2))}
-        ${statHtml('GA4 營收', SS.fmtMoney(tot.rev), '每則平均 ' + SS.fmtMoney(tot.avgRev))}
-      </div></div>`;
-  }
-  function anInsights(list) {
-    if (!list.length) return '';
-    return '<ul class="insights">' + list.map(i => `<li class="${i.level === 'warn' ? 'warn' : ''}"><span class="chip ${i.level === 'warn' ? '' : 'mid'}">${esc(i.tag)}</span><span>${esc(i.text)}</span></li>`).join('') + '</ul>';
-  }
   function seg(attr, items, cur, label) {
     return `<div class="seg" role="group" aria-label="${esc(label)}">` + items.map(([k, l]) => `<button type="button" data-${attr}="${esc(k)}" aria-pressed="${String(k) === String(cur)}">${esc(l)}</button>`).join('') + '</div>';
   }
@@ -495,6 +449,8 @@ details.fold ul{padding-left:var(--s5);font-size:13px;color:var(--text);line-hei
     const o = SS.orderGroups(tab.fn(posts), AN.metric, tab.ordered);
     AN.view = o.all;
     const max = SS.barMax(o.all, AN.metric), lead = SS.leaderKey(o.all, AN.metric);
+    // 圖上看不出來的限制才寫成一行：IG 一般貼文沒有可點的連結（IG 數字會偏少）、轉換率／營收領先要購買夠多筆
+    const hint = [tab.hint, AN.tab === 'channel' && o.all.some(g => g.key === 'ig') ? 'Instagram 一般貼文沒有可點的連結，只有限時動態、Reels、個人檔案的連結有帶 UTM，所以 IG 的數字會偏少。' : '', m.hint].filter(Boolean).join(' ');
     const row = (g, i) => `<div class="brow" tabindex="0" data-i="${i}" role="img" aria-label="${esc(g.label + '：' + m.short + ' ' + SS.fmtMetric(AN.metric, g[AN.metric]) + '，' + g.n + ' 則貼文')}">
       <div class="bname">${esc(g.label)}<small>${g.n} 則・${SS.fmtInt(g.visits)} 次造訪${g.low ? '・樣本少' : ''}</small></div>
       <div class="btrack"><div class="bfill${g.key === lead ? ' top' : ''}${g.low ? ' low' : ''}" style="--w:${SS.barPct(g[AN.metric], max).toFixed(1)}"></div><span class="bval">${esc(SS.fmtMetric(AN.metric, g[AN.metric]))}</span></div></div>`;
@@ -503,49 +459,10 @@ details.fold ul{padding-left:var(--s5);font-size:13px;color:var(--text);line-hei
     if (tab.ordered && o.all.some(g => g.low)) bars += '<div class="bsep">斜紋＝樣本少（貼文不到 ' + SS.MIN_POSTS + ' 則，或造訪不到 ' + SS.MIN_VISITS + ' 次），僅供參考</div>';
     const trs = o.all.map(g => `<tr class="${g.low ? 'low' : ''}"><td class="name">${esc(g.label)}${g.low ? ' <span class="chip mid">樣本少</span>' : ''}</td><td class="n">${g.n}</td><td class="n">${SS.fmtInt(g.visits)}</td><td class="n">${SS.fmtInt(g.avgVisits)}</td><td class="n">${SS.fmtPct(g.engRate, 1)}</td><td class="n">${SS.fmtPct(g.atcRate, 1)}</td><td class="n">${SS.fmtInt(g.buys)}</td><td class="n">${SS.fmtPct(g.cvr, 2)}</td><td class="n">${SS.fmtInt(g.rev)}</td><td class="n">${SS.fmtInt(g.avgRev)}</td></tr>`).join('');
     return `<div class="chart-ctl">${seg('tab', Object.keys(SS.TABS).map(k => [k, SS.TABS[k].label]), AN.tab, '分組方式')}</div>
-      <div class="chart-ctl" style="margin-top:0">${seg('metric', Object.keys(SS.METRICS).map(k => [k, SS.METRICS[k].short]), AN.metric, '要比哪一種數字')}</div>
-      <div class="chart-title">各${esc(tab.label)}的「${esc(m.label)}」</div>${tab.hint ? `<p class="sub" style="margin-bottom:var(--s2)">${esc(tab.hint)}</p>` : ''}
+      <div class="chart-ctl">${seg('metric', Object.keys(SS.METRICS).map(k => [k, SS.METRICS[k].short]), AN.metric, '要比哪一種數字')}</div>
+      <div class="chart-title">各${esc(tab.label)}的「${esc(m.label)}」</div>${hint ? `<p class="sub" style="margin-bottom:var(--s2)">${esc(hint)}</p>` : ''}
       <div class="bars" id="anBars">${bars || '<div class="empty">這個期間沒有資料</div>'}</div>
       <div class="tablewrap" style="margin-top:var(--s5)"><table class="dt"><thead><tr><th>${esc(tab.label)}</th><th class="n">貼文</th><th class="n">造訪</th><th class="n">每則造訪</th><th class="n">互動率</th><th class="n">加購率</th><th class="n">購買</th><th class="n">轉換率</th><th class="n">營收</th><th class="n">每則營收</th></tr></thead><tbody>${trs}</tbody></table></div>`;
-  }
-  function anRank(posts) {
-    const ranked = SS.rankPosts(posts, AN.rank), shown = AN.showAll ? ranked : ranked.slice(0, RANK_LIMIT);
-    const trs = shown.map(p => {
-      const r = SS.postRates(p);
-      const chips = (p.ageDays < SS.MIN_AGE ? '<span class="chip mid">數據累積中</span>' : '') + (!p.inGa4 ? '<span class="chip">GA4 沒有造訪</span>' : '') + (p.matchedBy === 'campaign' ? '<span class="chip mid">以活動名稱配對</span>' : '') + (p.rowsMerged > 1 ? '<span class="chip mid">試算表重複 ' + p.rowsMerged + ' 列</span>' : '');
-      return `<tr><td class="mono nw">${esc(p.date)}</td><td class="nw">${esc(p.channelLabel)}</td><td class="content">${esc(p.typeLabel)}${p.activity ? '・' + esc(p.activity) : ''}<div class="long">${esc(p.productId)}</div>${chips}</td><td class="n">${SS.fmtInt(p.sessions)}</td><td class="n">${SS.fmtPct(r.engRate, 1)}</td><td class="n">${SS.fmtInt(p.addToCarts)}</td><td class="n">${SS.fmtInt(p.purchases)}</td><td class="n">${SS.fmtInt(p.revenue)}</td><td class="n">${SS.fmtPct(r.cvr, 2)}</td><td>${p.short ? `<button class="btn ghost sm cp" type="button" data-short="${esc(p.short)}">複製短網址</button>` : ''}</td></tr>`;
-    }).join('');
-    return `<h3 class="h3">單則貼文</h3>
-      <div class="chart-ctl" style="margin-top:0">${seg('rank', Object.keys(SS.SORTS).map(k => [k, '依' + SS.SORTS[k].label + (SS.SORTS[k].note ? '（' + SS.SORTS[k].note + '）' : '')]), AN.rank, '排序方式')}</div>
-      <div class="tablewrap"><table class="dt"><thead><tr><th>發文日</th><th>平台</th><th>內容</th><th class="n">造訪</th><th class="n">互動率</th><th class="n">加購</th><th class="n">購買</th><th class="n">營收</th><th class="n">轉換率</th><th></th></tr></thead><tbody>${trs || '<tr><td colspan="10" class="empty">這個期間沒有貼文</td></tr>'}</tbody></table></div>
-      ${ranked.length > RANK_LIMIT ? `<div class="row-actions"><button class="btn ghost sm" type="button" data-showall="1" style="min-height:44px">${AN.showAll ? '只看前 ' + RANK_LIMIT + ' 則' : '顯示全部 ' + ranked.length + ' 則'}</button></div>` : ''}`;
-  }
-  function anQuality(all, d) {
-    const un = d.unmatched || { count: 0, sessions: 0, items: [] };
-    const zero = all.filter(p => !p.inGa4 && p.ageDays >= 1).sort((a, b) => (a.date < b.date ? 1 : -1));
-    const taggedAll = all.reduce((a, p) => a + p.sessions, 0) + un.sessions, bigUn = un.count > 0 && taggedAll > 0 && un.sessions / taggedAll >= 0.2;
-    const hint = g => g.maybe ? `試算表有同商品的 ${esc(g.maybe.date)}（${esc(g.maybe.source)} / ${esc(g.maybe.medium)}），發文日可能填錯` : '試算表沒有這則（可能是廣告，或沒登記的貼文）';
-    const unRows = (un.items || []).map(g => `<tr><td class="mono nw">${esc(g.date)}</td><td class="mono" style="min-width:200px">${esc(g.campaign)}</td><td>${esc(g.sources.join('、'))}${g.sourceCount > g.sources.length ? ' 等 ' + g.sourceCount + ' 種' : ''}</td><td class="n">${SS.fmtInt(g.sessions)}</td><td class="n">${SS.fmtInt(g.addToCarts)}</td><td class="n">${SS.fmtInt(g.purchases)}</td><td>${hint(g)}</td></tr>`).join('');
-    const parts = [];
-    if (un.count) parts.push(`<h3 class="h3" style="margin-top:var(--s3)">GA4 有流量、試算表沒有紀錄的 UTM 活動</h3><p class="sub">這些流量沒有算進上面的分析（${un.count} 組，只列最大的 ${(un.items || []).length} 組）。多半是廣告導流，或有人沒登記就發了貼文。</p><div class="tablewrap"><table class="dt"><thead><tr><th>發文日</th><th>UTM 活動</th><th>來源／媒介</th><th class="n">造訪</th><th class="n">加購</th><th class="n">購買</th><th>提示</th></tr></thead><tbody>${unRows}</tbody></table></div>`);
-    if (zero.length) parts.push(`<h3 class="h3">GA4 沒有任何造訪的貼文（${zero.length} 則）</h3><p class="sub">可能沒人點，也可能貼文上用的不是這條追蹤連結。</p><div class="tablewrap"><table class="dt"><thead><tr><th>發文日</th><th>平台</th><th>內容</th><th class="n">發文後</th></tr></thead><tbody>${zero.slice(0, 20).map(p => `<tr><td class="mono nw">${esc(p.date)}</td><td class="nw">${esc(p.channelLabel)}</td><td class="mono">${esc(p.productId)}</td><td class="n">${p.ageDays} 天</td></tr>`).join('')}</tbody></table></div>${zero.length > 20 ? `<p class="sub">只列最新 20 則。</p>` : ''}`);
-    if (d.skippedRows) parts.push(`<p class="sub">試算表有 ${d.skippedRows} 列缺來源／媒介／活動ID／產品ID，沒辦法分析。</p>`);
-    if (d.ga && d.ga.truncated) parts.push('<div class="banner err">GA4 回傳的活動數超過上限，這份分析不完整。</div>');
-    if (!parts.length) parts.push('<p class="sub">沒有發現問題：每則貼文都配得上 GA4，也沒有沒登記的 UTM 活動。</p>');
-    return `<details class="fold" ${bigUn ? 'open' : ''}><summary>資料品質${un.count ? '：' + un.count + ' 組 UTM 沒登記（' + SS.fmtInt(un.sessions) + ' 次造訪）' : ''}${zero.length ? '・' + zero.length + ' 則貼文沒有造訪' : ''}</summary><div class="fold-in">${parts.join('')}</div></details>`;
-  }
-  function anNotes() {
-    return `<details class="fold"><summary>數字怎麼算、有哪些限制</summary><div class="fold-in"><ul>
-      <li>造訪、加購、購買、營收都來自官網的 GA4，用「來源＋媒介＋活動名稱」對上試算表的每一列。</li>
-      <li>只算「點了那條追蹤連結」的那一次造訪裡發生的事。看完貼文、之後直接打網址或搜尋才買，不會算在貼文上，所以數字是下限。</li>
-      <li>營收是 GA4 回報的購買金額，口徑和 ERP／Shopline 營業額不同，只用來比較貼文之間的相對表現，不要當營業額。</li>
-      <li>轉換率＝購買筆數 ÷ 造訪（和中控的官網轉換率同一把尺）。互動率＝GA4「有互動的造訪」÷ 造訪。加購率＝加購次數 ÷ 造訪。</li>
-      <li>比率都是「加總之後再除」，每則平均＝加總 ÷ 貼文數。同一組來源、媒介、活動名稱在試算表出現多列，合併算 1 則。</li>
-      <li>發文滿 7 天，數字才大致穩定；GA4 最近 1～2 天可能還沒算完，資料約每 15 分鐘更新一次。</li>
-      <li>貼文不到 3 則或造訪不到 200 次的組別標「樣本少」，不進文字結論；購買不到 5 筆不比較轉換率。</li>
-      <li>平台之間的差異同時混著「發什麼商品、什麼時候發、誰在看」。這張表看得出誰高誰低，看不出為什麼。</li>
-      <li>IG 一般貼文沒有可點的連結，只有限時動態、Reels、個人檔案的連結有帶 UTM，所以 IG 的數字會偏少。</li>
-    </ul></div></details>`;
   }
   function renderAnalysis() {
     const body = $('#anBody'), d = AN.data;
@@ -556,24 +473,20 @@ details.fold ul{padding-left:var(--s5);font-size:13px;color:var(--text);line-hei
         : (AN.started ? '<div class="an-wait"><span class="spinner"></span>正在向 GA4 取資料…第一次約 10～15 秒，之後會快很多。</div>' : '<div class="an-wait">登入確認後，會自動載入成效資料。</div>');
       return;
     }
-    // 重繪前記住：哪顆按鈕有焦點、哪些摺疊區是展開的、頁面捲到哪（重繪後還原，鍵盤與讀屏使用者才不會被丟回頁首）
-    const act = document.activeElement, focusKey = act && body.contains(act) ? ['tab', 'metric', 'rank', 'showall'].map(k => (act.dataset && act.dataset[k] != null ? k + '=' + act.dataset[k] : '')).find(Boolean) : '';
-    const opened = $$('details.fold', body).map(x => x.open);
+    // 重繪前記住哪顆按鈕有焦點（重繪後還原，鍵盤與讀屏使用者才不會被丟回頁首）
+    const act = document.activeElement, focusKey = act && body.contains(act) ? ['tab', 'metric'].map(k => (act.dataset && act.dataset[k] != null ? k + '=' + act.dataset[k] : '')).find(Boolean) : '';
     try {
-      const all = d.posts, posts = SS.filterPosts(all, AN.mature), excluded = all.length - posts.length;
+      const all = d.posts, posts = SS.filterPosts(all, AN.mature);
       const err = AN.err ? `<div class="banner err"><b>這次更新沒成功：</b>${esc(AN.err)}（下面是上一次的資料）</div>` : '';
-      if (!posts.length) { body.innerHTML = err + '<div class="empty">這個期間沒有符合條件的貼文' + (AN.mature && all.length ? '（有 ' + all.length + ' 則發文未滿 7 天，可取消上面的勾選）' : '') + '。</div>' + anQuality(all, d) + anNotes(); }
-      else {
-        const tot = SS.totals(posts);
-        body.innerHTML = err + anLead(tot, d, excluded) + anInsights(SS.buildInsights({ posts, allPosts: all, site: d.site, unmatched: d.unmatched, excluded, days: d.days })) + anChart(posts) + anRank(posts) + anQuality(all, d) + anNotes();
-      }
+      const trunc = d.ga && d.ga.truncated ? '<div class="banner err">GA4 回傳的活動數超過上限，這份分析不完整。</div>' : '';
+      if (!posts.length) { body.innerHTML = err + trunc + '<div class="empty">這個期間沒有符合條件的貼文' + (AN.mature && all.length ? '（有 ' + all.length + ' 則發文未滿 7 天，可取消上面的勾選）' : '') + '。</div>'; }
+      else { body.innerHTML = err + trunc + anChart(posts); }
     } catch (e) {
       // 例如 social-links.html 與 social-stats.js 版本不一致（快取到舊檔）：不要卡在轉圈，直接說明
       body.innerHTML = '<div class="banner err"><b>成效分析顯示失敗。</b>多半是頁面程式的版本不一致，請按 Ctrl+Shift+R（Mac：Cmd+Shift+R）強制重新整理；還是不行再告訴 Gary。</div>';
       try { console.error(e); } catch (x) { /* 忽略 */ }
       return;
     }
-    $$('details.fold', body).forEach((x, i) => { if (opened[i] != null) x.open = opened[i]; });
     if (focusKey) { const [k, v] = focusKey.split('='); const el = body.querySelector('[data-' + k + '="' + v + '"]'); if (el) el.focus({ preventScroll: true }); }
     $('#anLive').textContent = AN.loading ? '' : '發文成效已更新';
   }
@@ -598,10 +511,7 @@ details.fold ul{padding-left:var(--s5);font-size:13px;color:var(--text);line-hei
       const b = e.target.closest('button'); if (!b) return;
       if (b.dataset.tab) { AN.tab = b.dataset.tab; hideTip(); renderAnalysis(); }
       else if (b.dataset.metric) { AN.metric = b.dataset.metric; hideTip(); renderAnalysis(); }
-      else if (b.dataset.rank) { AN.rank = b.dataset.rank; renderAnalysis(); }
-      else if (b.dataset.showall) { AN.showAll = !AN.showAll; renderAnalysis(); }
       else if (b.dataset.retry) { loadStats(true); }
-      else if (b.classList.contains('cp')) { copy(b.dataset.short, '已複製短網址'); }
     });
     body.addEventListener('pointermove', e => { const r = e.target.closest('.brow'); if (r) showTip(r, e.clientX, e.clientY); else hideTip(); });
     body.addEventListener('pointerleave', hideTip);
@@ -610,7 +520,7 @@ details.fold ul{padding-left:var(--s5);font-size:13px;color:var(--text);line-hei
     document.addEventListener('keydown', e => { if (e.key === 'Escape') hideTip(); });
     window.addEventListener('scroll', hideTip, { passive: true });
     $('#anDays').innerHTML = DAY_OPTS.map(([v, l]) => `<option value="${v}"${v === AN.days ? ' selected' : ''}>${l}</option>`).join('');
-    $('#anDays').addEventListener('change', e => { AN.days = Number(e.target.value); AN.showAll = false; loadStats(); });
+    $('#anDays').addEventListener('change', e => { AN.days = Number(e.target.value); loadStats(); });
     $('#anMature').addEventListener('change', e => { AN.mature = e.target.checked; renderAnalysis(); });
     $('#anReload').addEventListener('click', () => loadStats(true));       // 重新整理＝跳過後端快取重抓 GA4
   }
