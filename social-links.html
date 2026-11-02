@@ -117,6 +117,7 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
 .check input{width:18px;height:18px;accent-color:var(--green)}
 #anBody{transition:opacity .2s}
 #anBody.dim{opacity:.5}
+.h3{font-size:15px;font-weight:600;color:var(--title);margin:var(--s6) 0 var(--s3)}
 .seg{display:flex;flex-wrap:wrap;gap:var(--s1)}
 .seg button{min-height:44px;padding:0 var(--s4);background:#fff;border:1px solid var(--border2);border-radius:var(--radius);font-size:14px}
 .seg button:hover{background:var(--sand-light)}
@@ -136,7 +137,12 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
 .bval{font-family:var(--mono);font-size:13px;white-space:nowrap}
 .bsep{font-size:12px;color:var(--text-sub);padding:var(--s3) var(--s2) var(--s1)}
 .dt td.n,.dt th.n{text-align:right;white-space:nowrap}
+.dt .nw{white-space:nowrap}
 .dt td.name{min-width:96px}
+.dt td.content{min-width:168px}
+.dt .long{word-break:normal;white-space:nowrap}
+.dt .btn{white-space:nowrap}
+.dt .btn.sm{min-height:44px}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .dt td.n{font-family:var(--mono);font-size:13px}
 .dt tr.low td{color:var(--text-sub)}
@@ -242,11 +248,6 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
     <div class="sr-only" id="anLive" role="status" aria-live="polite"></div>
   </section>
 
-  <section class="card">
-    <h2>最近建立的</h2>
-    <p class="sub">從 UTM 試算表的「Short URL」欄讀取，最近 20 條。</p>
-    <div class="tablewrap"><table><thead><tr><th>發文日</th><th>產品</th><th>平台</th><th>短網址</th></tr></thead><tbody id="recentBody"><tr><td colspan="4" class="empty">載入中…</td></tr></tbody></table></div>
-  </section>
 </main>
 <div class="toasts" id="toast" role="status" aria-live="polite"></div>
 <div class="tip" id="tip" hidden></div>
@@ -417,17 +418,12 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
     $('#previewCard').hidden = true; $('#resultCard').hidden = false;
     $('#resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-  function renderRecent(list) {
-    $('#recentBody').innerHTML = list.length ? list.map(x => `<tr><td class="mono">${esc(x.date)}</td><td class="mono">${esc(x.productId)}</td><td class="mono">${esc(x.source)} / ${esc(x.medium)}</td><td><div class="shortcell"><a href="${esc(x.short)}" target="_blank" rel="noopener">${esc(x.short.replace(/^https?:\/\//, ''))}</a><button class="btn ghost sm cp" type="button" data-short="${esc(x.short)}">複製</button></div></td></tr>`).join('')
-      : '<tr><td colspan="4" class="empty">還沒有紀錄</td></tr>';
-    $$('#recentBody .cp').forEach(b => b.addEventListener('click', () => copy(b.dataset.short, '已複製短網址')));
-  }
-
 
   /* ---------- 發文成效（GA4）---------- */
   const SS = window.SocialStats;
-  const AN = { started: false, days: 90, mature: true, tab: 'channel', metric: 'avgVisits', data: null, err: '', loading: false, req: 0, view: [] };
+  const AN = { started: false, days: 90, mature: true, tab: 'channel', metric: 'avgVisits', rank: 'sessions', showAll: false, data: null, err: '', loading: false, req: 0, view: [] };
   const DAY_OPTS = [[30, '近 30 天發的貼文'], [90, '近 90 天發的貼文'], [180, '近 180 天發的貼文'], [365, '近 1 年發的貼文']];
+  const RANK_LIMIT = 15;
 
   async function loadStats(fresh) {
     if (!SS) { $('#anBody').innerHTML = '<div class="banner err">成效分析的程式（social-stats.js）沒載入，請重新整理頁面。</div>'; return; }
@@ -464,6 +460,18 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
       <div class="bars" id="anBars">${bars || '<div class="empty">這個期間沒有資料</div>'}</div>
       <div class="tablewrap" style="margin-top:var(--s5)"><table class="dt"><thead><tr><th>${esc(tab.label)}</th><th class="n">貼文</th><th class="n">造訪</th><th class="n">每則造訪</th><th class="n">互動率</th><th class="n">加購率</th><th class="n">購買</th><th class="n">轉換率</th><th class="n">營收</th><th class="n">每則營收</th></tr></thead><tbody>${trs}</tbody></table></div>`;
   }
+  function anRank(posts) {
+    const ranked = SS.rankPosts(posts, AN.rank), shown = AN.showAll ? ranked : ranked.slice(0, RANK_LIMIT);
+    const trs = shown.map(p => {
+      const r = SS.postRates(p);
+      const chips = (p.ageDays < SS.MIN_AGE ? '<span class="chip mid">數據累積中</span>' : '') + (!p.inGa4 ? '<span class="chip">GA4 沒有造訪</span>' : '') + (p.matchedBy === 'campaign' ? '<span class="chip mid">以活動名稱配對</span>' : '') + (p.rowsMerged > 1 ? '<span class="chip mid">試算表重複 ' + p.rowsMerged + ' 列</span>' : '');
+      return `<tr><td class="mono nw">${esc(p.date)}</td><td class="nw">${esc(p.channelLabel)}</td><td class="content">${esc(p.typeLabel)}${p.activity ? '・' + esc(p.activity) : ''}<div class="long">${esc(p.productId)}</div>${chips}</td><td class="n">${SS.fmtInt(p.sessions)}</td><td class="n">${SS.fmtPct(r.engRate, 1)}</td><td class="n">${SS.fmtInt(p.addToCarts)}</td><td class="n">${SS.fmtInt(p.purchases)}</td><td class="n">${SS.fmtInt(p.revenue)}</td><td class="n">${SS.fmtPct(r.cvr, 2)}</td><td>${p.short ? `<button class="btn ghost sm cp" type="button" data-short="${esc(p.short)}">複製短網址</button>` : ''}</td></tr>`;
+    }).join('');
+    return `<h3 class="h3">單則貼文</h3>
+      <div class="chart-ctl" style="margin-top:0">${seg('rank', Object.keys(SS.SORTS).map(k => [k, '依' + SS.SORTS[k].label + (SS.SORTS[k].note ? '（' + SS.SORTS[k].note + '）' : '')]), AN.rank, '排序方式')}</div>
+      <div class="tablewrap"><table class="dt"><thead><tr><th>發文日</th><th>平台</th><th>內容</th><th class="n">造訪</th><th class="n">互動率</th><th class="n">加購</th><th class="n">購買</th><th class="n">營收</th><th class="n">轉換率</th><th></th></tr></thead><tbody>${trs || '<tr><td colspan="10" class="empty">這個期間沒有貼文</td></tr>'}</tbody></table></div>
+      ${ranked.length > RANK_LIMIT ? `<div class="row-actions"><button class="btn ghost sm" type="button" data-showall="1" style="min-height:44px">${AN.showAll ? '只看前 ' + RANK_LIMIT + ' 則' : '顯示全部 ' + ranked.length + ' 則'}</button></div>` : ''}`;
+  }
   function renderAnalysis() {
     const body = $('#anBody'), d = AN.data;
     $('#anStamp').textContent = AN.loading ? '更新中…' : (d && d.ga ? 'GA4 數據到 ' + d.ga.end + '（' + (d.ga.cached ? '快取，約每 15 分鐘更新' : '剛從 GA4 取得') + '）' : '');
@@ -474,13 +482,13 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
       return;
     }
     // 重繪前記住哪顆按鈕有焦點（重繪後還原，鍵盤與讀屏使用者才不會被丟回頁首）
-    const act = document.activeElement, focusKey = act && body.contains(act) ? ['tab', 'metric'].map(k => (act.dataset && act.dataset[k] != null ? k + '=' + act.dataset[k] : '')).find(Boolean) : '';
+    const act = document.activeElement, focusKey = act && body.contains(act) ? ['tab', 'metric', 'rank', 'showall'].map(k => (act.dataset && act.dataset[k] != null ? k + '=' + act.dataset[k] : '')).find(Boolean) : '';
     try {
       const all = d.posts, posts = SS.filterPosts(all, AN.mature);
       const err = AN.err ? `<div class="banner err"><b>這次更新沒成功：</b>${esc(AN.err)}（下面是上一次的資料）</div>` : '';
       const trunc = d.ga && d.ga.truncated ? '<div class="banner err">GA4 回傳的活動數超過上限，這份分析不完整。</div>' : '';
       if (!posts.length) { body.innerHTML = err + trunc + '<div class="empty">這個期間沒有符合條件的貼文' + (AN.mature && all.length ? '（有 ' + all.length + ' 則發文未滿 7 天，可取消上面的勾選）' : '') + '。</div>'; }
-      else { body.innerHTML = err + trunc + anChart(posts); }
+      else { body.innerHTML = err + trunc + anChart(posts) + anRank(posts); }
     } catch (e) {
       // 例如 social-links.html 與 social-stats.js 版本不一致（快取到舊檔）：不要卡在轉圈，直接說明
       body.innerHTML = '<div class="banner err"><b>成效分析顯示失敗。</b>多半是頁面程式的版本不一致，請按 Ctrl+Shift+R（Mac：Cmd+Shift+R）強制重新整理；還是不行再告訴 Gary。</div>';
@@ -511,7 +519,10 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
       const b = e.target.closest('button'); if (!b) return;
       if (b.dataset.tab) { AN.tab = b.dataset.tab; hideTip(); renderAnalysis(); }
       else if (b.dataset.metric) { AN.metric = b.dataset.metric; hideTip(); renderAnalysis(); }
+      else if (b.dataset.rank) { AN.rank = b.dataset.rank; renderAnalysis(); }
+      else if (b.dataset.showall) { AN.showAll = !AN.showAll; renderAnalysis(); }
       else if (b.dataset.retry) { loadStats(true); }
+      else if (b.classList.contains('cp')) { copy(b.dataset.short, '已複製短網址'); }
     });
     body.addEventListener('pointermove', e => { const r = e.target.closest('.brow'); if (r) showTip(r, e.clientX, e.clientY); else hideTip(); });
     body.addEventListener('pointerleave', hideTip);
@@ -520,16 +531,12 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
     document.addEventListener('keydown', e => { if (e.key === 'Escape') hideTip(); });
     window.addEventListener('scroll', hideTip, { passive: true });
     $('#anDays').innerHTML = DAY_OPTS.map(([v, l]) => `<option value="${v}"${v === AN.days ? ' selected' : ''}>${l}</option>`).join('');
-    $('#anDays').addEventListener('change', e => { AN.days = Number(e.target.value); loadStats(); });
+    $('#anDays').addEventListener('change', e => { AN.days = Number(e.target.value); AN.showAll = false; loadStats(); });
     $('#anMature').addEventListener('change', e => { AN.mature = e.target.checked; renderAnalysis(); });
     $('#anReload').addEventListener('click', () => loadStats(true));       // 重新整理＝跳過後端快取重抓 GA4
   }
 
   /* ---------- 動作 ---------- */
-  async function loadRecent() {
-    try { renderRecent((await api('recent')).recent); }
-    catch (e) { $('#recentBody').innerHTML = `<tr><td colspan="4" class="empty">${esc(e.message)}</td></tr>`; }
-  }
   async function go() {
     let items; try { items = collect(); } catch (e) { toast(e.message, true); return; }
     setBusy(true); $('#goHint').innerHTML = '<span class="spinner" style="border-color:rgba(40,66,52,.3);border-top-color:#284234"></span> 檢查中…';
@@ -540,7 +547,7 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
   async function confirmCreate() {
     if (!S.last) return;
     setBusy(true); const btn = $('#confirm'), old = btn.textContent; btn.innerHTML = '<span class="spinner"></span> 建立中（每條約 3～5 秒）…';
-    try { const r = await api('create', { items: S.last.items }); renderResults(r); loadRecent(); }
+    try { const r = await api('create', { items: S.last.items }); renderResults(r); }
     catch (e) { toast(e.message, true); }
     finally { setBusy(false); btn.textContent = old; }
   }
@@ -568,7 +575,6 @@ td.mono,.mono{font-family:var(--mono);font-size:13px;word-break:break-all}
       $('#who').textContent = S.email;
       DEFAULT_PLATFORMS.forEach(k => { S.picked[k] = true; });
       renderPlats(); renderNotice();
-      loadRecent();
       loadStats();
     } catch (e) {
       $('#notice').innerHTML = `<div class="banner err"><b>${esc(e.message)}</b></div>`;

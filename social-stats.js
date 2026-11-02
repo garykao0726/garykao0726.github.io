@@ -129,10 +129,30 @@
     return best ? best.key : null;
   }
 
+  /* ---- 單則貼文排行 ---- */
+  var SORTS = {
+    sessions: { label: '造訪', get: function (p) { return num(p.sessions); } },
+    purchases: { label: '購買', get: function (p) { return num(p.purchases); } },
+    revenue: { label: '營收', get: function (p) { return num(p.revenue); } },
+    cvr: { label: '轉換率', get: function (p) { return num(p.sessions) >= MIN_VISITS ? num(p.purchases) / num(p.sessions) : -1; }, note: '造訪 ≥ ' + MIN_VISITS + ' 才排' },
+    date: { label: '最新', get: function (p) { return p.date; } }
+  };
+  function rankPosts(posts, sortKey) {
+    var s = SORTS[sortKey] || SORTS.sessions;
+    return (posts || []).slice().sort(function (a, b) {
+      var av = s.get(a), bv = s.get(b);
+      if (av === bv) return num(b.purchases) - num(a.purchases) || num(b.sessions) - num(a.sessions);
+      return av < bv ? 1 : -1;
+    });
+  }
+  function postRates(p) {
+    return { engRate: div(num(p.engaged) * 100, num(p.sessions)), cvr: div(num(p.purchases) * 100, num(p.sessions)) };
+  }
+
   return {
-    MIN_AGE: MIN_AGE, MIN_POSTS: MIN_POSTS, MIN_VISITS: MIN_VISITS, MIN_BUYS: MIN_BUYS, WEEKDAYS: WEEKDAYS, METRICS: METRICS, TABS: TABS,
+    MIN_AGE: MIN_AGE, MIN_POSTS: MIN_POSTS, MIN_VISITS: MIN_VISITS, MIN_BUYS: MIN_BUYS, WEEKDAYS: WEEKDAYS, METRICS: METRICS, TABS: TABS, SORTS: SORTS,
     filterPosts: filterPosts, totals: totals, groupBy: groupBy, byChannel: byChannel, byType: byType, byWeekday: byWeekday, byActivity: byActivity,
-    orderGroups: orderGroups, barMax: barMax, barPct: barPct, leaderKey: leaderKey,
+    orderGroups: orderGroups, barMax: barMax, barPct: barPct, leaderKey: leaderKey, rankPosts: rankPosts, postRates: postRates,
     fmtInt: fmtInt, fmtPct: fmtPct, fmtMoney: fmtMoney, fmtMetric: fmtMetric
   };
 });
