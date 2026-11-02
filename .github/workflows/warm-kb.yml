@@ -15,9 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Warm KB cache (loop until done)
+        env:
+          WARM_TOKEN: ${{ secrets.WARM_TOKEN }}   # 保溫專用金鑰，後台只認它執行 /warm（不能問答、不能下其他指令）
         run: |
           NEW='https://script.google.com/macros/s/AKfycbyBTPHliwIIyYGxKokNEUYXM8TJwhmPrl62pwo6l7nUgeZjBw9aBy7PdD3xpp_Z4BkJ/exec'
-          BODY='{"question":"/warm","token":"3a0df4334f271c7d0fa8fe0d6a19e48fb7631024f2487e48"}'
+          [ -n "$WARM_TOKEN" ] || { echo "WARM_TOKEN secret 未設定（GitHub repo → Settings → Secrets and variables → Actions）"; exit 1; }
+          BODY=$(printf '{"question":"/warm","warm":"%s"}' "$WARM_TOKEN")
           for i in 1 2 3; do
             LOC=$(curl -s -D - -o /dev/null -X POST "$NEW" \
               -H 'Content-Type: text/plain;charset=utf-8' \

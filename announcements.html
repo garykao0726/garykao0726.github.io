@@ -8,6 +8,7 @@
 <link rel="icon" type="image/png" href="/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
+<script src="staff-session.js"></script>
 <style>
 :root{
   --green:#284234;--dark:#002721;--sand:#E2CEB9;--sand-light:#F5EDE3;
@@ -236,7 +237,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 // 人事小管家 Web API 設定
 // ============================================================
 const WEBAPI_URL = 'https://script.google.com/macros/s/AKfycbyBTPHliwIIyYGxKokNEUYXM8TJwhmPrl62pwo6l7nUgeZjBw9aBy7PdD3xpp_Z4BkJ/exec';
-const WEBAPI_TOKEN = '3a0df4334f271c7d0fa8fe0d6a19e48fb7631024f2487e48';
 const WEBAPI_SCOPE = 'hr';
 
 const $ = id => document.getElementById(id);
@@ -317,6 +317,53 @@ async function postAsk(body) {
   throw lastErr || new Error('無法取得回應');
 }
 
+// ── 身分憑證（2026-11-02）──────────────────────────────────────────
+// 不再有寫死的共用 token（那把放在公開網頁等於公開，已作廢）。登入儀表板時拿到的 Google ID token，
+// 會由 staff-session.js 向後台換一張 8 小時通行證；後台每次問答都驗這張證。
+// 只有「登入超過 1 小時才開這頁」且 ID token 已過期時，頁面頂端才會出現橘色橫幅，點一次就好。
+let staffToken = null;
+const tokenWaiters = [];
+function onStaffToken(tok) {
+  staffToken = tok;
+  while (tokenWaiters.length) tokenWaiters.shift()(tok);
+}
+function waitStaffToken(ms) {
+  if (staffToken) return Promise.resolve(staffToken);
+  return new Promise(resolve => {
+    const t = setTimeout(() => resolve(null), ms);
+    tokenWaiters.push(tok => { clearTimeout(t); resolve(tok); });
+  });
+}
+function startStaffSession() {
+  OringoStaffSession.start({
+    gasUrl: WEBAPI_URL,
+    bannerText: '⚠ 需要額外授權才能使用問答，點此授權',
+    onToken: onStaffToken
+  });
+}
+function isAlreadyLoggedIn() {
+  try {
+    const d = JSON.parse(localStorage.getItem('oringo_auth_v1') || 'null');
+    return !!(d && d.exp > Date.now());
+  } catch (e) { return false; }
+}
+if (isAlreadyLoggedIn()) startStaffSession();
+else document.addEventListener('oriAuthComplete', startStaffSession, { once: true });
+
+// 帶通行證問答；後台說憑證無效（過期／被撤銷）就重新換一張再問一次
+async function askWithAuth(q) {
+  for (let round = 0; round < 2; round++) {
+    const tok = await waitStaffToken(round === 0 ? 8000 : 15000);
+    if (!tok) return { error: '尚未取得身分憑證：請重新整理頁面，或點上方橘色橫幅授權一次' };
+    const data = await postAsk({ question: q, scope: WEBAPI_SCOPE, staffToken: tok });
+    if (!(data && data.error && /憑證/.test(data.error))) return data;
+    staffToken = null;
+    setStatus('重新確認身分中…');
+    OringoStaffSession.refresh();
+  }
+  return { error: '憑證已過期：請重新整理頁面' };
+}
+
 async function askQuestion(question) {
   if (!question || !question.trim()) return;
   if (btn.disabled) return; // 查詢進行中，避免重複送出
@@ -327,11 +374,7 @@ async function askQuestion(question) {
   setStatus('人事小管家思考中…');
 
   try {
-    const data = await postAsk({
-      question: question.trim(),
-      scope: WEBAPI_SCOPE,
-      token: WEBAPI_TOKEN
-    });
+    const data = await askWithAuth(question.trim());
     setStatus(null);
 
     if (data.error) {

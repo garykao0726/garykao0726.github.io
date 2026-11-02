@@ -95,6 +95,7 @@
   // 網址要跟 repair.html／custom.html 的 GAS_URL 一致；失敗不影響登入，開頁時 staff-session.js 會再處理。
   const STAFF_GAS_URLS = [
     'https://script.google.com/macros/s/AKfycbywhbtNQWEsQ68I7sCbcs71bVAPD_DrDGBAY_wm8Nl_MXln1daS77h-tXVBXrOYw4kBBg/exec', // 維修＋訂製
+    'https://script.google.com/macros/s/AKfycbyBTPHliwIIyYGxKokNEUYXM8TJwhmPrl62pwo6l7nUgeZjBw9aBy7PdD3xpp_Z4BkJ/exec', // 林果小博士／人事小管家（問答）
   ];
   function primeStaffSessions(idToken, email) {
     STAFF_GAS_URLS.forEach(function (url) {
