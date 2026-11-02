@@ -451,13 +451,13 @@ details.fold ul{padding-left:var(--s5);font-size:13px;color:var(--text);line-hei
 
   /* ---------- 發文成效（GA4）---------- */
   const SS = window.SocialStats;
-  const AN = { days: 90, mature: true, tab: 'channel', metric: 'avgVisits', rank: 'sessions', showAll: false, data: null, err: '', loading: false, req: 0, view: [] };
+  const AN = { started: false, days: 90, mature: true, tab: 'channel', metric: 'avgVisits', rank: 'sessions', showAll: false, data: null, err: '', loading: false, req: 0, view: [] };
   const DAY_OPTS = [[30, '近 30 天發的貼文'], [90, '近 90 天發的貼文'], [180, '近 180 天發的貼文'], [365, '近 1 年發的貼文']];
   const RANK_LIMIT = 15;
 
   async function loadStats(fresh) {
     if (!SS) { $('#anBody').innerHTML = '<div class="banner err">成效分析的程式（social-stats.js）沒載入，請重新整理頁面。</div>'; return; }
-    const my = ++AN.req; AN.loading = true; AN.err = '';
+    const my = ++AN.req; AN.loading = true; AN.started = true; AN.err = '';
     renderAnalysis();
     try { const d = await api('stats', fresh === true ? { days: AN.days, fresh: true } : { days: AN.days }); if (my !== AN.req) return; AN.data = d; }
     catch (e) {
@@ -553,7 +553,7 @@ details.fold ul{padding-left:var(--s5);font-size:13px;color:var(--text);line-hei
     body.classList.toggle('dim', AN.loading && !!d);
     if (!d) {
       body.innerHTML = AN.err ? `<div class="banner err"><b>讀不到成效資料：</b>${esc(AN.err)}</div><div class="row-actions"><button class="btn ghost sm" type="button" data-retry="1" style="min-height:44px">再試一次</button></div>`
-        : '<div class="an-wait"><span class="spinner"></span>正在向 GA4 取資料…第一次約 10～15 秒，之後會快很多。</div>';
+        : (AN.started ? '<div class="an-wait"><span class="spinner"></span>正在向 GA4 取資料…第一次約 10～15 秒，之後會快很多。</div>' : '<div class="an-wait">登入確認後，會自動載入成效資料。</div>');
       return;
     }
     // 重繪前記住：哪顆按鈕有焦點、哪些摺疊區是展開的、頁面捲到哪（重繪後還原，鍵盤與讀屏使用者才不會被丟回頁首）
@@ -677,7 +677,7 @@ details.fold ul{padding-left:var(--s5);font-size:13px;color:var(--text);line-hei
   $('#testLihi').addEventListener('click', testLihi);
   $('#openSheet').addEventListener('click', () => window.open(SHEET_URL, '_blank', 'noopener'));
 
-  bindAnalysis();
+  bindAnalysis(); renderAnalysis();
   document.addEventListener('oriAuthComplete', load);
   if (sessionValid()) load();
 })();
