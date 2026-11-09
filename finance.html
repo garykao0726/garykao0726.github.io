@@ -251,16 +251,70 @@ const FALLBACK_MONTHS = {
       '東門': { rev:901174,  cogs:291793, gp:609381,  gpPct:67.62, wPct:14.56, rPct:14.16, mktPct:2.46,  opProfit:12086,  pretax:12086,  pretaxPct:1.34,  target:1000000 },
     },
   },
+  '2026/07': {
+    ym:'2026/07', label:'7月', confirmed:true,
+    /* ★ 7月營收含 4301「專案業務收入」125 萬（單筆，報表上無對應專案成本 5106 入帳；不在五通路內）
+       → 7月毛利率 75.7%、營業淨利 105.8 萬皆被這筆墊高；扣除後營業淨利約 −19.2 萬（假設該筆無成本）
+       去年 7 月營收含嘖嘖募資專案 168.8 萬（非常態），YoY 兩邊都有一次性收入，僅供參考 */
+    rev:5924035, cogs:1438479, gp:4485556, gpPct:75.72,
+    sell:2404443, sellPct:40.59,
+      w6100:643090, wPct6100:10.86, r6114:452794, rPct6114:7.64,
+      mkt:332481, mktPct:5.61,
+        mktPhoto:48328, mktMedia:227857, mktPrint:0, mktEvent:0, mktPR:56296,
+      freight:42207, sys:626390, cardFee:80135, sample:34818,
+    mgmt:1022917, mgmtPct:17.27,
+      w6201:637930, wPct6201:10.77, r6202:176000, depr:55618,
+    opProfit:1058196, opPct:17.86,
+    nonOpIn:62515, nonOpOut:39826,
+    pretax:1080885, tax:58000, ni:1022885, niPct:17.27,
+    /* 去年同期 2025/07（來源：損益表_202507／部門比較）+ 累計；prevRev 已扣誠品裕隆城 346,363（原始 6,005,784），與 1–6 月同一口徑 */
+    prevRev:5659421, prevNI:-201538, yoyRevPct:4.68,  // 已扣裕隆城，原始6,005,784
+    prevYtdRev:36544709, prevYtdNI:-644842,
+    prevGpPct:65.15, prevSellPct:48.11, prevMgmtPct:20.33, prevNiPct:-3.36,
+    storeData: {
+      '電商': { rev:730495, cogs:216956, gp:513539, gpPct:70.30, wPct:0.00, rPct:0.00, mktPct:16.62, opProfit:-52835, pretax:-52835, pretaxPct:-7.23, target:900000 },
+      '中山': { rev:1215716, cogs:357592, gp:858124, gpPct:70.59, wPct:20.72, rPct:10.69, mktPct:1.65, opProfit:27839, nonOpIn:60000, pretax:87839, pretaxPct:7.23, target:1250000 },
+      '松菸': { rev:972784, cogs:301888, gp:670896, gpPct:68.97, wPct:10.40, rPct:13.04, mktPct:2.07, opProfit:-11731, pretax:-11731, pretaxPct:-1.21, target:1100000 },
+      '台中': { rev:739739, cogs:239671, gp:500068, gpPct:67.60, wPct:22.48, rPct:9.23, mktPct:2.72, opProfit:-169086, pretax:-169086, pretaxPct:-22.86, target:950000 },
+      '東門': { rev:984618, cogs:305130, gp:679488, gpPct:69.01, wPct:11.69, rPct:12.96, mktPct:2.04, opProfit:568, pretax:568, pretaxPct:0.06, target:1000000 },
+    },
+  },
+  '2026/08': {
+    ym:'2026/08', label:'8月', confirmed:true,
+    /* ★ 8月部門表為新版面（無管理部／業務部欄），管理費用已全數分攤到各通路（6199／6299 均分） */
+    rev:5179603, cogs:1777527, gp:3402076, gpPct:65.68,
+    sell:2360455, sellPct:45.57,
+      w6100:719283, wPct6100:13.89, r6114:458483, rPct6114:8.85,
+      mkt:405594, mktPct:7.83,
+        mktPhoto:21870, mktMedia:206543, mktPrint:1400, mktEvent:0, mktPR:175781,
+      freight:43604, sys:445978, cardFee:88759, sample:38243,
+    mgmt:1089554, mgmtPct:21.04,
+      w6201:736286, wPct6201:14.22, r6202:179000, depr:61010,
+    opProfit:-47933, opPct:-0.93,
+    nonOpIn:62878, nonOpOut:39262,
+    pretax:-24317, tax:58000, ni:-82317, niPct:-1.59,
+    /* 去年同期 2025/08（來源：損益表_202508／部門比較）+ 累計；prevRev 已扣誠品裕隆城 512,460（原始 4,917,834），與 1–6 月同一口徑 */
+    prevRev:4405374, prevNI:-276332, yoyRevPct:17.57,  // 已扣裕隆城，原始4,917,834
+    prevYtdRev:40950083, prevYtdNI:-921174,
+    prevGpPct:65.64, prevSellPct:46.58, prevMgmtPct:24.91, prevNiPct:-5.62,
+    storeData: {
+      '電商': { rev:737121, cogs:250577, gp:486544, gpPct:66.01, wPct:0.00, rPct:0.00, mktPct:16.77, opProfit:-40387, pretax:-40387, pretaxPct:-5.48, target:900000 },
+      '中山': { rev:1228338, cogs:405374, gp:822964, gpPct:67.00, wPct:25.15, rPct:10.58, mktPct:1.69, opProfit:-38238, nonOpIn:60000, pretax:21762, pretaxPct:1.77, target:1250000 },
+      '松菸': { rev:1076749, cogs:380143, gp:696606, gpPct:64.70, wPct:9.72, rPct:11.78, mktPct:1.93, opProfit:28146, pretax:28146, pretaxPct:2.61, target:1100000 },
+      '台中': { rev:908881, cogs:315897, gp:592984, gpPct:65.24, wPct:18.54, rPct:8.14, mktPct:2.29, opProfit:-69327, pretax:-69327, pretaxPct:-7.63, target:950000 },
+      '東門': { rev:1190790, cogs:413131, gp:777659, gpPct:65.31, wPct:10.69, rPct:10.72, mktPct:1.75, opProfit:81112, pretax:81112, pretaxPct:6.81, target:1000000 },
+    },
+  },
 };
 
 /* MONTHS 為目前實際使用的資料源：預設=保底資料，登入後 loadMonthly() 若成功會整包替換為 Sheet 動態資料 */
 let MONTHS = FALLBACK_MONTHS;
 
 /* ── 衍生資料：月度比較陣列 + 逐月累計 YTD + 月度營收目標（可重複呼叫，切換資料源後重算） ── */
-let CMP_KEYS = ['2026/01','2026/02','2026/03','2026/04','2026/05','2026/06'];
+let CMP_KEYS = ['2026/01','2026/02','2026/03','2026/04','2026/05','2026/06','2026/07','2026/08'];
 /* 保底包裝費表：FALLBACK_MONTHS 本身沒有 pkg/pkgPrev 欄位，動態 Sheet 資料才有，故留此表當保底來源 */
-const FALLBACK_PKG      = { '2026/01':105321, '2026/02':86556,  '2026/03':37740,  '2026/04':286662, '2026/05':95843, '2026/06':30000 };
-const FALLBACK_PKG_PREV = { '2026/01':32191,  '2026/02':66224,  '2026/03':null,   '2026/04':25433,  '2026/05':52411, '2026/06':164867 };
+const FALLBACK_PKG      = { '2026/01':105321, '2026/02':86556,  '2026/03':37740,  '2026/04':286662, '2026/05':95843, '2026/06':30000, '2026/07':43056, '2026/08':128359 };
+const FALLBACK_PKG_PREV = { '2026/01':32191,  '2026/02':66224,  '2026/03':null,   '2026/04':25433,  '2026/05':52411, '2026/06':164867, '2026/07':80209, '2026/08':51592 };
 let CMP, PKG, PKG_PREV;
 function rebuildDerived(){
   CMP = CMP_KEYS.map(k => MONTHS[k]);
@@ -281,12 +335,18 @@ function rebuildDerived(){
     const mi = parseInt(m.ym.split('/')[1], 10) - 1;
     m.totalTarget = STORES.reduce((s, st) => s + (MONTHLY_TARGETS[st][mi] || 0) * 10000, 0);
     m.pkg = PKG[m.ym] || 0;
+    /* 管道（finance-gas）解析新版部門表時會漏掉門市的業外收入（中山每月 6 萬租賃收益），
+       這裡用「稅前損益 − 營業淨利」反推補回，門市卡片的「另有租賃收益」小標籤才不會在動態資料下消失 */
+    if (m.storeData) STORES.forEach(st => {
+      const d = m.storeData[st];
+      if (d && d.nonOpIn === undefined && d.pretax != null && d.opProfit != null && d.pretax - d.opProfit > 0) d.nonOpIn = d.pretax - d.opProfit;
+    });
   });
 }
 rebuildDerived();
 
 /* 目前檢視的月份（預設最新月）；render 函式皆讀取全域 S */
-let CUR_YM = '2026/06';
+let CUR_YM = '2026/08';
 let S = MONTHS[CUR_YM];
 </script>
 
@@ -791,7 +851,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     </div>
 
     <!-- Monthly Comparison -->
-    <div class="sec" style="margin-top:1.75rem" id="sec-cmp">月份損益比較（2026年1–4月）</div>
+    <div class="sec" style="margin-top:1.75rem" id="sec-cmp">月份損益比較（2026年1–8月）</div>
     <div class="q1-stats" id="q1-stats"></div>
     <div class="chart-card">
       <div class="chart-card-title">月份損益表結構（萬元，未稅）</div>
@@ -1296,6 +1356,7 @@ function updateMonthLabels() {
   set('sec-mkt', `廣告費用分析（1–${mNum}月累計 ${fmtPct(S.ytdMktPct)}${S.ytdMktPct > 6 ? ' — 高於年度 6%' : ' — 在年度 6% 內'}；本月 ${fmtPct(S.mktPct)}）`);
   set('sec-store', S.storeData ? '各門市當月績效' : '各門市績效（本月僅有總公司合併損益，暫無分店別資料）');
   set('sec-insight', `深入觀察 — ${y}年${mNum}月值得拉出來討論（現行分析未涵蓋）`);
+  if (CMP && CMP.length) set('sec-cmp', `月份損益比較（${y}年1–${monthNum(CMP[CMP.length-1].ym)}月）`);
 }
 
 function renderStaticSections() {
@@ -1531,7 +1592,11 @@ function renderWaterfall() {
     { label:'本期損益', lo: 0,           hi: ni,         type:'final' },
   ];
 
-  const COLOR = { in:'#284234', cost:'#A54A1A', cost2:'#c76b2a', sub:'rgba(0,39,33,.75)', final:'#002721' };
+  const COLOR = { in:'#284234', cost:'#A54A1A', cost2:'#c76b2a', sub:'rgba(0,39,33,.75)', final:'#002721', loss:'#c0392b' };
+  /* 虧損月（如 2026/08 營業淨利為負）：小計／本期損益長條改紅色；Y 軸往負值延伸，否則負值長條會被 min:0 切掉看不到 */
+  bars.forEach(b => { if ((b.type === 'sub' || b.type === 'final') && b.hi < 0) b.type = 'loss'; });
+  const wfMinVal = Math.min(0, ...bars.flatMap(b => [b.lo, b.hi]));
+  const wfYMin = wfMinVal < 0 ? Math.floor(wfMinVal / 20) * 20 : 0;
 
   mkChart('waterfall-chart', {
     type: 'bar',
@@ -1565,7 +1630,7 @@ function renderWaterfall() {
       },
       scales: {
         x: { grid:{ display:false }, ticks:{ color:'#b09a88', font:{ size:10 }, maxRotation:0 } },
-        y: { grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{ size:11 }, callback: v => v + '萬' }, min:0 }
+        y: { grid:{ color:'rgba(40,66,52,.06)' }, ticks:{ color:'#b09a88', font:{ size:11 }, callback: v => v + '萬' }, min:wfYMin }
       }
     }
   });
@@ -2740,6 +2805,78 @@ function buildInsights(ym) {
         { sev:'green', tag:'通路', title:`松菸獨強、電商穩定獲利 —— 除台中外四通路皆賺`,
           body:`松菸營業淨利 <b>${w(sd['松菸'].opProfit)}</b>（${opPct('松菸').toFixed(1)}%）本月最強；電商 <b>+${w(sd['電商'].opProfit)}</b>（${opPct('電商').toFixed(1)}%）持續獲利；中山 ${w(sd['中山'].opProfit)}（${opPct('中山').toFixed(1)}%）；東門幾乎打平 ${w(sd['東門'].opProfit)}（${opPct('東門').toFixed(1)}%）。`,
           data:`各店營業淨利率：松菸 ${opPct('松菸').toFixed(1)}%｜電商 ${opPct('電商').toFixed(1)}%｜中山 ${opPct('中山').toFixed(1)}%｜東門 ${opPct('東門').toFixed(1)}%｜台中 ${opPct('台中').toFixed(1)}%` },
+      ];
+    }
+
+    /* ───────── 7 月 ───────── */
+    case '2026/07': {
+      const sd = M.storeData;
+      const h25 = HIST_CO_2025.find(h => h.ym === '2025/07');
+      const PROJ = 1250000;                              // 4301 專案業務收入（單筆）
+      const exRev = M.rev - PROJ, exOp = M.opProfit - PROJ, exGp = M.gp - PROJ;
+      const h1 = ['2026/01','2026/02','2026/03','2026/04','2026/05','2026/06'].map(k => MONTHS[k]).filter(Boolean);
+      const h1SysAvg = h1.length ? h1.reduce((s, m) => s + (m.sys || 0), 0) / h1.length : 0;
+      const opPct = st => (sd[st].opProfit / sd[st].rev * 100);
+      const storeSum = STORES.reduce((s, st) => s + sd[st].opProfit, 0);
+      return [
+        { sev:'amber', tag:'一次性', title:`7 月營業淨利 ${w(M.opProfit)} 是被一筆 125 萬專案收入撐起來的 —— 扣掉後約 ${w(exOp)}`,
+          body:`7 月營收 <b>${w(M.rev)}</b> 裡有 <b>125 萬「專案業務收入」(4301)</b>（占 ${(PROJ/M.rev*100).toFixed(1)}%），報表上沒有對應的專案成本（專案業務成本 5106 本月無入帳），所以 7 月毛利率衝到 <b>${M.gpPct.toFixed(1)}%</b>（常態約 66–68%）、營業淨利率 <b>${M.opPct.toFixed(1)}%</b>。這筆不在五通路（五店＋電商）數字裡。若扣掉這筆（假設日後也無對應成本）：營收 ${w(exRev)}、毛利率 ${(exGp/exRev*100).toFixed(1)}%、營業淨利約 <b>${w(exOp)}</b>（${(exOp/exRev*100).toFixed(1)}%）——實際營運是小幅虧損。<b>比較 7 月與其他月份時請用扣除後的數字。</b>`,
+          data:`營收 ${w(M.rev)}（含專案 125萬）｜營業淨利 ${w(M.opProfit)}（扣除後約 ${w(exOp)}）｜毛利率 ${M.gpPct.toFixed(1)}%（扣除後 ${(exGp/exRev*100).toFixed(1)}%）` },
+
+        { sev:'red', tag:'系統費', title:`系統費 ${w(M.sys)} —— 是上半年月均 ${w(h1SysAvg)} 的 ${(M.sys/h1SysAvg).toFixed(1)} 倍`,
+          body:`7 月全公司系統費(6137) <b>${w(M.sys)}</b>，佔營收 ${(M.sys/M.rev*100).toFixed(1)}%；1–6 月月均只有 ${w(h1SysAvg)}。單月就比常態多出約 <b>${w(M.sys - h1SysAvg)}</b>，等於把 7 月營業淨利多吃掉一截。建議確認是一次性（年度授權、系統建置／升級費）還是新增的常態月費——若是常態，一年會多出數百萬。`,
+          data:`系統費：1–6月月均 ${w(h1SysAvg)}｜7月 ${w(M.sys)}` },
+
+        { sev:'red', tag:'門市', title:`五通路合計營業淨利 ${w(storeSum)} —— 只有中山勉強小賺，台中虧 ${w(-sd['台中'].opProfit)}`,
+          body:`五通路 7 月營業淨利合計 <b>${w(storeSum)}</b>（不含上述專案收入）。<b>台中 ${w(sd['台中'].opProfit)}（${opPct('台中').toFixed(1)}%）</b>最弱，薪資率 ${sd['台中'].wPct.toFixed(1)}%、營收只達目標 ${(sd['台中'].rev/sd['台中'].target*100).toFixed(0)}%；電商 ${w(sd['電商'].opProfit)}（${opPct('電商').toFixed(1)}%）、松菸 ${w(sd['松菸'].opProfit)}；中山 +${w(sd['中山'].opProfit)} 幾乎打平（6 月 11.4 萬）、東門 ${w(sd['東門'].opProfit)} 打平。夏季淡月，固定成本撐不住的店會直接轉虧。`,
+          data:`各店營業淨利：中山 ${w(sd['中山'].opProfit)}｜松菸 ${w(sd['松菸'].opProfit)}｜東門 ${w(sd['東門'].opProfit)}｜台中 ${w(sd['台中'].opProfit)}｜電商 ${w(sd['電商'].opProfit)}` },
+
+        { sev:'amber', tag:'YoY', title:`去年同月也有一次性收入 —— 7 月 YoY 兩邊基期都不乾淨`,
+          body:`今年 7 月營收 ${w(M.rev)}、YoY <b>${M.yoyRevPct>=0?'+':''}${M.yoyRevPct.toFixed(1)}%</b>；但去年 7 月（${w(h25.rev)}）含<b>嘖嘖募資專案營收 168.8 萬</b>（同月廣告費 ${w(h25.mkt)}，是那檔專案的行銷），且含誠品裕隆城 34.6 萬（2025/09 撤櫃）；今年則含 125 萬專案收入。<b>兩邊各有一筆非常態收入</b>，YoY 數字僅供參考，不宜直接解讀成成長或衰退。`,
+          data:`去年7月：營收 ${w(h25.rev)}（含嘖嘖 168.8萬、裕隆城 34.6萬）｜營業淨利 ${w(h25.opProfit)}｜廣告費 ${w(h25.mkt)}` },
+      ];
+    }
+
+    /* ───────── 8 月 ───────── */
+    case '2026/08': {
+      const sd = M.storeData;
+      const jul = MONTHS['2026/07'];
+      const h25 = HIST_CO_2025.find(h => h.ym === '2025/08');
+      const PROJ = 1250000;
+      const julExOp = jul ? jul.opProfit - PROJ : null;
+      const h1 = ['2026/01','2026/02','2026/03','2026/04','2026/05','2026/06'].map(k => MONTHS[k]).filter(Boolean);
+      const h1SysAvg = h1.length ? h1.reduce((s, m) => s + (m.sys || 0), 0) / h1.length : 0;
+      const pkgNorm = (() => {                           // 上半年包裝費常態值：排除 4 月備料暴衝
+        const xs = h1.filter(m => m.ym !== '2026/04').map(m => PKG[m.ym] || 0);
+        return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
+      })();
+      const opPct = st => (sd[st].opProfit / sd[st].rev * 100);
+      const ach = st => (sd[st].rev / sd[st].target * 100);
+      const zs = sd['中山'];
+      const zsTrend = CMP.filter(m => m.storeData && m.storeData['中山']).map(m => `${monthNum(m.ym)}月 ${w(m.storeData['中山'].opProfit)}`).join('→');
+      const remain = COMPANY_MKT_BUDGET - M.ytdMkt;
+      const winners = STORES.filter(st => sd[st].opProfit > 0);
+      const losers  = STORES.filter(st => sd[st].opProfit < 0);
+      return [
+        { sev:'amber', tag:'損益', title:`8 月營業淨利 ${w(M.opProfit)}（${M.opPct.toFixed(1)}%）—— 小幅虧損，但比去年同月少虧約 ${w(M.opProfit - h25.opProfit)}`,
+          body:`8 月營收 <b>${w(M.rev)}</b>（YoY ${M.yoyRevPct>=0?'+':''}${M.yoyRevPct.toFixed(1)}%）、毛利率 <b>${M.gpPct.toFixed(1)}%</b>（去年同月 ${M.prevGpPct.toFixed(1)}%，持平）、營業淨利 <b>${w(M.opProfit)}</b>、本期損益 ${w(M.ni)}。去年 8 月營業淨利 ${w(h25.opProfit)}，今年少虧 ${w(M.opProfit - h25.opProfit)}，改善來自管理費率（去年 ${M.prevMgmtPct.toFixed(1)}%→今年 ${M.mgmtPct.toFixed(1)}%）與推銷費率（${M.prevSellPct.toFixed(1)}%→${M.sellPct.toFixed(1)}%）。<b>判讀提醒</b>：7 月含 125 萬一次性專案收入，7→8 月營業淨利從 ${jul ? '+' + w(jul.opProfit) : '—'} 掉到 ${w(M.opProfit)}，主因是這筆收入消失，不是 8 月本身惡化${jul ? `；扣掉它 7 月其實是 ${w(julExOp)}，8 月反而比 7 月好` : ''}。`,
+          data:`營業淨利：8月 ${w(M.opProfit)}｜去年8月 ${w(h25.opProfit)}｜7月 ${jul ? w(jul.opProfit) : '—'}（扣除專案收入約 ${jul ? w(julExOp) : '—'}）｜去年8月營收含誠品裕隆城 51.2萬，扣除後 YoY +17.6%、未扣 +5.3%` },
+
+        { sev:'red', tag:'成本', title:`系統費 ${w(M.sys)}、包裝費 ${w(M.pkg)} 同時偏高 —— 合計比上半年常態月多吃約 ${w((M.sys - h1SysAvg) + (M.pkg - pkgNorm))}`,
+          body:`系統費(6137) <b>${w(M.sys)}</b>（1–6 月月均 ${w(h1SysAvg)}，7 月 ${jul ? w(jul.sys) : '—'}）、包裝費(5539) <b>${w(M.pkg)}</b>（佔營收 ${(M.pkg/M.rev*100).toFixed(1)}%，上半年常態約 ${w(pkgNorm)}，去年同月 ${w(PKG_PREV['2026/08'])}），是 1–8 月第二高（僅次 4 月備料）。兩項合計比常態月多出約 <b>${w((M.sys - h1SysAvg) + (M.pkg - pkgNorm))}</b>——若沒有這兩筆，8 月營業淨利會落在 ${w(M.opProfit + (M.sys - h1SysAvg) + (M.pkg - pkgNorm))} 左右。建議確認：系統費連兩個月偏高是一次性還是新增常態；包裝費是否又是一次性備料。`,
+          data:`系統費：1–6月均 ${w(h1SysAvg)}｜7月 ${jul ? w(jul.sys) : '—'}｜8月 ${w(M.sys)}　包裝費：4月 ${w(PKG['2026/04'])}｜7月 ${w(PKG['2026/07'])}｜8月 ${w(M.pkg)}` },
+
+        { sev:'red', tag:'廣告費', title:`廣告費率 ${M.mktPct.toFixed(1)}% 超過 6% 上限 —— 公關宣傳 ${w(M.mktPR)} 占 ${(M.mktPR/M.mkt*100).toFixed(0)}%，年度預算已用 ${(M.ytdMkt/COMPANY_MKT_BUDGET*100).toFixed(0)}%`,
+          body:`8 月廣告費 <b>${w(M.mkt)}</b>（佔營收 <b>${M.mktPct.toFixed(1)}%</b>），其中公關宣傳 <b>${w(M.mktPR)}</b>（7 月 ${jul ? w(jul.mktPR) : '—'}）、媒體採買 ${w(M.mktMedia)}、商品拍攝 ${w(M.mktPhoto)}。去年同月廣告費 ${w(h25.mkt)}（${(h25.mkt/h25.rev*100).toFixed(1)}%）。1–8 月累計 ${w(M.ytdMkt)}、累計廣告費率 ${M.ytdMktPct.toFixed(1)}%，已用年度預算 <b>${(M.ytdMkt/COMPANY_MKT_BUDGET*100).toFixed(1)}%</b>；剩餘 4 個月只剩 ${w(remain)}（每月約 ${w(remain/4)}），8 月單月就花了這個速度的 ${(M.mkt/(remain/4)).toFixed(1)} 倍。旺季（10–12 月）若要加碼投放，得先決定從哪裡省。`,
+          data:`廣告費：公關 ${w(M.mktPR)}＋媒體 ${w(M.mktMedia)}＋拍攝 ${w(M.mktPhoto)}＋印刷 ${w(M.mktPrint)}｜年度預算 ${w(COMPANY_MKT_BUDGET)}、已用 ${w(M.ytdMkt)}、剩 ${w(remain)}` },
+
+        { sev:'red', tag:'門市', title:`中山 2026 年首度轉虧 —— 薪資率 ${zs.wPct.toFixed(1)}% 從年初 12% 逐步爬到全公司最高`,
+          body:`中山 8 月營業淨利 <b>${w(zs.opProfit)}</b>（${opPct('中山').toFixed(1)}%），是今年第一次虧損，5 月之後連續三個月下滑：${zsTrend}。營收並不差（${w(zs.rev)}、達成率 ${ach('中山').toFixed(0)}%、YoY +15.0%），問題在<b>薪資率 ${zs.wPct.toFixed(1)}%</b>：1 月 12.3%、6 月 21.2%、8 月 ${zs.wPct.toFixed(1)}%（薪資約 ${w(zs.wPct*zs.rev/100)}，1 月 19.7 萬）。去年同月中山還賺 6.2 萬，今年反轉虧。建議先查是人力增加、獎金集中入帳，還是排班結構問題。`,
+          data:`中山：營收 ${w(zs.rev)}｜營業淨利 ${w(zs.opProfit)}（${opPct('中山').toFixed(1)}%）｜薪資率 ${zs.wPct.toFixed(1)}%｜去年8月 營業淨利 +6.2萬` },
+
+        { sev:'amber', tag:'通路', title:`東門獨強、松菸小賺 —— ${winners.length} 個通路獲利，${losers.join('、')} 虧損`,
+          body:`<b>東門</b>營收 ${w(sd['東門'].rev)}（達成率 ${ach('東門').toFixed(0)}%，五通路唯一超標；YoY +40.2%）、營業淨利 <b>+${w(sd['東門'].opProfit)}</b>（${opPct('東門').toFixed(1)}%）；<b>松菸</b> +${w(sd['松菸'].opProfit)}（${opPct('松菸').toFixed(1)}%）。<b>台中</b> ${w(sd['台中'].opProfit)}（${opPct('台中').toFixed(1)}%）比 7 月的 ${jul ? w(jul.storeData['台中'].opProfit) : '—'} 收斂，但仍是最弱，薪資率 ${sd['台中'].wPct.toFixed(1)}%。<b>電商</b> ${w(sd['電商'].opProfit)}（${opPct('電商').toFixed(1)}%），營收只達目標 ${ach('電商').toFixed(0)}%、廣告費率 ${sd['電商'].mktPct.toFixed(1)}%（電商廣告費為分攤計算）；官網約 72.7 萬、電商平台只剩 1.0 萬（去年同月 7.5 萬）。`,
+          data:`各店營業淨利率：東門 ${opPct('東門').toFixed(1)}%｜松菸 ${opPct('松菸').toFixed(1)}%｜中山 ${opPct('中山').toFixed(1)}%｜電商 ${opPct('電商').toFixed(1)}%｜台中 ${opPct('台中').toFixed(1)}%` },
       ];
     }
 
