@@ -66,16 +66,35 @@ const HIST_CO_2025 = [
    2024 全年 1,106,651／2025 全年 1,320,569（皆與年度合計欄吻合）*/
 const HIST_SYS_2024 = [63999,130425,21978,75732,52738,86978,104092,125349,135747,102624,104167,102822];
 const HIST_SYS_2025 = [101432,98610,136722,128791,130675,104094,100197,102029,92601,98677,124921,101820];
-/* 2026 各月「直接認列在部門比較表六欄（電商平台＋官網＋四家門市）」的 6137 合計；
-   公司層 6137 減此數 = 未歸入這六欄的部分（部門表沒有管理部／業務部欄，視為總部層級）。
-   來源：3損益比較表_部門比較-全通路_2026MM「6137系統費」列。注意：2月部門表缺「電商平台」欄（其他月份該欄為 0）。
-   8月四家門市各出現約 2.5 萬（25,371～25,372，四店金額幾乎相同），1–7月門市皆為 0。 */
-const SYS_DEPT_2026 = {
-  '2026/01':{ web:17596, stores:0 },      '2026/02':{ web:39827, stores:0 },
-  '2026/03':{ web:54742, stores:0 },      '2026/04':{ web:36962, stores:0 },
-  '2026/05':{ web:38755, stores:0 },      '2026/06':{ web:37077, stores:0 },
-  '2026/07':{ web:35830, stores:0 },      '2026/08':{ web:39223, stores:101486 },
-};
+/* 2026 年 6137 系統費逐筆明細（來源：ERP 總分類帳_20261109，2026/01/01～08/31，管理帳，294 筆；
+   借方 1,887,851／貸方 5,181／淨額 1,882,670，逐月合計吻合損益表）。
+   「專案調整入帳」＝專案碼「臺北市文化局計劃案」的調整傳票（AJE 會科）：開票當天先記廣告費（公關宣傳／媒體採買），
+   月底（7/31、8/31）改列系統費；改列前後營業淨利不變，只是 廣告費 → 系統費。 */
+const SYS_2026_LEDGER_THRU = '2026/08';   // 總分類帳涵蓋到哪個月；之後的月份尚未拆分
+const SYS_2026_PROJ = { '2026/07':506000, '2026/08':364618 };
+const SYS_2026_PROJ_ITEMS = [
+  { m:7, n:'全通路科技（Omnichat）', d:'兩年方案（發票 7/2，服務期 2026/9–2028/8；帳上摘要「11507-11707 服務費」）', amt:506000 },
+  { m:8, n:'商線科技（SHOPLINE）',   d:'門市庫存點 86,857（買 5 送 2，攤到 5 個店點）', amt:86857 },
+  { m:8, n:'商線科技（SHOPLINE）',   d:'線下電子發票傳輸費 32,000（4 家門市各 8,000，2026/9–2027/8）', amt:32000 },
+  { m:8, n:'商線科技（SHOPLINE）',   d:'官網線上電子發票串接服務', amt:22000 },
+  { m:8, n:'商線科技（SHOPLINE）',   d:'加購：Omnichat 擴充功能 17,024／易品擴充功能 21,786／設計功能 4,762', amt:43572 },
+  { m:8, n:'易品資訊（WeP）',        d:'系統導入費', amt:80429 },
+  { m:8, n:'雲發互動',               d:'帳上摘要「廣告服務費」（8/10 付款）', amt:99760 },
+];
+/* 2026 年「一般系統費」（非專案碼）依廠商逐月，1～8 月 */
+const SYS_2026_VENDORS = [
+  { n:'輔翼科技（POS／進銷存等）',   m:[35552,35552,34181,34181,34181,34181,34181,34181] },
+  { n:'雲發互動（LINE 模組等）',     m:[26650,26650,40950,26650,26650,26650,26650,0] },
+  { n:'商線科技（SHOPLINE 維護費等）', m:[5990,28221,28836,25356,27149,25471,24224,12117] },
+  { n:'叡揚資訊（Vital CRM）',       m:[13492,13492,13492,13492,13492,13492,13492,13492] },
+  { n:'新芽網路（SurveyCake）',      m:[14652,7361,7361,7361,13611,13611,7361,7361] },
+  { n:'田中系統雲端（Google Workspace）', m:[5574,5574,5063,5452,5452,5452,5452,5452] },
+  { n:'公司卡小額訂閱（Adobe、Claude、微軟 365、網域等）', m:[2590,6876,2590,7537,10654,-224,4214,2833] },
+  { n:'張駿志（串接維護）',          m:[4167,4167,4167,4167,4167,4167,4167,4167] },
+  { n:'易品資訊',                    m:[0,0,0,0,28571,0,0,0] },
+  { n:'鼎恒數位',                    m:[0,0,0,22000,0,0,0,0] },
+  { n:'其他（零用金、104）',         m:[0,120,641,1398,1267,753,649,1757] },
+];
 /* 2025 年系統費按廠商拆（來源：ERP 總分類帳「系統費統計_2025年度.xlsx」，353 筆，月合計逐月吻合損益表；
    廠商名稱為帳上「廠客名稱」，說明取自摘要欄。2026 年目前沒有同等級的總分類帳可用。） */
 const SYS_VENDORS_2025 = [
@@ -505,6 +524,18 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .vendor-d{font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.5}
 .vendor-a{font-family:'Space Mono',monospace;font-size:12px;text-align:right}
 .vendor-a small{display:block;font-size:10px;color:var(--text-muted)}
+.sysfee-scroll{overflow-x:auto}
+.sysfee-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}
+.sysfee-tbl th{font-size:10px;color:var(--text-muted);font-weight:700;text-align:right;padding:6px 8px;border-bottom:2px solid var(--border2);white-space:nowrap}
+.sysfee-tbl th:first-child,.sysfee-tbl td:first-child{text-align:left}
+.sysfee-tbl td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:right;font-family:'Space Mono',monospace;vertical-align:top}
+.sysfee-tbl td:first-child{font-family:inherit;font-size:12px;font-weight:600}
+.sysfee-tbl .st-sub{font-size:10px;font-weight:400;color:var(--text-muted);margin-top:2px;line-height:1.5}
+.sysfee-tbl .st-head td{background:var(--surface2);font-size:11px;font-weight:700;color:var(--text-sub);text-align:left}
+.sysfee-tbl .st-proj td{color:var(--rust)}
+.sysfee-tbl .st-proj-row td:first-child{color:var(--rust)}
+.sysfee-tbl .st-sub-total td{font-weight:700;border-top:1px solid var(--border2)}
+.sysfee-tbl .st-total td{font-weight:700;border-top:2px solid var(--border2);background:var(--surface2)}
 @media(max-width:700px){.sysfee-sum{grid-template-columns:repeat(2,1fr)}.vendor-row{grid-template-columns:90px 1fr 84px}}
 .chart-wrap-sm{position:relative;height:200px}
 
@@ -926,6 +957,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       <div class="chart-wrap"><canvas id="sysfee-chart"></canvas></div>
       <div class="sysfee-sum" id="sysfee-sum"></div>
       <div class="sysfee-note" id="sysfee-note"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">2026 年系統費是哪幾筆？（1–8 月逐筆明細，來源：ERP 總分類帳）</div>
+      <div id="sysfee-2026-vendors"></div>
     </div>
     <div class="chart-card">
       <div class="chart-card-title">2025 年系統費是哪幾筆？（依廠商，來源：ERP 總分類帳）</div>
@@ -2871,6 +2906,7 @@ function buildInsights(ym) {
 
     /* ───────── 7 月 ───────── */
     case '2026/07': {
+      const sysProj7 = SYS_2026_PROJ['2026/07'] || 0;
       const sd = M.storeData;
       const h25 = HIST_CO_2025.find(h => h.ym === '2025/07');
       const PROJ = 1250000;                              // 4301 專案業務收入（單筆）
@@ -2884,9 +2920,9 @@ function buildInsights(ym) {
           body:`7 月營收 <b>${w(M.rev)}</b> 裡有 <b>125 萬「專案業務收入」(4301)</b>（占 ${(PROJ/M.rev*100).toFixed(1)}%），報表上沒有對應的專案成本（專案業務成本 5106 本月無入帳），所以 7 月毛利率衝到 <b>${M.gpPct.toFixed(1)}%</b>（常態約 66–68%）、營業淨利率 <b>${M.opPct.toFixed(1)}%</b>。這筆不在五通路（五店＋電商）數字裡。若扣掉這筆（假設日後也無對應成本）：營收 ${w(exRev)}、毛利率 ${(exGp/exRev*100).toFixed(1)}%、營業淨利約 <b>${w(exOp)}</b>（${(exOp/exRev*100).toFixed(1)}%）——實際營運是小幅虧損。<b>比較 7 月與其他月份時請用扣除後的數字。</b>`,
           data:`營收 ${w(M.rev)}（含專案 125萬）｜營業淨利 ${w(M.opProfit)}（扣除後約 ${w(exOp)}）｜毛利率 ${M.gpPct.toFixed(1)}%（扣除後 ${(exGp/exRev*100).toFixed(1)}%）` },
 
-        { sev:'red', tag:'系統費', title:`系統費 ${w(M.sys)} —— 是上半年月均 ${w(h1SysAvg)} 的 ${(M.sys/h1SysAvg).toFixed(1)} 倍`,
-          body:`7 月全公司系統費(6137) <b>${w(M.sys)}</b>，佔營收 ${(M.sys/M.rev*100).toFixed(1)}%；1–6 月月均只有 ${w(h1SysAvg)}。單月就比常態多出約 <b>${w(M.sys - h1SysAvg)}</b>，等於把 7 月營業淨利多吃掉一截。建議確認是一次性（年度授權、系統建置／升級費）還是新增的常態月費——若是常態，一年會多出數百萬。`,
-          data:`系統費：1–6月月均 ${w(h1SysAvg)}｜7月 ${w(M.sys)}` },
+        { sev:'amber', tag:'系統費', title:`系統費 ${w(M.sys)} —— 其中 ${w(sysProj7)} 是 Omnichat 兩年方案一次列入，一般系統費 ${w(M.sys - sysProj7)} 屬常態`,
+          body:`7 月全公司系統費(6137) <b>${w(M.sys)}</b>（佔營收 ${(M.sys/M.rev*100).toFixed(1)}%）。總分類帳逐筆核對：<b>${w(sysProj7)}</b> 是全通路科技（Omnichat）兩年方案（發票 7/2，服務期 2026/9–2028/8），專案碼「臺北市文化局計劃案」，7/2 先記廣告費、7/31 以調整傳票改列系統費；其餘 ${w(M.sys - sysProj7)} 與上半年常態（月均 ${w(h1SysAvg)}）相當，<b>系統費本身並沒有變多</b>。這 ${w(sysProj7)} 一次全列 7 月，而年度合約過去是「預付轉費用」按月攤提（例如叡揚 CRM 每月 1.3 萬）；若改 24 個月攤提，每月約 ${w(sysProj7 / 24)}。建議與會計確認認列方式與補助報表口徑。`,
+          data:`系統費：1–6月月均 ${w(h1SysAvg)}｜7月 ${w(M.sys)} ＝ 一般 ${w(M.sys - sysProj7)} ＋ 專案調整入帳 ${w(sysProj7)}` },
 
         { sev:'red', tag:'門市', title:`五通路合計營業淨利 ${w(storeSum)} —— 只有中山勉強小賺，台中虧 ${w(-sd['台中'].opProfit)}`,
           body:`五通路 7 月營業淨利合計 <b>${w(storeSum)}</b>（不含上述專案收入）。<b>台中 ${w(sd['台中'].opProfit)}（${opPct('台中').toFixed(1)}%）</b>最弱，薪資率 ${sd['台中'].wPct.toFixed(1)}%、營收只達目標 ${(sd['台中'].rev/sd['台中'].target*100).toFixed(0)}%；電商 ${w(sd['電商'].opProfit)}（${opPct('電商').toFixed(1)}%）、松菸 ${w(sd['松菸'].opProfit)}；中山 +${w(sd['中山'].opProfit)} 幾乎打平（6 月 11.4 萬）、東門 ${w(sd['東門'].opProfit)} 打平。夏季淡月，固定成本撐不住的店會直接轉虧。`,
@@ -2908,6 +2944,8 @@ function buildInsights(ym) {
       const h1 = ['2026/01','2026/02','2026/03','2026/04','2026/05','2026/06'].map(k => MONTHS[k]).filter(Boolean);
       const h1SysAvg = h1.length ? h1.reduce((s, m) => s + (m.sys || 0), 0) / h1.length : 0;
       const sysYtd8 = CMP.filter(m => monthNum(m.ym) <= 8).reduce((s, m) => s + (m.sys || 0), 0);
+      const sysProj8 = SYS_2026_PROJ['2026/08'] || 0;
+      const pv8 = {}; SYS_2026_PROJ_ITEMS.filter(p => p.m === 8).forEach(p => { const k = p.n.slice(0, 2); pv8[k] = (pv8[k] || 0) + p.amt; });
       const pkgNorm = (() => {                           // 上半年包裝費常態值：排除 4 月備料暴衝
         const xs = h1.filter(m => m.ym !== '2026/04').map(m => PKG[m.ym] || 0);
         return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
@@ -2924,9 +2962,9 @@ function buildInsights(ym) {
           body:`8 月營收 <b>${w(M.rev)}</b>（YoY ${M.yoyRevPct>=0?'+':''}${M.yoyRevPct.toFixed(1)}%）、毛利率 <b>${M.gpPct.toFixed(1)}%</b>（去年同月 ${M.prevGpPct.toFixed(1)}%，持平）、營業淨利 <b>${w(M.opProfit)}</b>、本期損益 ${w(M.ni)}。去年 8 月營業淨利 ${w(h25.opProfit)}，今年少虧 ${w(M.opProfit - h25.opProfit)}，改善來自管理費率（去年 ${M.prevMgmtPct.toFixed(1)}%→今年 ${M.mgmtPct.toFixed(1)}%）與推銷費率（${M.prevSellPct.toFixed(1)}%→${M.sellPct.toFixed(1)}%）。<b>判讀提醒</b>：7 月含 125 萬一次性專案收入，7→8 月營業淨利從 ${jul ? '+' + w(jul.opProfit) : '—'} 掉到 ${w(M.opProfit)}，主因是這筆收入消失，不是 8 月本身惡化${jul ? `；扣掉它 7 月其實是 ${w(julExOp)}，8 月反而比 7 月好` : ''}。`,
           data:`營業淨利：8月 ${w(M.opProfit)}｜去年8月 ${w(h25.opProfit)}｜7月 ${jul ? w(jul.opProfit) : '—'}（扣除專案收入約 ${jul ? w(julExOp) : '—'}）｜去年8月營收含誠品裕隆城 51.2萬，扣除後 YoY +17.6%、未扣 +5.3%` },
 
-        { sev:'red', tag:'成本', title:`系統費 ${w(M.sys)}、包裝費 ${w(M.pkg)} 同時偏高 —— 合計比上半年常態月多吃約 ${w((M.sys - h1SysAvg) + (M.pkg - pkgNorm))}`,
-          body:`系統費(6137) <b>${w(M.sys)}</b>（1–6 月月均 ${w(h1SysAvg)}，7 月 ${jul ? w(jul.sys) : '—'}）、包裝費(5539) <b>${w(M.pkg)}</b>（佔營收 ${(M.pkg/M.rev*100).toFixed(1)}%，上半年常態約 ${w(pkgNorm)}，去年同月 ${w(PKG_PREV['2026/08'])}），是 1–8 月第二高（僅次 4 月備料）。兩項合計比常態月多出約 <b>${w((M.sys - h1SysAvg) + (M.pkg - pkgNorm))}</b>——若沒有這兩筆，8 月營業淨利會落在 ${w(M.opProfit + (M.sys - h1SysAvg) + (M.pkg - pkgNorm))} 左右。系統費方面：今年 1–8 月已累計 <b>${w(sysYtd8)}</b>，是去年全年（${w(HIST_SYS_2025.reduce((s,v)=>s+v,0))}）的 ${(sysYtd8 / HIST_SYS_2025.reduce((s,v)=>s+v,0) * 100).toFixed(0)}%；7、8 月多出的部分<b>不在官網或門市</b>，在總部層級，但帳上只有一行，看不出是哪幾筆（逐月對照與 2025 年廠商明細見下方「系統費逐月比較」）。建議確認：系統費連兩個月偏高是一次性還是新增常態；包裝費是否又是一次性備料。`,
-          data:`系統費：1–6月均 ${w(h1SysAvg)}｜7月 ${jul ? w(jul.sys) : '—'}｜8月 ${w(M.sys)}　包裝費：4月 ${w(PKG['2026/04'])}｜7月 ${w(PKG['2026/07'])}｜8月 ${w(M.pkg)}` },
+        { sev:'red', tag:'成本', title:`系統費 ${w(M.sys)}（含專案調整入帳 ${w(sysProj8)}）、包裝費 ${w(M.pkg)} 同時偏高 —— 合計比上半年常態月多吃約 ${w((M.sys - h1SysAvg) + (M.pkg - pkgNorm))}`,
+          body:`系統費(6137) <b>${w(M.sys)}</b>，其中 <b>${w(sysProj8)}</b> 是專案調整入帳（專案碼「臺北市文化局計劃案」，開票時先記廣告費、月底改列系統費：商線 ${w(pv8['商線'] || 0)}、雲發互動 ${w(pv8['雲發'] || 0)}、易品 ${w(pv8['易品'] || 0)}），一般系統費只有 ${w(M.sys - sysProj8)}，沒有上升（1–6 月月均 ${w(h1SysAvg)}）。包裝費(5539) <b>${w(M.pkg)}</b>（佔營收 ${(M.pkg/M.rev*100).toFixed(1)}%，上半年常態約 ${w(pkgNorm)}，去年同月 ${w(PKG_PREV['2026/08'])}），是 1–8 月第二高（僅次 4 月備料）。系統費與包裝費合計比常態月多出約 <b>${w((M.sys - h1SysAvg) + (M.pkg - pkgNorm))}</b>——若兩項都回到上半年常態水準，8 月營業淨利會落在 ${w(M.opProfit + (M.sys - h1SysAvg) + (M.pkg - pkgNorm))} 左右。今年 1–8 月系統費帳面累計 <b>${w(sysYtd8)}</b>（去年全年 ${w(HIST_SYS_2025.reduce((s,v)=>s+v,0))}），其中專案調整入帳 7、8 月合計 ${w((SYS_2026_PROJ['2026/07'] || 0) + sysProj8)}；專案入帳是從廣告費改列，不影響營業淨利（逐筆明細見下方「系統費逐月比較」）。建議確認：包裝費是否又是一次性備料；專案入帳的認列口徑（Omnichat 兩年方案是否攤提）與會計確認。`,
+          data:`系統費：1–6月均 ${w(h1SysAvg)}｜7月 ${jul ? w(jul.sys) : '—'}（含專案 ${w(SYS_2026_PROJ['2026/07'] || 0)}）｜8月 ${w(M.sys)}（含專案 ${w(sysProj8)}）　包裝費：4月 ${w(PKG['2026/04'])}｜7月 ${w(PKG['2026/07'])}｜8月 ${w(M.pkg)}` },
 
         { sev:'red', tag:'廣告費', title:`廣告費率 ${M.mktPct.toFixed(1)}% 超過 6% 上限 —— 公關宣傳 ${w(M.mktPR)} 占 ${(M.mktPR/M.mkt*100).toFixed(0)}%，年度預算已用 ${(M.ytdMkt/COMPANY_MKT_BUDGET*100).toFixed(0)}%`,
           body:`8 月廣告費 <b>${w(M.mkt)}</b>（佔營收 <b>${M.mktPct.toFixed(1)}%</b>），其中公關宣傳 <b>${w(M.mktPR)}</b>（7 月 ${jul ? w(jul.mktPR) : '—'}）、媒體採買 ${w(M.mktMedia)}、商品拍攝 ${w(M.mktPhoto)}。去年同月廣告費 ${w(h25.mkt)}（${(h25.mkt/h25.rev*100).toFixed(1)}%）。1–8 月累計 ${w(M.ytdMkt)}、累計廣告費率 ${M.ytdMktPct.toFixed(1)}%，已用年度預算 <b>${(M.ytdMkt/COMPANY_MKT_BUDGET*100).toFixed(1)}%</b>；剩餘 4 個月只剩 ${w(remain)}（每月約 ${w(remain/4)}），8 月單月就花了這個速度的 ${(M.mkt/(remain/4)).toFixed(1)} 倍。旺季（10–12 月）若要加碼投放，得先決定從哪裡省。`,
@@ -3013,29 +3051,28 @@ function renderExpenseCards() {
 }
 
 /* ── 系統費（6137）逐月比較：2024 / 2025 / 2026 ──
-   2026 一律取 CMP 的公司層 sys（靜態保底與動態 Sheet 兩種模式口徑相同），
-   部門層（官網／門市直接認列）取 SYS_DEPT_2026，兩者相減 = 未歸入官網／門市的部分（總部層級）。 */
+   2026 取 CMP 的公司層 sys（靜態保底與動態 Sheet 兩種模式口徑相同）；專案調整入帳取 SYS_2026_PROJ（總分類帳逐筆）。
+   一般系統費 ＝ 公司層 − 專案調整入帳。總分類帳只到 SYS_2026_LEDGER_THRU，之後的月份尚未拆分。 */
 function sysFeeStats() {
   const sum = a => a.reduce((s, v) => s + (v || 0), 0);
   const rows = CMP.map(m => {
-    const d = SYS_DEPT_2026[m.ym];
     const co = m.sys || 0;
-    const direct = d ? d.web + d.stores : null;
-    return { ym:m.ym, mon:monthNum(m.ym), co, web:d ? d.web : null, stores:d ? d.stores : null,
-             direct, hq: direct === null ? null : co - direct };
+    const split = m.ym <= SYS_2026_LEDGER_THRU;
+    const proj = split ? (SYS_2026_PROJ[m.ym] || 0) : null;
+    return { ym:m.ym, mon:monthNum(m.ym), co, split, proj, normal: split ? co - proj : null };
   });
   const n = rows.length;
-  const first6 = rows.filter(r => r.mon <= 6);
-  const later  = rows.filter(r => r.mon > 6);
+  const splitRows = rows.filter(r => r.split);
   return {
-    rows, n, first6, later,
+    rows, n, splitRows, nSplit: splitRows.length,
     y24: sum(HIST_SYS_2024), y25: sum(HIST_SYS_2025),
     ytd26: sum(rows.map(r => r.co)),
-    ytd25: sum(HIST_SYS_2025.slice(0, n)), ytd24: sum(HIST_SYS_2024.slice(0, n)),
+    ytd25: sum(HIST_SYS_2025.slice(0, n)),
     avg24: sum(HIST_SYS_2024) / 12, avg25: sum(HIST_SYS_2025) / 12,
-    avgFirst6: first6.length ? sum(first6.map(r => r.co)) / first6.length : 0,
-    avgLater:  later.length  ? sum(later.map(r => r.co))  / later.length  : 0,
-    max25: Math.max(...HIST_SYS_2025)
+    projYtd: sum(splitRows.map(r => r.proj)),
+    normalYtd: sum(splitRows.map(r => r.normal)),
+    ytd25Split: sum(HIST_SYS_2025.slice(0, splitRows.length)),
+    max25: Math.max(...HIST_SYS_2025), min25: Math.min(...HIST_SYS_2025)
   };
 }
 
@@ -3050,14 +3087,14 @@ function renderSysFee() {
   const pad = arr => labels.map((_, i) => (arr[i] === undefined || arr[i] === null) ? null : arr[i] / 10000);
   const byMon = f => labels.map((_, i) => { const r = st.rows.find(x => x.mon === i + 1); return r ? f(r) : undefined; });
 
-  const unsplit = byMon(r => r.direct === null ? r.co : null);
+  const unsplit = byMon(r => r.split ? null : r.co);
   const datasets = [
     { label:'2024', data:pad(HIST_SYS_2024), backgroundColor:'#E2CEB9', stack:'s24', borderRadius:2 },
     { label:'2025', data:pad(HIST_SYS_2025), backgroundColor:'#CFA294', stack:'s25', borderRadius:2 },
-    { label:'2026：官網＋門市直接認列', data:pad(byMon(r => r.direct)), backgroundColor:'#284234', stack:'s26' },
-    { label:'2026：未歸入官網／門市（總部層級）', data:pad(byMon(r => r.hq)), backgroundColor:'#A54A1A', stack:'s26' },
+    { label:'2026：一般系統費', data:pad(byMon(r => r.normal)), backgroundColor:'#284234', stack:'s26' },
+    { label:'2026：專案調整入帳（文化局計劃案，自廣告費轉入）', data:pad(byMon(r => r.proj)), backgroundColor:'#A54A1A', stack:'s26' },
   ];
-  if (unsplit.some(v => v)) datasets.push({ label:'2026：尚無部門拆分', data:pad(unsplit), backgroundColor:'#b09a88', stack:'s26' });
+  if (unsplit.some(v => v)) datasets.push({ label:'2026：尚未拆分', data:pad(unsplit), backgroundColor:'#b09a88', stack:'s26' });
 
   const t = document.getElementById('sysfee-title');
   if (t) t.textContent = `系統費逐月（萬元）：2024、2025 全年 vs 2026 年 1–${st.n} 月`;
@@ -3073,7 +3110,7 @@ function renderSysFee() {
           label: c => `${c.dataset.label}：${c.parsed.y.toFixed(1)}萬`,
           footer: items => {
             const s26 = items.filter(i => i.dataset.stack === 's26' && i.parsed.y != null);
-            return s26.length ? `2026 公司層合計：${s26.reduce((s, i) => s + i.parsed.y, 0).toFixed(1)}萬` : '';
+            return s26.length ? `2026 帳面合計：${s26.reduce((s, i) => s + i.parsed.y, 0).toFixed(1)}萬` : '';
           }
         } }
       },
@@ -3086,17 +3123,15 @@ function renderSysFee() {
 
   /* 四張摘要卡 */
   const lastMon = st.rows[st.n - 1].mon;
-  const yoyYtd = pct(st.ytd26, st.ytd25);
   const cards = [
     { l:'2024 全年', v:w(st.y24), s:`月均 ${w(st.avg24)}` },
     { l:'2025 全年', v:w(st.y25), s:`月均 ${w(st.avg25)}｜較 2024 ${sgn(pct(st.y25, st.y24))}` },
-    { l:`2026 年 1–${lastMon} 月累計`, v:w(st.ytd26),
-      s:`已是 2025 全年的 ${(st.ytd26 / st.y25 * 100).toFixed(0)}%｜較 2025 同期（${w(st.ytd25)}）${sgn(yoyYtd)}` },
+    { l:`2026 年 1–${lastMon} 月帳面累計`, v:w(st.ytd26),
+      s:`已是 2025 全年的 ${(st.ytd26 / st.y25 * 100).toFixed(0)}%｜較 2025 同期（${w(st.ytd25)}）${sgn(pct(st.ytd26, st.ytd25))}` },
   ];
-  if (st.later.length) {
-    const a = st.later[0].mon, b = st.later[st.later.length - 1].mon;
-    cards.push({ l:`2026 年 ${a === b ? a : a + '–' + b} 月 月均`, v:w(st.avgLater),
-      s:`1–${st.first6.length} 月月均 ${w(st.avgFirst6)}｜2025 月均 ${w(st.avg25)}` });
+  if (st.nSplit) {
+    cards.push({ l:`扣掉專案調整入帳（${w(st.projYtd)}）後，1–${st.nSplit} 月`, v:w(st.normalYtd),
+      s:`較 2025 同期（${w(st.ytd25Split)}）${sgn(pct(st.normalYtd, st.ytd25Split))}｜同口徑比較` });
   } else {
     cards.push({ l:'2026 年月均', v:w(st.ytd26 / st.n), s:`2025 月均 ${w(st.avg25)}` });
   }
@@ -3104,21 +3139,52 @@ function renderSysFee() {
   if (sumEl) sumEl.innerHTML = cards.map(c =>
     `<div class="ss"><div class="ss-l">${c.l}</div><div class="ss-v">${c.v}</div><div class="ss-s">${c.s}</div></div>`).join('');
 
-  /* 說明：哪些能確定、哪些還看不到 */
+  /* 說明（總分類帳逐筆核對後的結論） */
   const r7 = st.rows.find(r => r.mon === 7), r8 = st.rows.find(r => r.mon === 8);
-  const hq1to6 = st.first6.filter(r => r.hq !== null).map(r => r.hq);
+  const first6 = st.splitRows.filter(r => r.mon <= 6);
+  const avgFirst6 = first6.length ? first6.reduce((s, r) => s + r.normal, 0) / first6.length : 0;
   const bullets = [];
-  if (r7 && r8 && r7.hq !== null && r8.hq !== null && hq1to6.length) {
-    bullets.push(`<b>能確定的：</b>7 月（${n2(r7.co)}）、8 月（${n2(r8.co)}）的暴增<b>不在官網、也不在門市</b>。部門比較表裡官網 7 月 ${w(r7.web)}、8 月 ${w(r8.web)}，和上半年同水準；門市 1–7 月都是 0。`
-      + `多出來的錢在公司層、沒有歸到官網或門市：7 月 <b>${w(r7.hq)}</b>、8 月 <b>${w(r8.hq)}</b>（1–6 月這一塊每月約 ${w(Math.min(...hq1to6))}–${w(Math.max(...hq1to6))}）。`);
-    if (r8.stores > 0)
-      bullets.push(`8 月四家門市各出現約 ${w(r8.stores / 4)}（四店金額幾乎相同，合計 ${w(r8.stores)}），形式上像均分分攤，不像各店自己發生的支出——這是從金額規律的推測，要看傳票才能確認。`);
+  if (r7 && r8 && r7.split && r8.split) {
+    bullets.push(`<b>7、8 月的暴增拆開來看</b>（總分類帳逐筆核對，每月合計都吻合損益表）：7 月 ${n2(r7.co)} ＝ 專案調整入帳 <b>${n2(r7.proj)}</b> ＋ 一般 ${n2(r7.normal)}；8 月 ${n2(r8.co)} ＝ 專案調整入帳 <b>${n2(r8.proj)}</b> ＋ 一般 ${n2(r8.normal)}。`
+      + `扣掉專案調整入帳，一般系統費 1–6 月月均 ${w(avgFirst6)}、7 月 ${w(r7.normal)}、8 月 ${w(r8.normal)}，<b>並沒有往上走</b>。`);
   }
-  bullets.push(`<b>還看不到的：</b>這些錢是哪幾家廠商、哪幾個項目。ERP 損益表的 6137 在 2024、2025、2026 年都只有「一行」、沒有子科目，所以儀表板拆不出項目；2025 年有一份總分類帳（見下方），但<b>2026 年目前沒有</b>。`
-    + `要標明到項目，需要從 ERP 匯出<b>總分類帳：科目 6137、日期 2026/01/01–2026/08/31</b>（跟「系統費統計_2025年度」同一份報表），就能逐筆對出 7、8 月是哪幾筆。`);
+  bullets.push(`<b>「專案調整入帳」是什麼：</b>專案碼「臺北市文化局計劃案」的調整傳票。這些費用開票當天先記在廣告費（公關宣傳／媒體採買），月底（7/31、8/31）才改列系統費；改列前後營業淨利不變，只是從廣告費移到系統費。逐筆明細在下方表格。`);
+  if (r7 && r7.proj) {
+    bullets.push(`<b>待與會計確認：</b>Omnichat 兩年方案 ${n2(SYS_2026_PROJ['2026/07'])} 一次全部列入 7 月，但服務期是 2026/9–2028/8（兩年）。年度合約過去的做法是「預付轉費用」按月攤提（例如叡揚 CRM 每月 13,492），這筆沒有走攤提。要不要攤提、補助報表怎麼認列，請與會計確認；若改 24 個月攤提，每月約 ${w(SYS_2026_PROJ['2026/07'] / 24)}。`);
+  }
+  if (r8 && r8.split) {
+    bullets.push(`<b>8 月四家門市各出現約 2.5 萬</b>，是各店實際分到的費用，不是總部均分分攤：SHOPLINE 線下電子發票傳輸費 3.2 萬（4 家各 8,000）＋門市庫存點 8.69 萬（5 個店點各約 1.74 萬，含誠品南西）。`
+      + `部門比較表只有電商平台、官網、四家門市六欄，誠品南西店（8 月 17,371）與管理部（7 月 590,560、8 月 287,898）不在欄內，所以公司層與部門表的差額就是這兩者。`);
+  }
   const noteEl = document.getElementById('sysfee-note');
   if (noteEl) noteEl.innerHTML = bullets.map(b => `<div style="margin-bottom:6px">${b}</div>`).join('')
-    + `<div style="font-size:10px;color:var(--text-muted);margin-top:6px">資料來源：ERP 損益表-半統制（2024／2025／2026，公司層 6137，逐月與年度欄位核對）、部門比較-全通路 2026 年 1–${lastMon} 月。「未歸入官網／門市」＝公司層 6137 − 部門表六欄（電商平台＋官網＋四家門市）合計${SYS_DEPT_2026['2026/02'] ? '；2 月部門表缺「電商平台」欄，該月此數可能略高估' : ''}。</div>`;
+    + `<div style="font-size:10px;color:var(--text-muted);margin-top:6px">資料來源：ERP 總分類帳（2026/01/01–${SYS_2026_LEDGER_THRU.slice(5)}/31，管理帳，294 筆；借方 1,887,851、貸方 5,181、淨額 1,882,670，逐月吻合損益表）、ERP 損益表-半統制 2024／2025 年度。${st.rows.some(r => !r.split) ? '部分月份尚無總分類帳拆分（圖中灰色）。' : ''}</div>`;
+
+  /* 2026 逐筆明細表（依廠商＋專案調整入帳） */
+  const v26 = document.getElementById('sysfee-2026-vendors');
+  if (v26) {
+    const sm = (arr, a, b) => arr.slice(a, b).reduce((s, x) => s + x, 0);
+    const cell = x => x === 0 ? '<span style="color:var(--text-muted)">—</span>' : n2(x);
+    const vr = SYS_2026_VENDORS.map(v => ({ n:v.n, m:v.m }));
+    const normalByMon = Array.from({ length: 8 }, (_, i) => vr.reduce((s, v) => s + (v.m[i] || 0), 0));
+    const projByMon = Array.from({ length: 8 }, (_, i) => SYS_2026_PROJ_ITEMS.filter(p => p.m === i + 1).reduce((s, p) => s + p.amt, 0));
+    const totByMon = normalByMon.map((v, i) => v + projByMon[i]);
+    const plByMon = Array.from({ length: 8 }, (_, i) => { const r = st.rows.find(x => x.mon === i + 1); return r ? r.co : null; });
+    const diffs = totByMon.map((v, i) => plByMon[i] === null ? null : v - plByMon[i]);
+    const tie = diffs.every(d => d === null || d === 0);
+    const row = (name, arr, cls, sub) => `<tr class="${cls || ''}"><td>${name}${sub ? `<div class="st-sub">${sub}</div>` : ''}</td><td>${cell(sm(arr,0,6))}</td><td>${cell(arr[6]||0)}</td><td>${cell(arr[7]||0)}</td><td>${cell(sm(arr,0,8))}</td></tr>`;
+    let h = `<div class="sysfee-scroll"><table class="sysfee-tbl"><thead><tr><th>廠商／項目</th><th>1–6 月</th><th>7 月</th><th>8 月</th><th>1–8 月</th></tr></thead><tbody>`;
+    h += `<tr class="st-head"><td colspan="5">一般系統費（月費、年費、維護費）</td></tr>`;
+    vr.forEach(v => { h += row(v.n, v.m); });
+    h += row('一般系統費小計', normalByMon, 'st-sub-total');
+    h += `<tr class="st-head st-proj"><td colspan="5">專案調整入帳（專案碼：臺北市文化局計劃案；開票時先記廣告費，月底改列系統費）</td></tr>`;
+    SYS_2026_PROJ_ITEMS.forEach(p => { const arr = Array(8).fill(0); arr[p.m - 1] = p.amt; h += row(p.n, arr, 'st-proj-row', p.d); });
+    h += row('專案調整入帳小計', projByMon, 'st-sub-total');
+    h += row('合計（帳面系統費 6137）', totByMon, 'st-total');
+    h += `</tbody></table></div>`;
+    h += `<div style="font-size:11px;margin-top:8px;color:${tie ? 'var(--pos)' : 'var(--neg)'}">${tie ? '✓ 逐月合計與損益表 6137 完全相符（1–8 月 8 個月差額皆為 0）' : '⚠ 與損益表 6137 有差額：' + diffs.map((d, i) => d ? `${i + 1}月 ${n2(d)}` : '').filter(Boolean).join('、')}</div>`;
+    v26.innerHTML = h;
+  }
 
   /* 2025 廠商拆分 */
   const venEl = document.getElementById('sysfee-vendors');
@@ -3132,9 +3198,9 @@ function renderSysFee() {
       + `<div class="vendor-row" style="border-top:2px solid var(--border2)"><div class="vendor-n">2025 合計</div><div></div><div class="vendor-a"><b>${n2(tot)}</b></div></div>`;
     const vn = document.getElementById('sysfee-vendor-note');
     const j = st.rows.find(r => r.mon === 7);
-    if (vn) vn.innerHTML = `2025 年的系統費幾乎都是<b>固定月費或年費按月攤提</b>，每月落在 ${w(Math.min(...HIST_SYS_2025))}–${w(st.max25)}，全年最大單筆只有 2.4 萬（叡揚客戶數加購）。`
-      + (j ? `對照 2026 年 7 月單月 ${w(j.co)}，是 2025 年最高月份（${w(st.max25)}）的 ${(j.co / st.max25).toFixed(1)} 倍，不是常態月費的小幅調整；` : '')
-      + `2026 年實際有哪些新項目，要等總分類帳匯出才能對。`
+    if (vn) vn.innerHTML = `2025 年的系統費幾乎都是<b>固定月費或年費按月攤提</b>，每月落在 ${w(st.min25)}–${w(st.max25)}，全年最大單筆只有 2.4 萬（叡揚客戶數加購）。`
+      + (j && j.split ? `2026 年 7 月帳面 ${w(j.co)}，其中 ${w(j.proj)} 是專案調整入帳，扣除後一般系統費 ${w(j.normal)}，仍在 2025 年的月範圍內；` : '')
+      + `2026 年的逐筆明細見上方表格。`
       + `<div style="font-size:10px;color:var(--text-muted);margin-top:6px">金額來源：ERP 總分類帳「系統費統計_2025年度」353 筆，各月合計與損益表 6137 逐月吻合。廠商名稱為帳上「廠客名稱」。</div>`;
   }
 }
