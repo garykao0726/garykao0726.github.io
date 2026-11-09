@@ -17,7 +17,7 @@ MONTHLY_TARGETS: {
   '東門':[140,130,130,120,110,100,100,100,120,130,130,140],
   '台中':[130,120,120,120,110, 95, 95, 95,110,120,120,130],
   '電商':[125,115,115,100,100, 90, 90, 90,100,115,115,125],
-  '南西':[0,0,0,0,0,0,0,0,80,80,80,80],
+  '南西':[0,0,0,0,0,0,0,0,80,90,90,90],
 },
 
 ANNUAL_REV_TARGETS: {'中山':18450000,'松菸':16200000,'東門':14500000,'台中':13650000,'電商':12800000},
@@ -197,7 +197,7 @@ PKG_HISTORY: {
   '2026/05':95843,    // 實際（損益表 5539，已關帳）
   '2026/06':30000,    // 實際（損益表 5539，已關帳）
   '2026/07':95843,    // 估：沿用（7月損益表未出，無請款資訊）
-  '2026/08':95843, '2026/09':95843,  // 估：沿用
+  '2026/08':95843, '2026/09':95843, '2026/10':95843,  // 估：沿用
 },
 
 /* ════ 月會管理報表（財務報表結算前估算，約隔月20-25日確認）════
@@ -571,6 +571,50 @@ MR_MONTHS: { '2026/04': {
         '台中': {"rev":920803,"target":1100000,"ni":35831,"niPct":3.89,"gpPct":68,"rentAmt":68282,"wageAmt":183973,"prevMoRev":876108,"prevYrRev":724165,"prevMoNI":5438,"prevYrNI":-194778},
         '電商': {"rev":925116,"target":1000000,"ni":163908,"niPct":17.72,"gpPct":68,"rentAmt":0,"wageAmt":20000,"prevMoRev":747173,"prevYrRev":652482,"prevMoNI":42907,"prevYrNI":-183645,"note":"客服離職、倉管支援出貨，8-9月人事以2萬估(原50,484)；店別淨利回加省下30,484"},
         '南西': {"rev":870348,"target":800000,"ni":184746,"niPct":21.23,"gpPct":68,"rentAmt":182774,"wageAmt":59412,"concession":true,"mgmtSelf":32000,"otherCost":69243,"mktAlloc":63662,"prevMoRev":0,"prevYrRev":0,"prevMoNI":0,"prevYrNI":0,"note":"9月新開(誠品南西專櫃)：抽成21%(18.3萬)＋誠品扣款/倉儲＋裝潢攤提4.8萬＋搬家0.7萬＋行銷分攤6.4萬。人事只認南西專職：周家民20+覃凱婷PT14=34人日≈59,412。支援人力黃思雯15/薛力豪11(東門)、STEVE 2(中山)為原店正職，底薪已在原店7月基礎、不重複計入南西(原2.4FTE全額10.8萬已扣除支援28人日≈48,928)。待實際薪資確認"},
+      },
+    },
+    '2026/10': {
+      ym: "2026/10",
+      dataType: "管理估算",
+      note: "10月損益表未出(通常delay2-3月)；營收=各店Dashboard合計列(已跟各店對齊)＋官網SL；毛利率統一68%。保守估算法：推銷費用不沿用固定金額、改按營收比例×7月實際推銷費率37.4%(營收暴衝時成本跟著長，避免carry-forward灌水到21%)；管理費維持固定(總公司HQ不隨營收變)；行銷含KOL 73,500。⚠️待確認：①南西10月成本為試算(抽成21%+裝潢攤提+誠品扣款+薪資9萬全月，待對帳單/薪資)②若10月週年慶/VIP折扣多，實毛利可能<68%③店別淨利為保守槓桿估(增額營收約25%淨利率)",
+      rev: 7543913,
+      revTarget: 7650000,
+      cogsPct: 32,
+      cogsPctTarget: 34,
+      cogsPctPrevMo: 32,
+      cogsPctPrevYr: 37,
+      mktShoot: 173500,
+      mktMedia: 267394,
+      mktTotal: 440894,
+      mktBudget: 347760,
+      opEx: 2825113,
+      mgmtEx: 953035,
+      opExTotal: 3778148,
+      opExRef: 3622500,
+      ni: 910819,
+      niPct: 12.07,
+      niTarget: 612000,
+      prevMoRev: 5853281,
+      prevYrRev: 5249452,
+      prevMoNI: 487702,
+      prevYrNI: -600000,
+      mktShootPrevMo: 269640,
+      mktMediaPrevMo: 234030,
+      opExPrevMo: 2035824,
+      mgmtExPrevMo: 953035,
+      mktShootPrevYr: 173500,
+      mktMediaPrevYr: 234030,
+      opExPrevYr: 1785973,
+      mgmtExPrevYr: 1256379,
+      storeNiPrevMo: 668124,
+      storeNiPrevYr: -300000,
+      storeData: {
+        '中山': {"rev":1305433,"target":1700000,"ni":40935,"niPct":3.14,"gpPct":68,"rentAmt":129934,"wageAmt":229710,"prevMoRev":948242,"prevYrRev":1315823,"prevMoNI":-48460,"prevYrNI":null},
+        '松菸': {"rev":1247319,"target":1400000,"ni":239898,"niPct":19.23,"gpPct":68,"rentAmt":126860,"wageAmt":106483,"prevMoRev":1184552,"prevYrRev":1333825,"prevMoNI":224189,"prevYrNI":null},
+        '東門': {"rev":1207313,"target":1300000,"ni":158738,"niPct":13.15,"gpPct":68,"rentAmt":127646,"wageAmt":128464,"prevMoRev":1004220,"prevYrRev":1021988,"prevMoNI":107910,"prevYrNI":null},
+        '台中': {"rev":1055223,"target":1200000,"ni":69472,"niPct":6.58,"gpPct":68,"rentAmt":68282,"wageAmt":183973,"prevMoRev":920803,"prevYrRev":910817,"prevMoNI":35831,"prevYrNI":null},
+        '電商': {"rev":1265653,"target":1150000,"ni":249135,"niPct":19.68,"gpPct":68,"rentAmt":0,"wageAmt":20000,"prevMoRev":925116,"prevYrRev":0,"prevMoNI":163908,"prevYrNI":null,"note":"客服離職、倉管支援出貨，人事以2萬估"},
+        '南西': {"rev":1462972,"target":900000,"ni":333063,"niPct":22.77,"gpPct":68,"rentAmt":307224,"wageAmt":90000,"concession":true,"mgmtSelf":32000,"otherCost":86400,"mktAlloc":50308,"prevMoRev":870348,"prevYrRev":0,"prevMoNI":184746,"prevYrNI":0,"note":"10月全月(達成170.7%)：抽成21%(30.7萬)＋裝潢攤提4.8萬＋誠品扣款/倉儲約3.8萬＋薪資9萬(全月自聘試算,待實際)＋行銷分攤5萬。淨利為保守試算，支援人力補齊後會下修"},
       },
     },
   },
