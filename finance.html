@@ -1062,7 +1062,10 @@ async function isFinanceExec(email) {
     try {
       const res  = await fetch(`${PERM_GAS_URL}?action=checkPerm&email=${encodeURIComponent(em)}&page=finance`);
       const data = await res.json();
-      return !!data.allowed;
+      // 只有後端明確回 allowed:true/false 才算數；回 {error}（例如授權過期，HTTP 200）視為連不到，走備用白名單。
+      // 以前直接 !!data.allowed，後端壞掉時會把所有人（包含 Gary）都擋掉。
+      if (data && typeof data.allowed === 'boolean') return data.allowed;
+      console.warn('GAS 權限查詢回傳異常，改用靜態備用白名單', data && data.error);
     } catch(e) {
       console.warn('GAS 權限查詢失敗，改用靜態備用白名單', e);
     }
