@@ -299,22 +299,23 @@ const FALLBACK_MONTHS = {
   },
   '2026/07': {
     ym:'2026/07', label:'7月', confirmed:true,
-    /* ★ 7月營收含 4301「專案業務收入」125 萬（單筆，報表上無對應專案成本 5106 入帳；不在五通路內）
-       → 7月毛利率 75.7%、營業淨利 105.8 萬皆被這筆墊高；扣除後營業淨利約 −19.2 萬（假設該筆無成本）
-       去年 7 月營收含嘖嘖募資專案 168.8 萬（非常態），YoY 兩邊都有一次性收入，僅供參考 */
-    rev:5924035, cogs:1438479, gp:4485556, gpPct:75.72,
-    sell:2404443, sellPct:40.59,
-      w6100:643090, wPct6100:10.86, r6114:452794, rPct6114:7.64,
-      mkt:332481, mktPct:5.61,
+    /* ★ 7 月已依 ERP「損益表_202607_20261109」更新：會計把臺北市文化局永續補助第一期補助款 125 萬
+       由 4301「專案業務收入」改列營業外收入 7131「政府補助收益」（見 GOV_SUBSIDY）。
+       所以營業收入／毛利／營業淨利都已不含補助款（營業淨利 −19.2 萬）；營業外收入、稅前損益、本期損益仍含這筆一次性收入。
+       去年 7 月營收含嘖嘖募資專案 168.8 萬（非常態），YoY 基期仍含一次性收入，僅供參考 */
+    rev:4674035, cogs:1438479, gp:3235556, gpPct:69.22,
+    sell:2404443, sellPct:51.44,
+      w6100:643090, wPct6100:13.76, r6114:452794, rPct6114:9.69,
+      mkt:332481, mktPct:7.11,
         mktPhoto:48328, mktMedia:227857, mktPrint:0, mktEvent:0, mktPR:56296,
       freight:42207, sys:626390, cardFee:80135, sample:34818,
-    mgmt:1022917, mgmtPct:17.27,
-      w6201:637930, wPct6201:10.77, r6202:176000, depr:55618,
-    opProfit:1058196, opPct:17.86,
-    nonOpIn:62515, nonOpOut:39826,
-    pretax:1080885, tax:58000, ni:1022885, niPct:17.27,
+    mgmt:1022917, mgmtPct:21.89,
+      w6201:637930, wPct6201:13.65, r6202:176000, depr:55618,
+    opProfit:-191804, opPct:-4.10,
+    nonOpIn:1312515, nonOpOut:39826,
+    pretax:1080885, tax:58000, ni:1022885, niPct:21.88,
     /* 去年同期 2025/07（來源：損益表_202507／部門比較）+ 累計；prevRev 已扣誠品裕隆城 346,363（原始 6,005,784），與 1–6 月同一口徑 */
-    prevRev:5659421, prevNI:-201538, yoyRevPct:4.68,  // 已扣裕隆城，原始6,005,784
+    prevRev:5659421, prevNI:-201538, yoyRevPct:-17.41,  // 已扣裕隆城，原始6,005,784；今年營收已不含補助款，去年基期仍含嘖嘖 168.8 萬
     prevYtdRev:36544709, prevYtdNI:-644842,
     prevGpPct:65.15, prevSellPct:48.11, prevMgmtPct:20.33, prevNiPct:-3.36,
     storeData: {
@@ -355,6 +356,27 @@ const FALLBACK_MONTHS = {
 
 /* MONTHS 為目前實際使用的資料源：預設=保底資料，登入後 loadMonthly() 若成功會整包替換為 Sheet 動態資料 */
 let MONTHS = FALLBACK_MONTHS;
+
+/* ── 政府補助款（一次性、非營業收入）────────────────────────────────
+   2026/11/09 會計已把臺北市文化局永續補助第一期補助款 125 萬，由「4301 專案業務收入」改列營業外收入「7131 政府補助收益」。
+   所以 ERP 損益表的營業收入／毛利／營業淨利已不含補助款，也不計入營業目標（營收達成率、營業淨利率等）；
+   但營業外收入、稅前損益、本期損益仍含這筆一次性收入。
+   本表只用來在頁面上標示，並提供「扣除補助款後」的稅前／本期損益；不會改動任何 ERP 數字。
+   · 之後有新的補助款入帳時，在這裡加一筆（key＝入帳月份），並確認該月 ERP 的 nonOpIn 已含它。
+   · 扣除補助款後的本期損益仍沿用帳面所得稅（tax 為帳面估列，不隨調整重算），實際稅額效果由會計判斷。 */
+const GOV_SUBSIDY = {
+  '2026/07': { acct:'7131', name:'政府補助收益', amt:1250000,
+    desc:'臺北市文化局永續補助計劃第一期補助款',
+    reclass:'2026/11/09 會計已由「4301 專案業務收入」改列營業外收入' },
+};
+const subsidyOf = m => (m && GOV_SUBSIDY[m.ym]) ? GOV_SUBSIDY[m.ym].amt : 0;
+const pretaxXS  = m => m.pretax - subsidyOf(m);                       // 扣除補助款後的稅前損益
+const niXS      = m => m.ni - subsidyOf(m);                           // 扣除補助款後的本期損益（所得稅沿用帳面）
+const niPctXS   = m => m.rev ? niXS(m) / m.rev * 100 : 0;
+const subsidyStale = m => subsidyOf(m) > 0 && (m.nonOpIn || 0) < subsidyOf(m);   // 資料還是舊版（補助款仍在營業收入）時為 true
+const subsidyOn    = m => subsidyOf(m) > 0 && !subsidyStale(m);                      // 資料已是 ERP 新版：補助款在營業外收入，營業數字不含它
+/* 去年同月基期含一次性收入的提醒（YoY 要小心解讀） */
+const YOY_BASE_NOTE = { '2026/07': '去年同月含嘖嘖募資專案約 168.8 萬' };
 
 /* ── 衍生資料：月度比較陣列 + 逐月累計 YTD + 月度營收目標（可重複呼叫，切換資料源後重算） ── */
 let CMP_KEYS = ['2026/01','2026/02','2026/03','2026/04','2026/05','2026/06','2026/07','2026/08'];
@@ -516,6 +538,23 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .sysfee-sum .ss-s{font-size:10px;color:var(--text-sub);margin-top:3px;line-height:1.5}
 .sysfee-note{font-size:12px;line-height:1.85;color:var(--text);background:var(--surface2);border-left:3px solid var(--rust);border-radius:0 8px 8px 0;padding:10px 14px;margin-top:14px}
 .sysfee-note b{color:var(--rust)}
+.subsidy-note{font-size:12px;line-height:1.85;color:var(--text);background:var(--surface2);border-left:3px solid var(--rust);border-radius:0 8px 8px 0;padding:12px 16px;margin:0 0 1.25rem}
+.subsidy-note b{color:var(--rust)}
+.subsidy-note.on-warn{border-left-color:var(--neg);background:rgba(192,57,43,.06)}
+.subsidy-note .on-hd{font-size:13px;font-weight:700;color:var(--rust);margin-bottom:6px}
+.subsidy-note .on-tbl-wrap{overflow-x:auto;margin:6px 0 8px}
+.subsidy-tbl{border-collapse:collapse;font-size:12px;width:100%;max-width:560px}
+.subsidy-tbl th,.subsidy-tbl td{padding:5px 8px;text-align:right;border-bottom:1px solid var(--border);vertical-align:top}
+.subsidy-tbl td:first-child{white-space:normal;line-height:1.5}
+.subsidy-tbl .st-pct{display:block;font-size:10px;font-weight:400;color:var(--text-muted)}
+.subsidy-tbl th:first-child,.subsidy-tbl td:first-child{text-align:left}
+.subsidy-tbl th{font-size:11px;color:var(--text-sub);font-weight:700;white-space:nowrap}
+.subsidy-tbl td{font-family:'Space Mono',monospace}
+.subsidy-tbl td:first-child{font-family:'Noto Sans TC',sans-serif}
+.subsidy-tbl td.ot-real{font-weight:700;background:rgba(40,66,52,.06)}
+.subsidy-note .on-list{margin:4px 0 4px 18px;padding:0}
+.subsidy-note .on-list li{margin:2px 0}
+.subsidy-note .on-cum{margin-top:6px}
 .vendor-row{display:grid;grid-template-columns:110px 1fr 120px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
 .vendor-row:last-child{border-bottom:none}
 .vendor-n{font-size:12px;font-weight:700}
@@ -757,6 +796,9 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
       <span style="margin-left:auto;padding-left:12px;border-left:1px solid rgba(40,66,52,.15)">＊ 所有金額均為<strong>未稅</strong>（不含 5% 加值稅）　｜　本頁<strong>淨利＝營業淨利</strong>（不含業外收入與費用、未扣所得稅）</span>
     </div>
 
+    <!-- 政府補助款說明（內容由 renderSubsidyNote() 渲染；當月與之前沒有補助款時隱藏） -->
+    <div class="subsidy-note" id="subsidy-note" style="display:none"></div>
+
     <!-- 分攤試算分頁（試算版，與月份檢視並存；內容由 renderSimView() 渲染） -->
     <div id="sim-view" style="display:none"></div>
 
@@ -933,14 +975,15 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
     </div>
 
     <!-- 1–4月 全公司損益比較表 -->
-    <div class="sec" style="margin-top:1.75rem">1–4 月 全公司損益比較表</div>
+    <div class="sec" style="margin-top:1.75rem" id="sec-cmp-table">全公司損益比較表</div>
     <div class="cmp-table-wrap">
       <table class="cmp-table" id="cmp-table"></table>
     </div>
     <div style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.7">
-      ＊ 金額單位：<strong>萬元（未稅）</strong>，括號內為佔當月營收比例；費用列以「−」表示扣減。<strong>累計</strong>欄為 1–4 月加總（比率列為加權平均）。目前所選月份以底色標示。<br>
+      ＊ 金額單位：<strong>萬元（未稅）</strong>，括號內為佔當月營收比例；費用列以「−」表示扣減。<strong>累計</strong>欄為上列各月加總（比率列為加權平均）。目前所選月份以底色標示。<br>
       ＊ 下方<strong>備忘列</strong>（廣告費／總人事費／包裝費）為原本被併入成本或費用、值得單獨追蹤的科目。
     </div>
+    <div id="cmp-sub-note" style="font-size:11px;color:var(--text-muted);margin-top:4px;line-height:1.7"></div>
 
     <!-- 深入觀察 -->
     <div class="sec" id="sec-insight" style="margin-top:1.75rem">深入觀察 — 值得拉出來討論（現行分析未涵蓋）</div>
@@ -1443,20 +1486,78 @@ function updateMonthLabels() {
   const mNum = parseInt(mm, 10);
   const set = (id, t) => { const e = document.getElementById(id); if (e) e.textContent = t; };
   set('data-status', `${y}年${mNum}月`);
-  set('data-source-note', `● ${S.ym} 資料已確認（ERP 月報）`);
+  set('data-source-note', subsidyStale(S) ? `● ${S.ym} ⚠ 資料待更新（補助款可能還在營業收入）` : `● ${S.ym} 資料已確認（ERP 月報）${subsidyOn(S) ? '・補助款已列營業外收入' : ''}`);
   set('sec-pl', `${y}年${mNum}月 損益結構`);
-  set('wf-source', `來源：ERP 損益表 ${S.ym} · 管理帳`);
+  set('wf-source', `來源：ERP 損益表 ${S.ym} · 管理帳${subsidyOn(S) ? `（營業外收入含政府補助收益 ${(subsidyOf(S)/10000).toFixed(0)} 萬，不在營業收入／營業淨利內）` : ''}`);
   set('ach-month-hd', `本月（${S.ym}）`);
   set('ach-ytd-hd', `年度完成進度（1–${mNum}月累計 / 全年目標）`);
   set('sec-mkt', `廣告費用分析（1–${mNum}月累計 ${fmtPct(S.ytdMktPct)}${S.ytdMktPct > 6 ? ' — 高於年度 6%' : ' — 在年度 6% 內'}；本月 ${fmtPct(S.mktPct)}）`);
   set('sec-store', S.storeData ? '各門市當月績效' : '各門市績效（本月僅有總公司合併損益，暫無分店別資料）');
   set('sec-insight', `深入觀察 — ${y}年${mNum}月值得拉出來討論（現行分析未涵蓋）`);
   if (CMP && CMP.length) set('sec-cmp', `月份損益比較（${y}年1–${monthNum(CMP[CMP.length-1].ym)}月）`);
+  if (CMP && CMP.length) set('sec-cmp-table', `全公司損益比較表（${y}年1–${monthNum(CMP[CMP.length-1].ym)}月）`);
+}
+
+/* 政府補助款說明框：目前檢視的月份（含之前）有政府補助款時顯示「ERP 損益表 → 扣除補助款後」對照 */
+function renderSubsidyNote() {
+  const el = document.getElementById('subsidy-note');
+  if (!el) return;
+  const mNum = monthNum(S.ym);
+  const subs = CMP.filter(m => subsidyOf(m) > 0 && monthNum(m.ym) <= mNum);
+  const stale = CMP.filter(subsidyStale);                 // 不論檢視哪個月：只要有月份的資料還是舊版，就要提醒（比較表、年度圖表都含那個月）
+  if (!subs.length && !stale.length) { el.style.display = 'none'; el.classList.remove('on-warn'); el.innerHTML = ''; return; }
+
+  const W = v => (v < 0 ? '−' : '') + (Math.abs(v) / 10000).toFixed(1);        // 萬元，負數用 −
+  const P = v => (v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + '%';
+  const sumSub = subs.reduce((s, m) => s + subsidyOf(m), 0);
+
+  /* 資料還是舊版（補助款仍在營業收入）：只顯示警示，不輸出任何「不含補助款」的說法，避免和舊數字互相矛盾 */
+  if (stale.length) {
+    el.classList.add('on-warn');
+    el.innerHTML = `<div class="on-hd">⚠️ ${stale.map(m => m.label).join('、')}的資料還是舊版</div>`
+      + `<div>會計已把${stale.map(m => m.label + '的政府補助款 ' + W(subsidyOf(m)) + '萬').join('、')}改列營業外收入，但目前載入的資料裡營業外收入沒有包含它（補助款可能還在營業收入裡），營收、毛利與營業淨利可能被墊高。請重新匯入 ERP 損益表後再看這一頁。</div>`;
+    el.style.display = 'block';
+    return;
+  }
+  el.classList.remove('on-warn');
+
+  const cur = subsidyOf(S) > 0 ? S : null;
+  const cell = (v, pctTxt) => pctTxt ? `${v}<span class="st-pct">${pctTxt}</span>` : v;
+  let h = `<div class="on-hd">📌 ${cur ? S.label + '含' : '累計數字含'}政府補助款 ${W(cur ? subsidyOf(S) : sumSub)}萬：已列營業外收入，不計入營業收入與營業目標</div>`;
+
+  if (cur) {
+    const rows = [
+      ['營業收入（不含補助款）', cell(W(S.rev)),                        cell(W(S.rev))],
+      ['營業淨利',               cell(W(S.opProfit), P(S.opPct)),       cell(W(S.opProfit), P(S.opPct))],
+      ['營業外收入',             cell(W(S.nonOpIn)),                    cell(W(S.nonOpIn - subsidyOf(S)))],
+      ['稅前損益',               cell(W(S.pretax)),                     cell(W(pretaxXS(S)))],
+      ['本期損益（所得稅沿用帳面）', cell(W(S.ni), P(S.niPct)),         cell(W(niXS(S)), P(niPctXS(S)))],
+    ];
+    h += `<div class="on-tbl-wrap"><table class="subsidy-tbl"><thead><tr><th>項目（萬元）</th><th>ERP 帳面</th><th>扣補助款後</th></tr></thead><tbody>`
+      + rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="ot-real">${r[2]}</td></tr>`).join('')
+      + `</tbody></table></div>`;
+  }
+
+  const bullets = subs.map(m => `<li><b>${m.label}：</b>${GOV_SUBSIDY[m.ym].acct}「${GOV_SUBSIDY[m.ym].name}」${W(subsidyOf(m))}萬——${GOV_SUBSIDY[m.ym].desc}。${GOV_SUBSIDY[m.ym].reclass || ''}，所以營業收入、毛利率、營業淨利都是不含補助款的營運數字，營收達成率與營業淨利率等營業目標也都不含這筆。</li>`);
+  bullets.push(`<li><b>${cur ? '稅前損益與本期損益' : subs.map(m => m.label).join('、') + '與累計的稅前損益／本期損益'}仍含這筆一次性收入：</b>思考明年損益請以營業淨利為主，並用「扣除補助款後」的稅前／本期損益；所得稅沿用帳面估列，未重算（實際稅額效果由會計判斷）。</li>`);
+  const projYms = Object.keys(SYS_2026_PROJ).filter(ym => monthNum(ym) <= mNum && SYS_2026_PROJ[ym]).sort();
+  if (projYms.length) {
+    bullets.push(`<li><b>計畫案的費用沒有對沖：</b>補助計畫案（專案碼「臺北市文化局計劃案」）相關費用仍列在營業費用——系統費的專案調整入帳 ${projYms.map(ym => monthNum(ym) + ' 月 ' + W(SYS_2026_PROJ[ym]) + ' 萬').join('、')}（7 月是 Omnichat 兩年方案，服務期 2026/9–2028/8，一次認列）。補助款移到業外後，營業淨利扣的是這些費用、卻沒有對應的補助收入，所以比「不含計畫案」的常態水準偏低${cur && SYS_2026_PROJ[S.ym] ? `；若${S.label}這筆不計入，營業淨利約 ${W(S.opProfit + SYS_2026_PROJ[S.ym])}萬` : ''}。是否攤提待會計確認（見下方「系統費」）。</li>`);
+  }
+  if (cur && YOY_BASE_NOTE[S.ym] && S.yoyRevPct != null) {
+    bullets.push(`<li><b>YoY 要小心看：</b>本月營收 YoY ${P(S.yoyRevPct)}——今年營收已不含補助款，但${YOY_BASE_NOTE[S.ym]}的一次性收入，基期偏高，不宜直接解讀成衰退。</li>`);
+  }
+  h += `<ul class="on-list">${bullets.join('')}</ul>`;
+  h += `<div class="on-cum">1–${mNum} 月累計：營業淨利 <b>${W(S.ytdOp)}萬</b>（${P(S.ytdOpPct)}，不含補助款）；本期損益 ERP ${W(S.ytdNI)}萬 → 扣除補助款後 <b>${W(S.ytdNI - sumSub)}萬</b>。</div>`;
+
+  el.innerHTML = h;
+  el.style.display = 'block';
 }
 
 function renderStaticSections() {
   renderMonthNav();
   updateMonthLabels();
+  renderSubsidyNote();
   renderKPIs();
   renderWaterfall();
   renderStoreCards();
@@ -1617,7 +1718,7 @@ function renderKPIs() {
   const hasYtdYoY = (S.prevYtdNI !== undefined);
 
   /* KPI1：當月營收 YoY（依正負上色） */
-  const revDelta    = hasYoY ? `YOY ${chg(S.yoyRevPct)}` : '去年同月資料待補';
+  const revDelta    = hasYoY ? `YOY ${chg(S.yoyRevPct)}${YOY_BASE_NOTE[S.ym] ? '（去年基期含一次性）' : ''}` : '去年同月資料待補';
   const revDeltaCls = hasYoY ? (S.yoyRevPct >= 0 ? 'pos' : 'neg') : 'warn';
 
   /* KPI4：YTD 累計營業淨利。去年同期僅有「本期損益」可比，故標明基期、不混算 YoY% */
@@ -1632,7 +1733,7 @@ function renderKPIs() {
   const kpis = [
     { label:'五通路當月營收（未稅）',
       val: fmtW(S.rev),
-      sub: `目標 ${fmtW(S.totalTarget)}`,
+      sub: `目標 ${fmtW(S.totalTarget)}${subsidyOn(S) ? ' · 不含補助款' : ''}`,
       delta: revDelta, dCls: revDeltaCls,
       accent: '#284234' },
     { label:'全通路目標達成率',
@@ -1642,7 +1743,7 @@ function renderKPIs() {
       accent: cSSColor(achColor(ach)) },
     { label:'全公司營業淨利率',
       val: fmtPct(S.opPct),
-      sub: '目標 8%（不含業外）',
+      sub: subsidyOn(S) ? '目標 8%（不含業外；補助款已列業外）' : '目標 8%（不含業外）',
       delta: `本月營業淨利 ${fmtW(S.opProfit)}`, dCls: npColor(S.opPct),
       accent: cSSColor(npColor(S.opPct)) },
     { label:`1–${mNum}月累計營業淨利`,
@@ -1692,7 +1793,7 @@ function renderWaterfall() {
   /* 虧損月（如 2026/08 營業淨利為負）：小計／本期損益長條改紅色；Y 軸往負值延伸，否則負值長條會被 min:0 切掉看不到 */
   bars.forEach(b => { if ((b.type === 'sub' || b.type === 'final') && b.hi < 0) b.type = 'loss'; });
   const wfMinVal = Math.min(0, ...bars.flatMap(b => [b.lo, b.hi]));
-  const wfYMin = wfMinVal < 0 ? Math.floor(wfMinVal / 20) * 20 : 0;
+  const wfYMin = wfMinVal < 0 ? Math.floor(wfMinVal / 100) * 100 : 0;      // 以 100 為單位，刻度才會剛好落在 0（營業淨利為負的月份也看得到零線）
 
   mkChart('waterfall-chart', {
     type: 'bar',
@@ -1718,7 +1819,8 @@ function renderWaterfall() {
               const [lo, hi] = ctx.raw;
               const diff = hi - lo;
               const isSub = ['毛利','營業淨利','本期損益'].includes(ctx.label);
-              if (isSub) return `合計 ${hi.toFixed(1)} 萬（${(hi/rev*100).toFixed(1)}% of 收入）`;
+              if (isSub) return `合計 ${hi.toFixed(1)} 萬（${(hi/rev*100).toFixed(1)}% of 收入）` + ((ctx.label === '本期損益' && subsidyOn(S)) ? `；含政府補助收益 ${W(subsidyOf(S)).toFixed(1)} 萬，扣除後 ${W(niXS(S)).toFixed(1)} 萬` : '');
+              if (ctx.label === '業外淨收益' && subsidyOn(S)) return `▲ ${diff.toFixed(1)} 萬（含政府補助收益 ${W(subsidyOf(S)).toFixed(1)} 萬，一次性）`;
               return (diff > 0 ? '▲ ' : '') + diff.toFixed(1) + ' 萬';
             }
           }
@@ -1736,7 +1838,7 @@ function renderWaterfall() {
     { label:'毛利率',     val:S.gpPct,   prev:S.prevGpPct,   cls:'pos' },
     { label:'推銷費率',   val:S.sellPct, prev:S.prevSellPct, cls:(S.sellPct>=38?'neg':S.sellPct>=33?'warn':'pos') },
     { label:'管理費率',   val:S.mgmtPct, prev:S.prevMgmtPct, cls:'' },
-    { label:'本期損益率', val:S.niPct,   prev:S.prevNiPct,   cls:npColor(S.niPct) },
+    { label:'本期損益率', val:S.niPct,   prev:S.prevNiPct,   cls: subsidyOn(S) ? '' : npColor(S.niPct), extra: subsidyOn(S) ? `今年扣補助款後 <span class="${npColor(niPctXS(S))}">${fmtPct(niPctXS(S))}</span>` : '' },
   ];
   const wfEl = document.getElementById('wf-summary');
   if (wfEl) wfEl.innerHTML = wfItems.map(it => {
@@ -1745,7 +1847,7 @@ function renderWaterfall() {
     return `<div class="wf-item">
       <div class="wf-item-label">${it.label}</div>
       <div ${valStyle}>${fmtPct(it.val)}</div>
-      <div class="wf-item-pct">${prevTxt}</div>
+      <div class="wf-item-pct">${prevTxt}${it.extra ? `｜${it.extra}` : ''}</div>
     </div>`;
   }).join('');
 }
@@ -2697,8 +2799,11 @@ function renderCompareTable() {
     nonOp: sum(m=>m.nonOpIn-m.nonOpOut), pretax: sum(m=>m.pretax),
     tax: sum(m=>m.tax), ni: sum(m=>m.ni),
     mkt: sum(m=>m.mkt), wage: sum(m=>m.w6100+m.w6201), pkg: sum(m=>m.pkg),
+    sub: sum(m=>subsidyOn(m) ? subsidyOf(m) : 0),
   };
-  const niTotCls = npColor(C.ni / C.rev * 100);
+  const niTotCls = npColor((C.ni - C.sub) / C.rev * 100);          // 含補助款的月份依「扣除補助款後」判色，避免一次性收入讓損益看起來達標
+  const star = m => subsidyOn(m) ? '＊' : '';
+  const niCls = m => npColor(subsidyOn(m) ? niPctXS(m) : m.niPct);
 
   const rows = [
     { label:'營業收入',   cls:'r-strong', cell:m=>money(m.rev),                tot:money(C.rev) },
@@ -2711,14 +2816,19 @@ function renderCompareTable() {
     { label:'管理費率',   cls:'r-sub',    cell:m=>pctStr(m.mgmt,m.rev),        tot:pctStr(C.mgmt,C.rev) },
     { label:'營業淨利',   cls:'r-strong', cell:m=>money(m.opProfit),           tot:money(C.op) },
     { label:'營業利益率', cls:'r-sub',    cell:m=>pctStr(m.opProfit,m.rev),    tot:pctStr(C.op,C.rev) },
-    { label:'業外淨額',   cls:'r-sub',    cell:m=>money(m.nonOpIn-m.nonOpOut), tot:money(C.nonOp) },
-    { label:'稅前損益',   cls:'',         cell:m=>money(m.pretax),             tot:money(C.pretax) },
+    { label:'業外淨額',   cls:'r-sub',    cell:m=>money(m.nonOpIn-m.nonOpOut) + star(m), tot:money(C.nonOp) + (C.sub ? '＊' : '') },
+    { label:'稅前損益',   cls:'',         cell:m=>money(m.pretax) + star(m),   tot:money(C.pretax) + (C.sub ? '＊' : '') },
     { label:'所得稅',     cls:'r-sub',    cell:m=>money(-m.tax),               tot:money(-C.tax) },
-    { label:'本期損益',   cls:'r-strong', cell:m=>`<span class="${npColor(m.niPct)}">${money(m.ni)}</span>`,        tot:`<span class="${niTotCls}">${money(C.ni)}</span>` },
-    { label:'本期損益率', cls:'r-sub',    cell:m=>`<span class="${npColor(m.niPct)}">${pctStr(m.ni,m.rev)}</span>`, tot:`<span class="${niTotCls}">${pctStr(C.ni,C.rev)}</span>` },
+    { label:'本期損益',   cls:'r-strong', cell:m=>`<span class="${niCls(m)}">${money(m.ni)}${star(m)}</span>`,        tot:`<span class="${niTotCls}">${money(C.ni)}${C.sub ? '＊' : ''}</span>` },
+    { label:'本期損益率', cls:'r-sub',    cell:m=>`<span class="${niCls(m)}">${pctStr(m.ni,m.rev)}${star(m)}</span>`, tot:`<span class="${niTotCls}">${pctStr(C.ni,C.rev)}${C.sub ? '＊' : ''}</span>` },
     { label:'廣告費 (6117)',          cls:'r-memo', cell:m=>`${money(m.mkt)}（${pctStr(m.mkt,m.rev)}）`,                 tot:`${money(C.mkt)}（${pctStr(C.mkt,C.rev)}）` },
     { label:'總人事費 (6100+6201)',   cls:'r-memo', cell:m=>`${money(m.w6100+m.w6201)}（${pctStr(m.w6100+m.w6201,m.rev)}）`, tot:`${money(C.wage)}（${pctStr(C.wage,C.rev)}）` },
     { label:'包裝費 (5539)',          cls:'r-memo', cell:m=>`${money(m.pkg)}（${pctStr(m.pkg,m.rev)}）`,                 tot:`${money(C.pkg)}（${pctStr(C.pkg,C.rev)}）` },
+    ...(C.sub ? [
+      { label:'政府補助（營業外）', cls:'r-memo', cell:m=>subsidyOn(m) ? money(subsidyOf(m)) : '—', tot:money(C.sub) },
+      { label:'稅前（扣補助款）', cls:'r-memo', cell:m=>money(subsidyOn(m) ? pretaxXS(m) : m.pretax), tot:money(C.pretax - C.sub) },
+      { label:'本期（扣補助款）', cls:'r-memo', cell:m=>money(subsidyOn(m) ? niXS(m) : m.ni), tot:money(C.ni - C.sub) },
+    ] : []),
   ];
 
   const head = `<thead><tr><th>項目（萬元）</th>${CMP.map(m=>`<th class="${m.ym===S.ym?'cur':''}">${m.label}</th>`).join('')}<th class="col-tot">累計</th></tr></thead>`;
@@ -2728,6 +2838,16 @@ function renderCompareTable() {
     <td class="col-tot">${r.tot}</td>
   </tr>`).join('')}</tbody>`;
   el.innerHTML = head + body;
+  const subNote = document.getElementById('cmp-sub-note');
+  if (subNote) {
+    const subs = CMP.filter(subsidyOn);
+    const stale = CMP.filter(subsidyStale);
+    subNote.innerHTML = stale.length
+      ? `⚠ <strong>${stale.map(m => m.label).join('、')}的資料還是舊版</strong>（補助款可能還在營業收入裡），本表該月與累計的營收、毛利、營業淨利可能被墊高。`
+      : subs.length
+      ? `＊ <strong>${subs.map(m => m.label).join('、')}的業外淨額、稅前損益與本期損益含政府補助收益 ${money(C.sub)}萬</strong>（已由會計列營業外收入 7131；營業收入、毛利、營業淨利不含）。標＊的本期損益與損益率（含累計欄）顏色依「扣除補助款後」判定。最下方三列依序為補助款金額，以及扣除補助款後的稅前損益與本期損益（所得稅沿用帳面估列）。`
+      : '';
+  }
 }
 
 /* ── 深入觀察（每月一塊，逐月手寫；切月份即切換內容） ── */
@@ -2909,28 +3029,39 @@ function buildInsights(ym) {
       const sysProj7 = SYS_2026_PROJ['2026/07'] || 0;
       const sd = M.storeData;
       const h25 = HIST_CO_2025.find(h => h.ym === '2025/07');
-      const PROJ = 1250000;                              // 4301 專案業務收入（單筆）
-      const exRev = M.rev - PROJ, exOp = M.opProfit - PROJ, exGp = M.gp - PROJ;
+      const sub7 = subsidyOf(M);                         // 政府補助款（ERP 已列營業外收入 7131，不在營業收入內）
+      const stale7 = subsidyStale(M);                    // true＝載入的是舊版資料（補助款還在營業收入）
+      const h1Gp = (() => { const xs = ['2026/01','2026/02','2026/03','2026/04','2026/05','2026/06'].map(k => MONTHS[k]).filter(Boolean); const r = xs.reduce((s, m) => s + m.rev, 0); return r ? xs.reduce((s, m) => s + m.gp, 0) / r * 100 : 0; })();
+      const yoy7 = (M.yoyRevPct >= 0 ? '+' : '') + M.yoyRevPct.toFixed(1) + '%';
+      const yoyBoth7 = (v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%')((M.rev / (M.prevRev - 1688000) - 1) * 100);   // 去年也扣嘖嘖約 168.8 萬的概估
       const h1 = ['2026/01','2026/02','2026/03','2026/04','2026/05','2026/06'].map(k => MONTHS[k]).filter(Boolean);
       const h1SysAvg = h1.length ? h1.reduce((s, m) => s + (m.sys || 0), 0) / h1.length : 0;
       const opPct = st => (sd[st].opProfit / sd[st].rev * 100);
       const storeSum = STORES.reduce((s, st) => s + sd[st].opProfit, 0);
       return [
-        { sev:'amber', tag:'一次性', title:`7 月營業淨利 ${w(M.opProfit)} 是被一筆 125 萬專案收入撐起來的 —— 扣掉後約 ${w(exOp)}`,
-          body:`7 月營收 <b>${w(M.rev)}</b> 裡有 <b>125 萬「專案業務收入」(4301)</b>（占 ${(PROJ/M.rev*100).toFixed(1)}%），報表上沒有對應的專案成本（專案業務成本 5106 本月無入帳），所以 7 月毛利率衝到 <b>${M.gpPct.toFixed(1)}%</b>（常態約 66–68%）、營業淨利率 <b>${M.opPct.toFixed(1)}%</b>。這筆不在五通路（五店＋電商）數字裡。若扣掉這筆（假設日後也無對應成本）：營收 ${w(exRev)}、毛利率 ${(exGp/exRev*100).toFixed(1)}%、營業淨利約 <b>${w(exOp)}</b>（${(exOp/exRev*100).toFixed(1)}%）——實際營運是小幅虧損。<b>比較 7 月與其他月份時請用扣除後的數字。</b>`,
-          data:`營收 ${w(M.rev)}（含專案 125萬）｜營業淨利 ${w(M.opProfit)}（扣除後約 ${w(exOp)}）｜毛利率 ${M.gpPct.toFixed(1)}%（扣除後 ${(exGp/exRev*100).toFixed(1)}%）` },
+        stale7
+          ? { sev:'red', tag:'一次性', title:`7 月資料還是舊版 —— 125 萬政府補助款可能仍在營業收入裡，營業淨利可能被墊高`,
+              body:`會計已把 7 月的政府補助款 ${w(sub7)} 改列營業外收入（7131），但目前載入的資料裡營業外收入沒有包含它，補助款可能還在營業收入，營收 ${w(M.rev)}、營業淨利 ${w(M.opProfit)} 可能被墊高。請重新匯入 ERP 損益表後再看。`,
+              data:`營業收入 ${w(M.rev)}｜營業淨利 ${w(M.opProfit)}｜營業外收入 ${w(M.nonOpIn)}` }
+          : { sev:'amber', tag:'一次性', title:`7 月營運數字已不含補助款 —— 營業淨利 ${w(M.opProfit)}（${M.opPct.toFixed(1)}%），但稅前／本期損益含 125 萬一次性補助款`,
+              body:`會計已把臺北市文化局永續補助第一期補助款 <b>${w(sub7)}</b> 由「專案業務收入」改列<b>營業外收入（7131 政府補助收益）</b>，所以 ERP 的 7 月營業收入 <b>${w(M.rev)}</b>、毛利率 <b>${M.gpPct.toFixed(1)}%</b>（1–6 月平均 ${h1Gp.toFixed(1)}%）、營業淨利 <b>${w(M.opProfit)}</b>（${M.opPct.toFixed(1)}%）都是不含補助款的實際營運，也不計入營收與營業淨利目標——7 月帳面營業淨利為小幅虧損。但稅前損益 <b>+${w(M.pretax)}</b> 與本期損益 <b>+${w(M.ni)}</b>（${M.niPct.toFixed(1)}%）仍含這筆一次性收入；扣除後稅前約 <b>${w(pretaxXS(M))}</b>、本期損益約 <b>${w(niXS(M))}</b>（所得稅沿用帳面估列 ${w(M.tax)}，未重算）。<b>評估明年損益請看營業淨利，以及「扣除補助款後」的稅前／本期損益，不要把補助款當成常態收入。</b>另有一項沒調整的一次性費用：7 月系統費含 ${w(sysProj7)} 的 Omnichat 兩年方案（服務期 2026/9–2028/8）一次認列，若這筆不計入 7 月，營業淨利約 ${w(M.opProfit + sysProj7)}，是否攤提待會計確認（見下一張卡）。`,
+              data:`營業收入 ${w(M.rev)}｜營業淨利 ${w(M.opProfit)}（${M.opPct.toFixed(1)}%）｜稅前 ${w(M.pretax)}（扣補助款 ${w(pretaxXS(M))}）｜本期損益 ${w(M.ni)}（扣補助款 ${w(niXS(M))}）` },
 
         { sev:'amber', tag:'系統費', title:`系統費 ${w(M.sys)} —— 其中 ${w(sysProj7)} 是 Omnichat 兩年方案一次列入，一般系統費 ${w(M.sys - sysProj7)} 屬常態`,
           body:`7 月全公司系統費(6137) <b>${w(M.sys)}</b>（佔營收 ${(M.sys/M.rev*100).toFixed(1)}%）。總分類帳逐筆核對：<b>${w(sysProj7)}</b> 是全通路科技（Omnichat）兩年方案（發票 7/2，服務期 2026/9–2028/8），專案碼「臺北市文化局計劃案」，7/2 先記廣告費、7/31 以調整傳票改列系統費；其餘 ${w(M.sys - sysProj7)} 與上半年常態（月均 ${w(h1SysAvg)}）相當，<b>系統費本身並沒有變多</b>。這 ${w(sysProj7)} 一次全列 7 月，而年度合約過去是「預付轉費用」按月攤提（例如叡揚 CRM 每月 1.3 萬）；若改 24 個月攤提，每月約 ${w(sysProj7 / 24)}。建議與會計確認認列方式與補助報表口徑。`,
           data:`系統費：1–6月月均 ${w(h1SysAvg)}｜7月 ${w(M.sys)} ＝ 一般 ${w(M.sys - sysProj7)} ＋ 專案調整入帳 ${w(sysProj7)}` },
 
         { sev:'red', tag:'門市', title:`五通路合計營業淨利 ${w(storeSum)} —— 只有中山勉強小賺，台中虧 ${w(-sd['台中'].opProfit)}`,
-          body:`五通路 7 月營業淨利合計 <b>${w(storeSum)}</b>（不含上述專案收入）。<b>台中 ${w(sd['台中'].opProfit)}（${opPct('台中').toFixed(1)}%）</b>最弱，薪資率 ${sd['台中'].wPct.toFixed(1)}%、營收只達目標 ${(sd['台中'].rev/sd['台中'].target*100).toFixed(0)}%；電商 ${w(sd['電商'].opProfit)}（${opPct('電商').toFixed(1)}%）、松菸 ${w(sd['松菸'].opProfit)}；中山 +${w(sd['中山'].opProfit)} 幾乎打平（6 月 11.4 萬）、東門 ${w(sd['東門'].opProfit)} 打平。夏季淡月，固定成本撐不住的店會直接轉虧。`,
+          body:`五通路 7 月營業淨利合計 <b>${w(storeSum)}</b>${stale7 ? '' : '（五通路本來就不含補助款）'}。<b>台中 ${w(sd['台中'].opProfit)}（${opPct('台中').toFixed(1)}%）</b>最弱，薪資率 ${sd['台中'].wPct.toFixed(1)}%、營收只達目標 ${(sd['台中'].rev/sd['台中'].target*100).toFixed(0)}%；電商 ${w(sd['電商'].opProfit)}（${opPct('電商').toFixed(1)}%）、松菸 ${w(sd['松菸'].opProfit)}；中山 +${w(sd['中山'].opProfit)} 幾乎打平（6 月 11.4 萬）、東門 ${w(sd['東門'].opProfit)} 打平。夏季淡月，固定成本撐不住的店會直接轉虧。`,
           data:`各店營業淨利：中山 ${w(sd['中山'].opProfit)}｜松菸 ${w(sd['松菸'].opProfit)}｜東門 ${w(sd['東門'].opProfit)}｜台中 ${w(sd['台中'].opProfit)}｜電商 ${w(sd['電商'].opProfit)}` },
 
-        { sev:'amber', tag:'YoY', title:`去年同月也有一次性收入 —— 7 月 YoY 兩邊基期都不乾淨`,
-          body:`今年 7 月營收 ${w(M.rev)}、YoY <b>${M.yoyRevPct>=0?'+':''}${M.yoyRevPct.toFixed(1)}%</b>；但去年 7 月（${w(h25.rev)}）含<b>嘖嘖募資專案營收 168.8 萬</b>（同月廣告費 ${w(h25.mkt)}，是那檔專案的行銷），且含誠品裕隆城 34.6 萬（2025/09 撤櫃）；今年則含 125 萬專案收入。<b>兩邊各有一筆非常態收入</b>，YoY 數字僅供參考，不宜直接解讀成成長或衰退。`,
-          data:`去年7月：營收 ${w(h25.rev)}（含嘖嘖 168.8萬、裕隆城 34.6萬）｜營業淨利 ${w(h25.opProfit)}｜廣告費 ${w(h25.mkt)}` },
+        stale7
+          ? { sev:'amber', tag:'YoY', title:`7 月資料還是舊版 —— YoY 暫不解讀`,
+              body:`7 月資料尚未更新為 ERP 新版（125 萬補助款可能還在營業收入裡），營收與 YoY 都被墊高，請重新匯入損益表後再看。`,
+              data:`去年7月：營收 ${w(h25.rev)}（含嘖嘖 168.8萬、裕隆城 34.6萬）｜營業淨利 ${w(h25.opProfit)}｜廣告費 ${w(h25.mkt)}` }
+          : { sev:'amber', tag:'YoY', title:`7 月 YoY ${yoy7} 偏低 —— 今年營收已不含補助款，去年同月基期仍含一次性收入`,
+              body:`今年 7 月營收 ${w(M.rev)}（不含補助款）、YoY <b>${yoy7}</b>。去年 7 月帳面營收 ${w(h25.rev)}，含<b>嘖嘖募資專案營收 168.8 萬</b>（同月廣告費 ${w(h25.mkt)}，是那檔專案的行銷）與誠品裕隆城 34.6 萬（2025/09 撤櫃）；${M.prevRev < h25.rev ? `YoY 的基期是已先扣裕隆城的 ${w(M.prevRev)}` : `YoY 的基期是含裕隆城的 ${w(M.prevRev)}`}。<b>今年的一次性收入已移出營收、去年的還在基期裡</b>，所以 YoY 被壓低，不宜直接解讀成衰退；若基期再扣掉嘖嘖（約 168.8 萬，剩 ${w(M.prevRev - 1688000)}），7 月營收約 ${yoyBoth7}（概估）。`,
+              data:`去年7月：營收 ${w(h25.rev)}（含嘖嘖 168.8萬、裕隆城 34.6萬）｜營業淨利 ${w(h25.opProfit)}｜廣告費 ${w(h25.mkt)}` },
       ];
     }
 
@@ -2939,8 +3070,9 @@ function buildInsights(ym) {
       const sd = M.storeData;
       const jul = MONTHS['2026/07'];
       const h25 = HIST_CO_2025.find(h => h.ym === '2025/08');
-      const PROJ = 1250000;
-      const julExOp = jul ? jul.opProfit - PROJ : null;
+      const julNote = !jul ? '' : (subsidyOn(jul)
+        ? `<b>判讀提醒</b>：7 月營業淨利 ${w(jul.opProfit)}、8 月 ${w(M.opProfit)}（營收月增 ${((M.rev / jul.rev - 1) * 100).toFixed(1)}%）。會計已把 7 月 125 萬補助款列營業外收入，所以兩個月的營業淨利都不含補助款；但兩個月都含計畫案的專案調整入帳（系統費：7 月 ${w(SYS_2026_PROJ['2026/07'] || 0)}、8 月 ${w(SYS_2026_PROJ['2026/08'] || 0)}），若都不計入，7 月約 ${w(jul.opProfit + (SYS_2026_PROJ['2026/07'] || 0))}、8 月約 ${w(M.opProfit + (SYS_2026_PROJ['2026/08'] || 0))}，大致持平，不宜解讀成明顯改善（專案入帳是由廣告費改列，改列本身不影響營業淨利，這裡只是假設這些費用整筆不計入）。`
+        : `<b>判讀提醒</b>：7 月資料尚未更新為 ERP 新版（補助款仍在營業收入），7 月與 8 月不能直接比較。`);
       const h1 = ['2026/01','2026/02','2026/03','2026/04','2026/05','2026/06'].map(k => MONTHS[k]).filter(Boolean);
       const h1SysAvg = h1.length ? h1.reduce((s, m) => s + (m.sys || 0), 0) / h1.length : 0;
       const sysYtd8 = CMP.filter(m => monthNum(m.ym) <= 8).reduce((s, m) => s + (m.sys || 0), 0);
@@ -2959,8 +3091,8 @@ function buildInsights(ym) {
       const losers  = STORES.filter(st => sd[st].opProfit < 0);
       return [
         { sev:'amber', tag:'損益', title:`8 月營業淨利 ${w(M.opProfit)}（${M.opPct.toFixed(1)}%）—— 小幅虧損，但比去年同月少虧約 ${w(M.opProfit - h25.opProfit)}`,
-          body:`8 月營收 <b>${w(M.rev)}</b>（YoY ${M.yoyRevPct>=0?'+':''}${M.yoyRevPct.toFixed(1)}%）、毛利率 <b>${M.gpPct.toFixed(1)}%</b>（去年同月 ${M.prevGpPct.toFixed(1)}%，持平）、營業淨利 <b>${w(M.opProfit)}</b>、本期損益 ${w(M.ni)}。去年 8 月營業淨利 ${w(h25.opProfit)}，今年少虧 ${w(M.opProfit - h25.opProfit)}，改善來自管理費率（去年 ${M.prevMgmtPct.toFixed(1)}%→今年 ${M.mgmtPct.toFixed(1)}%）與推銷費率（${M.prevSellPct.toFixed(1)}%→${M.sellPct.toFixed(1)}%）。<b>判讀提醒</b>：7 月含 125 萬一次性專案收入，7→8 月營業淨利從 ${jul ? '+' + w(jul.opProfit) : '—'} 掉到 ${w(M.opProfit)}，主因是這筆收入消失，不是 8 月本身惡化${jul ? `；扣掉它 7 月其實是 ${w(julExOp)}，8 月反而比 7 月好` : ''}。`,
-          data:`營業淨利：8月 ${w(M.opProfit)}｜去年8月 ${w(h25.opProfit)}｜7月 ${jul ? w(jul.opProfit) : '—'}（扣除專案收入約 ${jul ? w(julExOp) : '—'}）｜去年8月營收含誠品裕隆城 51.2萬，扣除後 YoY +17.6%、未扣 +5.3%` },
+          body:`8 月營收 <b>${w(M.rev)}</b>（YoY ${M.yoyRevPct>=0?'+':''}${M.yoyRevPct.toFixed(1)}%）、毛利率 <b>${M.gpPct.toFixed(1)}%</b>（去年同月 ${M.prevGpPct.toFixed(1)}%，持平）、營業淨利 <b>${w(M.opProfit)}</b>、本期損益 ${w(M.ni)}。去年 8 月營業淨利 ${w(h25.opProfit)}，今年少虧 ${w(M.opProfit - h25.opProfit)}，改善來自管理費率（去年 ${M.prevMgmtPct.toFixed(1)}%→今年 ${M.mgmtPct.toFixed(1)}%）與推銷費率（${M.prevSellPct.toFixed(1)}%→${M.sellPct.toFixed(1)}%）。${julNote}`,
+          data:`營業淨利：8月 ${w(M.opProfit)}｜去年8月 ${w(h25.opProfit)}｜7月 ${jul ? w(jul.opProfit) : '—'}${jul ? (subsidyOn(jul) ? '（營業淨利，不含補助款）' : '（舊版資料，勿比較）') : ''}｜去年8月營收含誠品裕隆城 51.2萬，扣除後 YoY +17.6%、未扣 +5.3%` },
 
         { sev:'red', tag:'成本', title:`系統費 ${w(M.sys)}（含專案調整入帳 ${w(sysProj8)}）、包裝費 ${w(M.pkg)} 同時偏高 —— 合計比上半年常態月多吃約 ${w((M.sys - h1SysAvg) + (M.pkg - pkgNorm))}`,
           body:`系統費(6137) <b>${w(M.sys)}</b>，其中 <b>${w(sysProj8)}</b> 是專案調整入帳（專案碼「臺北市文化局計劃案」，開票時先記廣告費、月底改列系統費：商線 ${w(pv8['商線'] || 0)}、雲發互動 ${w(pv8['雲發'] || 0)}、易品 ${w(pv8['易品'] || 0)}），一般系統費只有 ${w(M.sys - sysProj8)}，沒有上升（1–6 月月均 ${w(h1SysAvg)}）。包裝費(5539) <b>${w(M.pkg)}</b>（佔營收 ${(M.pkg/M.rev*100).toFixed(1)}%，上半年常態約 ${w(pkgNorm)}，去年同月 ${w(PKG_PREV['2026/08'])}），是 1–8 月第二高（僅次 4 月備料）。系統費與包裝費合計比常態月多出約 <b>${w((M.sys - h1SysAvg) + (M.pkg - pkgNorm))}</b>——若兩項都回到上半年常態水準，8 月營業淨利會落在 ${w(M.opProfit + (M.sys - h1SysAvg) + (M.pkg - pkgNorm))} 左右。今年 1–8 月系統費帳面累計 <b>${w(sysYtd8)}</b>（去年全年 ${w(HIST_SYS_2025.reduce((s,v)=>s+v,0))}），其中專案調整入帳 7、8 月合計 ${w((SYS_2026_PROJ['2026/07'] || 0) + sysProj8)}；專案入帳是從廣告費改列，不影響營業淨利（逐筆明細見下方「系統費逐月比較」）。建議確認：包裝費是否又是一次性備料；專案入帳的認列口徑（Omnichat 兩年方案是否攤提）與會計確認。`,
@@ -3214,7 +3346,7 @@ function renderAnomalies() {
   if (S.mktPct >= 8)
     anomalies.push({ cls:'red', msg:`全公司廣告費率 ${fmtPct(S.mktPct)}，超標（上限6%）。最大項目：${mktCats[0][0]} ${fmtW(mktCats[0][1])}。` });
   else if (S.mktPct >= 6)
-    anomalies.push({ cls:'yellow', msg:`全公司廣告費率 ${fmtPct(S.mktPct)}，接近上限6%。` });
+    anomalies.push({ cls:'yellow', msg:`全公司廣告費率 ${fmtPct(S.mktPct)}，超過上限6%（未達8%）。` });
 
   const totalWageRate = (S.w6100 + S.w6201) / S.rev * 100;
   if (totalWageRate >= 30) anomalies.push({ cls:'red', msg:`全公司總人事率 ${fmtPct(totalWageRate)}，超標（上限30%，推銷薪資 ${fmtPct(S.wPct6100)} + 管理薪資 ${fmtPct(S.wPct6201)}）` });
@@ -3244,7 +3376,7 @@ function renderAnomalies() {
 
   /* Positive: 營業淨利 excellent */
   const good = [];
-  if (S.opPct >= 12) good.push(`營業淨利率 ${fmtPct(S.opPct)}，大幅超越8%目標 ✅`);
+  if (S.opPct >= 12 && !subsidyStale(S)) good.push(`營業淨利率 ${fmtPct(S.opPct)}，大幅超越8%目標 ✅`);
   if (S.yoyRevPct >= 15) good.push(`YOY 營收成長 +${fmtPct(S.yoyRevPct)} ✅`);
 
   const el = document.getElementById('anomaly-list');
